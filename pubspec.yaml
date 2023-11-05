@@ -16,7 +16,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   table_calendar: ^3.0.9
   window_manager: ^0.3.7
-  ex: ^0.5.0
+  ex: ^0.5.1
 
 
   # utils
