@@ -38,6 +38,7 @@ class MyCalenderBody<T> extends StatelessWidget {
       focusedDay: focusedDay,
       firstDay: minimumDate,
       lastDay: maximumDate,
+      headerVisible: false,
 
       /// event
       onCalendarCreated: onCalendarCreated,
@@ -48,22 +49,18 @@ class MyCalenderBody<T> extends StatelessWidget {
       calendarBuilders: calendarBuilders,
 
       /// config
-      headerVisible: false,
       calendarStyle: CalendarStyle(
+        outsideDaysVisible: false,
+
+        // textstyle
         defaultTextStyle: TextStyle(fontSize: 11),
         todayTextStyle: TextStyle(fontSize: 12),
         selectedTextStyle: TextStyle(fontSize: 11),
         outsideTextStyle: TextStyle(fontSize: 11, color: Vx.neutral500),
         weekendTextStyle: TextStyle(fontSize: 11, color: Vx.red300),
-        todayDecoration: BoxDecoration(color: Colors.orange.withAlpha(100), shape: BoxShape.rectangle),
-        selectedDecoration: BoxDecoration(color: Colors.blue[800], shape: BoxShape.rectangle),
-        outsideDaysVisible: false,
-
-        /// marker
-        markerDecoration: BoxDecoration(color: Vx.orange300, shape: BoxShape.circle),
-        markersMaxCount: 1,
-        markersOffset: PositionedOffset(top: 8, end: 8),
-        markersAutoAligned: false,
+        todayDecoration: BoxDecoration(color: Vx.neutral700, shape: BoxShape.rectangle),
+        selectedDecoration: BoxDecoration(color: Vx.green800, shape: BoxShape.rectangle),
+        // tableBorder: TableBorder.all(color: Vx.neutral900, borderRadius: BorderRadius.all(Radius.circular(16))),
       ),
       daysOfWeekStyle: DaysOfWeekStyle(
         weekdayStyle: TextStyle(fontSize: 12),
@@ -73,6 +70,8 @@ class MyCalenderBody<T> extends StatelessWidget {
       weekendDays: [DateTime.saturday, DateTime.sunday],
       startingDayOfWeek: StartingDayOfWeek.monday,
       rangeSelectionMode: RangeSelectionMode.disabled,
+      availableGestures: AvailableGestures.none,
+      locale: 'in',
     );
   }
 }

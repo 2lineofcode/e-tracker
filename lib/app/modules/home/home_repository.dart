@@ -1,5 +1,5 @@
+import '../../core/const.dart';
 import '../../models/category_entity.dart';
-import '../../../const.dart';
 import '../../models/expense_entity.dart';
 
 class HomeRepository {
@@ -71,7 +71,7 @@ class HomeRepository {
     return response;
   }
 
-  Future<void> deleteExpense(int id) async {
+  Future<void> deleteExpense(String id) async {
     final response = await db.from('expense').delete().match({'id': id});
     return response;
   }

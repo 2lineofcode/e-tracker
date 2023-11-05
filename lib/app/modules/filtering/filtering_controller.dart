@@ -21,10 +21,10 @@ class FilteringController extends GetxController with StateMixin {
   final categorySelected = ''.obs;
   final startDate = ''.obs;
   final endDate = ''.obs;
+  final orderBy = 'amount'.obs;
 
-  final orderBy = 'date'.obs;
-
-  final total = 0.obs;
+  final sumAll = 0.obs;
+  final sumByDate = <String, int>{}.obs;
 
   /// list
   final expenseList = <ExpenseEntity>[].obs;
@@ -54,9 +54,21 @@ class FilteringController extends GetxController with StateMixin {
     try {
       expenseList.value = await repo.findExpense(categoryName, startDate.value, endDate.value, orderBy: orderBy.value);
 
-      // count total
-      total.value = 0;
-      for (var e in expenseList) total.value += e.amount ?? 0;
+      /// calc sumAll
+      sumAll.value = 0;
+      for (var e in expenseList) sumAll.value += e.amount ?? 0;
+
+      /// calc sumByDate
+      sumByDate.clear();
+      for (var data in expenseList) {
+        var date = data.date!;
+        var amount = data.amount!;
+        if (sumByDate.containsKey(date)) {
+          sumByDate[date] = (sumByDate[date] ?? 0) + amount;
+        } else {
+          sumByDate[date] = amount;
+        }
+      }
     } catch (e) {
       change(0, status: RxStatus.error('$e'));
     }

@@ -1,5 +1,5 @@
 class ExpenseEntity {
-  int? id;
+  String? id;
   String? createdAt;
   String? categoryName;
   String? note;

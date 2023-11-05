@@ -1,14 +1,14 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:table_calendar/table_calendar.dart';
-import '../../helpers/helper_color.dart';
-import '../../helpers/helper_decoration.dart';
-import '../../routes/app_pages.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:table_calendar/table_calendar.dart';
 
+import '../../helpers/helper_decoration.dart';
+import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
+import '../../routes/app_pages.dart';
 import '../widgets/widgets.dart';
 import 'home_controller.dart';
 
@@ -29,7 +29,7 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget appBarTitle() {
-    return 'e-Tracker'.text.size(11).bold.make();
+    return '${dotenv.get('APP_NAME')}'.text.size(11).bold.make();
   }
 
   Widget appBarLeading() {
@@ -95,7 +95,7 @@ class HomeView extends GetView<HomeController> {
                 if (events.isNotEmpty) {
                   var total = 0;
                   for (var event in events) total += event.toInt()!;
-                  return Icon(Icons.circle, size: 6, color: MoneyHelper.getExpenseColor(total)).positioned(top: 8, right: 8);
+                  return Icon(Icons.circle, size: 6, color: MoneyHelper.getExpenseFlagColor(total)).positioned(top: 8, right: 8);
                 }
                 return Container();
               },
@@ -103,34 +103,43 @@ class HomeView extends GetView<HomeController> {
           ).pOnly(bottom: 8),
         ),
 
-        /// category
-        Obx(
-          () => ' 📦 CATEGORY (${controller.categoryList.length})'.text.bold.make().onTap(() => controller.getCategory()).pSymmetric(h: 8, v: 8),
-        ),
-        Obx(
-          () => ListView.builder(
-            itemCount: controller.categoryList.length,
-            itemBuilder: (context, index) {
-              final item = controller.categoryList[index];
-              return ListTile(
-                title: HStack(
-                  [
-                    Icon(Icons.circle_outlined, color: HexColor.fromHex(item.color ?? '#FFFFFF'), size: 12).pOnly(right: 8),
-                    '${item.name}'.text.size(11).make().expand(),
-                    if (item.maxBudget == null) Icon(Icons.edit, size: 16, color: Vx.red400),
-                  ],
-                ),
-                onTap: () => controller.onEditCategory(entity: item),
-              ).pSymmetric(h: 4);
-            },
-          ).expand(),
-        ),
-        TextField(
-          controller: controller.tfCategory,
-          decoration: MyDecorationHelper.inputDecorator(hint: 'Add Category'),
-          style: TextStyle(fontSize: 13),
-          onSubmitted: (value) => controller.onAddCategory(value),
-        ).h(33).p8(),
+        Container(
+          // color: Vx.neutral900,
+          decoration: BoxDecoration(color: Vx.neutral700),
+          child: VStack(
+            [
+              /// category
+              Obx(
+                () => ' 📦 CATEGORY (${controller.categoryList.length})'.text.bold.make().onTap(() => controller.getCategory()).pSymmetric(h: 8, v: 16),
+              ),
+              Obx(
+                () => ListView.builder(
+                  itemCount: controller.categoryList.length,
+                  itemBuilder: (context, index) {
+                    final item = controller.categoryList[index];
+                    return ListTile(
+                      title: HStack(
+                        [
+                          Icon(Icons.circle_outlined, color: HexColor.fromHex(item.color ?? '#FFFFFF'), size: 12).pOnly(right: 8),
+                          '${item.name}'.text.size(11).make().expand(),
+                          if (item.maxBudget == null) Icon(Icons.edit, size: 16, color: Vx.red400),
+                        ],
+                      ),
+                      onTap: () => controller.onEditCategory(entity: item),
+                    ).pSymmetric(h: 4);
+                  },
+                ).expand(),
+              ),
+
+              TextField(
+                controller: controller.tfCategory,
+                decoration: MyDecorationHelper.inputDecorator(hint: 'Add Category'),
+                style: TextStyle(fontSize: 13),
+                onSubmitted: (value) => controller.onAddCategory(value),
+              ).h(33).p8(),
+            ],
+          ),
+        ).expand(),
       ],
     ).expand();
   }
@@ -143,7 +152,24 @@ class HomeView extends GetView<HomeController> {
             Obx(
               () {
                 if (controller.isSearchMode.isFalse) {
-                  return '${controller.focusedDay.value.toStringEx(format: 'E, dd MMM y')}'.text.size(11).bold.make();
+                  return HStack([
+                    '${controller.focusedDay.value.toStringEx(format: 'E, dd MMM y')}'.text.size(11).bold.make(),
+                    Spacer(),
+                    Container(
+                      decoration: ExDecorator.box(
+                        borderRadius: 90,
+                        borderColor: MoneyHelper.getExpenseFlagColor(controller.countOfDay.value),
+                      ),
+                      child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)}'
+                          .text
+                          .size(10)
+                          .minFontSize(10)
+                          .color(MoneyHelper.getExpenseFlagColor(controller.countOfDay.value))
+                          .make()
+                          .p4()
+                          .pSymmetric(h: 4),
+                    ),
+                  ]);
                 } else {
                   return 'Search for: "${controller.tfSearchExpense.text}"'.text.size(11).bold.make();
                 }
@@ -175,6 +201,10 @@ class HomeView extends GetView<HomeController> {
                 ).pSymmetric(h: 8, v: 4).onTap(() => controller.onShowDialogExpense(expense: item));
               },
             ).pSymmetric(v: 8).expand(),
+            HStack([
+              Spacer(),
+              'Total: ${MoneyHelper.toRupiah(controller.countOfDay.value)}'.text.bold.make(),
+            ]).p12(),
           ],
         ),
       ),
@@ -202,12 +232,9 @@ class HomeView extends GetView<HomeController> {
 
   Widget footerContent() {
     return HStack([
-      Obx(
-        () => 'This Day: ${MoneyHelper.toRupiah(controller.countOfDay.value)}'.text.color(MoneyHelper.getExpenseColor(controller.countOfDay.value)).size(11).make(),
-      ),
       Spacer(),
       Obx(
-        () => 'This Month: ${MoneyHelper.toRupiah(controller.countOfMonth.value)}'.text.size(11).make().onTap(() {
+        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${MoneyHelper.toRupiah(controller.countOfMonth.value)}'.text.size(11).make().onTap(() {
           Get.toNamed(Routes.SUMMARY);
         }),
       ),

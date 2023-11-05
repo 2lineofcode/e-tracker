@@ -199,21 +199,23 @@ class _EasyAutocompleteState extends State<MyAutoComplete> {
 
   @override
   void dispose() {
-    if (_overlayEntry != null) _overlayEntry!.dispose();
-    if (widget.controller == null) {
-      _controller.removeListener(() => updateSuggestions(_controller.text));
-      _controller.dispose();
-    }
-    if (_debounce != null) _debounce?.cancel();
-    if (widget.focusNode == null) {
-      _focusNode.removeListener(() {
-        if (_focusNode.hasFocus)
-          openOverlay();
-        else
-          closeOverlay();
-      });
-      _focusNode.dispose();
-    }
+    try {
+      if (_overlayEntry != null) _overlayEntry?.dispose();
+      if (widget.controller == null) {
+        _controller.removeListener(() => updateSuggestions(_controller.text));
+        _controller.dispose();
+      }
+      if (_debounce != null) _debounce?.cancel();
+      if (widget.focusNode == null) {
+        _focusNode.removeListener(() {
+          if (_focusNode.hasFocus)
+            openOverlay();
+          else
+            closeOverlay();
+        });
+        _focusNode.dispose();
+      }
+    } catch (_) {}
     super.dispose();
   }
 }

@@ -1,8 +1,10 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:grouped_list/grouped_list.dart';
 
 import '../../helpers/helper_decoration.dart';
+import '../../models/autocomplete_note_entity.dart';
 import 'settings_controller.dart';
 
 class SectionAutoComplete extends GetView<SettingsController> {
@@ -12,25 +14,25 @@ class SectionAutoComplete extends GetView<SettingsController> {
   Widget build(BuildContext context) {
     return VStack(
       [
-        ListView.separated(
-          itemCount: controller.autocompleteNote.length,
-          separatorBuilder: (context, index) => Divider(),
-          itemBuilder: (context, index) {
-            final item = controller.autocompleteNote[index];
-
-            return HStack(
-              [
-                VStack([
-                  '${item.createdAt!.reformatDate(to: 'dd/MM/y')}'.text.neutral400.size(8).minFontSize(8).make().pOnly(bottom: 2).pSymmetric(h: 9),
-                  '${item.note}'.text.make().pSymmetric(h: 8),
-                ]),
-                Spacer(),
-                IconButton(
-                  icon: Icon(Icons.delete, size: 18),
-                  onPressed: () => controller.onDeleteAutocompleteNote(item),
-                ),
-              ],
+        GroupedListView<AutocompleteNoteEntity, String>(
+          elements: controller.autocompleteNote,
+          groupBy: (element) => element.note!.toTitleCase!.substring(0, 1),
+          floatingHeader: true,
+          groupHeaderBuilder: (element) {
+            return Container(
+              color: Vx.neutral900,
+              child: Text(element.note!.toTitleCase!.substring(0, 1)).p8(),
             );
+          },
+          indexedItemBuilder: (context, item, index) {
+            return HStack([
+              '${item.note}'.text.make().pSymmetric(h: 8),
+              Spacer(),
+              IconButton(
+                icon: Icon(Icons.delete, size: 16),
+                onPressed: () => controller.onDeleteAutocompleteNote(item),
+              ),
+            ]);
           },
         ).expand(),
         TextField(

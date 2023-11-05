@@ -1,4 +1,4 @@
-import '../../../const.dart';
+import '../../core/const.dart';
 import '../../models/category_entity.dart';
 
 class SummaryRepository {

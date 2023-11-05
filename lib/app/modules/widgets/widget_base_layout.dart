@@ -5,23 +5,36 @@ import 'package:get/get.dart';
 class MyLayout extends StatelessWidget {
   const MyLayout({
     super.key,
+    //
+    required this.appBarTitle,
     this.appBarLeading,
     this.appBarAction,
-    this.sideMenuWidht,
-    required this.appBarTitle,
+    //
     required this.sideMenuContent,
+    this.sideMenuWidht,
+    this.sideMenuColor,
+    //
     required this.bodyContent,
+    //
     required this.footerContent,
+    this.footerColor,
   });
 
   final Widget appBarTitle;
   final Widget? appBarLeading;
   final Widget? appBarAction;
 
+  // sidemenu
   final Widget sideMenuContent;
   final double? sideMenuWidht;
+  final Color? sideMenuColor;
+
+  // body
   final Widget bodyContent;
+
+  // footer
   final Widget footerContent;
+  final Color? footerColor;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +100,7 @@ class MyLayout extends StatelessWidget {
   Widget footer() {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(color: Vx.neutral800),
+      decoration: BoxDecoration(color: footerColor ?? Vx.neutral800),
       child: footerContent,
     );
   }

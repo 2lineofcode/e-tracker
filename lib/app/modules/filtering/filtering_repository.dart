@@ -1,10 +1,10 @@
-import '../../../const.dart';
+import '../../core/const.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
 
 class FilteringRepository {
   Future<List<String>> getOrderList() async {
-    return <String>['date', 'note', 'amount'];
+    return <String>['note', 'amount'];
   }
 
   Future<List<CategoryEntity>> getCategory() async {
@@ -26,7 +26,7 @@ class FilteringRepository {
         .eq('category_name', categoryName)
         .filter('date', 'gte', startDate)
         .filter('date', 'lte', endDate)
-        .order(orderBy ?? 'date', ascending: true)
+        .order(orderBy ?? 'amount', ascending: false)
         .withConverter<List<ExpenseEntity>>((data) {
       return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
     });

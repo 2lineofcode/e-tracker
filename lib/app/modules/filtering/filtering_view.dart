@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_month_picker/flutter_month_picker.dart';
 
 import 'package:get/get.dart';
+import 'package:grouped_list/grouped_list.dart';
 
-import '../../helpers/helper_color.dart';
+import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
+import '../../models/expense_entity.dart';
 import '../widgets/widgets.dart';
 import 'filtering_controller.dart';
 
@@ -20,6 +22,7 @@ class FilteringView extends GetView<FilteringController> {
         sideMenuContent: sideMenuContent(),
         bodyContent: bodyContent(),
         footerContent: footerContent(),
+        footerColor: Vx.neutral900,
       ),
     );
   }
@@ -73,7 +76,7 @@ class FilteringView extends GetView<FilteringController> {
 
                 // startDate
                 Obx(
-                  () => '${controller.startDate.value.reformatDate(from: 'yyyy-MM-dd', to: 'MMMM yyyy')}'.text.underline.size(11).minFontSize(11).bold.make().onInkTap(
+                  () => '${controller.startDate.value.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM yyyy')}'.text.underline.size(11).minFontSize(11).bold.make().onInkTap(
                     () async {
                       final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
                       if (date != null) controller.startDate.value = '${date.toStringEx(format: 'yyyy-MM')}-01';
@@ -86,10 +89,10 @@ class FilteringView extends GetView<FilteringController> {
 
                 // endDate
                 Obx(
-                  () => '${controller.endDate.value.reformatDate(from: 'yyyy-MM-dd', to: 'MMMM yyyy')}'.text.underline.size(11).minFontSize(11).bold.make().onInkTap(
+                  () => '${controller.endDate.value.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM yyyy')}'.text.underline.size(11).minFontSize(11).bold.make().onInkTap(
                     () async {
                       final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
-                      if (date != null) controller.endDate.value = '${date.toStringEx(format: 'yyyy-MM')}-01';
+                      if (date != null) controller.endDate.value = '${date.toStringEx(format: 'yyyy-MM')}-31';
                       controller.onCategoryChange(controller.categorySelected.value);
                     },
                   ),
@@ -128,52 +131,79 @@ class FilteringView extends GetView<FilteringController> {
             ],
           ).p12(),
         ).p8(),
-        ExDivider(
-          label: '  # Result (${controller.expenseList.length})',
-          dividerMode: ExDividerMode.LINE,
-          textMode: ExDividerTextMode.LEFT,
-        ).pOnly(bottom: 12, top: 8),
-        controller
-            .obx(
-              (state) => Obx(
-                () => ListView.builder(
-                  itemCount: controller.expenseList.length,
-                  itemBuilder: (context, index) {
-                    final item = controller.expenseList[index];
-                    return Container(
-                      decoration: BoxDecoration(color: Vx.neutral900, borderRadius: BorderRadius.all(Radius.circular(4))),
-                      child: Row(
-                        children: [
-                          VStack([
-                            '${item.date!.reformatDate(from: 'yyyy-MM-dd', to: 'EEE, dd MMM yyyy')}'.text.size(11).minFontSize(11).make().pOnly(bottom: 8),
-                            '${item.note}'.text.bold.make().pOnly(bottom: 2),
-                          ]),
-                          Spacer(),
-                          '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.bold.size(16).make(),
-                        ],
-                      ).p12(),
-                    ).onTap(() async {
-                      await controller.home.onShowDialogExpense(
-                        expense: item,
-                        customCallback: () => controller.onCategoryChange(item.categoryName!),
-                      );
-                    }).pSymmetric(h: 8, v: 4);
-                  },
+        16.heightBox,
+        controller.obx(
+          (state) => GroupedListView<ExpenseEntity, String>(
+            elements: controller.expenseList,
+            groupBy: (element) => element.date!,
+            useStickyGroupSeparators: true,
+            floatingHeader: true,
+            
+            groupHeaderBuilder: (element) {
+              return Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Vx.neutral900,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
                 ),
-              ),
-              onEmpty: ExUiErrorOrEmpty(
-                illustration: Icon(CupertinoIcons.list_bullet),
-                title: 'No Data'.text.bold.makeCentered(),
-                bgColor: Color(0xff242424),
-              ),
-              onError: (e) => ExUiErrorOrEmpty(
-                illustration: Icon(CupertinoIcons.wifi_slash),
-                title: 'Offline'.text.bold.makeCentered(),
-                message: 'No Internet'.text.neutral500.makeCentered(),
-                bgColor: Color(0xff242424),
-              ),
-            )
-            .expand(),
+                child: HStack(
+                  [
+                    Icon(
+                      Icons.circle,
+                      size: 7,
+                      color: MoneyHelper.getExpenseFlagColor(controller.sumByDate[element.date]!),
+                    ).tooltip('${MoneyHelper.getExpenseFlagText(controller.sumByDate[element.date]!)}').pOnly(right: 8),
+                    '${element.date!.reformatDate(from: 'yyyy-MM-dd', to: 'dd/MM/y (E)')}'.text.size(11).make(),
+                    Spacer(),
+                    '${MoneyHelper.toRupiah(controller.sumByDate[element.date]!)}'.text.size(12).make(),
+                  ],
+                ).p8(),
+              );
+            },
+            indexedItemBuilder: (context, item, index) {
+              return Container(
+                decoration: BoxDecoration(color: Vx.neutral800),
+                child: HStack(
+                  [
+                    // row 1
+                    VStack([
+                      '${item.note}'.text.neutral400.size(12).make().pOnly(bottom: 2),
+                      '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.white.size(10).minFontSize(10).make(),
+                    ]).p12(),
+
+                    Spacer(),
+
+                    // row 2
+                    VStack([
+                      IconButton(
+                        icon: Icon(Icons.edit, size: 16),
+                        onPressed: () async {
+                          await controller.home.onShowDialogExpense(
+                            expense: item,
+                            customCallback: () => controller.onCategoryChange(item.categoryName!),
+                          );
+                        },
+                      ),
+                    ]).p12(),
+                  ],
+                ),
+              );
+            },
+          ).pSymmetric(h: 8).expand(),
+
+          // ~
+          onEmpty: ExUiErrorOrEmpty(
+            illustration: Icon(CupertinoIcons.list_bullet),
+            title: 'No Data'.text.bold.makeCentered(),
+            bgColor: Color(0xff242424),
+          ).expand(),
+          onError: (e) => ExUiErrorOrEmpty(
+            illustration: Icon(CupertinoIcons.wifi_slash),
+            title: 'Offline'.text.bold.makeCentered(),
+            message: 'No Internet'.text.neutral500.makeCentered(),
+            bgColor: Color(0xff242424),
+          ).expand(),
+        ),
       ],
     );
   }
@@ -181,7 +211,7 @@ class FilteringView extends GetView<FilteringController> {
   Widget footerContent() {
     return HStack([
       Spacer(),
-      Obx(() => 'Total: ${MoneyHelper.toRupiah(controller.total.value)}'.text.make()),
+      Obx(() => 'Total: ${MoneyHelper.toRupiah(controller.sumAll.value)}'.text.make()),
     ]).p12();
   }
 }

@@ -1,5 +1,5 @@
-import 'package:get/get.dart';
 import 'package:ex/ex.dart';
+import 'package:get/get.dart';
 
 import '../../models/category_entity.dart';
 import '../../routes/app_pages.dart';

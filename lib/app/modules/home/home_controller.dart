@@ -1,19 +1,21 @@
 import 'dart:collection';
 
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
-import '../../helpers/helper_color.dart';
-import 'package:money_input_formatter/money_input_formatter.dart';
-import '../widgets/widgets.dart';
-import 'home_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:uuid/v1.dart';
 
+import '../../helpers/helper_decoration.dart';
+import '../../helpers/helper_misc.dart';
+import '../../helpers/helper_money.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
-import '../../helpers/helper_decoration.dart';
+import '../widgets/widgets.dart';
+import 'home_repository.dart';
 
 class HomeController extends GetxController with StateMixin {
   /// repo
@@ -37,11 +39,14 @@ class HomeController extends GetxController with StateMixin {
   final expenseList = <ExpenseEntity>[].obs;
   final autocompleteNote = <String>[].obs;
   final tfSearchExpense = TextEditingController();
-  final isSearchMode = false.obs;
 
   /// count
   final countOfDay = 0.obs;
   final countOfMonth = 0.obs;
+
+  /// flag
+  final isSearchMode = false.obs;
+  final isFirstLoad = true.obs;
 
   /// init ~~
   @override
@@ -131,7 +136,7 @@ class HomeController extends GetxController with StateMixin {
   Future<void> onEditCategory({CategoryEntity? entity}) async {
     final tfCatName = TextEditingController(text: entity?.name ?? '');
     final tfCatColor = TextEditingController(text: entity?.color ?? '');
-    final tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget.toString() : '');
+    final tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget!.moneyFormat() : '');
 
     ExDialog.custom(
       title: 'Edit Category',
@@ -147,16 +152,16 @@ class HomeController extends GetxController with StateMixin {
             controller: tfCatColor,
             decoration: MyDecorationHelper.inputDecorator(hint: 'Color', label: 'Color Tag'),
             style: TextStyle(fontSize: 13, color: HexColor.fromHex(tfCatColor.text)),
+            inputFormatters: [LengthLimitingTextInputFormatter(7)],
           ).pOnly(bottom: 8),
           TextField(
             controller: tfMaxBudget,
             decoration: MyDecorationHelper.inputDecorator(
               hint: '1.000.000',
               label: 'Max Budget (Monthtly)',
-              prefixIcon: Text('Rp.  ', style: TextStyle(color: Colors.white, fontSize: 13)).pSymmetric(v: 12).pOnly(left: 8),
             ),
             inputFormatters: [
-              MoneyInputFormatter(),
+              CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
               LengthLimitingTextInputFormatter(13),
             ],
             style: TextStyle(fontSize: 13),
@@ -164,25 +169,27 @@ class HomeController extends GetxController with StateMixin {
           Divider().pOnly(bottom: 8),
           HStack(
             [
-              ExButtonOutline(
-                label: 'Delete',
-                labelSize: 11,
-                isLabelBold: false,
-                labelColor: Vx.red400,
-                borderColor: Vx.red400,
-                radius: 4,
-                onPressed: () async {
-                  try {
-                    await repo.deleteCategory(entity?.id ?? 0);
-                    await getCategory();
-                    Get.back();
-                  } catch (e) {
-                    Get.back();
-                    ExSnackbar.danger(e);
-                  }
-                },
-              ),
-              8.widthBox,
+              if (entity!.id!.length > 2) ...[
+                ExButtonOutline(
+                  label: 'Delete',
+                  labelSize: 11,
+                  isLabelBold: false,
+                  labelColor: Vx.orange300,
+                  borderColor: Vx.orange300,
+                  radius: 4,
+                  onPressed: () async {
+                    try {
+                      await repo.deleteCategory(entity.id ?? 0);
+                      await getCategory();
+                      Get.back();
+                    } catch (e) {
+                      Get.back();
+                      ExSnackbar.danger(e);
+                    }
+                  },
+                ),
+                8.widthBox,
+              ],
               ExButtonOutline(
                 label: 'Submit',
                 labelSize: 11,
@@ -192,11 +199,11 @@ class HomeController extends GetxController with StateMixin {
                 radius: 4,
                 onPressed: () async {
                   final newEntity = CategoryEntity(
-                    id: entity?.id,
+                    id: entity.id,
                     name: tfCatName.text,
                     color: tfCatColor.text.isEmpty ? '#FFFFFF' : tfCatColor.text,
                     icon: null,
-                    maxBudget: tfMaxBudget.text.replaceAll(' ', '').toInt(),
+                    maxBudget: tfMaxBudget.text.moneyUnformat(),
                     createdAt: DateTime.now().toStringEx(),
                   );
                   await repo.editCategory(newEntity);
@@ -255,7 +262,7 @@ class HomeController extends GetxController with StateMixin {
     final tfDate = TextEditingController(text: expense != null ? expense.date : '');
     final tfNote = TextEditingController(text: expense != null ? expense.note : '');
     final tfCategory = '${expense != null ? '${expense.categoryName}' : '${categoryList[0].name}'}'.obs;
-    final tfAmount = TextEditingController(text: expense != null ? expense.amount.toString() : '');
+    final tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
 
     ExDialog.custom(
       title: expense != null ? 'Edit Expense' : 'Add Expense',
@@ -271,41 +278,46 @@ class HomeController extends GetxController with StateMixin {
               onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => tfDate.text = c.toStringEx(format: 'yyyy-MM-dd')),
             ).wh(250, 33).pOnly(bottom: 16),
           ],
-          MyAutoComplete(
-            controller: tfNote,
-            autofocus: expense == null,
-            decoration: MyDecorationHelper.inputDecorator(hint: 'Nasi Padang', label: 'Notes'),
-            inputTextStyle: TextStyle(fontSize: 13),
-            asyncSuggestions: (s) async {
-              if (s.isEmpty) {
-                return [];
-              } else {
-                return await repo.findAutocompleteNote(s);
-              }
-            },
-            progressIndicatorBuilder: CupertinoActivityIndicator(color: Colors.white),
-            onChanged: (value) => tfNote.text = value,
-            onSubmitted: (value) => tfNote.text = value,
-          ).w(250).pOnly(bottom: 16),
+          if (PlatformUtil.isDesktop()) ...[
+            MyAutoComplete(
+              controller: tfNote,
+              autofocus: expense == null,
+              decoration: MyDecorationHelper.inputDecorator(hint: 'Nasi Padang', label: 'Notes'),
+              inputTextStyle: TextStyle(fontSize: 13),
+              asyncSuggestions: (s) async {
+                if (s.isEmpty) {
+                  return [];
+                } else {
+                  return await repo.findAutocompleteNote(s);
+                }
+              },
+              progressIndicatorBuilder: CupertinoActivityIndicator(color: Colors.white),
+              onChanged: (value) => tfNote.text = value,
+              onSubmitted: (value) => tfNote.text = value,
+            ).w(250).pOnly(bottom: 16),
+          ] else ...[
+            TextField(
+              controller: tfNote,
+              autofocus: expense == null,
+              decoration: MyDecorationHelper.inputDecorator(hint: 'Nasi Padang', label: 'Notes'),
+              style: TextStyle(fontSize: 13),
+            ).wh(250, 33).pOnly(bottom: 16),
+          ],
           Obx(
             () => DropdownButtonFormField(
               value: '${tfCategory.value}',
               items: categoryList.map((element) => DropdownMenuItem(value: '${element.name}', child: Text(element.name ?? ''))).toList(),
-              style: TextStyle(fontSize: 13),
+              style: TextStyle(fontSize: 12, color: Colors.white),
               decoration: MyDecorationHelper.inputDecorator(label: 'Category'),
               onChanged: (s) => tfCategory.value = s ?? '',
             ).wh(250, 33).pOnly(bottom: 16),
           ),
           TextField(
             controller: tfAmount,
-            decoration: MyDecorationHelper.inputDecorator(
-              hint: '10.000',
-              prefixIcon: Text('Rp.  ', style: TextStyle(color: Colors.white, fontSize: 13)).pSymmetric(v: 8).pOnly(left: 8),
-              label: 'Amount',
-            ),
+            decoration: MyDecorationHelper.inputDecorator(hint: '10.000', label: 'Amount'),
             style: TextStyle(fontSize: 13),
             inputFormatters: [
-              MoneyInputFormatter(),
+              CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
               LengthLimitingTextInputFormatter(13),
             ],
             keyboardType: TextInputType.number,
@@ -322,8 +334,8 @@ class HomeController extends GetxController with StateMixin {
                   label: 'Delete',
                   labelSize: 11,
                   isLabelBold: false,
-                  labelColor: Vx.red400,
-                  borderColor: Vx.red400,
+                  labelColor: Vx.orange300,
+                  borderColor: Vx.orange300,
                   radius: 4,
                   onPressed: () async {
                     await repo.deleteExpense(expense.id!);
@@ -358,13 +370,12 @@ class HomeController extends GetxController with StateMixin {
     if (tfNote.isEmptyOrNull) return;
     if (tfCategory.isEmptyOrNull) return;
     if (tfAmount.isEmptyOrNull) return;
-    if (tfAmount.contains(RegExp(r'[A-Za-z]+'))) return;
 
     final entity = ExpenseEntity(
-      id: expense != null ? expense.id : ExRandom.numeric(8).toInt(),
+      id: expense != null ? expense.id : UuidV1().generate(),
       createdAt: DateTime.now().toStringEx(),
       date: tfDate.isNotEmptyAndNotNull ? tfDate : focusedDay.value.toStringEx(format: 'yyyy-MM-dd'),
-      amount: tfAmount.replaceAll(' ', '').toInt(),
+      amount: tfAmount.moneyUnformat(),
       categoryName: tfCategory,
       note: tfNote,
     );

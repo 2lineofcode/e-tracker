@@ -30,6 +30,7 @@ class SettingsView extends GetView<SettingsController> {
       8.heightBox,
       Obx(
         () => ListView.builder(
+          physics: NeverScrollableScrollPhysics(),
           itemCount: controller.menuList.length,
           itemBuilder: (context, index) {
             final item = controller.menuList[index];

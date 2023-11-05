@@ -1,39 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
-import 'const.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  /// supabase
-  await Supabase.initialize(url: SUPABASE_URL, anonKey: SUPABASE_ANON_KEY);
+  /// env
+  await dotenv.load();
 
-  /// winman
-  await windowManager.ensureInitialized();
-  WindowOptions windowOptions = WindowOptions(
-    size: Size(655, 700),
-    minimumSize: Size(655, 700),
-    center: true,
-    backgroundColor: Colors.transparent,
-    skipTaskbar: false,
-    titleBarStyle: TitleBarStyle.hidden,
-  );
-  windowManager.waitUntilReadyToShow(windowOptions, () async {
-    await windowManager.show();
-    await windowManager.focus();
-  });
+  /// supabase
+  await Supabase.initialize(url: dotenv.get('SUPABASE_URL'), anonKey: dotenv.get('SUPABASE_ANON_KEY'));
+
+  /// desktop only
+  if (PlatformUtil.isDesktop()) {
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = WindowOptions(
+      size: Size(655, 700),
+      minimumSize: Size(655, 700),
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+      titleBarStyle: TitleBarStyle.hidden,
+    );
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
 
   runApp(
     GetMaterialApp(
-      title: 'Application',
+      title: dotenv.get('APP_NAME'),
       initialRoute: AppPages.INITIAL,
       theme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
+      scrollBehavior: PlatformUtil.isDesktop() ? NoThumbScrollBehavior() : null,
       getPages: AppPages.routes,
     ),
   );
