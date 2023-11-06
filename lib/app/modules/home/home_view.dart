@@ -103,11 +103,11 @@ class HomeView extends GetView<HomeController> {
           ).pOnly(bottom: 8),
         ),
 
+        /// category
         Container(
           decoration: BoxDecoration(color: Vx.neutral700),
           child: VStack(
             [
-              /// category
               Obx(
                 () => ' 📦 CATEGORY (${controller.categoryList.length})'.text.bold.make().onTap(() => controller.getCategory()).pSymmetric(h: 8, v: 16),
               ),
@@ -136,7 +136,6 @@ class HomeView extends GetView<HomeController> {
                   },
                 ).expand(),
               ),
-
               TextField(
                 controller: controller.tfCategory,
                 decoration: MyDecorationHelper.inputDecorator(hint: 'Add Category'),
@@ -155,13 +154,14 @@ class HomeView extends GetView<HomeController> {
       (state) => Obx(
         () => VStack(
           [
+            /// header
             Obx(
               () {
                 if (controller.isSearchMode.isFalse) {
                   return HStack([
                     Container(
                       color: Colors.blue,
-                      child: '${controller.focusedDay.value.toStringEx(format: 'EEEE')}'.text.size(11).bold.make().pSymmetric(h: 4, v: 2),
+                      child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.make().pSymmetric(h: 4, v: 2),
                     ).cornerRadius(4).pOnly(right: 8),
                     '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(11).bold.make(),
                     Spacer(),
@@ -185,6 +185,8 @@ class HomeView extends GetView<HomeController> {
                 }
               },
             ).pSymmetric(h: 12).pOnly(top: 12),
+
+            /// item
             ListView.builder(
               itemCount: controller.expenseList.length,
               itemBuilder: (context, index) {
@@ -210,6 +212,8 @@ class HomeView extends GetView<HomeController> {
                 ).pSymmetric(h: 8, v: 4).onTap(() => controller.onShowDialogExpense(expense: item));
               },
             ).pSymmetric(v: 8).expand(),
+
+            /// sum
             HStack([
               'Total:'.text.bold.make(),
               Spacer(),

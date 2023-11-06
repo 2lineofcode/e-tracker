@@ -39,14 +39,14 @@ class HomeRepository {
   }
 
   Future<List<ExpenseEntity>> getExpense(String date) async {
-    final response = await db.from('expense').select().eq('date', date).withConverter<List<ExpenseEntity>>((data) {
+    final response = await db.from('expense').select().eq('date', date).order('amount').withConverter<List<ExpenseEntity>>((data) {
       return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
     return response;
   }
 
   Future<List<ExpenseEntity>> findExpense(String name) async {
-    final response = await db.from('expense').select().ilike('note', '%$name%').withConverter<List<ExpenseEntity>>((data) {
+    final response = await db.from('expense').select().ilike('note', '%$name%').order('date').withConverter<List<ExpenseEntity>>((data) {
       return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
     return response;

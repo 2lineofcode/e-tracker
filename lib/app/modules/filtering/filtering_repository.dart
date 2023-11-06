@@ -4,7 +4,10 @@ import '../../models/expense_entity.dart';
 
 class FilteringRepository {
   Future<List<String>> getOrderList() async {
-    return <String>['note', 'amount'];
+    return <String>[
+      'amount',
+      'note',
+    ];
   }
 
   Future<List<CategoryEntity>> getCategory() async {

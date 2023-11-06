@@ -8,13 +8,12 @@ const IMPORT_EXPORT = 'Import/Export';
 
 class SettingsRepository {
   Future<List<String>> getMenuList() async {
-    final menus = <String>[];
-    menus.add(AUTO_COMPLETE);
-    menus.add(APP_CONFIG);
-    menus.add(REPEAT_SETTING);
-    menus.add(IMPORT_EXPORT);
-
-    return menus;
+    return [
+      AUTO_COMPLETE,
+      APP_CONFIG,
+      REPEAT_SETTING,
+      IMPORT_EXPORT,
+    ];
   }
 
   Future<List<AutocompleteNoteEntity>> getAutocompleteNote() async {
