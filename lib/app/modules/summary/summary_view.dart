@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
+import '../widgets/widget_shimmer_summary.dart';
 import '../widgets/widgets.dart';
 import 'summary_controller.dart';
 
@@ -55,7 +56,7 @@ class SummaryView extends GetView<SummaryController> {
       /// month list
       Obx(
         () => ListView.separated(
-          physics: NeverScrollableScrollPhysics(),
+          physics: ClampingScrollPhysics(),
           itemCount: controller.monthList.length,
           separatorBuilder: (context, index) => 12.heightBox,
           itemBuilder: (context, index) {
@@ -70,13 +71,11 @@ class SummaryView extends GetView<SummaryController> {
                 child: HStack(
                   [
                     '$item'.text.size(11).make().pOnly(right: 8),
-
-                    /// TODO: optimize this code
                     Obx(
-                      () => controller.countByMonthList.length >= 12 && controller.countByMonthList[index] != 0
+                      () => controller.countByMonth.length >= 12 && controller.countByMonth[index] != 0
                           ? Container(
                               color: Colors.white,
-                              child: '${controller.countByMonthList[index].moneyFormatCompact()}'.text.black.size(9).minFontSize(9).bold.make().pSymmetric(h: 2, v: 1),
+                              child: '${controller.countByMonth[index].moneyFormatCompact()}'.text.black.size(9).minFontSize(9).bold.make().pSymmetric(h: 2, v: 1),
                             ).cornerRadius(4)
                           : 0.heightBox,
                     ),
@@ -105,14 +104,27 @@ class SummaryView extends GetView<SummaryController> {
     return controller.obx(
       (state) => VStack(
         [
-          /// total ~
+          /// summaries ~
           Container(
             decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
             child: HStack(
               [
                 VStack([
-                  'Total Expenses (${controller.monthSelected.value}):'.text.size(11).make().pOnly(bottom: 4),
-                  Obx(() => '${MoneyHelper.toRupiah(controller.count1Month.value)}'.text.bold.size(16).make()),
+                  /// col1
+                  HStack([
+                    'Total Expenses'.text.size(11).make().pOnly(right: 8),
+                    Container(
+                      color: Colors.blue,
+                      child: '${controller.monthSelected.value}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
+                    ).cornerRadius(4),
+                  ]).pOnly(bottom: 4),
+
+                  /// col2
+                  HStack([
+                    Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'.text.bold.size(16).make()),
+                    // ' / '.text.bold.size(16).make(),
+                    // Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'.text.bold.size(16).make()),
+                  ]),
                 ]),
                 Spacer(),
               ],
@@ -180,6 +192,7 @@ class SummaryView extends GetView<SummaryController> {
           ).expand(),
         ],
       ).p12(),
+      onLoading: MyShimmerSummary(),
     );
   }
 
@@ -187,7 +200,7 @@ class SummaryView extends GetView<SummaryController> {
     return HStack([
       'Expenditure in ${controller.yearSelected}:'.text.size(12).make(),
       Spacer(),
-      Obx(() => '${MoneyHelper.toRupiah(controller.count1Year.value)}'.text.size(12).red400.make()),
+      Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.size(12).red400.make()),
     ]).p12();
   }
 }

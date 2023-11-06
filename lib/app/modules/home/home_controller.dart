@@ -71,7 +71,6 @@ class HomeController extends GetxController with StateMixin {
     focusedDay.value = DateTime.now();
     await getExpense();
     await _onCalenderRefreshEvent();
-    // Get.forceAppUpdate();
   }
 
   Future<void> onCalenderGoPrevMonth() async {

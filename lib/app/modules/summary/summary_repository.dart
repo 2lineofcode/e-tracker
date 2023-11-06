@@ -9,7 +9,7 @@ class SummaryRepository {
     return response;
   }
 
-  Future<int> getCount1Month(String date) async {
+  Future<int> getCountOnly1Month(String date) async {
     final response = await db.from('expense').select('amount').like('date', '%$date%');
     num x = 0;
     for (var element in (response as List)) {
@@ -18,7 +18,7 @@ class SummaryRepository {
     return x.toInt();
   }
 
-  Future<int> getCount1Year(String date) async {
+  Future<int> getCountOnly1Year(String date) async {
     final response = await db.from('expense').select('amount').like('date', '%$date%');
     num x = 0;
     for (var element in (response as List)) {
