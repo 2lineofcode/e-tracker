@@ -74,11 +74,11 @@ class HomeController extends GetxController with StateMixin {
   }
 
   Future<void> onCalenderGoPrevMonth() async {
-    calenderPageController.previousPage(duration: 300.milliseconds, curve: Curves.easeIn);
+    await calenderPageController.previousPage(duration: 300.milliseconds, curve: Curves.easeIn);
   }
 
   Future<void> onCalenderGoNextMonth() async {
-    calenderPageController.nextPage(duration: 300.milliseconds, curve: Curves.easeIn);
+    await calenderPageController.nextPage(duration: 300.milliseconds, curve: Curves.easeIn);
   }
 
   List<String> onCalenderLoadEvent(DateTime day) {
@@ -109,7 +109,7 @@ class HomeController extends GetxController with StateMixin {
       events.addAll(groupedData);
     });
 
-    Get.forceAppUpdate();
+    await Get.forceAppUpdate();
   }
 
   /// category

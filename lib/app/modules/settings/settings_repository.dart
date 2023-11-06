@@ -16,6 +16,9 @@ class SettingsRepository {
     ];
   }
 
+  // ------------------------------------------------------------------------
+  // autocomplete
+  // ------------------------------------------------------------------------
   Future<List<AutocompleteNoteEntity>> getAutocompleteNote() async {
     final response = await db.from('autocomplete_note').select().order('note', ascending: true).withConverter<List<AutocompleteNoteEntity>>((data) {
       return (data as List).map((e) => AutocompleteNoteEntity.fromJson(e)).toList();
@@ -23,8 +26,8 @@ class SettingsRepository {
     return response;
   }
 
-  Future<void> addAutocompleteNote(AutocompleteNoteEntity entity) async {
-    final response = await db.from('autocomplete_note').insert(entity.toJson());
+  Future<void> addAutocompleteNote(String autocompleteNote) async {
+    final response = await db.from('autocomplete_note').upsert({'note': autocompleteNote});
     return response;
   }
 

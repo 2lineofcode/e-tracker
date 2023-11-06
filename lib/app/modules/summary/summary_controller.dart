@@ -40,7 +40,7 @@ class SummaryController extends GetxController with StateMixin {
     change(0, status: RxStatus.loading());
     monthSelected.value = month;
     isShowAllYear.value = false;
-    getCountOnly1Month(year: yearSelected.value, month: month);
+    await getCountOnly1Month(year: yearSelected.value, month: month);
 
     ///
     countByCategory.clear();

@@ -77,15 +77,8 @@ class HomeRepository {
   }
 
   // ------------------------------------------------------------------------
-  // AutocompleteNote
+  // autocomplete
   // ------------------------------------------------------------------------
-  Future<List<String>> getAutocompleteNote() async {
-    final response = await db.from('autocomplete_note').select().withConverter<List<String>>((data) {
-      return (data as List).map((e) => e['note'].toString()).toList();
-    });
-    return response;
-  }
-
   Future<List<String>> findAutocompleteNote(String note) async {
     final response = await db.from('autocomplete_note').select().ilike('note', '%$note%').withConverter<List<String>>((data) {
       return (data as List).map((e) => e['note'].toString()).toList();

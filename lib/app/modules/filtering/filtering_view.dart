@@ -85,7 +85,7 @@ class FilteringView extends GetView<FilteringController> {
                     () async {
                       final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
                       if (date != null) controller.startDate.value = '${date.toStringEx(format: 'yyyy-MM')}-01';
-                      controller.onCategoryChange(controller.categorySelected.value);
+                      await controller.onCategoryChange(controller.categorySelected.value);
                     },
                   ),
                 ),
@@ -98,7 +98,7 @@ class FilteringView extends GetView<FilteringController> {
                     () async {
                       final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
                       if (date != null) controller.endDate.value = '${date.toStringEx(format: 'yyyy-MM')}-31';
-                      controller.onCategoryChange(controller.categorySelected.value);
+                      await controller.onCategoryChange(controller.categorySelected.value);
                     },
                   ),
                 ),

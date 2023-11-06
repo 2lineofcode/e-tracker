@@ -1,5 +1,4 @@
-import 'package:ex/ex.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
 import '../../models/autocomplete_note_entity.dart';
@@ -32,8 +31,7 @@ class SettingsController extends GetxController with StateMixin {
   Future<void> onAddAutocompleteNote(String note) async {
     if (note.isEmpty) return;
     if (note.isBlank!) return;
-    final entity = AutocompleteNoteEntity(note: note, createdAt: DateTime.now().toStringEx());
-    await repo.addAutocompleteNote(entity);
+    await repo.addAutocompleteNote(note);
     tfAutocompleteNote.clear();
     autocompleteNote.value = await repo.getAutocompleteNote();
     change(0, status: RxStatus.success());
