@@ -70,7 +70,7 @@ class MyLayout extends StatelessWidget {
       width: 250,
       height: double.infinity,
       child: VStack([
-        PlatformUtil.isDesktop() && Platform.isIOS ? 32.heightBox : 8.heightBox,
+        PlatformUtil.isDesktop() && Platform.isMacOS ? 32.heightBox : 8.heightBox,
         sideMenuContent,
       ]),
     );

@@ -104,7 +104,6 @@ class HomeView extends GetView<HomeController> {
         ),
 
         Container(
-          // color: Vx.neutral900,
           decoration: BoxDecoration(color: Vx.neutral700),
           child: VStack(
             [
@@ -121,7 +120,14 @@ class HomeView extends GetView<HomeController> {
                       title: HStack(
                         [
                           Icon(Icons.circle_outlined, color: HexColor.fromHex(item.color ?? '#FFFFFF'), size: 12).pOnly(right: 8),
-                          '${item.name}'.text.size(11).make().expand(),
+                          '${item.name}'.text.size(11).make().pOnly(right: 8),
+                          if (item.maxBudget != null) ...[
+                            Container(
+                              color: Vx.neutral800,
+                              child: '${item.maxBudget!.moneyFormatCompact()}'.text.size(10).minFontSize(10).make().pSymmetric(h: 4, v: 2),
+                            ).cornerRadius(4).pOnly(top: 2),
+                          ],
+                          Spacer(),
                           if (item.maxBudget == null) Icon(Icons.edit, size: 16, color: Vx.red400),
                         ],
                       ),
@@ -153,7 +159,11 @@ class HomeView extends GetView<HomeController> {
               () {
                 if (controller.isSearchMode.isFalse) {
                   return HStack([
-                    '${controller.focusedDay.value.toStringEx(format: 'E, dd MMM y')}'.text.size(11).bold.make(),
+                    Container(
+                      color: Colors.blue,
+                      child: '${controller.focusedDay.value.toStringEx(format: 'EEEE')}'.text.size(11).bold.make().pSymmetric(h: 4, v: 2),
+                    ).cornerRadius(4).pOnly(right: 8),
+                    '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(11).bold.make(),
                     Spacer(),
                     Container(
                       decoration: ExDecorator.box(
@@ -176,7 +186,6 @@ class HomeView extends GetView<HomeController> {
               },
             ).pSymmetric(h: 12).pOnly(top: 12),
             ListView.builder(
-              physics: ClampingScrollPhysics(),
               itemCount: controller.expenseList.length,
               itemBuilder: (context, index) {
                 final item = controller.expenseList[index];
@@ -202,12 +211,14 @@ class HomeView extends GetView<HomeController> {
               },
             ).pSymmetric(v: 8).expand(),
             HStack([
+              'Total:'.text.bold.make(),
               Spacer(),
-              'Total: ${MoneyHelper.toRupiah(controller.countOfDay.value)}'.text.bold.make(),
-            ]).p12(),
+              '${MoneyHelper.toRupiah(controller.countOfDay.value)}'.text.bold.make(),
+            ]).p12().color(MoneyHelper.getExpenseFlagColorDark(controller.countOfDay.value)),
           ],
         ),
       ),
+      onLoading: MyShimmerHome(),
       onEmpty: ExUiErrorOrEmpty(
         illustration: Icon(CupertinoIcons.list_bullet),
         title: 'No Expense'.text.bold.align(TextAlign.center).makeCentered(),

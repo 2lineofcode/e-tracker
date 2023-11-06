@@ -66,7 +66,17 @@ class SummaryView extends GetView<SummaryController> {
                 fillColor: item == controller.monthSelected.value ? Colors.blue : Colors.transparent,
                 borderColor: Colors.transparent,
               ),
-              child: '$item'.text.size(11).make().p8(),
+              child: HStack(
+                [
+                  '$item'.text.size(11).make().pOnly(right: 8),
+                  if (controller.countByMonthList.isNotEmpty && controller.countByMonthList[index] != 0) ...[
+                    Container(
+                      color: Colors.white,
+                      child: '${controller.countByMonthList[index].moneyFormatCompact()}'.text.black.size(9).minFontSize(9).bold.make().pSymmetric(h: 2, v: 1),
+                    ).cornerRadius(4),
+                  ],
+                ],
+              ).p8(),
             ).onTap(() {
               controller.onMonthChange(item);
             });
@@ -95,7 +105,7 @@ class SummaryView extends GetView<SummaryController> {
             child: HStack(
               [
                 VStack([
-                  'Total Pengeluaran (${controller.monthSelected.value}):'.text.size(11).make().pOnly(bottom: 4),
+                  'Total Expenses (${controller.monthSelected.value}):'.text.size(11).make().pOnly(bottom: 4),
                   Obx(() => '${MoneyHelper.toRupiah(controller.count1Month.value)}'.text.bold.size(16).make()),
                 ]),
                 Spacer(),
@@ -169,7 +179,7 @@ class SummaryView extends GetView<SummaryController> {
 
   Widget footerContent() {
     return HStack([
-      'Pengeluaran Tahun ${controller.yearSelected}:'.text.size(12).make(),
+      'Expenditure in ${controller.yearSelected}:'.text.size(12).make(),
       Spacer(),
       Obx(() => '${MoneyHelper.toRupiah(controller.count1Year.value)}'.text.size(12).red400.make()),
     ]).p12();

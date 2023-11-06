@@ -26,8 +26,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
           },
           indexedItemBuilder: (context, item, index) {
             return HStack([
-              '${item.note}'.text.make().pSymmetric(h: 8),
-              Spacer(),
+              '${item.note}'.text.make().pSymmetric(h: 8).expand(),
               IconButton(
                 icon: Icon(Icons.delete, size: 16),
                 onPressed: () => controller.onDeleteAutocompleteNote(item),

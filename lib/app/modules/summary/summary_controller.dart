@@ -22,6 +22,8 @@ class SummaryController extends GetxController with StateMixin {
   final count1Year = 0.obs;
   final countByCategory = <dynamic>[].obs;
 
+  final countByMonthList = <int>[].obs;
+
   // flag
   final isShowAllYear = false.obs;
 
@@ -31,6 +33,14 @@ class SummaryController extends GetxController with StateMixin {
 
     await onMonthChange(monthSelected.value);
     await getCount1Year(year: yearSelected.value);
+
+    for (var i = 0; i < 12; i++) {
+      var x = i + 1;
+      var m = x.toString().reformatDate(from: 'M', to: 'MM');
+      var sum = await repo.getCount1Month('${yearSelected.value}-$m');
+      countByMonthList.add(sum);
+    }
+    Get.forceAppUpdate();
     super.onInit();
   }
 

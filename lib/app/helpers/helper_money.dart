@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:ex/ex.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 extension StringToMoneyExt on String {
@@ -74,18 +75,29 @@ mixin MoneyHelper {
     } else if (amount < 100000) {
       return Vx.orange300;
     } else {
-      return Vx.red500;
+      return Vx.red400;
+    }
+  }
+
+  static Color getExpenseFlagColorDark(num amount) {
+    if (amount == 0) return Vx.white;
+    if (amount < 50000) {
+      return Vx.green600;
+    } else if (amount < 100000) {
+      return Vx.orange600;
+    } else {
+      return Vx.red600;
     }
   }
 
   static String getExpenseFlagText(num amount) {
     if (amount == 0) return '';
     if (amount < 50000) {
-      return 'Hemat';
+      return 'Eco';
     } else if (amount < 100000) {
-      return 'Stardart';
+      return 'Average';
     } else {
-      return 'Boros';
+      return 'Spender';
     }
   }
 }
