@@ -28,7 +28,7 @@ Future<void> main() async {
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
       titleBarStyle: Platform.isMacOS ? TitleBarStyle.hidden : TitleBarStyle.normal,
-      alwaysOnTop: true,
+      alwaysOnTop: Platform.isMacOS ? true : false,
     );
     windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
