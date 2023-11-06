@@ -38,18 +38,21 @@ class FilteringView extends GetView<FilteringController> {
             separatorBuilder: (context, index) => 8.heightBox,
             itemBuilder: (context, index) {
               final item = controller.categoryList[index];
-              return Container(
-                decoration: ExDecorator.box(
-                  fillColor: item.name == controller.categorySelected.value ? Colors.blue : Colors.transparent,
-                  borderColor: Colors.transparent,
+              return Obx(
+                () => InkWell(
+                  onTap: () => controller.onCategoryChange(item.name!),
+                  child: Container(
+                    decoration: ExDecorator.box(
+                      fillColor: item.name == controller.categorySelected.value ? Colors.blue : Colors.transparent,
+                      borderColor: Colors.transparent,
+                    ),
+                    child: HStack([
+                      Icon(Icons.circle_outlined, color: HexColor.fromHex(item.color ?? '#FFFFFF'), size: 12).pOnly(right: 8),
+                      '${item.name}'.text.size(11).make().expand(),
+                    ]).p8(),
+                  ).pSymmetric(h: 8),
                 ),
-                child: HStack(
-                  [
-                    Icon(Icons.circle_outlined, color: HexColor.fromHex(item.color ?? '#FFFFFF'), size: 12).pOnly(right: 8),
-                    '${item.name}'.text.size(11).make().expand(),
-                  ],
-                ).p8(),
-              ).pSymmetric(h: 8).onInkTap(() => controller.onCategoryChange(item.name!));
+              );
             },
           ).expand(),
         ),
@@ -66,10 +69,12 @@ class FilteringView extends GetView<FilteringController> {
           child: VStack(
             [
               'Setting'.text.make().pOnly(bottom: 12),
-              HStack([
-                'Filter: '.text.size(11).minFontSize(11).neutral400.make(),
-                '${controller.categorySelected.value}'.text.size(11).minFontSize(11).make(),
-              ]),
+              Obx(
+                () => HStack([
+                  'Filter: '.text.size(11).minFontSize(11).neutral400.make(),
+                  '${controller.categorySelected.value}'.text.size(11).minFontSize(11).make(),
+                ]),
+              ),
               8.heightBox,
               HStack([
                 'Period: '.text.size(11).minFontSize(11).neutral400.make(),
@@ -138,7 +143,6 @@ class FilteringView extends GetView<FilteringController> {
             groupBy: (element) => element.date!,
             useStickyGroupSeparators: true,
             floatingHeader: true,
-            
             groupHeaderBuilder: (element) {
               return Container(
                 width: double.infinity,

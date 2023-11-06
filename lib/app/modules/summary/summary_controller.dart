@@ -40,7 +40,6 @@ class SummaryController extends GetxController with StateMixin {
       var sum = await repo.getCount1Month('${yearSelected.value}-$m');
       countByMonthList.add(sum);
     }
-    Get.forceAppUpdate();
     super.onInit();
   }
 
@@ -49,7 +48,6 @@ class SummaryController extends GetxController with StateMixin {
     monthSelected.value = month;
     isShowAllYear.value = false;
     getCount1Month(year: yearSelected.value, month: month);
-    Get.forceAppUpdate();
 
     ///
     countByCategory.clear();
@@ -68,7 +66,6 @@ class SummaryController extends GetxController with StateMixin {
     count1Month.value = await repo.getCount1Year('${yearSelected.value}');
     monthSelected.value = '${yearSelected.value}';
     isShowAllYear.value = true;
-    Get.forceAppUpdate();
 
     ///
     countByCategory.clear();

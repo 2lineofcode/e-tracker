@@ -27,7 +27,6 @@ class SettingsController extends GetxController with StateMixin {
 
   void onMenuChange(String menu) {
     menuSelected.value = menu;
-    Get.forceAppUpdate();
   }
 
   Future<void> onAddAutocompleteNote(String note) async {

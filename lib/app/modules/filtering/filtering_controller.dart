@@ -46,7 +46,6 @@ class FilteringController extends GetxController with StateMixin {
   Future<void> onCategoryChange(String categoryName) async {
     categorySelected.value = categoryName;
     await findExpense(categorySelected.value);
-    Get.forceAppUpdate();
   }
 
   /// expense

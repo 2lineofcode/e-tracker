@@ -61,25 +61,31 @@ class SummaryView extends GetView<SummaryController> {
           itemBuilder: (context, index) {
             final item = controller.monthList[index];
 
-            return Container(
-              decoration: ExDecorator.box(
-                fillColor: item == controller.monthSelected.value ? Colors.blue : Colors.transparent,
-                borderColor: Colors.transparent,
-              ),
-              child: HStack(
-                [
-                  '$item'.text.size(11).make().pOnly(right: 8),
-                  if (controller.countByMonthList.isNotEmpty && controller.countByMonthList[index] != 0) ...[
-                    Container(
-                      color: Colors.white,
-                      child: '${controller.countByMonthList[index].moneyFormatCompact()}'.text.black.size(9).minFontSize(9).bold.make().pSymmetric(h: 2, v: 1),
-                    ).cornerRadius(4),
+            return Obx(
+              () => Container(
+                decoration: ExDecorator.box(
+                  fillColor: item == controller.monthSelected.value ? Colors.blue : Colors.transparent,
+                  borderColor: Colors.transparent,
+                ),
+                child: HStack(
+                  [
+                    '$item'.text.size(11).make().pOnly(right: 8),
+
+                    /// TODO: optimize this code
+                    Obx(
+                      () => controller.countByMonthList.length >= 12 && controller.countByMonthList[index] != 0
+                          ? Container(
+                              color: Colors.white,
+                              child: '${controller.countByMonthList[index].moneyFormatCompact()}'.text.black.size(9).minFontSize(9).bold.make().pSymmetric(h: 2, v: 1),
+                            ).cornerRadius(4)
+                          : 0.heightBox,
+                    ),
                   ],
-                ],
-              ).p8(),
-            ).onTap(() {
-              controller.onMonthChange(item);
-            });
+                ).p8(),
+              ).onTap(() {
+                controller.onMonthChange(item);
+              }),
+            );
           },
         ).expand(),
       ),

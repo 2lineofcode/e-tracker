@@ -19,7 +19,7 @@ class SettingsView extends GetView<SettingsController> {
       body: MyLayout(
         appBarTitle: 'Settings'.text.size(11).bold.make(),
         sideMenuContent: sideMenuContent(),
-        bodyContent: bodyContent().p8(),
+        bodyContent: Obx(() => bodyContent().p8()),
         footerContent: Container(),
       ),
     );
@@ -27,20 +27,25 @@ class SettingsView extends GetView<SettingsController> {
 
   Widget sideMenuContent() {
     return VStack([
-      8.heightBox,
+      16.heightBox,
       Obx(
         () => ListView.builder(
           physics: NeverScrollableScrollPhysics(),
           itemCount: controller.menuList.length,
           itemBuilder: (context, index) {
             final item = controller.menuList[index];
-            return Container(
-              decoration: ExDecorator.box(
-                fillColor: item == controller.menuSelected.value ? Colors.blue : Colors.transparent,
-                borderColor: Colors.transparent,
+            return Obx(
+              () => InkWell(
+                onTap: () => controller.onMenuChange(item),
+                child: Container(
+                  decoration: ExDecorator.box(
+                    fillColor: item == controller.menuSelected.value ? Colors.blue : Colors.transparent,
+                    borderColor: Colors.transparent,
+                  ),
+                  child: '$item'.text.size(11).make().p8(),
+                ).pSymmetric(h: 10).pOnly(bottom: 8),
               ),
-              child: '$item'.text.size(11).make().p8(),
-            ).onTap(() => controller.onMenuChange(item)).pSymmetric(h: 10).pOnly(bottom: 8);
+            );
           },
         ).expand(),
       ),
