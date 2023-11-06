@@ -4,29 +4,28 @@ import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../helpers/helper_misc.dart';
+
 class MyLayout extends StatelessWidget {
   const MyLayout({
     super.key,
-    //
     required this.appBarTitle,
     this.appBarLeading,
     this.appBarAction,
-    //
     required this.sideMenuContent,
     this.sideMenuWidht,
     this.sideMenuColor,
-    //
     required this.bodyContent,
-    //
     required this.footerContent,
     this.footerColor,
   });
 
+  // appBar
   final Widget appBarTitle;
   final Widget? appBarLeading;
   final Widget? appBarAction;
 
-  // sidemenu
+  // sideMenu
   final Widget sideMenuContent;
   final double? sideMenuWidht;
   final Color? sideMenuColor;
@@ -71,7 +70,7 @@ class MyLayout extends StatelessWidget {
       width: 250,
       height: double.infinity,
       child: VStack([
-        Platform.isMacOS ? 32.heightBox : 8.heightBox,
+        PlatformUtil.isDesktop() && Platform.isIOS ? 32.heightBox : 8.heightBox,
         sideMenuContent,
       ]),
     );

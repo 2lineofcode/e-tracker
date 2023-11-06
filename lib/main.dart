@@ -1,14 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
 import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
-
-import 'dart:io';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +41,9 @@ Future<void> main() async {
       title: dotenv.get('APP_NAME'),
       initialRoute: AppPages.INITIAL,
       theme: ThemeData.dark(),
+      // .copyWith(
+      //   textTheme: GoogleFonts.latoTextTheme(TextTheme()),
+      // ),
       debugShowCheckedModeBanner: false,
       scrollBehavior: PlatformUtil.isDesktop() ? NoThumbScrollBehavior() : null,
       getPages: AppPages.routes,
