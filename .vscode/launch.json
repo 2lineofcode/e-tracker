@@ -10,13 +10,13 @@
             "type": "dart"
         },
         {
-            "name": "(profile mode)",
+            "name": "profile mode",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile"
         },
         {
-            "name": "(release mode)",
+            "name": "release mode",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release"

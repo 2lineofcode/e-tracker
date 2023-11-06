@@ -17,7 +17,12 @@ class SummaryController extends GetxController with StateMixin {
   // category
   final category = <CategoryEntity>[].obs;
 
-  // count
+  // count header
+  final countBudget = 0.obs;
+  final countRemainingBudget = 0.obs;
+  final countPercentage = 0.0.obs;
+
+  // count table
   final countOnly1Month = 0.obs;
   final countOnly1Year = 0.obs;
   final countByCategory = <dynamic>[].obs;
@@ -79,6 +84,13 @@ class SummaryController extends GetxController with StateMixin {
     await getCountAllMonth(yearSelected.value);
   }
 
+  Future<void> onYearNow() async {
+    yearSelected.value = DateTime.now().toStringEx(format: 'yyyy');
+    await onMonthChange(DateTime.now().toStringEx(format: 'MMMM'));
+    await getCountOnly1Year(yearSelected.value);
+    await getCountAllMonth(yearSelected.value);
+  }
+
   Future<void> onYearNext() async {
     yearSelected.value = (yearSelected.value.toInt()! + 1).toString();
     await onMonthChange('Januari');
@@ -88,11 +100,15 @@ class SummaryController extends GetxController with StateMixin {
 
   Future<void> getCategory() async {
     category.value = await repo.getCategory();
+    for (var e in category) countBudget.value += e.maxBudget ?? 0;
   }
 
   Future<void> getCountOnly1Month({String? year, String? month}) async {
     final monthReformat = month?.reformatDate(from: 'MMMM', to: 'MM');
     countOnly1Month.value = await repo.getCountOnly1Month('$year-$monthReformat');
+
+    countRemainingBudget.value = countBudget.value - countOnly1Month.value;
+    countPercentage.value = countOnly1Month.value / countBudget.value;
   }
 
   Future<void> getCountAllMonth(String year) async {

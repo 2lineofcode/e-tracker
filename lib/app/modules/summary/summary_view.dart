@@ -39,15 +39,31 @@ class SummaryView extends GetView<SummaryController> {
       /// year direction
       HStack(
         [
-          IconButton(
-            icon: Icon(Icons.chevron_left),
-            onPressed: () => controller.onYearPrev(),
+          Obx(() => '${controller.yearSelected}'.text.size(16).bold.make()).pSymmetric(h: 8),
+          InkWell(
+            onTap: () => controller.onShowAllYear(),
+            child: Obx(
+              () => Container(
+                decoration: ExDecorator.box(
+                  borderRadius: 90,
+                  fillColor: controller.isShowAllYear.isTrue ? Colors.blue : Colors.transparent,
+                  borderColor: controller.isShowAllYear.isTrue ? Colors.blue : Vx.neutral400,
+                ),
+                child: ' Show All '.text.size(10).minFontSize(10).make().pSymmetric(h: 4, v: 2),
+              ).pOnly(left: 4),
+            ),
           ),
           Spacer(),
-          Obx(() => '${controller.yearSelected}'.text.size(16).bold.make()),
-          Spacer(),
           IconButton(
-            icon: Icon(Icons.chevron_right),
+            icon: Icon(Icons.chevron_left, size: 18),
+            onPressed: () => controller.onYearPrev(),
+          ),
+          InkWell(
+            child: Icon(Icons.circle_outlined, size: 14).pSymmetric(h: 4),
+            onTap: () => controller.onYearNow(),
+          ),
+          IconButton(
+            icon: Icon(Icons.chevron_right, size: 18),
             onPressed: () => controller.onYearNext(),
           ),
         ],
@@ -88,15 +104,6 @@ class SummaryView extends GetView<SummaryController> {
           },
         ).expand(),
       ),
-
-      ExButtonOutline(
-        width: double.infinity,
-        label: 'Show All of ${controller.yearSelected.value}',
-        labelSize: 11,
-        labelColor: Colors.white,
-        height: 38,
-        onPressed: () => controller.onShowAllYear(),
-      ).centered().p8(),
     ]).p8().expand();
   }
 
@@ -106,27 +113,41 @@ class SummaryView extends GetView<SummaryController> {
         [
           /// summaries ~
           Container(
+            width: double.infinity,
             decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
-            child: HStack(
+            child: VStack(
               [
-                VStack([
-                  /// col1
-                  HStack([
-                    'Total Expenses'.text.size(11).make().pOnly(right: 8),
+                /// col1
+                HStack(
+                  [
+                    'Remaining Budget'.text.size(11).make().pOnly(right: 8),
                     Container(
                       color: Colors.blue,
                       child: '${controller.monthSelected.value}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
                     ).cornerRadius(4),
-                  ]).pOnly(bottom: 4),
+                    Spacer(),
+                    Obx(() => '${MoneyHelper.toRupiah(controller.countRemainingBudget.value)}'.text.bold.size(16).make()),
+                  ],
+                ),
 
-                  /// col2
-                  HStack([
-                    Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'.text.bold.size(16).make()),
-                    // ' / '.text.bold.size(16).make(),
-                    // Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'.text.bold.size(16).make()),
-                  ]),
-                ]),
-                Spacer(),
+                /// col2
+                MyPercentageBar(
+                  value: (controller.countPercentage.value * 100).toInt(),
+                  color1: Colors.blue,
+                  color2: Vx.neutral700,
+                  radius: 8,
+                ).pSymmetric(v: 12),
+
+                /// col3
+                HStack(
+                  [
+                    'Used: ${MoneyHelper.toPercentage(controller.countPercentage.value)}'.text.size(10).minFontSize(10).make().pOnly(left: 4),
+                    Spacer(),
+                    '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'.text.size(10).bold.blue400.minFontSize(10).make(),
+                    ' / '.text.size(10).minFontSize(10).make(),
+                    '${MoneyHelper.toRupiah(controller.countBudget.value)}'.text.size(10).minFontSize(10).make(),
+                  ],
+                ),
               ],
             ).p8(),
           ),
