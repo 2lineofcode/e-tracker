@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -69,7 +71,7 @@ class MyLayout extends StatelessWidget {
       width: 250,
       height: double.infinity,
       child: VStack([
-        32.heightBox,
+        Platform.isMacOS ? 32.heightBox : 8.heightBox,
         sideMenuContent,
       ]),
     );

@@ -8,6 +8,8 @@ import 'package:window_manager/window_manager.dart';
 import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
 
+import 'dart:io';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -26,7 +28,8 @@ Future<void> main() async {
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
-      titleBarStyle: TitleBarStyle.hidden,
+      titleBarStyle: Platform.isMacOS ? TitleBarStyle.hidden : TitleBarStyle.normal,
+      alwaysOnTop: true,
     );
     windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
