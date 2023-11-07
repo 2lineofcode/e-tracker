@@ -278,7 +278,6 @@ class HomeController extends GetxController with StateMixin {
             ).wh(250, 33).pOnly(bottom: 16),
           ],
 
-          /// field note: desktop only, (web has bug -_-)
           if (PlatformUtil.isDesktop()) ...[
             MyAutoComplete(
               controller: _tfNote,
@@ -308,6 +307,13 @@ class HomeController extends GetxController with StateMixin {
               autofocus: expense == null,
               decoration: MyDecorationHelper.inputDecorator(hint: 'Nasi Padang', label: 'Notes'),
               style: TextStyle(fontSize: 13),
+              onSubmitted: (value) async {
+                _tfNote.text = value;
+                await repo.findAutoCompleteFullObject(value).then((res) {
+                  _tfCategory.value = res[0].categoryName ?? '';
+                  _tfAmount.text = res[0].amount?.toInt()?.moneyFormat() ?? '';
+                });
+              },
             ).wh(250, 33).pOnly(bottom: 16),
           ],
 

@@ -16,7 +16,10 @@ Future<void> main() async {
   await dotenv.load();
 
   /// supabase
-  await Supabase.initialize(url: dotenv.get('SUPABASE_URL'), anonKey: dotenv.get('SUPABASE_ANON_KEY'));
+  await Supabase.initialize(
+    url: dotenv.get('SUPABASE_URL'),
+    anonKey: dotenv.get('SUPABASE_ANON_KEY'),
+  );
 
   /// desktop only
   if (PlatformUtil.isDesktop()) {

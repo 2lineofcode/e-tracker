@@ -10,6 +10,10 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  exclude:
+    - .github/**
+    - lib/app/models/**
+
   errors:
     todo: ignore
 
