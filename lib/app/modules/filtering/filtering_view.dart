@@ -30,7 +30,7 @@ class FilteringView extends GetView<FilteringController> {
   Widget sideMenuContent() {
     return VStack(
       [
-        if (GetPlatform.isMobile) 24.heightBox,
+        if (Get.context!.isMobile) 24.heightBox,
         Obx(() => ' 📦 CATEGORY (${controller.categoryList.length})'.text.bold.make().pSymmetric(h: 8, v: 8)),
         12.heightBox,
         Obx(

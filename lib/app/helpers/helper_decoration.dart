@@ -30,7 +30,7 @@ mixin MyDecorationHelper {
       prefixIconColor: Colors.white,
       icon: icon,
       labelText: label,
-      labelStyle: TextStyle(fontSize: 11.5, color: Vx.blue300),
+      labelStyle: TextStyle(fontSize: 12, color: Vx.white),
     );
   }
 }

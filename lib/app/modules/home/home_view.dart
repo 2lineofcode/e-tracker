@@ -30,10 +30,21 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget appBarTitle() {
-    if (!GetPlatform.isMobile) {
+    if (!Get.context!.isMobile) {
       return '${dotenv.get('APP_NAME')}'.text.size(11).bold.make();
     } else {
-      return 0.heightBox;
+      return TextField(
+        controller: controller.tfSearchExpense,
+        decoration: MyDecorationHelper.inputDecorator(hint: 'Search...'),
+        style: TextStyle(fontSize: 13),
+        onSubmitted: (s) {
+          if (s.isNotEmpty) {
+            controller.getExpense(find: s);
+          } else {
+            controller.getExpense();
+          }
+        },
+      ).wh(double.infinity, 30).pSymmetric(h: 8);
     }
   }
 
@@ -47,18 +58,20 @@ class HomeView extends GetView<HomeController> {
   Widget appBarAction() {
     return HStack(
       [
-        TextField(
-          controller: controller.tfSearchExpense,
-          decoration: MyDecorationHelper.inputDecorator(hint: 'Search...'),
-          style: TextStyle(fontSize: 13),
-          onSubmitted: (s) {
-            if (s.isNotEmpty) {
-              controller.getExpense(find: s);
-            } else {
-              controller.getExpense();
-            }
-          },
-        ).wh(150, 30).pSymmetric(h: 8),
+        if (!Get.context!.isMobile) ...[
+          TextField(
+            controller: controller.tfSearchExpense,
+            decoration: MyDecorationHelper.inputDecorator(hint: 'Search...'),
+            style: TextStyle(fontSize: 13),
+            onSubmitted: (s) {
+              if (s.isNotEmpty) {
+                controller.getExpense(find: s);
+              } else {
+                controller.getExpense();
+              }
+            },
+          ).wh(150, 30).pSymmetric(h: 8),
+        ],
         IconButton(
           icon: Icon(Icons.settings),
           onPressed: () => Get.toNamed(Routes.SETTINGS),
@@ -263,7 +276,7 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget floatingActionButton() {
-    if (GetPlatform.isMobile && controller.expenseList.isNotEmpty) {
+    if (Get.context!.isMobile && controller.expenseList.isNotEmpty) {
       return FloatingActionButton(
         backgroundColor: Vx.neutral600,
         child: Icon(Icons.add, color: Colors.white),

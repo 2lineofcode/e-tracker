@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:ex/ex.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
@@ -15,7 +16,7 @@ mixin PlatformUtil {
 }
 
 void closeDrawer() {
-  if (GetPlatform.isMobile) Get.back();
+  if (Get.context!.isMobile) Get.back();
 }
 
 // ------------------------------------------------------------------------

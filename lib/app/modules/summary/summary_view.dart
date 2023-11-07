@@ -3,8 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
+import '../home/home_controller.dart';
 import '../widgets/widget_shimmer_summary.dart';
 import '../widgets/widgets.dart';
 import 'summary_controller.dart';
@@ -131,7 +131,11 @@ class SummaryView extends GetView<SummaryController> {
                 /// col2
                 MyPercentageBar(
                   value: (controller.countPercentage.value * 100).toInt(),
-                  color1: controller.countRemainingBudget.value < 0 ? Colors.red : Colors.blue,
+                  color1: (controller.countPercentage.value * 100).toInt() < 50
+                      ? Vx.green300
+                      : (controller.countPercentage.value * 100).toInt() < 100
+                          ? Vx.orange300
+                          : Vx.red500,
                   color2: Vx.neutral700,
                   radius: 8,
                 ).pSymmetric(v: 12),
@@ -141,7 +145,19 @@ class SummaryView extends GetView<SummaryController> {
                   [
                     'Used: ${MoneyHelper.toPercentage(controller.countPercentage.value)}'.text.size(11).minFontSize(11).make().pOnly(left: 4),
                     Spacer(),
-                    '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'.text.size(11).bold.green300.minFontSize(11).make(),
+                    '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'
+                        .text
+                        .size(11)
+                        .bold
+                        .color(
+                          (controller.countPercentage.value * 100).toInt() < 50
+                              ? Vx.green300
+                              : (controller.countPercentage.value * 100).toInt() < 100
+                                  ? Vx.orange300
+                                  : Vx.red500,
+                        )
+                        .minFontSize(11)
+                        .make(),
                     ' / '.text.size(11).minFontSize(11).make(),
                     '${MoneyHelper.toRupiah(controller.countBudget.value)}'.text.size(11).minFontSize(11).make(),
                   ],
@@ -168,8 +184,12 @@ class SummaryView extends GetView<SummaryController> {
                         [
                           /// 1
                           VStack([
-                            '${item.name}'.text.size(10).color(HexColor.fromHex(item.color ?? '#ffffff')).ellipsis.maxLines(1).make().pOnly(bottom: 2),
-                            '${MoneyHelper.toRupiah(total)}'.text.size(11).bold.make(),
+                            '${item.name}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
+                            if (item.maxBudget != null && item.maxBudget! > 0) ...[
+                              '${MoneyHelper.toRupiah(item.maxBudget! - total)}'.text.size(11).bold.make(),
+                            ] else ...[
+                              'No Budget'.text.size(11).bold.make(),
+                            ],
                           ]).w(150).pOnly(right: 12),
 
                           /// 2
@@ -177,14 +197,29 @@ class SummaryView extends GetView<SummaryController> {
                             VStack([
                               MyPercentageBar(
                                 value: (total / item.maxBudget * 100).toString().toInt() ?? 0,
-                                color1: (total / item.maxBudget * 100).toString().toInt()! < 90 ? Colors.blue : Colors.red,
+                                color1: (total / item.maxBudget * 100).toString().toInt()! < 50
+                                    ? Vx.green300
+                                    : (total / item.maxBudget * 100).toString().toInt()! < 100
+                                        ? Vx.orange300
+                                        : Vx.red500,
                                 color2: Vx.neutral700,
                                 radius: 8,
                               ).pOnly(bottom: 4),
                               HStack([
                                 ' ${(total / item.maxBudget * 100).toString().toInt()}% '.text.size(11).minFontSize(11).make(),
                                 Spacer(),
-                                '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).green300.make(),
+                                '${MoneyHelper.toRupiah(total)}'
+                                    .text
+                                    .size(11)
+                                    .minFontSize(11)
+                                    .color(
+                                      (total / item.maxBudget * 100).toString().toInt()! < 50
+                                          ? Vx.green300
+                                          : (total / item.maxBudget * 100).toString().toInt()! < 100
+                                              ? Vx.orange300
+                                              : Vx.red300,
+                                    )
+                                    .make(),
                                 ' / '.text.size(11).minFontSize(11).make(),
                                 '${MoneyHelper.toRupiah(item.maxBudget)}'.text.size(11).minFontSize(11).make(),
                               ]),
@@ -193,11 +228,12 @@ class SummaryView extends GetView<SummaryController> {
                             VStack([
                               MyPercentageBar(value: 0, color1: Colors.red, color2: Vx.neutral700, radius: 8).pOnly(bottom: 4),
                               HStack([
-                                'No Budget'.text.size(11).minFontSize(11).make(),
+                                InkWell(
+                                  onTap: () => Get.find<HomeController>().onEditCategory(entity: item),
+                                  child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
+                                ),
                                 Spacer(),
-                                '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).green300.make(),
-                                ' / '.text.size(11).minFontSize(11).make(),
-                                '~'.text.size(11).minFontSize(11).make(),
+                                '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).blue300.make(),
                               ]),
                             ]).expand(),
                           ],
