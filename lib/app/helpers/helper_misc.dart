@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:get/get.dart';
 
 // ------------------------------------------------------------------------
 // Platform
@@ -11,6 +12,10 @@ mixin PlatformUtil {
   static bool isDesktop() {
     return !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
   }
+}
+
+void closeDrawer() {
+  if (GetPlatform.isMobile) Get.back();
 }
 
 // ------------------------------------------------------------------------
@@ -37,6 +42,5 @@ class NoThumbScrollBehavior extends ScrollBehavior {
         PointerDeviceKind.mouse,
         PointerDeviceKind.stylus,
         PointerDeviceKind.trackpad,
-        
       };
 }

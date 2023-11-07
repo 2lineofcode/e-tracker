@@ -24,13 +24,13 @@ class HomeView extends GetView<HomeController> {
         sideMenuContent: sideMenuContent(),
         bodyContent: bodyContent(),
         footerContent: footerContent(),
-        floatingActionButton: floatingActionButton(context),
+        floatingActionButton: floatingActionButton(),
       ),
     );
   }
 
   Widget appBarTitle() {
-    if (!Get.context!.isMobile) {
+    if (!GetPlatform.isMobile) {
       return '${dotenv.get('APP_NAME')}'.text.size(11).bold.make();
     } else {
       return 0.heightBox;
@@ -118,7 +118,7 @@ class HomeView extends GetView<HomeController> {
               ),
               Obx(
                 () => ListView.builder(
-                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
                   itemCount: controller.categoryList.length,
                   itemBuilder: (context, index) {
                     final item = controller.categoryList[index];
@@ -262,8 +262,8 @@ class HomeView extends GetView<HomeController> {
     ]).p12();
   }
 
-  Widget floatingActionButton(BuildContext context) {
-    if (context.isMobile && controller.expenseList.isNotEmpty) {
+  Widget floatingActionButton() {
+    if (GetPlatform.isMobile && controller.expenseList.isNotEmpty) {
       return FloatingActionButton(
         backgroundColor: Vx.neutral600,
         child: Icon(Icons.add, color: Colors.white),

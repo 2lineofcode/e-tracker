@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
+import '../../helpers/helper_misc.dart';
 import '../../models/autocomplete_entity.dart';
 import 'settings_repository.dart';
 
@@ -26,6 +27,7 @@ class SettingsController extends GetxController with StateMixin {
 
   void onMenuChange(String menu) {
     menuSelected.value = menu;
+    closeDrawer();
   }
 
   Future<void> onAddAutoComplete(String note) async {

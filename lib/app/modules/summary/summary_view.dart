@@ -69,6 +69,7 @@ class SummaryView extends GetView<SummaryController> {
       /// month list
       Obx(
         () => ListView.separated(
+          padding: EdgeInsets.zero,
           physics: ClampingScrollPhysics(),
           itemCount: controller.monthList.length,
           separatorBuilder: (context, index) => 12.heightBox,
@@ -140,7 +141,7 @@ class SummaryView extends GetView<SummaryController> {
                   [
                     'Used: ${MoneyHelper.toPercentage(controller.countPercentage.value)}'.text.size(11).minFontSize(11).make().pOnly(left: 4),
                     Spacer(),
-                    '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'.text.size(11).bold.blue400.minFontSize(11).make(),
+                    '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'.text.size(11).bold.green300.minFontSize(11).make(),
                     ' / '.text.size(11).minFontSize(11).make(),
                     '${MoneyHelper.toRupiah(controller.countBudget.value)}'.text.size(11).minFontSize(11).make(),
                   ],
@@ -183,7 +184,7 @@ class SummaryView extends GetView<SummaryController> {
                               HStack([
                                 ' ${(total / item.maxBudget * 100).toString().toInt()}% '.text.size(11).minFontSize(11).make(),
                                 Spacer(),
-                                '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).blue400.make(),
+                                '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).green300.make(),
                                 ' / '.text.size(11).minFontSize(11).make(),
                                 '${MoneyHelper.toRupiah(item.maxBudget)}'.text.size(11).minFontSize(11).make(),
                               ]),
@@ -194,7 +195,7 @@ class SummaryView extends GetView<SummaryController> {
                               HStack([
                                 'No Budget'.text.size(11).minFontSize(11).make(),
                                 Spacer(),
-                                '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).blue400.make(),
+                                '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).green300.make(),
                                 ' / '.text.size(11).minFontSize(11).make(),
                                 '~'.text.size(11).minFontSize(11).make(),
                               ]),
@@ -216,7 +217,7 @@ class SummaryView extends GetView<SummaryController> {
 
   Widget footerContent() {
     return HStack([
-      'Expenditure in ${controller.yearSelected}:'.text.make(),
+      Obx(() => 'Expenditure in ${controller.yearSelected}:'.text.make()),
       Spacer(),
       Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.red400.make()),
     ]).p12();

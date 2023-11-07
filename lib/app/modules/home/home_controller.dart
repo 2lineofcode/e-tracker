@@ -59,6 +59,7 @@ class HomeController extends GetxController with StateMixin {
 
   /// calendar
   Future<void> onCalenderDayChange(DateTime sDay, DateTime fDay) async {
+    closeDrawer();
     focusedDay.value = fDay;
     selectedDays.clear();
     selectedDays.add(fDay);
@@ -71,6 +72,7 @@ class HomeController extends GetxController with StateMixin {
     focusedDay.value = DateTime.now();
     await getExpense();
     await _onCalenderRefreshEvent();
+    closeDrawer();
   }
 
   Future<void> onCalenderGoPrevMonth() async {

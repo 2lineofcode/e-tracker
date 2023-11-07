@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../helpers/helper_misc.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
 import '../home/home_controller.dart';
@@ -44,6 +45,7 @@ class FilteringController extends GetxController with StateMixin {
   }
 
   Future<void> onCategoryChange(String categoryName) async {
+    closeDrawer();
     categorySelected.value = categoryName;
     await findExpense(categorySelected.value);
   }

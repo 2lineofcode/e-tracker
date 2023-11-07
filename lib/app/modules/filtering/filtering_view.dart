@@ -30,10 +30,12 @@ class FilteringView extends GetView<FilteringController> {
   Widget sideMenuContent() {
     return VStack(
       [
+        if (GetPlatform.isMobile) 24.heightBox,
         Obx(() => ' 📦 CATEGORY (${controller.categoryList.length})'.text.bold.make().pSymmetric(h: 8, v: 8)),
         12.heightBox,
         Obx(
           () => ListView.separated(
+            padding: EdgeInsets.zero,
             itemCount: controller.categoryList.length,
             separatorBuilder: (context, index) => 8.heightBox,
             itemBuilder: (context, index) {
@@ -68,46 +70,46 @@ class FilteringView extends GetView<FilteringController> {
           decoration: ExDecorator.box(fillColor: Vx.neutral800, borderColor: Vx.neutral800, borderRadius: 2),
           child: VStack(
             [
-              'Setting'.text.make().pOnly(bottom: 12),
+              'Setting'.text.bold.make().pOnly(bottom: 12),
               Obx(
                 () => HStack([
-                  'Filter: '.text.size(11).minFontSize(11).neutral400.make(),
-                  '${controller.categorySelected.value}'.text.size(11).minFontSize(11).make(),
+                  'Filter: '.text.size(12).neutral400.make(),
+                  '${controller.categorySelected.value}'.text.size(12).make(),
                 ]),
               ),
               8.heightBox,
               HStack([
-                'Period: '.text.size(11).minFontSize(11).neutral400.make(),
+                'Period: '.text.size(12).neutral400.make(),
 
                 // startDate
                 Obx(
-                  () => '${controller.startDate.value.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM yyyy')}'.text.underline.size(11).minFontSize(11).bold.make().onInkTap(
+                  () => '${controller.startDate.value.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM yyyy')}'.text.underline.size(12).make().onInkTap(
                     () async {
                       final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
                       if (date != null) controller.startDate.value = '${date.toStringEx(format: 'yyyy-MM')}-01';
-                      await controller.onCategoryChange(controller.categorySelected.value);
+                      await controller.findExpense(controller.categorySelected.value);
                     },
                   ),
                 ),
 
-                ' to '.text.size(11).minFontSize(11).neutral400.make(),
+                ' to '.text.size(12).neutral400.make(),
 
                 // endDate
                 Obx(
-                  () => '${controller.endDate.value.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM yyyy')}'.text.underline.size(11).minFontSize(11).bold.make().onInkTap(
+                  () => '${controller.endDate.value.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM yyyy')}'.text.underline.size(12).make().onInkTap(
                     () async {
                       final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
                       if (date != null) controller.endDate.value = '${date.toStringEx(format: 'yyyy-MM')}-31';
-                      await controller.onCategoryChange(controller.categorySelected.value);
+                      await controller.findExpense(controller.categorySelected.value);
                     },
                   ),
                 ),
               ]),
               8.heightBox,
               HStack([
-                'Order By: '.text.size(11).minFontSize(11).neutral400.make(),
+                'Order By: '.text.size(12).neutral400.make(),
                 Obx(
-                  () => '${controller.orderBy.value.toTitleCase}'.text.underline.size(11).minFontSize(11).make().onTap(() {
+                  () => '${controller.orderBy.value.toTitleCase}'.text.underline.size(12).make().onTap(() {
                     ExDialog.custom(
                       title: 'Order By',
                       titleTextStyle: TextStyle(),
@@ -122,7 +124,7 @@ class FilteringView extends GetView<FilteringController> {
                               ),
                               onTap: () async {
                                 controller.orderBy.value = controller.orderByList[i];
-                                await controller.onCategoryChange(controller.categorySelected.value);
+                                await controller.findExpense(controller.categorySelected.value);
                                 Get.back();
                               },
                             ),
@@ -184,7 +186,7 @@ class FilteringView extends GetView<FilteringController> {
                         onPressed: () async {
                           await controller.home.onShowDialogExpense(
                             expense: item,
-                            customCallback: () => controller.onCategoryChange(item.categoryName!),
+                            customCallback: () => controller.findExpense(item.categoryName!),
                           );
                         },
                       ),

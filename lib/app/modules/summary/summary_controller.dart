@@ -1,6 +1,7 @@
 import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 
+import '../../helpers/helper_misc.dart';
 import '../../models/category_entity.dart';
 import '../../routes/app_pages.dart';
 import 'summary_repository.dart';
@@ -35,31 +36,26 @@ class SummaryController extends GetxController with StateMixin {
   Future<void> onInit() async {
     await getCategory();
 
-    await onMonthChange(monthSelected.value);
+    await getCountOnly1Month(year: yearSelected.value, month: monthSelected.value);
     await getCountOnly1Year(yearSelected.value);
     await getCountAllMonth(yearSelected.value);
+    await getCountByCategory(monthSelected.value);
+    change(0, status: RxStatus.success());
     super.onInit();
   }
 
   Future<void> onMonthChange(String month) async {
+    closeDrawer();
     change(0, status: RxStatus.loading());
     monthSelected.value = month;
     isShowAllYear.value = false;
     await getCountOnly1Month(year: yearSelected.value, month: month);
-
-    ///
-    countByCategory.clear();
-    for (var element in category) {
-      countByCategory.add({
-        'month': month,
-        'name': element.name ?? '',
-        'total': await repo.getByCategory('${element.name}', '${yearSelected.value}-${month.reformatDate(from: 'MMMM', to: 'MM')}'),
-      });
-    }
+    await getCountByCategory(month);
     change(0, status: RxStatus.success());
   }
 
   Future<void> onShowAllYear() async {
+    closeDrawer();
     change(0, status: RxStatus.loading());
     countOnly1Month.value = await repo.getCountOnly1Year('${yearSelected.value}');
     monthSelected.value = '${yearSelected.value}';
@@ -79,21 +75,21 @@ class SummaryController extends GetxController with StateMixin {
 
   Future<void> onYearPrev() async {
     yearSelected.value = (yearSelected.value.toInt()! - 1).toString();
-    await onMonthChange('Januari');
+    // await onMonthChange('Januari');
     await getCountOnly1Year(yearSelected.value);
     await getCountAllMonth(yearSelected.value);
   }
 
   Future<void> onYearNow() async {
     yearSelected.value = DateTime.now().toStringEx(format: 'yyyy');
-    await onMonthChange(DateTime.now().toStringEx(format: 'MMMM'));
+    // await onMonthChange(DateTime.now().toStringEx(format: 'MMMM'));
     await getCountOnly1Year(yearSelected.value);
     await getCountAllMonth(yearSelected.value);
   }
 
   Future<void> onYearNext() async {
     yearSelected.value = (yearSelected.value.toInt()! + 1).toString();
-    await onMonthChange('Januari');
+    // await onMonthChange('Januari');
     await getCountOnly1Year(yearSelected.value);
     await getCountAllMonth(yearSelected.value);
   }
@@ -123,6 +119,17 @@ class SummaryController extends GetxController with StateMixin {
 
   Future<void> getCountOnly1Year(String year) async {
     countOnly1Year.value = await repo.getCountOnly1Year('$year');
+  }
+
+  Future<void> getCountByCategory(String month) async {
+    countByCategory.clear();
+    for (var element in category) {
+      countByCategory.add({
+        'month': month,
+        'name': element.name ?? '',
+        'total': await repo.getByCategory('${element.name}', '${yearSelected.value}-${month.reformatDate(from: 'MMMM', to: 'MM')}'),
+      });
+    }
   }
 
   /// param: category, startDate, endDate
