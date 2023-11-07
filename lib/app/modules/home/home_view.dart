@@ -24,6 +24,7 @@ class HomeView extends GetView<HomeController> {
         sideMenuContent: sideMenuContent(),
         bodyContent: bodyContent(),
         footerContent: footerContent(),
+        floatingActionButton: floatingActionButton(context),
       ),
     );
   }
@@ -34,8 +35,8 @@ class HomeView extends GetView<HomeController> {
 
   Widget appBarLeading() {
     return IconButton(
-      onPressed: () => controller.onShowDialogExpense(),
       icon: Icon(Icons.add),
+      onPressed: () => controller.onShowDialogExpense(),
     );
   }
 
@@ -254,5 +255,17 @@ class HomeView extends GetView<HomeController> {
         }),
       ),
     ]).p12();
+  }
+
+  Widget floatingActionButton(BuildContext context) {
+    if (context.isMobile && controller.expenseList.isNotEmpty) {
+      return FloatingActionButton(
+        backgroundColor: Vx.neutral600,
+        child: Icon(Icons.add, color: Colors.white),
+        onPressed: () => controller.onShowDialogExpense(),
+      ).pOnly(bottom: 60);
+    } else {
+      return 0.heightBox;
+    }
   }
 }

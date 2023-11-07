@@ -18,6 +18,7 @@ class MyLayout extends StatelessWidget {
     required this.bodyContent,
     required this.footerContent,
     this.footerColor,
+    this.floatingActionButton,
   });
 
   // appBar
@@ -37,20 +38,41 @@ class MyLayout extends StatelessWidget {
   final Widget footerContent;
   final Color? footerColor;
 
+  // fab
+  final Widget? floatingActionButton;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      /// mobile only
+      drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
+      appBar: context.isMobile
+          ? AppBar(
+              backgroundColor: Vx.neutral900,
+              toolbarHeight: 44,
+              title: appBarTitle,
+              leadingWidth: 40,
+              centerTitle: false,
+              actions: [appBarAction ?? Container()],
+            )
+          : null,
+
+      floatingActionButton: floatingActionButton?.pOnly(bottom: 16),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           /// row 1
-          sideMenu().wh(sideMenuWidht ?? 255, double.infinity),
+          if (!context.isMobile) ...[
+            sideMenu().wh(sideMenuWidht ?? 255, double.infinity),
+          ],
 
           /// row 2
           VStack(
             [
               /// appbar
-              myAppBar(),
+              if (!context.isMobile) ...[
+                myAppBar(),
+              ],
 
               /// body
               body().expand(),
@@ -77,22 +99,19 @@ class MyLayout extends StatelessWidget {
   }
 
   Widget myAppBar() {
-    return Container(
-      width: double.infinity,
-      height: 44,
-      color: Vx.neutral900,
-      child: HStack(
-        [
-          appBarLeading?.pOnly(right: 8) ??
-              IconButton(
-                icon: Icon(Icons.arrow_back),
-                onPressed: Get.back,
-              ).pOnly(right: 8),
-          appBarTitle,
-          Spacer(),
-          appBarAction ?? Container(),
-        ],
-      ),
+    return AppBar(
+      backgroundColor: Vx.neutral900,
+      toolbarHeight: 44,
+      title: appBarTitle,
+      centerTitle: false,
+      leading: appBarLeading?.pOnly(right: 8) ??
+          IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: Get.back,
+          ).pOnly(right: 8),
+      actions: [
+        appBarAction ?? Container(),
+      ],
     );
   }
 
