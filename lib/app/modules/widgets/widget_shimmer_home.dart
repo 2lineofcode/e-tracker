@@ -17,7 +17,7 @@ class MyShimmerHome extends StatelessWidget {
         ]),
         16.heightBox,
         ListView.builder(
-          itemCount: 1,
+          itemCount: ExRandom.between(1, 5),
           itemBuilder: (context, index) {
             return Container(color: Colors.white).wh(double.infinity, 55).cornerRadius(2).shimmer(primaryColor: pc, secondaryColor: sc).pOnly(bottom: 8);
           },

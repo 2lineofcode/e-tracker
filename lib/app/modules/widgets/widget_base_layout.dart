@@ -109,7 +109,7 @@ class MyLayout extends StatelessWidget {
     );
   }
 
-  Widget body() => bodyContent;
+  Widget body() => bodyContent.pOnly(top: 8);
 
   Widget footer() {
     return Container(
