@@ -1,4 +1,5 @@
 import 'package:ex/ex.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,14 +25,10 @@ class SummaryView extends GetView<SummaryController> {
   }
 
   Widget appBarAction() {
-    return ExButtonOutline(
-      label: 'View as Chart',
-      labelColor: Colors.white,
-      borderColor: Vx.neutral600,
-      labelSize: 11,
-      height: 36,
+    return IconButton(
+      icon: Icon(CupertinoIcons.chart_pie, size: 18),
       onPressed: () {},
-    ).pOnly(right: 12);
+    );
   }
 
   Widget sideMenuContent() {

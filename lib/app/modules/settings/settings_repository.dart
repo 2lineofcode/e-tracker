@@ -1,5 +1,5 @@
 import '../../core/const.dart';
-import '../../models/autocomplete_note_entity.dart';
+import '../../models/autocomplete_entity.dart';
 
 const AUTO_COMPLETE = 'Auto Complete';
 const APP_CONFIG = 'App Config';
@@ -19,20 +19,22 @@ class SettingsRepository {
   // ------------------------------------------------------------------------
   // autocomplete
   // ------------------------------------------------------------------------
-  Future<List<AutocompleteNoteEntity>> getAutocompleteNote() async {
-    final response = await db.from('autocomplete_note').select().order('note', ascending: true).withConverter<List<AutocompleteNoteEntity>>((data) {
-      return (data as List).map((e) => AutocompleteNoteEntity.fromJson(e)).toList();
+  Future<List<AutoCompleteEntity>> getAutoComplete() async {
+    final response = await db.from('autocomplete').select().order('note', ascending: true).withConverter<List<AutoCompleteEntity>>((data) {
+      return (data as List).map((e) => AutoCompleteEntity.fromJson(e)).toList();
     });
     return response;
   }
 
-  Future<void> addAutocompleteNote(String autocompleteNote) async {
-    final response = await db.from('autocomplete_note').upsert({'note': autocompleteNote});
+  Future<void> addAutoComplete(String autocompleteNote) async {
+    final response = await db.from('autocomplete').upsert({'note': autocompleteNote});
     return response;
   }
 
-  Future<void> deleteAutocompleteNote(String note) async {
-    final response = await db.from('autocomplete_note').delete().match({'note': note});
+  Future<void> deleteAutoComplete(String note) async {
+    final response = await db.from('autocomplete').delete().match({'note': note});
     return response;
   }
+
+  
 }

@@ -1,4 +1,5 @@
 import '../../core/const.dart';
+import '../../models/autocomplete_entity.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
 
@@ -79,15 +80,30 @@ class HomeRepository {
   // ------------------------------------------------------------------------
   // autocomplete
   // ------------------------------------------------------------------------
-  Future<List<String>> findAutocompleteNote(String note) async {
-    final response = await db.from('autocomplete_note').select().ilike('note', '%$note%').withConverter<List<String>>((data) {
+  Future<List<String>> findAutoCompleteStringNote(String note) async {
+    final response = await db.from('autocomplete').select().ilike('note', '%$note%').withConverter<List<String>>((data) {
       return (data as List).map((e) => e['note'].toString()).toList();
     });
     return response;
   }
 
-  Future<void> addAutocompleteNote(String autocompleteNote) async {
-    final response = await db.from('autocomplete_note').upsert({'note': autocompleteNote});
+  Future<List<AutoCompleteEntity>> findAutoCompleteFullObject(String note) async {
+    final response = await db.from('autocomplete').select().eq('note', '$note').withConverter<List<AutoCompleteEntity>>((data) {
+      return (data as List).map((e) => AutoCompleteEntity.fromJson(e)).toList();
+    });
+    return response;
+  }
+
+  Future<void> addAutoComplete(
+    String note, {
+    String? categoryName,
+    String? amount,
+  }) async {
+    final response = await db.from('autocomplete').upsert({
+      'note': note,
+      'category_name': categoryName,
+      'amount': amount,
+    });
     return response;
   }
 }

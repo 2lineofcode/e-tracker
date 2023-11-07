@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
-import '../../models/autocomplete_note_entity.dart';
+import '../../models/autocomplete_entity.dart';
 import 'settings_repository.dart';
 
 class SettingsController extends GetxController with StateMixin {
@@ -12,14 +12,14 @@ class SettingsController extends GetxController with StateMixin {
   final menuList = <String>[].obs;
   final menuSelected = AUTO_COMPLETE.obs;
 
-  // AutocompleteNote
-  final tfAutocompleteNote = TextEditingController();
-  final autocompleteNote = <AutocompleteNoteEntity>[].obs;
+  // AutoComplete
+  final tfAutoComplete = TextEditingController();
+  final autoCompleteList = <AutoCompleteEntity>[].obs;
 
   @override
   Future<void> onInit() async {
     menuList.value = await repo.getMenuList();
-    autocompleteNote.value = await repo.getAutocompleteNote();
+    autoCompleteList.value = await repo.getAutoComplete();
     change(0, status: RxStatus.success());
     super.onInit();
   }
@@ -28,18 +28,18 @@ class SettingsController extends GetxController with StateMixin {
     menuSelected.value = menu;
   }
 
-  Future<void> onAddAutocompleteNote(String note) async {
+  Future<void> onAddAutoComplete(String note) async {
     if (note.isEmpty) return;
     if (note.isBlank!) return;
-    await repo.addAutocompleteNote(note);
-    tfAutocompleteNote.clear();
-    autocompleteNote.value = await repo.getAutocompleteNote();
+    await repo.addAutoComplete(note);
+    tfAutoComplete.clear();
+    autoCompleteList.value = await repo.getAutoComplete();
     change(0, status: RxStatus.success());
   }
 
-  Future<void> onDeleteAutocompleteNote(AutocompleteNoteEntity entity) async {
-    await repo.deleteAutocompleteNote(entity.note ?? '');
-    autocompleteNote.value = await repo.getAutocompleteNote();
+  Future<void> onDeleteAutoComplete(AutoCompleteEntity entity) async {
+    await repo.deleteAutoComplete(entity.note ?? '');
+    autoCompleteList.value = await repo.getAutoComplete();
     change(0, status: RxStatus.success());
   }
 }

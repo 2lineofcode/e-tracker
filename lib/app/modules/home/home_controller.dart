@@ -37,7 +37,6 @@ class HomeController extends GetxController with StateMixin {
 
   /// list
   final expenseList = <ExpenseEntity>[].obs;
-  final autocompleteNote = <String>[].obs;
   final tfSearchExpense = TextEditingController();
 
   /// count
@@ -256,11 +255,12 @@ class HomeController extends GetxController with StateMixin {
     }
   }
 
+  /// insert, edit, delete dialog expense
   Future<void> onShowDialogExpense({ExpenseEntity? expense, Function? customCallback}) async {
-    final tfDate = TextEditingController(text: expense != null ? expense.date : '');
-    final tfNote = TextEditingController(text: expense != null ? expense.note : '');
-    final tfCategory = '${expense != null ? '${expense.categoryName}' : '${categoryList[0].name}'}'.obs;
-    final tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
+    final _tfDate = TextEditingController(text: expense != null ? expense.date : '');
+    final _tfNote = TextEditingController(text: expense != null ? expense.note : '');
+    final _tfCategory = '${expense != null ? '${expense.categoryName}' : '${categoryList[0].name}'}'.obs;
+    final _tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
 
     ExDialog.custom(
       title: expense != null ? 'Edit Expense' : 'Add Expense',
@@ -268,50 +268,63 @@ class HomeController extends GetxController with StateMixin {
       width: 250,
       content: VStack(
         [
+          /// field select date: edit mode only
           if (expense != null) ...[
             TextField(
-              controller: tfDate,
+              controller: _tfDate,
               decoration: MyDecorationHelper.inputDecorator(hint: 'Date', label: 'Date'),
               style: TextStyle(fontSize: 13),
-              onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => tfDate.text = c.toStringEx(format: 'yyyy-MM-dd')),
+              onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => _tfDate.text = c.toStringEx(format: 'yyyy-MM-dd')),
             ).wh(250, 33).pOnly(bottom: 16),
           ],
+
+          /// field note: desktop only, (web has bug -_-)
           if (PlatformUtil.isDesktop()) ...[
             MyAutoComplete(
-              controller: tfNote,
+              controller: _tfNote,
               autofocus: expense == null,
               decoration: MyDecorationHelper.inputDecorator(hint: 'Nasi Padang', label: 'Notes'),
               inputTextStyle: TextStyle(fontSize: 13),
+              progressIndicatorBuilder: CupertinoActivityIndicator(color: Colors.white),
               asyncSuggestions: (s) async {
                 if (s.isEmpty) {
                   return [];
                 } else {
-                  return await repo.findAutocompleteNote(s);
+                  return await repo.findAutoCompleteStringNote(s);
                 }
               },
-              progressIndicatorBuilder: CupertinoActivityIndicator(color: Colors.white),
-              onChanged: (value) => tfNote.text = value,
-              onSubmitted: (value) => tfNote.text = value,
+              onChanged: (value) => _tfNote.text = value,
+              onSubmitted: (value) async {
+                _tfNote.text = value;
+                await repo.findAutoCompleteFullObject(value).then((res) {
+                  _tfCategory.value = res[0].categoryName ?? '';
+                  _tfAmount.text = res[0].amount?.toInt()?.moneyFormat() ?? '';
+                });
+              },
             ).w(250).pOnly(bottom: 16),
           ] else ...[
             TextField(
-              controller: tfNote,
+              controller: _tfNote,
               autofocus: expense == null,
               decoration: MyDecorationHelper.inputDecorator(hint: 'Nasi Padang', label: 'Notes'),
               style: TextStyle(fontSize: 13),
             ).wh(250, 33).pOnly(bottom: 16),
           ],
+
+          /// field category
           Obx(
             () => DropdownButtonFormField(
-              value: '${tfCategory.value}',
+              value: '${_tfCategory.value}',
               items: categoryList.map((element) => DropdownMenuItem(value: '${element.name}', child: Text(element.name ?? ''))).toList(),
               style: TextStyle(fontSize: 12, color: Colors.white),
               decoration: MyDecorationHelper.inputDecorator(label: 'Category'),
-              onChanged: (s) => tfCategory.value = s ?? '',
+              onChanged: (s) => _tfCategory.value = s ?? '',
             ).wh(250, 33).pOnly(bottom: 16),
           ),
+
+          /// field amount
           TextField(
-            controller: tfAmount,
+            controller: _tfAmount,
             decoration: MyDecorationHelper.inputDecorator(hint: '10.000', label: 'Amount'),
             style: TextStyle(fontSize: 13),
             inputFormatters: [
@@ -320,11 +333,13 @@ class HomeController extends GetxController with StateMixin {
             ],
             keyboardType: TextInputType.number,
             onSubmitted: (_) => {
-              _submit(tfNote.text, tfCategory.value, tfAmount.text, expense: expense, tfDate: tfDate.text),
+              _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
               customCallback?.call(),
             },
           ).wh(250, 33).pOnly(bottom: 8),
           Divider().pOnly(bottom: 8),
+
+          /// action
           HStack(
             [
               if (expense != null) ...[
@@ -353,7 +368,7 @@ class HomeController extends GetxController with StateMixin {
                 borderColor: Vx.white,
                 radius: 4,
                 onPressed: () => {
-                  _submit(tfNote.text, tfCategory.value, tfAmount.text, expense: expense, tfDate: tfDate.text),
+                  _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
                   customCallback?.call(),
                 },
               ).expand(),
@@ -384,7 +399,7 @@ class HomeController extends GetxController with StateMixin {
       } else {
         await repo.addExpense(entity);
       }
-      await repo.addAutocompleteNote(tfNote);
+      await repo.addAutoComplete('$tfNote', categoryName: '${entity.categoryName}', amount: '${entity.amount}');
       await getExpense();
     } catch (e) {
       ExSnackbar.danger('$e', duration: 5);
