@@ -30,7 +30,11 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget appBarTitle() {
-    return '${dotenv.get('APP_NAME')}'.text.size(11).bold.make();
+    if (!Get.context!.isMobile) {
+      return '${dotenv.get('APP_NAME')}'.text.size(11).bold.make();
+    } else {
+      return 0.heightBox;
+    }
   }
 
   Widget appBarLeading() {
@@ -114,6 +118,7 @@ class HomeView extends GetView<HomeController> {
               ),
               Obx(
                 () => ListView.builder(
+                  shrinkWrap: true,
                   itemCount: controller.categoryList.length,
                   itemBuilder: (context, index) {
                     final item = controller.categoryList[index];
@@ -121,11 +126,11 @@ class HomeView extends GetView<HomeController> {
                       title: HStack(
                         [
                           Icon(Icons.circle_outlined, color: HexColor.fromHex(item.color ?? '#FFFFFF'), size: 12).pOnly(right: 8),
-                          '${item.name}'.text.size(11).make().pOnly(right: 8),
+                          '${item.name}'.text.size(12).make().pOnly(right: 8),
                           if (item.maxBudget != null) ...[
                             Container(
                               color: Vx.neutral800,
-                              child: '${item.maxBudget!.moneyFormatCompact()}'.text.size(10).minFontSize(10).make().pSymmetric(h: 4, v: 2),
+                              child: '${item.maxBudget!.moneyFormatCompact()}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
                             ).cornerRadius(4).pOnly(top: 2),
                           ],
                           Spacer(),
@@ -169,20 +174,20 @@ class HomeView extends GetView<HomeController> {
                     Container(
                       decoration: ExDecorator.box(
                         borderRadius: 90,
-                        borderColor: MoneyHelper.getExpenseFlagColor(controller.countOfDay.value),
+                        borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value),
                       ),
                       child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)}'
                           .text
-                          .size(10)
-                          .minFontSize(10)
-                          .color(MoneyHelper.getExpenseFlagColor(controller.countOfDay.value))
+                          .size(12)
+                          .minFontSize(12)
+                          .color(MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value))
                           .make()
                           .p4()
                           .pSymmetric(h: 4),
                     ),
                   ]);
                 } else {
-                  return 'Search for: "${controller.tfSearchExpense.text}"'.text.size(11).bold.make();
+                  return 'Search for: "${controller.tfSearchExpense.text}"'.text.bold.make();
                 }
               },
             ).pSymmetric(h: 12).pOnly(top: 12),
@@ -200,11 +205,11 @@ class HomeView extends GetView<HomeController> {
                       VStack([
                         Obx(
                           () => controller.isSearchMode.isTrue
-                              ? '${item.date!.reformatDate(from: 'yyyy-MM-dd', to: 'EEE, dd MMM yyyy')}'.text.size(10).minFontSize(10).make().pOnly(bottom: 8)
+                              ? '${item.date!.reformatDate(from: 'yyyy-MM-dd', to: 'EEE, dd MMM yyyy')}'.text.size(11).minFontSize(11).make().pOnly(bottom: 8)
                               : Container(),
                         ),
-                        '${item.note}'.text.bold.make().pOnly(bottom: 2),
-                        '${item.categoryName}'.text.size(10).minFontSize(10).make(),
+                        '${item.note}'.text.bold.make().pOnly(bottom: 4),
+                        '${item.categoryName}'.text.size(12).make(),
                       ]),
                       Spacer(),
                       '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.bold.size(16).make(),
@@ -250,7 +255,7 @@ class HomeView extends GetView<HomeController> {
     return HStack([
       Spacer(),
       Obx(
-        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${MoneyHelper.toRupiah(controller.countOfMonth.value)}'.text.size(11).make().onTap(() {
+        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${MoneyHelper.toRupiah(controller.countOfMonth.value)}'.text.make().onTap(() {
           Get.toNamed(Routes.SUMMARY);
         }),
       ),

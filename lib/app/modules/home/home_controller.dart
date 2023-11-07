@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -161,6 +162,7 @@ class HomeController extends GetxController with StateMixin {
               CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
               LengthLimitingTextInputFormatter(13),
             ],
+            keyboardType: TextInputType.number,
             style: TextStyle(fontSize: 13),
           ).pOnly(bottom: 8),
           Divider().pOnly(bottom: 8),
@@ -278,7 +280,7 @@ class HomeController extends GetxController with StateMixin {
             ).wh(250, 33).pOnly(bottom: 16),
           ],
 
-          if (PlatformUtil.isDesktop()) ...[
+          if (!kIsWeb) ...[
             MyAutoComplete(
               controller: _tfNote,
               autofocus: expense == null,

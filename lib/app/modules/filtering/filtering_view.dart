@@ -171,8 +171,8 @@ class FilteringView extends GetView<FilteringController> {
                   [
                     // row 1
                     VStack([
-                      '${item.note}'.text.neutral400.size(12).make().pOnly(bottom: 2),
-                      '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.white.size(10).minFontSize(10).make(),
+                      '${item.note}'.text.neutral400.size(13).make().pOnly(bottom: 4),
+                      '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.white.size(12).make(),
                     ]).p12(),
 
                     Spacer(),

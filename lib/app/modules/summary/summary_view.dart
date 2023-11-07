@@ -46,7 +46,7 @@ class SummaryView extends GetView<SummaryController> {
                   fillColor: controller.isShowAllYear.isTrue ? Colors.blue : Colors.transparent,
                   borderColor: controller.isShowAllYear.isTrue ? Colors.blue : Vx.neutral400,
                 ),
-                child: ' Show All '.text.size(10).minFontSize(10).make().pSymmetric(h: 4, v: 2),
+                child: ' Show All '.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
               ).pOnly(left: 4),
             ),
           ),
@@ -130,7 +130,7 @@ class SummaryView extends GetView<SummaryController> {
                 /// col2
                 MyPercentageBar(
                   value: (controller.countPercentage.value * 100).toInt(),
-                  color1: Colors.blue,
+                  color1: controller.countRemainingBudget.value < 0 ? Colors.red : Colors.blue,
                   color2: Vx.neutral700,
                   radius: 8,
                 ).pSymmetric(v: 12),
@@ -138,11 +138,11 @@ class SummaryView extends GetView<SummaryController> {
                 /// col3
                 HStack(
                   [
-                    'Used: ${MoneyHelper.toPercentage(controller.countPercentage.value)}'.text.size(10).minFontSize(10).make().pOnly(left: 4),
+                    'Used: ${MoneyHelper.toPercentage(controller.countPercentage.value)}'.text.size(11).minFontSize(11).make().pOnly(left: 4),
                     Spacer(),
-                    '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'.text.size(10).bold.blue400.minFontSize(10).make(),
-                    ' / '.text.size(10).minFontSize(10).make(),
-                    '${MoneyHelper.toRupiah(controller.countBudget.value)}'.text.size(10).minFontSize(10).make(),
+                    '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'.text.size(11).bold.blue400.minFontSize(11).make(),
+                    ' / '.text.size(11).minFontSize(11).make(),
+                    '${MoneyHelper.toRupiah(controller.countBudget.value)}'.text.size(11).minFontSize(11).make(),
                   ],
                 ),
               ],
@@ -181,22 +181,22 @@ class SummaryView extends GetView<SummaryController> {
                                 radius: 8,
                               ).pOnly(bottom: 4),
                               HStack([
-                                ' ${(total / item.maxBudget * 100).toString().toInt()}% '.text.size(10).minFontSize(10).make(),
+                                ' ${(total / item.maxBudget * 100).toString().toInt()}% '.text.size(11).minFontSize(11).make(),
                                 Spacer(),
-                                '${MoneyHelper.toRupiah(total)}'.text.size(10).minFontSize(10).blue400.make(),
-                                ' / '.text.size(10).minFontSize(10).make(),
-                                '${MoneyHelper.toRupiah(item.maxBudget)}'.text.size(10).minFontSize(10).make(),
+                                '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).blue400.make(),
+                                ' / '.text.size(11).minFontSize(11).make(),
+                                '${MoneyHelper.toRupiah(item.maxBudget)}'.text.size(11).minFontSize(11).make(),
                               ]),
                             ]).expand(),
                           ] else ...[
                             VStack([
                               MyPercentageBar(value: 0, color1: Colors.red, color2: Vx.neutral700, radius: 8).pOnly(bottom: 4),
                               HStack([
-                                'No Budget'.text.size(10).minFontSize(10).make(),
+                                'No Budget'.text.size(11).minFontSize(11).make(),
                                 Spacer(),
-                                '${MoneyHelper.toRupiah(total)}'.text.size(10).minFontSize(10).blue400.make(),
-                                ' / '.text.size(10).minFontSize(10).make(),
-                                '~'.text.size(10).minFontSize(10).make(),
+                                '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).blue400.make(),
+                                ' / '.text.size(11).minFontSize(11).make(),
+                                '~'.text.size(11).minFontSize(11).make(),
                               ]),
                             ]).expand(),
                           ],
@@ -216,9 +216,9 @@ class SummaryView extends GetView<SummaryController> {
 
   Widget footerContent() {
     return HStack([
-      'Expenditure in ${controller.yearSelected}:'.text.size(12).make(),
+      'Expenditure in ${controller.yearSelected}:'.text.make(),
       Spacer(),
-      Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.size(12).red400.make()),
+      Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.red400.make()),
     ]).p12();
   }
 }

@@ -36,7 +36,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
               if (item.amount.isNotEmptyAndNotNull) ...[
                 Container(
                   color: Vx.neutral800,
-                  child: '${item.amount?.toInt()?.moneyFormatCompact()}'.text.size(10).minFontSize(10).make().pSymmetric(h: 4, v: 2),
+                  child: '${item.amount?.toInt()?.moneyFormatCompact()}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
                 ).cornerRadius(4).pOnly(top: 2),
               ],
 
@@ -46,7 +46,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
               if (item.categoryName.isNotEmptyAndNotNull && !item.categoryName!.contains('Others')) ...[
                 Container(
                   color: Vx.neutral800,
-                  child: '${item.categoryName}'.text.size(10).minFontSize(10).make().pSymmetric(h: 4, v: 2),
+                  child: '${item.categoryName}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
                 ).cornerRadius(4).pOnly(top: 2, right: 4),
               ],
 

@@ -1,10 +1,7 @@
-import 'dart:io';
-
 import 'package:ex/ex.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../helpers/helper_misc.dart';
 
 class MyLayout extends StatelessWidget {
   const MyLayout({
@@ -44,8 +41,10 @@ class MyLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      /// mobile only
+      /// drawer -> Mobile
       drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
+
+      /// appbar -> Mobile
       appBar: context.isMobile
           ? AppBar(
               backgroundColor: Vx.neutral900,
@@ -56,23 +55,18 @@ class MyLayout extends StatelessWidget {
               actions: [appBarAction ?? Container()],
             )
           : null,
-
       floatingActionButton: floatingActionButton?.pOnly(bottom: 16),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          /// row 1
-          if (!context.isMobile) ...[
-            sideMenu().wh(sideMenuWidht ?? 255, double.infinity),
-          ],
+          /// row 1 -> Desktop
+          if (!context.isMobile) sideMenu().wh(sideMenuWidht ?? 255, double.infinity),
 
           /// row 2
           VStack(
             [
-              /// appbar
-              if (!context.isMobile) ...[
-                myAppBar(),
-              ],
+              /// appbar -> Desktop
+              if (!context.isMobile) myAppBar(),
 
               /// body
               body().expand(),
@@ -92,7 +86,7 @@ class MyLayout extends StatelessWidget {
       width: 250,
       height: double.infinity,
       child: VStack([
-        PlatformUtil.isDesktop() && Platform.isMacOS ? 32.heightBox : 8.heightBox,
+        kIsWeb ? 8.heightBox : 32.heightBox,
         sideMenuContent,
       ]),
     );
@@ -121,7 +115,10 @@ class MyLayout extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(color: footerColor ?? Vx.neutral800),
-      child: footerContent,
+      child: Padding(
+        padding: Get.context!.isMobile ? EdgeInsets.only(bottom: 20, right: 8, left: 8) : EdgeInsets.all(0),
+        child: footerContent,
+      ),
     );
   }
 }

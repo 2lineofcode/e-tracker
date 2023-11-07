@@ -81,6 +81,17 @@ mixin MoneyHelper {
     }
   }
 
+  static Color getExpenseFlagColorLight(num amount) {
+    if (amount == 0) return Vx.white;
+    if (amount < 50000) {
+      return Vx.green200;
+    } else if (amount < 100000) {
+      return Vx.orange200;
+    } else {
+      return Vx.red200;
+    }
+  }
+
   static Color getExpenseFlagColorDark(num amount) {
     if (amount == 0) return Vx.white;
     if (amount < 50000) {

@@ -26,7 +26,7 @@ Future<void> main() async {
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = WindowOptions(
       size: Size(655, 700),
-      // minimumSize: Size(655, 700),
+      minimumSize: Size(655, 700),
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
@@ -44,9 +44,6 @@ Future<void> main() async {
       title: dotenv.get('APP_NAME'),
       initialRoute: AppPages.INITIAL,
       theme: ThemeData.dark(),
-      // .copyWith(
-      //   textTheme: GoogleFonts.latoTextTheme(TextTheme()),
-      // ),
       debugShowCheckedModeBanner: false,
       scrollBehavior: PlatformUtil.isDesktop() ? NoThumbScrollBehavior() : null,
       getPages: AppPages.routes,
