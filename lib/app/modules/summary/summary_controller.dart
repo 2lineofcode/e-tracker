@@ -57,19 +57,27 @@ class SummaryController extends GetxController with StateMixin {
   Future<void> onShowAllYear() async {
     closeDrawer();
     change(0, status: RxStatus.loading());
-    countOnly1Month.value = await repo.getCountOnly1Year('${yearSelected.value}');
-    monthSelected.value = '${yearSelected.value}';
-    isShowAllYear.value = true;
 
-    ///
-    countByCategory.clear();
-    for (var element in category) {
-      countByCategory.add({
-        'month': '~',
-        'name': element.name ?? '',
-        'total': await repo.getByCategory('${element.name}', '${yearSelected.value}'),
-      });
+    if (isShowAllYear.value == false) {
+      countOnly1Month.value = await repo.getCountOnly1Year('${yearSelected.value}');
+      monthSelected.value = '${yearSelected.value}';
+      isShowAllYear.value = true;
+
+      /// custom
+      countByCategory.clear();
+      for (var element in category) {
+        countByCategory.add({
+          'month': '~',
+          'name': element.name ?? '',
+          'total': await repo.getByCategory('${element.name}', '${yearSelected.value}'),
+        });
+      }
+    } else {
+      monthSelected.value = '${DateTime.now().toStringEx(format: 'MMMM')}';
+      isShowAllYear.value = false;
+      await onMonthChange(monthSelected.value);
     }
+
     change(0, status: RxStatus.success());
   }
 
