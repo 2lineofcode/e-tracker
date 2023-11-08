@@ -26,13 +26,15 @@ Future<void> main() async {
   if (PlatformUtil.isDesktop()) {
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = WindowOptions(
+      title: dotenv.get('APP_NAME'),
       size: Size(655, 700),
       minimumSize: kReleaseMode ? Size(655, 700) : null,
+      maximumSize: Platform.isWindows ? Size(655, 700) : null,
+      titleBarStyle: Platform.isMacOS ? TitleBarStyle.hidden : TitleBarStyle.normal,
+      alwaysOnTop: Platform.isWindows ? true : false,
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,
-      titleBarStyle: Platform.isMacOS ? TitleBarStyle.hidden : TitleBarStyle.normal,
-      alwaysOnTop: false,
     );
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();

@@ -1,5 +1,6 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
@@ -30,7 +31,7 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget appBarTitle() {
-    if (!Get.context!.isMobile) {
+    if (kIsWeb) {
       return '${dotenv.get('APP_NAME')}'.text.size(11).bold.make();
     } else {
       return TextField(
@@ -44,7 +45,7 @@ class HomeView extends GetView<HomeController> {
             controller.getExpense();
           }
         },
-      ).wh(double.infinity, 30).pSymmetric(h: 8);
+      ).wh(double.infinity, 30);
     }
   }
 
@@ -58,8 +59,8 @@ class HomeView extends GetView<HomeController> {
   Widget appBarAction() {
     return HStack(
       [
-        /// Desktop Only
-        if (!Get.context!.isMobile) ...[
+        /// Web Only
+        if (kIsWeb) ...[
           TextField(
             controller: controller.tfSearchExpense,
             decoration: MyDecorationHelper.inputDecorator(hint: 'Search...'),
