@@ -190,7 +190,7 @@ class HomeView extends GetView<HomeController> {
                         borderRadius: 90,
                         borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value),
                       ),
-                      child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)}'
+                      child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)} Day'
                           .text
                           .size(12)
                           .minFontSize(12)
