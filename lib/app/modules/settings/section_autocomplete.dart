@@ -17,12 +17,14 @@ class SectionAutoComplete extends GetView<SettingsController> {
       [
         GroupedListView<AutoCompleteEntity, String>(
           elements: controller.autoCompleteList,
-          groupBy: (element) => element.note!.toTitleCase!.substring(0, 1),
+          groupBy: (element) => element.note?.first()?.toUpperCase() ?? '?',
           floatingHeader: true,
+          useStickyGroupSeparators: true,
           groupHeaderBuilder: (element) {
             return Container(
+              width: double.infinity,
               color: Vx.neutral900,
-              child: Text(element.note!.toTitleCase!.substring(0, 1)).p8(),
+              child: Text(element.note?.first()?.toUpperCase() ?? '?').p8(),
             );
           },
           indexedItemBuilder: (context, item, index) {

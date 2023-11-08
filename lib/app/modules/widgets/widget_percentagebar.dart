@@ -33,7 +33,7 @@ class MyPercentageBar extends StatelessWidget {
                   flex: 100,
                   child: Container(
                     height: height ?? 12,
-                    color: color2,
+                    color: Vx.neutral500,
                   ).cornerRadius(radius ?? 20),
                 ),
               ],

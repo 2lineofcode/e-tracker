@@ -1,0 +1,16 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        ".dart_**": true,
+        "firebase**": false,
+        ".firebase**": true,
+        ".flutter-**": true,
+        "build": false
+    },
+    "explorerExclude.backup": {}
+}

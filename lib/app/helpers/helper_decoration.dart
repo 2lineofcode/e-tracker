@@ -6,6 +6,7 @@ mixin MyDecorationHelper {
     String? hint,
     Color? fillColor = Vx.neutral700,
     Widget? suffix,
+    Widget? suffixIcon,
     Widget? prefix,
     Widget? prefixIcon,
     Widget? icon,
@@ -23,14 +24,15 @@ mixin MyDecorationHelper {
       focusedBorder: OutlineInputBorder(borderSide: BorderSide.none),
       focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide.none),
       contentPadding: contentPadding ?? EdgeInsets.only(top: 2, bottom: 2, left: 12, right: 12),
-      suffix: suffix,
-      prefix: prefix,
-      prefixStyle: TextStyle(color: Colors.white),
-      prefixIcon: prefixIcon,
-      prefixIconColor: Colors.white,
       icon: icon,
       labelText: label,
       labelStyle: TextStyle(fontSize: 12, color: Vx.white),
+      // prefix
+      prefix: prefix,
+      prefixIcon: prefixIcon,
+      // suffix
+      suffix: suffix,
+      suffixIcon: suffixIcon,
     );
   }
 }

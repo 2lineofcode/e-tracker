@@ -16,11 +16,14 @@ class MyLayout extends StatelessWidget {
     required this.footerContent,
     this.footerColor,
     this.floatingActionButton,
+    this.isShowAppBarLeading = true,
   });
 
   // appBar
   final Widget appBarTitle;
   final Widget? appBarLeading;
+  final bool isShowAppBarLeading;
+
   final Widget? appBarAction;
 
   // sideMenu
@@ -45,16 +48,7 @@ class MyLayout extends StatelessWidget {
       drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
 
       /// appbar -> Mobile
-      appBar: context.isMobile
-          ? AppBar(
-              backgroundColor: Vx.neutral900,
-              toolbarHeight: 44,
-              title: appBarTitle,
-              leadingWidth: 40,
-              centerTitle: false,
-              actions: [appBarAction ?? Container()],
-            )
-          : null,
+      appBar: context.isMobile ? myAppBarMobile() : null,
       floatingActionButton: floatingActionButton?.pOnly(bottom: 16),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +60,7 @@ class MyLayout extends StatelessWidget {
           VStack(
             [
               /// appbar -> Desktop
-              if (!context.isMobile) myAppBar(),
+              if (!context.isMobile) myAppBarDesktop(),
 
               /// body
               body().expand(),
@@ -92,17 +86,30 @@ class MyLayout extends StatelessWidget {
     );
   }
 
-  Widget myAppBar() {
+  AppBar myAppBarMobile() {
+    return AppBar(
+      backgroundColor: Vx.neutral900,
+      toolbarHeight: 44,
+      title: appBarTitle,
+      leadingWidth: 40,
+      centerTitle: false,
+      actions: [appBarAction ?? Container()],
+    );
+  }
+
+  Widget myAppBarDesktop() {
     return AppBar(
       backgroundColor: Vx.neutral900,
       toolbarHeight: 44,
       title: appBarTitle,
       centerTitle: false,
-      leading: appBarLeading?.pOnly(right: 8) ??
-          IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: Get.back,
-          ).pOnly(right: 8),
+      leading: isShowAppBarLeading == true
+          ? appBarLeading?.pOnly(right: 8) ??
+              IconButton(
+                icon: Icon(Icons.arrow_back),
+                onPressed: Get.back,
+              ).pOnly(right: 8)
+          : null,
       actions: [
         appBarAction ?? Container(),
       ],

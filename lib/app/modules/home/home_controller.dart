@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:uuid/v1.dart';
@@ -156,10 +157,7 @@ class HomeController extends GetxController with StateMixin {
           ).pOnly(bottom: 8),
           TextField(
             controller: tfMaxBudget,
-            decoration: MyDecorationHelper.inputDecorator(
-              hint: '1.000.000',
-              label: 'Max Budget (Monthtly)',
-            ),
+            decoration: MyDecorationHelper.inputDecorator(hint: '1.000.000', label: 'Max Budget (Monthtly)'),
             inputFormatters: [
               CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
               LengthLimitingTextInputFormatter(13),
@@ -333,20 +331,49 @@ class HomeController extends GetxController with StateMixin {
           ),
 
           /// field amount
-          TextField(
-            controller: _tfAmount,
-            decoration: MyDecorationHelper.inputDecorator(hint: '10.000', label: 'Amount'),
-            style: TextStyle(fontSize: 13),
-            inputFormatters: [
-              CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
-              LengthLimitingTextInputFormatter(13),
+          HStack(
+            [
+              TextField(
+                controller: _tfAmount,
+                decoration: MyDecorationHelper.inputDecorator(
+                  hint: '10.000',
+                  label: 'Amount',
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.calculate, size: 16, color: Colors.white),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        isScrollControlled: true,
+                        context: Get.context!,
+                        builder: (context) => FractionallySizedBox(
+                          heightFactor: 0.7,
+                          child: SimpleCalculator(
+                            autofocus: true,
+                            hideSurroundingBorder: true,
+                            value: _tfAmount.text.moneyUnformat()?.toDouble() ?? 0.0,
+                            onTappedDisplay: (p0, p1) => Get.back(),
+                            onChanged: (key, value, expression) {
+                              final moneyFormat = value!.toString().toInt()?.moneyFormat() ?? '';
+                              _tfAmount.text = moneyFormat;
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                style: TextStyle(fontSize: 13),
+                inputFormatters: [
+                  CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
+                  LengthLimitingTextInputFormatter(13),
+                ],
+                keyboardType: TextInputType.number,
+                onSubmitted: (_) => {
+                  _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
+                  customCallback?.call(),
+                },
+              ).wh(250, 33).expand(),
             ],
-            keyboardType: TextInputType.number,
-            onSubmitted: (_) => {
-              _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
-              customCallback?.call(),
-            },
-          ).wh(250, 33).pOnly(bottom: 8),
+          ).pOnly(bottom: 8),
           Divider().pOnly(bottom: 8),
 
           /// action
@@ -400,7 +427,7 @@ class HomeController extends GetxController with StateMixin {
       date: tfDate.isNotEmptyAndNotNull ? tfDate : focusedDay.value.toStringEx(format: 'yyyy-MM-dd'),
       amount: tfAmount.moneyUnformat(),
       categoryName: tfCategory,
-      note: tfNote,
+      note: '${tfNote.toTitleCase}',
     );
 
     try {
@@ -409,7 +436,7 @@ class HomeController extends GetxController with StateMixin {
       } else {
         await repo.addExpense(entity);
       }
-      await repo.addAutoComplete('$tfNote', categoryName: '${entity.categoryName}', amount: '${entity.amount}');
+      await repo.addAutoComplete('${tfNote.toTitleCase}', categoryName: '${entity.categoryName}', amount: '${entity.amount}');
       await getExpense();
     } catch (e) {
       ExSnackbar.danger('$e', duration: 5);

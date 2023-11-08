@@ -276,14 +276,12 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget floatingActionButton() {
-    if (Get.context!.isMobile && controller.expenseList.isNotEmpty) {
-      return FloatingActionButton(
-        backgroundColor: Vx.neutral600,
-        child: Icon(Icons.add, color: Colors.white),
-        onPressed: () => controller.onShowDialogExpense(),
-      ).pOnly(bottom: 60);
-    } else {
-      return 0.heightBox;
-    }
+    return Obx(() => controller.expenseList.isNotEmpty
+        ? FloatingActionButton(
+            backgroundColor: Vx.neutral600,
+            child: Icon(Icons.add, color: Colors.white),
+            onPressed: () => controller.onShowDialogExpense(),
+          ).pOnly(bottom: 60)
+        : 0.heightBox);
   }
 }

@@ -46,7 +46,10 @@ class SectionAppConfig extends GetView<SettingsController> {
           HStack([
             'Max Flag Hemat Day:'.text.make().w(200),
             TextField(
-              decoration: MyDecorationHelper.inputDecorator(hint: '< 50.000', prefixIcon: 'Rp. '.text.make().pOnly(top: 4, left: 12)),
+              decoration: MyDecorationHelper.inputDecorator(
+                hint: '< 50.000',
+                prefixIcon: 'Rp. '.text.make().pOnly(top: 4, left: 12),
+              ),
               style: TextStyle(fontSize: 13),
             ).h(28).expand(),
             Icon(Icons.circle, color: Vx.green300, size: 8).pOnly(left: 8),
@@ -57,7 +60,10 @@ class SectionAppConfig extends GetView<SettingsController> {
           HStack([
             'Max Flag Standart Day:'.text.make().w(200),
             TextField(
-              decoration: MyDecorationHelper.inputDecorator(hint: '< 100.000', prefixIcon: 'Rp. '.text.make().pOnly(top: 4, left: 12)),
+              decoration: MyDecorationHelper.inputDecorator(
+                hint: '< 100.000',
+                prefixIcon: 'Rp. '.text.make().pOnly(top: 4, left: 12),
+              ),
               style: TextStyle(fontSize: 13),
             ).h(28).expand(),
             Icon(Icons.circle, color: Vx.orange300, size: 8).pOnly(left: 8),
@@ -68,7 +74,10 @@ class SectionAppConfig extends GetView<SettingsController> {
           HStack([
             'Max Flag Boros Day:'.text.make().w(200),
             TextField(
-              decoration: MyDecorationHelper.inputDecorator(hint: '> 100.000', prefixIcon: 'Rp. '.text.make().pOnly(top: 4, left: 12)),
+              decoration: MyDecorationHelper.inputDecorator(
+                hint: '> 100.000',
+                prefixIcon: 'Rp. '.text.make().pOnly(top: 4, left: 12),
+              ),
               style: TextStyle(fontSize: 13),
             ).h(28).expand(),
             Icon(Icons.circle, color: Vx.red500, size: 8).pOnly(left: 8),
