@@ -344,9 +344,9 @@ class HomeController extends GetxController with StateMixin {
                   LengthLimitingTextInputFormatter(13),
                 ],
                 keyboardType: TextInputType.number,
-                onSubmitted: (_) => {
-                  _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
-                  customCallback?.call(),
+                onSubmitted: (_) async => {
+                  await _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
+                  await customCallback?.call(),
                 },
               ).wh(250, 33).expand(),
             ],
@@ -368,7 +368,7 @@ class HomeController extends GetxController with StateMixin {
                     await repo.deleteExpense(expense.id!);
                     await getExpense();
                     await _onCalenderRefreshEvent();
-                    customCallback?.call();
+                    await customCallback?.call();
 
                     Get.back();
                   },
@@ -381,9 +381,9 @@ class HomeController extends GetxController with StateMixin {
                 labelColor: Vx.white,
                 borderColor: Vx.white,
                 radius: 4,
-                onPressed: () => {
-                  _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
-                  customCallback?.call(),
+                onPressed: () async => {
+                  await _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
+                  await customCallback?.call(),
                 },
               ).expand(),
             ],

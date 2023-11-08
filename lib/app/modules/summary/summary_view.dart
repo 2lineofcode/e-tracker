@@ -176,7 +176,7 @@ class SummaryView extends GetView<SummaryController> {
               'Remaining Budget'.text.size(11).make().pOnly(right: 8),
               Container(
                 color: Colors.blue,
-                child: '${controller.monthSelected.value}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
+                child: '${controller.monthSelected.value} ${controller.yearSelected.value}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
               ).cornerRadius(4),
               Spacer(),
               Obx(() => '${MoneyHelper.toRupiah(controller.countRemainingBudget.value)}'.text.bold.size(16).make()),
@@ -278,6 +278,7 @@ class SummaryView extends GetView<SummaryController> {
                               .text
                               .size(11)
                               .minFontSize(11)
+                              .bold
                               .color(
                                 (total / item.maxBudget * 100).toString().toInt()! < 50
                                     ? Vx.green300
@@ -287,19 +288,19 @@ class SummaryView extends GetView<SummaryController> {
                               )
                               .make(),
                           ' / '.text.size(11).minFontSize(11).make(),
-                          '${MoneyHelper.toRupiah(item.maxBudget)}'.text.size(11).minFontSize(11).make(),
+                          '${MoneyHelper.toRupiah(item.maxBudget)}'.text.size(12).minFontSize(11).make(),
                         ]),
                       ]).expand(),
                     ] else ...[
                       VStack([
                         MyPercentageBar(value: 0, color1: Colors.red, color2: Vx.neutral700, radius: 8).pOnly(bottom: 4),
                         HStack([
+                          '${MoneyHelper.toRupiah(total)}'.text.bold.size(11).minFontSize(11).blue300.make(),
+                          Spacer(),
                           InkWell(
                             onTap: () => Get.find<HomeController>().onEditCategory(entity: item),
                             child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
                           ),
-                          Spacer(),
-                          '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).blue300.make(),
                         ]),
                       ]).expand(),
                     ],
@@ -317,7 +318,7 @@ class SummaryView extends GetView<SummaryController> {
     return HStack([
       Obx(() => 'Expenditure in ${controller.yearSelected}:'.text.make()),
       Spacer(),
-      Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.make()),
+      Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.bold.red200.make()),
     ]).p12();
   }
 }

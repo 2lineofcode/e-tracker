@@ -81,22 +81,24 @@ class SummaryController extends GetxController with StateMixin {
   }
 
   Future<void> onYearPrev() async {
+    isShowAllYear.value = false;
     yearSelected.value = (yearSelected.value.toInt()! - 1).toString();
-    // await onMonthChange('Januari');
     await getCountOnly1Year(yearSelected.value);
     await getCountAllMonth(yearSelected.value);
   }
 
   Future<void> onYearNow() async {
+    isShowAllYear.value = false;
     yearSelected.value = DateTime.now().toStringEx(format: 'yyyy');
-    // await onMonthChange(DateTime.now().toStringEx(format: 'MMMM'));
+    monthSelected.value = DateTime.now().toStringEx(format: 'MMMM');
+    await onMonthChange(monthSelected.value);
     await getCountOnly1Year(yearSelected.value);
     await getCountAllMonth(yearSelected.value);
   }
 
   Future<void> onYearNext() async {
+    isShowAllYear.value = false;
     yearSelected.value = (yearSelected.value.toInt()! + 1).toString();
-    // await onMonthChange('Januari');
     await getCountOnly1Year(yearSelected.value);
     await getCountAllMonth(yearSelected.value);
   }

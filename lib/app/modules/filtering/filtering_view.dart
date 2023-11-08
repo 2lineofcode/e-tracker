@@ -145,6 +145,7 @@ class FilteringView extends GetView<FilteringController> {
             groupBy: (element) => element.date!,
             useStickyGroupSeparators: true,
             floatingHeader: true,
+            order: GroupedListOrder.DESC,
             groupHeaderBuilder: (element) {
               return Container(
                 width: double.infinity,
@@ -159,7 +160,7 @@ class FilteringView extends GetView<FilteringController> {
                       size: 7,
                       color: MoneyHelper.getExpenseFlagColor(controller.sumByDate[element.date]!),
                     ).tooltip('${MoneyHelper.getExpenseFlagText(controller.sumByDate[element.date]!)}').pOnly(right: 8),
-                    '${element.date!.reformatDate(from: 'yyyy-MM-dd', to: 'dd/MM/y (E)')}'.text.size(11).make(),
+                    '${element.date!.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM y (E)')}'.text.size(11).make(),
                     Spacer(),
                     '${MoneyHelper.toRupiah(controller.sumByDate[element.date]!)}'.text.size(12).make(),
                   ],
@@ -186,7 +187,9 @@ class FilteringView extends GetView<FilteringController> {
                         onPressed: () async {
                           await controller.home.onShowDialogExpense(
                             expense: item,
-                            customCallback: () => controller.findExpense(item.categoryName!),
+                            customCallback: () async {
+                              await controller.findExpense(item.categoryName!);
+                            },
                           );
                         },
                       ),
