@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
@@ -26,7 +27,7 @@ Future<void> main() async {
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = WindowOptions(
       size: Size(655, 700),
-      // minimumSize: Size(655, 700),
+      minimumSize: kReleaseMode ? Size(655, 700) : null,
       center: true,
       backgroundColor: Colors.transparent,
       skipTaskbar: false,

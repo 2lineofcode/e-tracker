@@ -2,8 +2,6 @@ import 'dart:collection';
 
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex/ex.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
@@ -16,7 +14,7 @@ import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
-import '../widgets/widgets.dart';
+import '../widgets/widget_autocomplete.dart';
 import 'home_repository.dart';
 
 class HomeController extends GetxController with StateMixin {
@@ -279,45 +277,24 @@ class HomeController extends GetxController with StateMixin {
               onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => _tfDate.text = c.toStringEx(format: 'yyyy-MM-dd')),
             ).wh(250, 33).pOnly(bottom: 16),
           ],
-
-          if (!kIsWeb) ...[
-            MyAutoComplete(
-              controller: _tfNote,
-              autofocus: expense == null,
-              decoration: MyDecorationHelper.inputDecorator(hint: 'Nasi Padang', label: 'Notes'),
-              inputTextStyle: TextStyle(fontSize: 13),
-              progressIndicatorBuilder: CupertinoActivityIndicator(color: Colors.white),
-              asyncSuggestions: (s) async {
-                if (s.isEmpty) {
-                  return [];
-                } else {
-                  return await repo.findAutoCompleteStringNote(s);
-                }
-              },
-              onChanged: (value) => _tfNote.text = value,
-              onSubmitted: (value) async {
-                _tfNote.text = value;
-                await repo.findAutoCompleteFullObject(value).then((res) {
-                  _tfCategory.value = res[0].categoryName ?? '';
-                  _tfAmount.text = res[0].amount?.toInt()?.moneyFormat() ?? '';
-                });
-              },
-            ).w(250).pOnly(bottom: 16),
-          ] else ...[
-            TextField(
-              controller: _tfNote,
-              autofocus: expense == null,
-              decoration: MyDecorationHelper.inputDecorator(hint: 'Nasi Padang', label: 'Notes'),
-              style: TextStyle(fontSize: 13),
-              onSubmitted: (value) async {
-                _tfNote.text = value;
-                await repo.findAutoCompleteFullObject(value).then((res) {
-                  _tfCategory.value = res[0].categoryName ?? '';
-                  _tfAmount.text = res[0].amount?.toInt()?.moneyFormat() ?? '';
-                });
-              },
-            ).wh(250, 33).pOnly(bottom: 16),
-          ],
+          MyAutoComplete(
+            autofocus: expense == null,
+            initialValue: _tfNote.value,
+            asyncSuggestions: (s) async {
+              if (s.text.isBlank!) return [];
+              return await repo.findAutoCompleteStringNote(s.text);
+            },
+            decoration: MyDecorationHelper.inputDecorator(hint: 'Nasi Padang', label: 'Notes'),
+            onChanged: (s) => _tfNote.text = s,
+            onSelected: (s) async {
+              _tfNote.text = s;
+              await repo.findAutoCompleteFullObject(s).then((res) {
+                _tfCategory.value = res[0].categoryName ?? '';
+                _tfAmount.text = res[0].amount?.toInt()?.moneyFormat() ?? '';
+              });
+            },
+          ).wh(250, 33).pOnly(bottom: 16),
+          // ],
 
           /// field category
           Obx(

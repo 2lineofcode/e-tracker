@@ -58,6 +58,7 @@ class HomeView extends GetView<HomeController> {
   Widget appBarAction() {
     return HStack(
       [
+        /// Desktop Only
         if (!Get.context!.isMobile) ...[
           TextField(
             controller: controller.tfSearchExpense,
