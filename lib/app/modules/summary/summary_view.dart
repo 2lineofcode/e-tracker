@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
 import '../home/home_controller.dart';
 import '../widgets/widget_shimmer_summary.dart';
@@ -46,7 +47,7 @@ class SummaryView extends GetView<SummaryController> {
                   fillColor: controller.isShowAllYear.isTrue ? Colors.blue : Colors.transparent,
                   borderColor: controller.isShowAllYear.isTrue ? Colors.blue : Vx.neutral400,
                 ),
-                child: ' Show All '.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
+                child: ' Show All '.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 4),
               ).pOnly(left: 4),
             ),
           ),
@@ -109,145 +110,206 @@ class SummaryView extends GetView<SummaryController> {
     return controller.obx(
       (state) => VStack(
         [
-          /// summaries ~
-          Container(
-            width: double.infinity,
-            decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
-            child: VStack(
-              [
-                /// col1
-                HStack(
-                  [
-                    'Remaining Budget'.text.size(11).make().pOnly(right: 8),
-                    Container(
-                      color: Colors.blue,
-                      child: '${controller.monthSelected.value}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
-                    ).cornerRadius(4),
-                    Spacer(),
-                    Obx(() => '${MoneyHelper.toRupiah(controller.countRemainingBudget.value)}'.text.bold.size(16).make()),
-                  ],
-                ),
+          /// header ~
+          if (controller.isShowAllYear.isTrue) headerAllYear() else headerPerMonth(),
 
-                /// col2
-                MyPercentageBar(
-                  value: (controller.countPercentage.value * 100).toInt(),
-                  color1: (controller.countPercentage.value * 100).toInt() < 50
-                      ? Vx.green300
-                      : (controller.countPercentage.value * 100).toInt() < 100
-                          ? Vx.orange300
-                          : Vx.red500,
-                  color2: Vx.neutral700,
-                  radius: 8,
-                ).pSymmetric(v: 12),
-
-                /// col3
-                HStack(
-                  [
-                    'Used: ${MoneyHelper.toPercentage(controller.countPercentage.value)}'.text.size(11).minFontSize(11).make().pOnly(left: 4),
-                    Spacer(),
-                    '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'
-                        .text
-                        .size(11)
-                        .bold
-                        .color(
-                          (controller.countPercentage.value * 100).toInt() < 50
-                              ? Vx.green300
-                              : (controller.countPercentage.value * 100).toInt() < 100
-                                  ? Vx.orange300
-                                  : Vx.red500,
-                        )
-                        .minFontSize(11)
-                        .make(),
-                    ' / '.text.size(11).minFontSize(11).make(),
-                    '${MoneyHelper.toRupiah(controller.countBudget.value)}'.text.size(11).minFontSize(11).make(),
-                  ],
-                ),
-              ],
-            ).p8(),
-          ),
           16.heightBox,
 
-          /// content
-          Container(
-            width: double.infinity,
-            decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
-            child: VStack(
-              [
-                Obx(
-                  () => ListView.separated(
-                    itemCount: controller.category.length,
-                    separatorBuilder: (context, index) => Divider(),
-                    itemBuilder: (context, index) {
-                      final item = controller.category[index];
-                      final total = controller.countByCategory[index]['total'];
-                      return HStack(
-                        [
-                          /// 1
-                          VStack([
-                            '${item.name}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
-                            if (item.maxBudget != null && item.maxBudget! > 0) ...[
-                              '${MoneyHelper.toRupiah(item.maxBudget! - total)}'.text.size(11).bold.make(),
-                            ] else ...[
-                              'No Budget'.text.size(11).bold.make(),
-                            ],
-                          ]).w(150).pOnly(right: 12),
-
-                          /// 2
-                          if (item.maxBudget != null && item.maxBudget! > 0) ...[
-                            VStack([
-                              MyPercentageBar(
-                                value: (total / item.maxBudget * 100).toString().toInt() ?? 0,
-                                color1: (total / item.maxBudget * 100).toString().toInt()! < 50
-                                    ? Vx.green300
-                                    : (total / item.maxBudget * 100).toString().toInt()! < 100
-                                        ? Vx.orange300
-                                        : Vx.red500,
-                                color2: Vx.neutral700,
-                                radius: 8,
-                              ).pOnly(bottom: 4),
-                              HStack([
-                                ' ${(total / item.maxBudget * 100).toString().toInt()}% '.text.size(11).minFontSize(11).make(),
-                                Spacer(),
-                                '${MoneyHelper.toRupiah(total)}'
-                                    .text
-                                    .size(11)
-                                    .minFontSize(11)
-                                    .color(
-                                      (total / item.maxBudget * 100).toString().toInt()! < 50
-                                          ? Vx.green300
-                                          : (total / item.maxBudget * 100).toString().toInt()! < 100
-                                              ? Vx.orange300
-                                              : Vx.red300,
-                                    )
-                                    .make(),
-                                ' / '.text.size(11).minFontSize(11).make(),
-                                '${MoneyHelper.toRupiah(item.maxBudget)}'.text.size(11).minFontSize(11).make(),
-                              ]),
-                            ]).expand(),
-                          ] else ...[
-                            VStack([
-                              MyPercentageBar(value: 0, color1: Colors.red, color2: Vx.neutral700, radius: 8).pOnly(bottom: 4),
-                              HStack([
-                                InkWell(
-                                  onTap: () => Get.find<HomeController>().onEditCategory(entity: item),
-                                  child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
-                                ),
-                                Spacer(),
-                                '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).blue300.make(),
-                              ]),
-                            ]).expand(),
-                          ],
-                        ],
-                      ).onInkTap(() => controller.goAdvanceFilter(item.name!)).pOnly(bottom: 12);
-                    },
-                  ).expand(),
-                ),
-              ],
-            ).p12(),
-          ).expand(),
+          /// detail
+          if (controller.isShowAllYear.isTrue) detailAllYear().expand() else detailPerMonth().expand(),
         ],
       ).p12(),
       onLoading: MyShimmerSummary(),
+    );
+  }
+
+  Widget headerAllYear() {
+    return Container(
+      width: double.infinity,
+      decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
+      child: VStack(
+        [
+          'Total Expense ${controller.yearSelected}'.text.size(12).make().pOnly(bottom: 8),
+          '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.bold.size(16).make(),
+        ],
+      ).p12(),
+    );
+  }
+
+  Widget detailAllYear() {
+    return Container(
+      width: double.infinity,
+      decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
+      child: VStack(
+        [
+          Obx(
+            () => ListView.separated(
+              itemCount: controller.category.length,
+              separatorBuilder: (context, index) => Divider(),
+              itemBuilder: (context, index) {
+                final item = controller.category[index];
+                final total = controller.countByCategory[index]['total'];
+                return HStack(
+                  [
+                    Icon(Icons.circle_outlined, size: 12, color: HexColor.fromHex(item.color ?? '#ffffff')).pOnly(right: 8),
+                    '${item.name}'.text.ellipsis.maxLines(1).make().pOnly(bottom: 2).expand(),
+                    '${MoneyHelper.toRupiah(total)}'.text.make(),
+                  ],
+                ).onInkTap(() => controller.goAdvanceFilter(item.name!)).pOnly(bottom: 12);
+              },
+            ).expand(),
+          ),
+        ],
+      ).p12(),
+    );
+  }
+
+  Widget headerPerMonth() {
+    return Container(
+      width: double.infinity,
+      decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
+      child: VStack(
+        [
+          /// col1
+          HStack(
+            [
+              'Remaining Budget'.text.size(11).make().pOnly(right: 8),
+              Container(
+                color: Colors.blue,
+                child: '${controller.monthSelected.value}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
+              ).cornerRadius(4),
+              Spacer(),
+              Obx(() => '${MoneyHelper.toRupiah(controller.countRemainingBudget.value)}'.text.bold.size(16).make()),
+            ],
+          ),
+
+          /// col2
+          MyPercentageBar(
+            value: (controller.countPercentage.value * 100).toInt(),
+            color1: (controller.countPercentage.value * 100).toInt() < 50
+                ? Vx.green300
+                : (controller.countPercentage.value * 100).toInt() < 100
+                    ? Vx.orange300
+                    : Vx.red500,
+            color2: Vx.neutral700,
+            radius: 8,
+          ).pSymmetric(v: 12),
+
+          /// col3
+          HStack(
+            [
+              'Used: ${MoneyHelper.toPercentage(controller.countPercentage.value)}'.text.size(11).minFontSize(11).make().pOnly(left: 4),
+              Spacer(),
+              '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'
+                  .text
+                  .size(11)
+                  .bold
+                  .color(
+                    (controller.countPercentage.value * 100).toInt() < 50
+                        ? Vx.green300
+                        : (controller.countPercentage.value * 100).toInt() < 100
+                            ? Vx.orange300
+                            : Vx.red500,
+                  )
+                  .minFontSize(11)
+                  .make(),
+              ' / '.text.size(11).minFontSize(11).make(),
+              '${MoneyHelper.toRupiah(controller.countBudget.value)}'.text.size(11).minFontSize(11).make(),
+            ],
+          ),
+        ],
+      ).p8(),
+    );
+  }
+
+  Widget detailPerMonth() {
+    return Container(
+      width: double.infinity,
+      decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
+      child: VStack(
+        [
+          Obx(
+            () => ListView.separated(
+              itemCount: controller.category.length,
+              separatorBuilder: (context, index) => Divider(),
+              itemBuilder: (context, index) {
+                final item = controller.category[index];
+                final total = controller.countByCategory[index]['total'];
+
+                /// model compact
+                // return HStack(
+                //   [
+                //     Icon(Icons.circle_outlined, size: 12, color: HexColor.fromHex(item.color ?? '#ffffff')).pOnly(right: 8),
+                //     '${item.name}'.text.ellipsis.maxLines(1).make().pOnly(bottom: 2).expand(),
+                //     '${MoneyHelper.toRupiah(total)}'.text.make(),
+                //   ],
+                // ).onInkTap(() => controller.goAdvanceFilter(item.name!)).pOnly(bottom: 12);
+
+                /// model detail
+                return HStack(
+                  [
+                    /// 1
+                    VStack([
+                      '${item.name}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
+                      if (item.maxBudget != null && item.maxBudget! > 0) ...[
+                        '${MoneyHelper.toRupiah(item.maxBudget! - total)}'.text.size(11).bold.make(),
+                      ] else ...[
+                        'No Budget'.text.size(11).bold.make(),
+                      ],
+                    ]).w(150).pOnly(right: 12),
+
+                    /// 2
+                    if (item.maxBudget != null && item.maxBudget! > 0) ...[
+                      VStack([
+                        MyPercentageBar(
+                          value: (total / item.maxBudget * 100).toString().toInt() ?? 0,
+                          color1: (total / item.maxBudget * 100).toString().toInt()! < 50
+                              ? Vx.green300
+                              : (total / item.maxBudget * 100).toString().toInt()! < 100
+                                  ? Vx.orange300
+                                  : Vx.red500,
+                          color2: Vx.neutral700,
+                          radius: 8,
+                        ).pOnly(bottom: 4),
+                        HStack([
+                          ' ${(total / item.maxBudget * 100).toString().toInt()}% '.text.size(11).minFontSize(11).make(),
+                          Spacer(),
+                          '${MoneyHelper.toRupiah(total)}'
+                              .text
+                              .size(11)
+                              .minFontSize(11)
+                              .color(
+                                (total / item.maxBudget * 100).toString().toInt()! < 50
+                                    ? Vx.green300
+                                    : (total / item.maxBudget * 100).toString().toInt()! < 100
+                                        ? Vx.orange300
+                                        : Vx.red300,
+                              )
+                              .make(),
+                          ' / '.text.size(11).minFontSize(11).make(),
+                          '${MoneyHelper.toRupiah(item.maxBudget)}'.text.size(11).minFontSize(11).make(),
+                        ]),
+                      ]).expand(),
+                    ] else ...[
+                      VStack([
+                        MyPercentageBar(value: 0, color1: Colors.red, color2: Vx.neutral700, radius: 8).pOnly(bottom: 4),
+                        HStack([
+                          InkWell(
+                            onTap: () => Get.find<HomeController>().onEditCategory(entity: item),
+                            child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
+                          ),
+                          Spacer(),
+                          '${MoneyHelper.toRupiah(total)}'.text.size(11).minFontSize(11).blue300.make(),
+                        ]),
+                      ]).expand(),
+                    ],
+                  ],
+                ).onInkTap(() => controller.goAdvanceFilter(item.name!)).pOnly(bottom: 12);
+              },
+            ).expand(),
+          ),
+        ],
+      ).p12(),
     );
   }
 
@@ -255,7 +317,7 @@ class SummaryView extends GetView<SummaryController> {
     return HStack([
       Obx(() => 'Expenditure in ${controller.yearSelected}:'.text.make()),
       Spacer(),
-      Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.red400.make()),
+      Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.make()),
     ]).p12();
   }
 }

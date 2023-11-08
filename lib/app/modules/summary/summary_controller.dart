@@ -55,13 +55,12 @@ class SummaryController extends GetxController with StateMixin {
   }
 
   Future<void> onShowAllYear() async {
-    closeDrawer();
     change(0, status: RxStatus.loading());
-
     if (isShowAllYear.value == false) {
+      closeDrawer();
+      isShowAllYear.value = true;
       countOnly1Month.value = await repo.getCountOnly1Year('${yearSelected.value}');
       monthSelected.value = '${yearSelected.value}';
-      isShowAllYear.value = true;
 
       /// custom
       countByCategory.clear();
@@ -73,8 +72,8 @@ class SummaryController extends GetxController with StateMixin {
         });
       }
     } else {
-      monthSelected.value = '${DateTime.now().toStringEx(format: 'MMMM')}';
       isShowAllYear.value = false;
+      monthSelected.value = '${DateTime.now().toStringEx(format: 'MMMM')}';
       await onMonthChange(monthSelected.value);
     }
 
