@@ -1,8 +1,0 @@
--- seed category
--- insert into category (id, name, created_at, max_budget, color) values (gen_random_uuid(), 'Jajan', now(), 200000, '#73F1CF');
--- insert into category (id, name, created_at, max_budget, color) values (gen_random_uuid(), 'Shopping', now(), 250000, '#FFC300');
--- insert into category (id, name, created_at, max_budget, color) values (gen_random_uuid(), 'Bill', now(), 450000, '#ffff0f');
--- insert into category (id, name, created_at, max_budget, color) values (gen_random_uuid(), 'Smoking', now(), 500000, '#FFFFFF');
--- insert into category (id, name, created_at, max_budget, color) values (gen_random_uuid(), 'Living', now(), 700000, '#E173F1');
--- insert into category (id, name, created_at, max_budget, color) values (gen_random_uuid(), 'Food', now(), 1000000, '#AFDD00');
--- insert into category (id, name, created_at, max_budget, color) values (gen_random_uuid(), 'Others', now(), null, '#FFFFAA');

@@ -46,3 +46,4 @@ app.*.map.json
 .metadata
 *.lock
 .firebase/**
+supabase**
