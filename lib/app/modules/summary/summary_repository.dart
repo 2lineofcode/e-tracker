@@ -1,38 +1,25 @@
+import 'package:ex/ex.dart';
+
 import '../../core/const.dart';
-import '../../models/category_entity.dart';
+import '../../models/rpc_sum_all_month_entity.dart';
+import '../../models/rpc_sum_by_category_entity.dart';
 
 class SummaryRepository {
-  Future<List<CategoryEntity>> getCategory() async {
-    final response = await db.from('category').select().order('id', ascending: true).withConverter<List<CategoryEntity>>((data) {
-      return (data as List).map((e) => CategoryEntity.fromJson(e)).toList();
+  /// rpc
+  Future<List<RpcSumAllMonthEntity>> getSumAllMonth({required String year}) async {
+    return await db.rpc('sum_all_month', params: {
+      'year_param': year.toInt(),
+    }).withConverter<List<RpcSumAllMonthEntity>>((data) {
+      return (data as List).map((e) => RpcSumAllMonthEntity.fromJson(e)).toList();
     });
-    return response;
   }
 
-  Future<int> getCountOnly1Month(String date) async {
-    final response = await db.from('expense').select('amount').like('date', '%$date%');
-    num x = 0;
-    for (var element in (response as List)) {
-      x += element['amount'] ?? 0;
-    }
-    return x.toInt();
-  }
-
-  Future<int> getCountOnly1Year(String date) async {
-    final response = await db.from('expense').select('amount').like('date', '%$date%');
-    num x = 0;
-    for (var element in (response as List)) {
-      x += element['amount'] ?? 0;
-    }
-    return x.toInt();
-  }
-
-  Future<int?> getByCategory(String categoryName, String date) async {
-    final response = await db.from('expense').select('amount, category_name').eq('category_name', categoryName).ilike('date', '%$date%');
-    num x = 0;
-    for (var element in (response as List)) {
-      x += element['amount'] ?? 0;
-    }
-    return x.toInt();
+  Future<List<RpcSumByCategoryEntity>> getSumByCategory({required String year, String? month}) async {
+    final fixYM = '$year${month != null ? '-${month.reformatDate(from: 'MMMM', to: 'MM')}' : ''}';
+    return await db.rpc('sum_by_category', params: {
+      'periode': fixYM,
+    }).withConverter<List<RpcSumByCategoryEntity>>((data) {
+      return (data as List).map((e) => RpcSumByCategoryEntity.fromJson(e)).toList();
+    });
   }
 }

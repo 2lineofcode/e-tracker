@@ -6,6 +6,7 @@ import 'package:flutter_month_picker/flutter_month_picker.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 
+import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
 import '../../models/expense_entity.dart';
@@ -83,10 +84,10 @@ class FilteringView extends GetView<FilteringController> {
 
                 // startDate
                 Obx(
-                  () => '${controller.startDate.value.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM yyyy')}'.text.underline.size(12).make().onInkTap(
+                  () => '${controller.startDate.value.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.underline.size(12).make().onInkTap(
                     () async {
                       final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
-                      if (date != null) controller.startDate.value = '${date.toStringEx(format: 'yyyy-MM')}-01';
+                      if (date != null) controller.startDate.value = '${date.toStringEx(format: yM)}-01';
                       await controller.findExpense(controller.categorySelected.value);
                     },
                   ),
@@ -96,10 +97,10 @@ class FilteringView extends GetView<FilteringController> {
 
                 // endDate
                 Obx(
-                  () => '${controller.endDate.value.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM yyyy')}'.text.underline.size(12).make().onInkTap(
+                  () => '${controller.endDate.value.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.underline.size(12).make().onInkTap(
                     () async {
                       final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
-                      if (date != null) controller.endDate.value = '${date.toStringEx(format: 'yyyy-MM')}-31';
+                      if (date != null) controller.endDate.value = '${date.toStringEx(format: yM)}-31';
                       await controller.findExpense(controller.categorySelected.value);
                     },
                   ),
@@ -160,7 +161,7 @@ class FilteringView extends GetView<FilteringController> {
                       size: 7,
                       color: MoneyHelper.getExpenseFlagColor(controller.sumByDate[element.date]!),
                     ).tooltip('${MoneyHelper.getExpenseFlagText(controller.sumByDate[element.date]!)}').pOnly(right: 8),
-                    '${element.date!.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM y (E)')}'.text.size(11).make(),
+                    '${element.date!.reformatDate(from: yMd, to: 'dd MMM y (E)')}'.text.size(11).make(),
                     Spacer(),
                     '${MoneyHelper.toRupiah(controller.sumByDate[element.date]!)}'.text.size(12).make(),
                   ],

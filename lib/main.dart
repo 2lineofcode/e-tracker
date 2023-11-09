@@ -28,12 +28,13 @@ Future<void> main() async {
 
   /// desktop only
   if (PlatformUtil.isDesktop()) {
+    final idealSize = Size(675, 700);
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = WindowOptions(
       title: dotenv.get('APP_NAME'),
-      size: Size(655, 700),
-      minimumSize: kReleaseMode ? Size(655, 700) : null,
-      maximumSize: Platform.isWindows ? Size(655, 700) : null,
+      size: idealSize,
+      minimumSize: kReleaseMode ? idealSize : null,
+      maximumSize: Platform.isWindows ? idealSize : null,
       titleBarStyle: Platform.isMacOS ? TitleBarStyle.hidden : TitleBarStyle.normal,
       alwaysOnTop: Platform.isWindows ? true : false,
       center: true,

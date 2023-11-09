@@ -3,6 +3,12 @@ supabase link --project-ref nytddmoffawejkpzggzr
 supabase db pull
 supabase migration up 
 supabase status
+---
+
+# copy remote data db to local db
+supabase db dump --db-url "postgres://postgres.nytddmoffawejkpzggzr:"AdityaPratama"@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres" -f data.sql --data-only
+---
+
 
 # supabase local development setup is running.
 API URL: http://127.0.0.1:54321

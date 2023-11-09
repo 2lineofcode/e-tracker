@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../core/const.dart';
 import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
@@ -142,7 +143,7 @@ class HomeView extends GetView<HomeController> {
                     return ListTile(
                       title: HStack(
                         [
-                          Icon(Icons.circle_outlined, color: HexColor.fromHex(item.color ?? '#FFFFFF'), size: 12).pOnly(right: 8),
+                          Icon(Icons.circle_outlined, color: HexColor.fromHex(item.color ?? ''), size: 12).pOnly(right: 8),
                           '${item.name}'.text.size(12).make().pOnly(right: 8),
                           if (item.maxBudget != null) ...[
                             Container(
@@ -202,12 +203,14 @@ class HomeView extends GetView<HomeController> {
                             .pSymmetric(h: 4),
                       ),
                     ])
-                  : 'Search for: "${controller.tfSearchExpense.text}"'.text.bold.make(),
+                  : 'Search for: "${controller.tfSearchExpense.text}"'.text.bold.make().pOnly(bottom: 12),
             ).pSymmetric(h: 12).pOnly(top: 12),
 
             /// item
             Obx(
               () => controller.isSearchMode.isFalse
+
+                  /// normal view
                   ? ListView.builder(
                       itemCount: controller.expenseList.length,
                       itemBuilder: (context, index) {
@@ -220,7 +223,7 @@ class HomeView extends GetView<HomeController> {
                               VStack([
                                 Obx(
                                   () => controller.isSearchMode.isTrue
-                                      ? '${item.date!.reformatDate(from: 'yyyy-MM-dd', to: 'EEE, dd MMM yyyy')}'.text.size(11).minFontSize(11).make().pOnly(bottom: 8)
+                                      ? '${item.date!.reformatDate(from: yMd, to: 'EEE, dd MMM yyyy')}'.text.size(11).minFontSize(11).make().pOnly(bottom: 8)
                                       : Container(),
                                 ),
                                 '${item.note}'.text.bold.make().pOnly(bottom: 4),
@@ -233,36 +236,37 @@ class HomeView extends GetView<HomeController> {
                         ).pSymmetric(h: 8, v: 4).onTap(() => controller.onShowDialogExpense(expense: item));
                       },
                     ).pSymmetric(v: 8).expand()
+
+                  /// search mode view
                   : GroupedListView<ExpenseEntity, String>(
                       elements: controller.expenseList,
                       groupBy: (element) => element.date ?? '',
                       useStickyGroupSeparators: true,
                       floatingHeader: true,
                       order: GroupedListOrder.DESC,
-                      groupHeaderBuilder: (element) {
-                        return Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(color: Vx.neutral700),
-                          child: HStack([
-                            '${element.date!.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM y (E)')}'.text.size(11).make(),
-                          ]).p8(),
-                        );
-                      },
-                      indexedItemBuilder: (context, item, index) {
-                        return SizedBox(
-                          width: double.infinity,
-                          child: Row(
-                            children: [
-                              VStack([
-                                '${item.note}'.text.bold.make().pOnly(bottom: 4),
+                      groupHeaderBuilder: (element) => Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(color: Vx.neutral700),
+                        child: HStack([
+                          '${element.date!.reformatDate(from: yMd, to: 'dd MMM y (E)')}'.text.size(11).bold.make(),
+                        ]).p8(),
+                      ).onTap(() async => await controller.onCalenderGoDate(element)),
+                      indexedItemBuilder: (context, item, index) => SizedBox(
+                        width: double.infinity,
+                        child: Row(
+                          children: [
+                            VStack([
+                              '${item.note}'.text.make().pOnly(bottom: 4),
+                              HStack([
+                                Icon(Icons.circle_outlined, size: 8, color: HexColor.fromHex(item.category?.color ?? '')).pOnly(right: 8),
                                 '${item.categoryName}'.text.size(12).make(),
                               ]),
-                              Spacer(),
-                              '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.bold.size(16).make(),
-                            ],
-                          ).p12(),
-                        ).pSymmetric(h: 8, v: 4).onTap(() => controller.onShowDialogExpense(expense: item));
-                      },
+                            ]),
+                            Spacer(),
+                            '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.bold.size(16).make(),
+                          ],
+                        ).p12(),
+                      ).pSymmetric(h: 8, v: 4).onInkTap(() => controller.onShowDialogExpense(expense: item)),
                     ).pSymmetric(v: 8).expand(),
             ),
 

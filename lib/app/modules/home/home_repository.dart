@@ -8,7 +8,7 @@ class HomeRepository {
   // category
   // ------------------------------------------------------------------------
   Future<List<CategoryEntity>> getCategory() async {
-    final response = await db.from('category').select().order('max_budget', ascending: false).withConverter<List<CategoryEntity>>((data) {
+    final response = await db.from('category').select().order('max_budget').withConverter<List<CategoryEntity>>((data) {
       return (data as List).map((e) => CategoryEntity.fromJson(e)).toList();
     });
     return response;
@@ -20,7 +20,7 @@ class HomeRepository {
   }
 
   Future<void> editCategory(CategoryEntity categoryEntity) async {
-    final response = await db.from('category').update(categoryEntity.toJson()).match({'id': categoryEntity.id});
+    final response = await db.from('category').update(categoryEntity.toJson()).match({'name': categoryEntity.name});
     return response;
   }
 
@@ -32,13 +32,21 @@ class HomeRepository {
   // ------------------------------------------------------------------------
   // expense
   // ------------------------------------------------------------------------
+
+  // get all list
   Future<List<ExpenseEntity>> getExpenseAll() async {
-    final response = await db.from('expense').select().order('date').withConverter<List<ExpenseEntity>>((data) {
+    final response = await db
+        .from('expense')
+        //
+        .select('date, amount')
+        .order('date')
+        .withConverter<List<ExpenseEntity>>((data) {
       return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
     return response;
   }
 
+  // get list by @date
   Future<List<ExpenseEntity>> getExpense(String date) async {
     final response = await db.from('expense').select().eq('date', date).order('amount').withConverter<List<ExpenseEntity>>((data) {
       return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
@@ -46,13 +54,21 @@ class HomeRepository {
     return response;
   }
 
+  // find list by @note or @category.name
   Future<List<ExpenseEntity>> findExpense(String name) async {
-    final response = await db.from('expense').select().ilike('note', '%$name%').order('date').withConverter<List<ExpenseEntity>>((data) {
+    final response = await db
+        .from('expense')
+        //
+        .select('*, category(color, icon)')
+        .or('note.ilike.%$name%, category_name.ilike.%$name%')
+        .order('date')
+        .withConverter<List<ExpenseEntity>>((data) {
       return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
     return response;
   }
 
+  //
   Future<int> getCount1Month(String date) async {
     final response = await db.from('expense').select('amount, date').like('date', '%$date%');
     num x = 0;

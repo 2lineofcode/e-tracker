@@ -2,9 +2,12 @@ import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:uuid/v4.dart';
 
+import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
+import '../../models/category_entity.dart';
 import '../home/home_controller.dart';
 import '../widgets/widget_shimmer_summary.dart';
 import '../widgets/widgets.dart';
@@ -72,33 +75,34 @@ class SummaryView extends GetView<SummaryController> {
         () => ListView.separated(
           padding: EdgeInsets.zero,
           physics: ClampingScrollPhysics(),
-          itemCount: controller.monthList.length,
+          itemCount: controller.rpcSumAllMonth.length,
           separatorBuilder: (context, index) => 12.heightBox,
           itemBuilder: (context, index) {
-            final item = controller.monthList[index];
-
+            final item = controller.rpcSumAllMonth[index];
+            final period = item.period.toString().reformatDate(from: yM, to: 'MMMM');
+            final total = item.total.toString().toInt() ?? 0;
             return Obx(
-              () => Container(
-                decoration: ExDecorator.box(
-                  fillColor: item == controller.monthSelected.value ? Colors.blue : Colors.transparent,
-                  borderColor: Colors.transparent,
-                ),
-                child: HStack(
-                  [
-                    '$item'.text.size(11).make().pOnly(right: 8),
-                    Obx(
-                      () => controller.countByMonth.length >= 12 && controller.countByMonth[index] != 0
-                          ? Container(
-                              color: Colors.white,
-                              child: '${controller.countByMonth[index].moneyFormatCompact()}'.text.black.size(9).minFontSize(9).bold.make().pSymmetric(h: 2, v: 1),
-                            ).cornerRadius(4)
-                          : 0.heightBox,
-                    ),
-                  ],
-                ).p8(),
-              ).onTap(() {
-                controller.onMonthChange(item);
-              }),
+              () {
+                return Container(
+                  decoration: ExDecorator.box(
+                    fillColor: period == controller.monthSelected.value ? Colors.blue : Colors.transparent,
+                    borderColor: Colors.transparent,
+                  ),
+                  child: HStack(
+                    [
+                      '$period'.text.size(11).make().pOnly(right: 8),
+                      if (total != 0) ...[
+                        Container(
+                          color: Colors.white,
+                          child: '${total.moneyFormatCompact()}'.text.black.size(9).minFontSize(9).bold.make().pSymmetric(h: 2, v: 1),
+                        ).cornerRadius(4)
+                      ],
+                    ],
+                  ).p8(),
+                ).onTap(() {
+                  controller.onMonthChange(period);
+                });
+              },
             );
           },
         ).expand(),
@@ -144,18 +148,17 @@ class SummaryView extends GetView<SummaryController> {
         [
           Obx(
             () => ListView.separated(
-              itemCount: controller.category.length,
+              itemCount: controller.rpcSumByCategory.length,
               separatorBuilder: (context, index) => Divider(),
               itemBuilder: (context, index) {
-                final item = controller.category[index];
-                final total = controller.countByCategory[index]['total'];
+                final item = controller.rpcSumByCategory[index];
                 return HStack(
                   [
-                    Icon(Icons.circle_outlined, size: 12, color: HexColor.fromHex(item.color ?? '#ffffff')).pOnly(right: 8),
-                    '${item.name}'.text.ellipsis.maxLines(1).make().pOnly(bottom: 2).expand(),
-                    '${MoneyHelper.toRupiah(total)}'.text.make(),
+                    Icon(Icons.circle_outlined, size: 12, color: HexColor.fromHex(item.categoryColor ?? '')).pOnly(right: 8),
+                    '${item.categoryName}'.text.ellipsis.maxLines(1).make().pOnly(bottom: 2).expand(),
+                    '${MoneyHelper.toRupiah(item.total)}'.text.make(),
                   ],
-                ).onInkTap(() => controller.goAdvanceFilter(item.name!)).pOnly(bottom: 12);
+                ).onInkTap(() => controller.goAdvanceFilter(item.categoryName!)).pOnly(bottom: 12);
               },
             ).expand(),
           ),
@@ -230,29 +233,17 @@ class SummaryView extends GetView<SummaryController> {
         [
           Obx(
             () => ListView.separated(
-              itemCount: controller.category.length,
+              itemCount: controller.rpcSumByCategory.length,
               separatorBuilder: (context, index) => Divider(),
               itemBuilder: (context, index) {
-                final item = controller.category[index];
-                final total = controller.countByCategory[index]['total'];
-
-                /// model compact
-                // return HStack(
-                //   [
-                //     Icon(Icons.circle_outlined, size: 12, color: HexColor.fromHex(item.color ?? '#ffffff')).pOnly(right: 8),
-                //     '${item.name}'.text.ellipsis.maxLines(1).make().pOnly(bottom: 2).expand(),
-                //     '${MoneyHelper.toRupiah(total)}'.text.make(),
-                //   ],
-                // ).onInkTap(() => controller.goAdvanceFilter(item.name!)).pOnly(bottom: 12);
-
-                /// model detail
+                final item = controller.rpcSumByCategory[index];
                 return HStack(
                   [
                     /// 1
                     VStack([
-                      '${item.name}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
+                      '${item.categoryName}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
                       if (item.maxBudget != null && item.maxBudget! > 0) ...[
-                        '${MoneyHelper.toRupiah(item.maxBudget! - total)}'.text.size(11).bold.make(),
+                        '${MoneyHelper.toRupiah(item.remainingBudget)}'.text.size(11).color(item.remainingBudget! < 0 ? Vx.red400 : Vx.white).bold.make(),
                       ] else ...[
                         'No Budget'.text.size(11).bold.make(),
                       ],
@@ -262,27 +253,27 @@ class SummaryView extends GetView<SummaryController> {
                     if (item.maxBudget != null && item.maxBudget! > 0) ...[
                       VStack([
                         MyPercentageBar(
-                          value: (total / item.maxBudget * 100).toString().toInt() ?? 0,
-                          color1: (total / item.maxBudget * 100).toString().toInt()! < 50
+                          value: item.usePercentage ?? 0,
+                          color1: item.usePercentage! < 50
                               ? Vx.green300
-                              : (total / item.maxBudget * 100).toString().toInt()! < 100
+                              : item.usePercentage! < 100
                                   ? Vx.orange300
                                   : Vx.red500,
                           color2: Vx.neutral700,
                           radius: 8,
                         ).pOnly(bottom: 4),
                         HStack([
-                          ' ${(total / item.maxBudget * 100).toString().toInt()}% '.text.size(11).minFontSize(11).make(),
+                          ' ${item.usePercentage}% '.text.size(11).minFontSize(11).make(),
                           Spacer(),
-                          '${MoneyHelper.toRupiah(total)}'
+                          '${MoneyHelper.toRupiah(item.total)}'
                               .text
                               .size(11)
                               .minFontSize(11)
                               .bold
                               .color(
-                                (total / item.maxBudget * 100).toString().toInt()! < 50
+                                item.usePercentage! < 50
                                     ? Vx.green300
-                                    : (total / item.maxBudget * 100).toString().toInt()! < 100
+                                    : item.usePercentage! < 100
                                         ? Vx.orange300
                                         : Vx.red300,
                               )
@@ -295,23 +286,34 @@ class SummaryView extends GetView<SummaryController> {
                       VStack([
                         MyPercentageBar(value: 0, color1: Colors.red, color2: Vx.neutral700, radius: 8).pOnly(bottom: 4),
                         HStack([
-                          '${MoneyHelper.toRupiah(total)}'.text.bold.size(11).minFontSize(11).blue300.make(),
+                          '${MoneyHelper.toRupiah(item.total)}'.text.bold.size(11).minFontSize(11).blue300.make(),
                           Spacer(),
                           InkWell(
                             child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
-                            onTap: () => Get.find<HomeController>().onEditCategory(
-                              entity: item,
-                              callback: () async {
-                                await controller.getCategory();
-                                await controller.onMonthChange(controller.monthSelected.value);
-                              },
-                            ),
+                            onTap: () {
+                              final entity = CategoryEntity(
+                                id: UuidV4().generate(),
+                                createdAt: DateTime.now().toStringEx(),
+                                name: item.categoryName,
+                                color: item.categoryColor,
+                                icon: item.categoryIcon,
+                                maxBudget: item.maxBudget,
+                              );
+
+                              Get.find<HomeController>().onEditCategory(
+                                entity: entity,
+                                callback: () async {
+                                  await Get.find<HomeController>().getCategory();
+                                  await controller.onMonthChange(controller.monthSelected.value);
+                                },
+                              );
+                            },
                           ),
                         ]),
                       ]).expand(),
                     ],
                   ],
-                ).onInkTap(() => controller.goAdvanceFilter(item.name!)).pOnly(bottom: 12);
+                ).onInkTap(() => controller.goAdvanceFilter(item.categoryName ?? '')).pOnly(bottom: 12);
               },
             ).expand(),
           ),

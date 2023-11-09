@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:uuid/v4.dart';
 
+import '../../core/const.dart';
 import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
@@ -50,8 +51,10 @@ class HomeController extends GetxController with StateMixin {
   /// init ~~
   @override
   Future<void> onInit() async {
+    selectedDays.add(DateTime.now());
     await getCategory();
     await getExpense();
+    await getCount1Month(DateTime.now());
     await _onCalenderRefreshEvent();
     super.onInit();
   }
@@ -63,23 +66,37 @@ class HomeController extends GetxController with StateMixin {
     selectedDays.clear();
     selectedDays.add(fDay);
     await getExpense();
-    await _onCalenderRefreshEvent();
+    // await _onCalenderRefreshEvent();
   }
 
   Future<void> onCalenderGoToday() async {
     selectedDays.clear();
     focusedDay.value = DateTime.now();
+    selectedDays.add(DateTime.now());
     await getExpense();
-    await _onCalenderRefreshEvent();
+    await getCount1Month(DateTime.now());
+    // await _onCalenderRefreshEvent();
     closeDrawer();
+  }
+
+  Future<void> onCalenderGoDate(ExpenseEntity element) async {
+    final selectedDate = element.date!.toDateEx(format: yMd);
+    selectedDays.clear();
+    focusedDay.value = selectedDate;
+    selectedDays.add(selectedDate);
+    await getExpense();
+    await getCount1Month(selectedDate);
+    // await _onCalenderRefreshEvent();
   }
 
   Future<void> onCalenderGoPrevMonth() async {
     await calenderPageController.previousPage(duration: 300.milliseconds, curve: Curves.easeIn);
+    await getCount1Month(focusedDay.value);
   }
 
   Future<void> onCalenderGoNextMonth() async {
     await calenderPageController.nextPage(duration: 300.milliseconds, curve: Curves.easeIn);
+    await getCount1Month(focusedDay.value);
   }
 
   List<String> onCalenderLoadEvent(DateTime day) {
@@ -100,7 +117,7 @@ class HomeController extends GetxController with StateMixin {
 
       // Iterasi melalui data dan mengelompokkannya
       for (var item in res) {
-        var date = item.date!.toDateEx(format: 'yyyy-MM-dd');
+        var date = item.date!.toDateEx(format: yMd);
         if (groupedData.containsKey(date)) {
           groupedData[date]!.add('${item.amount}');
         } else {
@@ -111,6 +128,12 @@ class HomeController extends GetxController with StateMixin {
     });
 
     await Get.forceAppUpdate();
+  }
+
+  /// count total per month
+  Future<void> getCount1Month(DateTime dateTime) async {
+    final month = dateTime.toStringEx(format: yM);
+    countOfMonth.value = await repo.getCount1Month(month);
   }
 
   /// category
@@ -198,7 +221,7 @@ class HomeController extends GetxController with StateMixin {
                     id: entity?.id,
                     createdAt: DateTime.now().toStringEx(),
                     name: tfCatName.text,
-                    color: tfCatColor.text.isEmpty ? '#FFFFFF' : tfCatColor.text,
+                    color: tfCatColor.text.isEmpty ? '' : tfCatColor.text,
                     icon: null,
                     maxBudget: tfMaxBudget.text.moneyUnformat(),
                   );
@@ -218,8 +241,7 @@ class HomeController extends GetxController with StateMixin {
   /// expense
   Future<void> getExpense({String? find}) async {
     change(0, status: RxStatus.loading());
-
-    final date = focusedDay.value.toStringEx(format: 'yyyy-MM-dd');
+    final date = focusedDay.value.toStringEx(format: yMd);
     try {
       if (find == null) {
         expenseList.value = await repo.getExpense(date);
@@ -244,9 +266,6 @@ class HomeController extends GetxController with StateMixin {
       countOfDay.value += element.amount ?? 0;
     }
 
-    /// count a month
-    countOfMonth.value = await repo.getCount1Month(focusedDay.value.toStringEx(format: 'yyyy-MM'));
-
     /// ui state
     if (expenseList.isEmpty) {
       change(0, status: RxStatus.empty());
@@ -255,7 +274,6 @@ class HomeController extends GetxController with StateMixin {
     }
   }
 
-  /// insert, edit, delete dialog expense
   Future<void> onShowDialogExpense({ExpenseEntity? expense, Function? customCallback}) async {
     if (categoryList.isEmptyOrNull) {
       ExSnackbar.danger('add some category first:))');
@@ -279,7 +297,7 @@ class HomeController extends GetxController with StateMixin {
               controller: _tfDate,
               decoration: MyDecorationHelper.inputDecorator(hint: 'Date', label: 'Date'),
               style: TextStyle(fontSize: 13),
-              onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => _tfDate.text = c.toStringEx(format: 'yyyy-MM-dd')),
+              onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => _tfDate.text = c.toStringEx(format: yMd)),
             ).wh(250, 33).pOnly(bottom: 16),
           ],
           MyAutoComplete(
@@ -406,7 +424,7 @@ class HomeController extends GetxController with StateMixin {
     final entity = ExpenseEntity(
       id: expense != null ? expense.id : UuidV4().generate(),
       createdAt: DateTime.now().toStringEx(),
-      date: tfDate.isNotEmptyAndNotNull ? tfDate : focusedDay.value.toStringEx(format: 'yyyy-MM-dd'),
+      date: tfDate.isNotEmptyAndNotNull ? tfDate : focusedDay.value.toStringEx(format: yMd),
       amount: tfAmount.moneyUnformat(),
       categoryName: tfCategory,
       note: '${tfNote.toTitleCase}',
