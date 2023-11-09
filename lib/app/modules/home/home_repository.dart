@@ -8,7 +8,7 @@ class HomeRepository {
   // category
   // ------------------------------------------------------------------------
   Future<List<CategoryEntity>> getCategory() async {
-    final response = await db.from('category').select().order('id', ascending: true).withConverter<List<CategoryEntity>>((data) {
+    final response = await db.from('category').select().order('max_budget', ascending: false).withConverter<List<CategoryEntity>>((data) {
       return (data as List).map((e) => CategoryEntity.fromJson(e)).toList();
     });
     return response;
@@ -24,7 +24,7 @@ class HomeRepository {
     return response;
   }
 
-  Future<void> deleteCategory(int id) async {
+  Future<void> deleteCategory(String id) async {
     final response = await db.from('category').delete().match({'id': id});
     return response;
   }

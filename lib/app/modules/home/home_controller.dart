@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:uuid/v1.dart';
+import 'package:uuid/v4.dart';
 
 import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_misc.dart';
@@ -122,9 +122,9 @@ class HomeController extends GetxController with StateMixin {
     if (categoryName.isEmptyOrNull) return;
 
     final categoryEntity = CategoryEntity(
-      id: ExRandom.numeric(8).toInt(),
-      name: categoryName,
+      id: UuidV4().generate(),
       createdAt: DateTime.now().toStringEx(),
+      name: categoryName,
       color: Vx.randomOpaqueColor.toHex(),
     );
     await repo.addCategory(categoryEntity);
@@ -132,7 +132,7 @@ class HomeController extends GetxController with StateMixin {
     tfCategory.clear();
   }
 
-  Future<void> onEditCategory({CategoryEntity? entity}) async {
+  Future<void> onEditCategory({CategoryEntity? entity, Function? callback}) async {
     final tfCatName = TextEditingController(text: entity?.name ?? '');
     final tfCatColor = TextEditingController(text: entity?.color ?? '');
     final tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget!.moneyFormat() : '');
@@ -166,27 +166,26 @@ class HomeController extends GetxController with StateMixin {
           Divider().pOnly(bottom: 8),
           HStack(
             [
-              if (entity!.id!.length > 2) ...[
-                ExButtonOutline(
-                  label: 'Delete',
-                  labelSize: 11,
-                  isLabelBold: false,
-                  labelColor: Vx.orange300,
-                  borderColor: Vx.orange300,
-                  radius: 4,
-                  onPressed: () async {
-                    try {
-                      await repo.deleteCategory(entity.id ?? 0);
-                      await getCategory();
-                      Get.back();
-                    } catch (e) {
-                      Get.back();
-                      ExSnackbar.danger(e);
-                    }
-                  },
-                ),
-                8.widthBox,
-              ],
+              ExButtonOutline(
+                label: 'Delete',
+                labelSize: 11,
+                isLabelBold: false,
+                labelColor: Vx.orange300,
+                borderColor: Vx.orange300,
+                radius: 4,
+                onPressed: () async {
+                  try {
+                    await repo.deleteCategory(entity?.id ?? '');
+                    await getCategory();
+                    await callback?.call();
+                    Get.back();
+                  } catch (e) {
+                    Get.back();
+                    ExSnackbar.danger(e);
+                  }
+                },
+              ),
+              8.widthBox,
               ExButtonOutline(
                 label: 'Submit',
                 labelSize: 11,
@@ -196,15 +195,16 @@ class HomeController extends GetxController with StateMixin {
                 radius: 4,
                 onPressed: () async {
                   final newEntity = CategoryEntity(
-                    id: entity.id,
+                    id: entity?.id,
+                    createdAt: DateTime.now().toStringEx(),
                     name: tfCatName.text,
                     color: tfCatColor.text.isEmpty ? '#FFFFFF' : tfCatColor.text,
                     icon: null,
                     maxBudget: tfMaxBudget.text.moneyUnformat(),
-                    createdAt: DateTime.now().toStringEx(),
                   );
                   await repo.editCategory(newEntity);
                   await getCategory();
+                  await callback?.call();
                   Get.back();
                 },
               ).expand(),
@@ -257,6 +257,11 @@ class HomeController extends GetxController with StateMixin {
 
   /// insert, edit, delete dialog expense
   Future<void> onShowDialogExpense({ExpenseEntity? expense, Function? customCallback}) async {
+    if (categoryList.isEmptyOrNull) {
+      ExSnackbar.danger('add some category first:))');
+      return;
+    }
+
     final _tfDate = TextEditingController(text: expense != null ? expense.date : '');
     final _tfNote = TextEditingController(text: expense != null ? expense.note : '');
     final _tfCategory = '${expense != null ? '${expense.categoryName}' : '${categoryList[0].name}'}'.obs;
@@ -399,7 +404,7 @@ class HomeController extends GetxController with StateMixin {
     if (tfAmount.isEmptyOrNull) return;
 
     final entity = ExpenseEntity(
-      id: expense != null ? expense.id : UuidV1().generate(),
+      id: expense != null ? expense.id : UuidV4().generate(),
       createdAt: DateTime.now().toStringEx(),
       date: tfDate.isNotEmptyAndNotNull ? tfDate : focusedDay.value.toStringEx(format: 'yyyy-MM-dd'),
       amount: tfAmount.moneyUnformat(),
@@ -414,8 +419,9 @@ class HomeController extends GetxController with StateMixin {
         await repo.addExpense(entity);
       }
       await repo.addAutoComplete('${tfNote.toTitleCase}', categoryName: '${entity.categoryName}', amount: '${entity.amount}');
-      await getExpense();
+      await getExpense(find: tfSearchExpense.text.isNotBlank ? tfSearchExpense.text : null);
     } catch (e) {
+      logE('e: $e');
       ExSnackbar.danger('$e', duration: 5);
     }
     await _onCalenderRefreshEvent();

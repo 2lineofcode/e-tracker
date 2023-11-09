@@ -4,11 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:grouped_list/grouped_list.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
+import '../../models/expense_entity.dart';
 import '../../routes/app_pages.dart';
 import '../widgets/widgets.dart';
 import 'home_controller.dart';
@@ -177,62 +179,92 @@ class HomeView extends GetView<HomeController> {
           [
             /// header
             Obx(
-              () {
-                if (controller.isSearchMode.isFalse) {
-                  return HStack([
-                    Container(
-                      color: Colors.blue,
-                      child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.make().pSymmetric(h: 4, v: 2),
-                    ).cornerRadius(4).pOnly(right: 8),
-                    '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(11).bold.make(),
-                    Spacer(),
-                    Container(
-                      decoration: ExDecorator.box(
-                        borderRadius: 90,
-                        borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value),
+              () => controller.isSearchMode.isFalse
+                  ? HStack([
+                      Container(
+                        color: Colors.blue,
+                        child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.make().pSymmetric(h: 4, v: 2),
+                      ).cornerRadius(4).pOnly(right: 8),
+                      '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(11).bold.make(),
+                      Spacer(),
+                      Container(
+                        decoration: ExDecorator.box(
+                          borderRadius: 90,
+                          borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value),
+                        ),
+                        child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)} Day'
+                            .text
+                            .size(12)
+                            .minFontSize(12)
+                            .color(MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value))
+                            .make()
+                            .p4()
+                            .pSymmetric(h: 4),
                       ),
-                      child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)} Day'
-                          .text
-                          .size(12)
-                          .minFontSize(12)
-                          .color(MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value))
-                          .make()
-                          .p4()
-                          .pSymmetric(h: 4),
-                    ),
-                  ]);
-                } else {
-                  return 'Search for: "${controller.tfSearchExpense.text}"'.text.bold.make();
-                }
-              },
+                    ])
+                  : 'Search for: "${controller.tfSearchExpense.text}"'.text.bold.make(),
             ).pSymmetric(h: 12).pOnly(top: 12),
 
             /// item
-            ListView.builder(
-              itemCount: controller.expenseList.length,
-              itemBuilder: (context, index) {
-                final item = controller.expenseList[index];
-                return Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(color: Vx.neutral900, borderRadius: BorderRadius.all(Radius.circular(4))),
-                  child: Row(
-                    children: [
-                      VStack([
-                        Obx(
-                          () => controller.isSearchMode.isTrue
-                              ? '${item.date!.reformatDate(from: 'yyyy-MM-dd', to: 'EEE, dd MMM yyyy')}'.text.size(11).minFontSize(11).make().pOnly(bottom: 8)
-                              : Container(),
-                        ),
-                        '${item.note}'.text.bold.make().pOnly(bottom: 4),
-                        '${item.categoryName}'.text.size(12).make(),
-                      ]),
-                      Spacer(),
-                      '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.bold.size(16).make(),
-                    ],
-                  ).p12(),
-                ).pSymmetric(h: 8, v: 4).onTap(() => controller.onShowDialogExpense(expense: item));
-              },
-            ).pSymmetric(v: 8).expand(),
+            Obx(
+              () => controller.isSearchMode.isFalse
+                  ? ListView.builder(
+                      itemCount: controller.expenseList.length,
+                      itemBuilder: (context, index) {
+                        final item = controller.expenseList[index];
+                        return Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(color: Vx.neutral900, borderRadius: BorderRadius.all(Radius.circular(4))),
+                          child: Row(
+                            children: [
+                              VStack([
+                                Obx(
+                                  () => controller.isSearchMode.isTrue
+                                      ? '${item.date!.reformatDate(from: 'yyyy-MM-dd', to: 'EEE, dd MMM yyyy')}'.text.size(11).minFontSize(11).make().pOnly(bottom: 8)
+                                      : Container(),
+                                ),
+                                '${item.note}'.text.bold.make().pOnly(bottom: 4),
+                                '${item.categoryName}'.text.size(12).make(),
+                              ]),
+                              Spacer(),
+                              '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.bold.size(16).make(),
+                            ],
+                          ).p12(),
+                        ).pSymmetric(h: 8, v: 4).onTap(() => controller.onShowDialogExpense(expense: item));
+                      },
+                    ).pSymmetric(v: 8).expand()
+                  : GroupedListView<ExpenseEntity, String>(
+                      elements: controller.expenseList,
+                      groupBy: (element) => element.date ?? '',
+                      useStickyGroupSeparators: true,
+                      floatingHeader: true,
+                      order: GroupedListOrder.DESC,
+                      groupHeaderBuilder: (element) {
+                        return Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(color: Vx.neutral700),
+                          child: HStack([
+                            '${element.date!.reformatDate(from: 'yyyy-MM-dd', to: 'dd MMM y (E)')}'.text.size(11).make(),
+                          ]).p8(),
+                        );
+                      },
+                      indexedItemBuilder: (context, item, index) {
+                        return SizedBox(
+                          width: double.infinity,
+                          child: Row(
+                            children: [
+                              VStack([
+                                '${item.note}'.text.bold.make().pOnly(bottom: 4),
+                                '${item.categoryName}'.text.size(12).make(),
+                              ]),
+                              Spacer(),
+                              '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.bold.size(16).make(),
+                            ],
+                          ).p12(),
+                        ).pSymmetric(h: 8, v: 4).onTap(() => controller.onShowDialogExpense(expense: item));
+                      },
+                    ).pSymmetric(v: 8).expand(),
+            ),
 
             /// sum
             HStack([
@@ -268,6 +300,9 @@ class HomeView extends GetView<HomeController> {
 
   Widget footerContent() {
     return HStack([
+      if (dotenv.get('APP_NAME').contains('Local')) ...[
+        '# LOCAL DB--'.text.green200.make(),
+      ],
       Spacer(),
       Obx(
         () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${MoneyHelper.toRupiah(controller.countOfMonth.value)}'.text.make().onTap(() {

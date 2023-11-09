@@ -112,8 +112,10 @@ class SummaryController extends GetxController with StateMixin {
     final monthReformat = month?.reformatDate(from: 'MMMM', to: 'MM');
     countOnly1Month.value = await repo.getCountOnly1Month('$year-$monthReformat');
 
-    countRemainingBudget.value = countBudget.value - countOnly1Month.value;
-    countPercentage.value = countOnly1Month.value / countBudget.value;
+    if (countBudget.value != 0) {
+      countRemainingBudget.value = countBudget.value - countOnly1Month.value;
+      countPercentage.value = countOnly1Month.value / countBudget.value;
+    }
   }
 
   Future<void> getCountAllMonth(String year) async {

@@ -1,23 +1,22 @@
 {
     "files.exclude": {
-        ".idea": true,
         "**/.git": true,
         "**/.svn": true,
         "**/.hg": true,
         "**/CVS": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
+        ".idea": true,
         ".dart_**": true,
-        "firebase**": false,
+        "firebase**": true,
         ".firebase**": true,
         ".flutter-**": true,
-
-        
         "linux": true,
         "android": true,
         "windows": true,
         "macos": true,
         "ios": true,
+        "web": true,
         "build": true
     },
     "explorerExclude.backup": {}

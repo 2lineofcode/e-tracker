@@ -14,7 +14,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   /// env
-  await dotenv.load();
+  if (kDebugMode) {
+    await dotenv.load(fileName: '.env.local');
+  } else {
+    await dotenv.load(fileName: '.env');
+  }
 
   /// supabase
   await Supabase.initialize(

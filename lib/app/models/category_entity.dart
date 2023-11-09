@@ -1,5 +1,5 @@
 class CategoryEntity {
-  int? id;
+  String? id;
   String? createdAt;
   String? name;
   int? userId;

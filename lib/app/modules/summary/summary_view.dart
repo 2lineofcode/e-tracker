@@ -298,8 +298,14 @@ class SummaryView extends GetView<SummaryController> {
                           '${MoneyHelper.toRupiah(total)}'.text.bold.size(11).minFontSize(11).blue300.make(),
                           Spacer(),
                           InkWell(
-                            onTap: () => Get.find<HomeController>().onEditCategory(entity: item),
                             child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
+                            onTap: () => Get.find<HomeController>().onEditCategory(
+                              entity: item,
+                              callback: () async {
+                                await controller.getCategory();
+                                await controller.onMonthChange(controller.monthSelected.value);
+                              },
+                            ),
                           ),
                         ]),
                       ]).expand(),
