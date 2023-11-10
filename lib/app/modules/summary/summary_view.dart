@@ -2,16 +2,15 @@ import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:uuid/v4.dart';
 
+import '../../core/app_color.dart';
 import '../../core/const.dart';
-import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
-import '../../models/category_entity.dart';
-import '../home/home_controller.dart';
-import '../widgets/widget_shimmer_summary.dart';
 import '../widgets/widgets.dart';
 import 'summary_controller.dart';
+import 'view_budget.dart';
+import 'view_note_times.dart';
+import 'view_pie_chart.dart';
 
 class SummaryView extends GetView<SummaryController> {
   const SummaryView({Key? key}) : super(key: key);
@@ -22,16 +21,30 @@ class SummaryView extends GetView<SummaryController> {
         appBarTitle: 'Summary'.text.size(11).bold.make(),
         appBarAction: appBarAction(),
         sideMenuContent: sideMenuContent(),
-        bodyContent: bodyContent(),
+        bodyContent: Obx(() => bodyContent()),
         footerContent: footerContent(),
       ),
     );
   }
 
   Widget appBarAction() {
-    return IconButton(
-      icon: Icon(CupertinoIcons.chart_pie, size: 18),
-      onPressed: () {},
+    return Obx(
+      () => HStack(
+        [
+          IconButton(
+            icon: Icon(CupertinoIcons.archivebox, size: 18, color: controller.menuSelected.value == 1 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            onPressed: () => controller.menuSelected.value = 1,
+          ),
+          IconButton(
+            icon: Icon(CupertinoIcons.chart_pie, size: 18, color: controller.menuSelected.value == 2 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            onPressed: () => controller.menuSelected.value = 2,
+          ),
+          IconButton(
+            icon: Icon(CupertinoIcons.doc_plaintext, size: 18, color: controller.menuSelected.value == 3 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            onPressed: () => controller.menuSelected.value = 3,
+          ),
+        ],
+      ),
     );
   }
 
@@ -47,8 +60,8 @@ class SummaryView extends GetView<SummaryController> {
               () => Container(
                 decoration: ExDecorator.box(
                   borderRadius: 90,
-                  fillColor: controller.isShowAllYear.isTrue ? Colors.blue : Colors.transparent,
-                  borderColor: controller.isShowAllYear.isTrue ? Colors.blue : Vx.neutral400,
+                  fillColor: controller.isShowAllYear.isTrue ? AppColor.sideMenuSelected : Colors.transparent,
+                  borderColor: controller.isShowAllYear.isTrue ? AppColor.sideMenuSelected : Vx.neutral400,
                 ),
                 child: ' Show All '.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 4),
               ).pOnly(left: 4),
@@ -85,7 +98,7 @@ class SummaryView extends GetView<SummaryController> {
               () {
                 return Container(
                   decoration: ExDecorator.box(
-                    fillColor: period == controller.monthSelected.value ? Colors.blue : Colors.transparent,
+                    fillColor: period == controller.monthSelected.value ? AppColor.sideMenuSelected : Colors.transparent,
                     borderColor: Colors.transparent,
                   ),
                   child: HStack(
@@ -111,222 +124,23 @@ class SummaryView extends GetView<SummaryController> {
   }
 
   Widget bodyContent() {
-    return controller.obx(
-      (state) => VStack(
-        [
-          /// header ~
-          if (controller.isShowAllYear.isTrue) headerAllYear() else headerPerMonth(),
-
-          16.heightBox,
-
-          /// detail
-          if (controller.isShowAllYear.isTrue) detailAllYear().expand() else detailPerMonth().expand(),
-        ],
-      ).p12(),
-      onLoading: MyShimmerSummary(),
-    );
-  }
-
-  Widget headerAllYear() {
-    return Container(
-      width: double.infinity,
-      decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
-      child: VStack(
-        [
-          'Total Expense ${controller.yearSelected}'.text.size(12).make().pOnly(bottom: 8),
-          '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.bold.size(16).make(),
-        ],
-      ).p12(),
-    );
-  }
-
-  Widget detailAllYear() {
-    return Container(
-      width: double.infinity,
-      decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
-      child: VStack(
-        [
-          Obx(
-            () => ListView.separated(
-              itemCount: controller.rpcSumByCategory.length,
-              separatorBuilder: (context, index) => Divider(),
-              itemBuilder: (context, index) {
-                final item = controller.rpcSumByCategory[index];
-                return HStack(
-                  [
-                    Icon(Icons.circle_outlined, size: 12, color: HexColor.fromHex(item.categoryColor ?? '')).pOnly(right: 8),
-                    '${item.categoryName}'.text.ellipsis.maxLines(1).make().pOnly(bottom: 2).expand(),
-                    '${MoneyHelper.toRupiah(item.total)}'.text.make(),
-                  ],
-                ).onInkTap(() => controller.goAdvanceFilter(item.categoryName!)).pOnly(bottom: 12);
-              },
-            ).expand(),
-          ),
-        ],
-      ).p12(),
-    );
-  }
-
-  Widget headerPerMonth() {
-    return Container(
-      width: double.infinity,
-      decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
-      child: VStack(
-        [
-          /// col1
-          HStack(
-            [
-              'Remaining Budget'.text.size(11).make().pOnly(right: 8),
-              Container(
-                color: Colors.blue,
-                child: '${controller.monthSelected.value} ${controller.yearSelected.value}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
-              ).cornerRadius(4),
-              Spacer(),
-              Obx(() => '${MoneyHelper.toRupiah(controller.countRemainingBudget.value)}'.text.bold.size(16).make()),
-            ],
-          ),
-
-          /// col2
-          MyPercentageBar(
-            value: (controller.countPercentage.value * 100).toInt(),
-            color1: (controller.countPercentage.value * 100).toInt() < 50
-                ? Vx.green300
-                : (controller.countPercentage.value * 100).toInt() < 100
-                    ? Vx.orange300
-                    : Vx.red500,
-            color2: Vx.neutral700,
-            radius: 8,
-          ).pSymmetric(v: 12),
-
-          /// col3
-          HStack(
-            [
-              'Used: ${MoneyHelper.toPercentage(controller.countPercentage.value)}'.text.size(11).minFontSize(11).make().pOnly(left: 4),
-              Spacer(),
-              '${MoneyHelper.toRupiah(controller.countOnly1Month.value)}'
-                  .text
-                  .size(11)
-                  .bold
-                  .color(
-                    (controller.countPercentage.value * 100).toInt() < 50
-                        ? Vx.green300
-                        : (controller.countPercentage.value * 100).toInt() < 100
-                            ? Vx.orange300
-                            : Vx.red500,
-                  )
-                  .minFontSize(11)
-                  .make(),
-              ' / '.text.size(11).minFontSize(11).make(),
-              '${MoneyHelper.toRupiah(controller.countBudget.value)}'.text.size(11).minFontSize(11).make(),
-            ],
-          ),
-        ],
-      ).p8(),
-    );
-  }
-
-  Widget detailPerMonth() {
-    return Container(
-      width: double.infinity,
-      decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
-      child: VStack(
-        [
-          Obx(
-            () => ListView.separated(
-              itemCount: controller.rpcSumByCategory.length,
-              separatorBuilder: (context, index) => Divider(),
-              itemBuilder: (context, index) {
-                final item = controller.rpcSumByCategory[index];
-                return HStack(
-                  [
-                    /// 1
-                    VStack([
-                      '${item.categoryName}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
-                      if (item.maxBudget != null && item.maxBudget! > 0) ...[
-                        '${MoneyHelper.toRupiah(item.remainingBudget)}'.text.size(11).color(item.remainingBudget! < 0 ? Vx.red400 : Vx.white).bold.make(),
-                      ] else ...[
-                        'No Budget'.text.size(11).bold.make(),
-                      ],
-                    ]).w(150).pOnly(right: 12),
-
-                    /// 2
-                    if (item.maxBudget != null && item.maxBudget! > 0) ...[
-                      VStack([
-                        MyPercentageBar(
-                          value: item.usePercentage ?? 0,
-                          color1: item.usePercentage! < 50
-                              ? Vx.green300
-                              : item.usePercentage! < 100
-                                  ? Vx.orange300
-                                  : Vx.red500,
-                          color2: Vx.neutral700,
-                          radius: 8,
-                        ).pOnly(bottom: 4),
-                        HStack([
-                          ' ${item.usePercentage}% '.text.size(11).minFontSize(11).make(),
-                          Spacer(),
-                          '${MoneyHelper.toRupiah(item.total)}'
-                              .text
-                              .size(11)
-                              .minFontSize(11)
-                              .bold
-                              .color(
-                                item.usePercentage! < 50
-                                    ? Vx.green300
-                                    : item.usePercentage! < 100
-                                        ? Vx.orange300
-                                        : Vx.red300,
-                              )
-                              .make(),
-                          ' / '.text.size(11).minFontSize(11).make(),
-                          '${MoneyHelper.toRupiah(item.maxBudget)}'.text.size(12).minFontSize(11).make(),
-                        ]),
-                      ]).expand(),
-                    ] else ...[
-                      VStack([
-                        MyPercentageBar(value: 0, color1: Colors.red, color2: Vx.neutral700, radius: 8).pOnly(bottom: 4),
-                        HStack([
-                          '${MoneyHelper.toRupiah(item.total)}'.text.bold.size(11).minFontSize(11).blue300.make(),
-                          Spacer(),
-                          InkWell(
-                            child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
-                            onTap: () {
-                              final entity = CategoryEntity(
-                                id: UuidV4().generate(),
-                                createdAt: DateTime.now().toStringEx(),
-                                name: item.categoryName,
-                                color: item.categoryColor,
-                                icon: item.categoryIcon,
-                                maxBudget: item.maxBudget,
-                              );
-
-                              Get.find<HomeController>().onEditCategory(
-                                entity: entity,
-                                callback: () async {
-                                  await Get.find<HomeController>().getCategory();
-                                  await controller.onMonthChange(controller.monthSelected.value);
-                                },
-                              );
-                            },
-                          ),
-                        ]),
-                      ]).expand(),
-                    ],
-                  ],
-                ).onInkTap(() => controller.goAdvanceFilter(item.categoryName ?? '')).pOnly(bottom: 12);
-              },
-            ).expand(),
-          ),
-        ],
-      ).p12(),
-    );
+    switch (controller.menuSelected.value) {
+      case 1:
+        return ViewBudget();
+      case 2:
+        return ViewPieChart();
+      case 3:
+        return ViewNoteTimes();
+      default:
+        return ViewBudget();
+    }
   }
 
   Widget footerContent() {
     return HStack([
-      Obx(() => 'Expenditure in ${controller.yearSelected}:'.text.make()),
+      Obx(() => 'Total in ${controller.yearSelected}:'.text.make()),
       Spacer(),
-      Obx(() => '${MoneyHelper.toRupiah(controller.countOnly1Year.value)}'.text.bold.red200.make()),
+      Obx(() => '${controller.countOnly1Year.value.moneyFormat()}'.text.bold.color(AppColor.red).make()),
     ]).p12();
   }
 }

@@ -31,10 +31,7 @@ class MyPercentageBar extends StatelessWidget {
               children: <Widget>[
                 Expanded(
                   flex: 100,
-                  child: Container(
-                    height: height ?? 12,
-                    color: Vx.neutral500,
-                  ).cornerRadius(radius ?? 20),
+                  child: Container(height: height ?? 12, color: Vx.neutral500).cornerRadius(radius ?? 20),
                 ),
               ],
             ),
@@ -43,11 +40,7 @@ class MyPercentageBar extends StatelessWidget {
                 if (value != 0) ...[
                   Expanded(
                     flex: value,
-                    child: Container(
-                      width: 200,
-                      height: height ?? 12,
-                      color: color1,
-                    ).cornerRadius(radius ?? 20),
+                    child: Container(width: 200, height: height ?? 12, color: color1).cornerRadius(radius ?? 20),
                   ),
                 ],
                 Expanded(

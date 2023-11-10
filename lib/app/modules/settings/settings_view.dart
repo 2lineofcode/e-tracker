@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 
+import '../../core/app_color.dart';
 import '../widgets/widgets.dart';
 import 'section_appconfig.dart';
 import 'section_autocomplete.dart';
@@ -39,7 +40,7 @@ class SettingsView extends GetView<SettingsController> {
                 onTap: () => controller.onMenuChange(item),
                 child: Container(
                   decoration: ExDecorator.box(
-                    fillColor: item == controller.menuSelected.value ? Colors.blue : Colors.transparent,
+                    fillColor: item == controller.menuSelected.value ? AppColor.sideMenuSelected : Colors.transparent,
                     borderColor: Colors.transparent,
                   ),
                   child: '$item'.text.size(11).make().p8(),

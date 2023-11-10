@@ -1,12 +1,15 @@
 import 'dart:io';
 
+import 'package:ex/ex.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'app/core/app_setting.dart';
 import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
 
@@ -25,6 +28,12 @@ Future<void> main() async {
     url: dotenv.get('SUPABASE_URL'),
     anonKey: dotenv.get('SUPABASE_ANON_KEY'),
   );
+
+  /// local storage
+  await GetStorage.init();
+
+  /// load app setting
+  Get.put(AppSettingService());
 
   /// desktop only
   if (PlatformUtil.isDesktop()) {
@@ -51,10 +60,33 @@ Future<void> main() async {
     GetMaterialApp(
       title: dotenv.get('APP_NAME'),
       initialRoute: AppPages.INITIAL,
-      theme: ThemeData.dark(),
+      theme: ThemeData.light(),
+      themeMode: Get.find<AppSettingService>().theme,
+      darkTheme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
-      scrollBehavior: PlatformUtil.isDesktop() ? NoThumbScrollBehavior() : null,
       getPages: AppPages.routes,
+      builder: (context, child) {
+        if (kReleaseMode) return child!;
+        return Scaffold(
+          body: Stack(
+            children: [
+              child!,
+              HStack(
+                [
+                  IconButton(
+                    icon: Icon(Icons.bug_report),
+                    onPressed: () async {
+                      await Get.find<AppSettingService>().switchTheme();
+                      await 300.milliseconds.delay();
+                      await Get.forceAppUpdate();
+                    },
+                  ),
+                ],
+              ).positioned(left: 100),
+            ],
+          ),
+        );
+      },
     ),
   );
 }

@@ -4,12 +4,9 @@ import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-extension StringToMoneyExt on String {
-  /// example: 'Rp. 1.000' -> '1000'
-  int? moneyUnformat() => replaceAll(RegExp(r'[^0-9]'), '').toInt();
-}
+import '../core/app_color.dart';
 
-extension IntToMoneyExt on int {
+extension IntToMoneyExt on num {
   /// example: '1000' -> 'Rp. 1,000'
   String moneyFormat() {
     String formattedText = 'Rp. ${toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
@@ -31,34 +28,15 @@ extension IntToMoneyExt on int {
       return '${(this / 1000000000000).toStringAsFixed(0)}T';
     }
   }
-}
 
-mixin MoneyHelper {
-  /// example: '1000' -> 'Rp. 1.000'
-  static String toRupiah(dynamic number, {int? decimalDigit, bool? allowMinus = true}) {
-    var o = 'ERR';
-    try {
-      final currencyFormatter = NumberFormat.currency(
-        locale: 'id',
-        symbol: '',
-        decimalDigits: decimalDigit ?? 0,
-      );
-
-      o = 'Rp. ${currencyFormatter.format(number)}';
-    } catch (_) {
-      o = '';
-    }
-    return o;
-  }
-
-  static String toPercentage(dynamic number, {int decimalDigits = 1}) {
+  String percentageFormat({int decimalDigits = 1}) {
     var output = '';
 
     try {
-      output = NumberFormat.decimalPercentPattern(decimalDigits: decimalDigits).format(number);
+      output = NumberFormat.decimalPercentPattern(decimalDigits: decimalDigits).format(this);
     } catch (_) {
       try {
-        final x = double.parse(number);
+        final x = double.parse(toString());
         output = '${x * 100}'.substring(0, 3).replaceAll('.', '');
       } catch (_) {
         output = '';
@@ -69,37 +47,44 @@ mixin MoneyHelper {
 
     return '$output';
   }
+}
 
+extension StringToMoneyExt on String {
+  /// example: 'Rp. 1.000' -> '1000'
+  int? moneyUnformat() => replaceAll(RegExp(r'[^0-9]'), '').toInt();
+}
+
+mixin MoneyHelper {
   static Color getExpenseFlagColor(num amount) {
     if (amount == 0) return Vx.white;
     if (amount < 50000) {
-      return Vx.green300;
+      return AppColor.green;
     } else if (amount < 100000) {
-      return Vx.orange300;
+      return AppColor.orange;
     } else {
-      return Vx.red400;
+      return AppColor.red;
     }
   }
 
   static Color getExpenseFlagColorLight(num amount) {
     if (amount == 0) return Vx.white;
     if (amount < 50000) {
-      return Vx.green200;
+      return AppColor.greenLight;
     } else if (amount < 100000) {
-      return Vx.orange200;
+      return AppColor.orangeLight;
     } else {
-      return Vx.red200;
+      return AppColor.redLight;
     }
   }
 
   static Color getExpenseFlagColorDark(num amount) {
     if (amount == 0) return Vx.white;
     if (amount < 50000) {
-      return Vx.green600;
+      return AppColor.greenDark;
     } else if (amount < 100000) {
-      return Vx.orange600;
+      return AppColor.orangeDark;
     } else {
-      return Vx.red600;
+      return AppColor.redDark;
     }
   }
 

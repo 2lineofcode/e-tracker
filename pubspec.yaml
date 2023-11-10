@@ -19,8 +19,10 @@ dependencies:
   table_calendar: ^3.0.9
   grouped_list: ^5.1.2
   window_manager: ^0.3.7
-  pie_chart: ^5.3.2
-
+  syncfusion_flutter_charts: ^23.1.44
+  flutter_popup: ^3.1.6
+  hsv_color_pickers: ^0.3.0
+  
   # utils
   intl: ^0.18.1
   currency_text_input_formatter: ^2.1.10

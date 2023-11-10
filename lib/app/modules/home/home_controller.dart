@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:get/get.dart';
+import 'package:hsv_color_pickers/hsv_color_pickers.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:uuid/v4.dart';
 
+import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_misc.dart';
@@ -66,7 +68,6 @@ class HomeController extends GetxController with StateMixin {
     selectedDays.clear();
     selectedDays.add(fDay);
     await getExpense();
-    // await _onCalenderRefreshEvent();
   }
 
   Future<void> onCalenderGoToday() async {
@@ -75,7 +76,6 @@ class HomeController extends GetxController with StateMixin {
     selectedDays.add(DateTime.now());
     await getExpense();
     await getCount1Month(DateTime.now());
-    // await _onCalenderRefreshEvent();
     closeDrawer();
   }
 
@@ -86,7 +86,6 @@ class HomeController extends GetxController with StateMixin {
     selectedDays.add(selectedDate);
     await getExpense();
     await getCount1Month(selectedDate);
-    // await _onCalenderRefreshEvent();
   }
 
   Future<void> onCalenderGoPrevMonth() async {
@@ -159,6 +158,7 @@ class HomeController extends GetxController with StateMixin {
     final tfCatName = TextEditingController(text: entity?.name ?? '');
     final tfCatColor = TextEditingController(text: entity?.color ?? '');
     final tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget!.moneyFormat() : '');
+    final _controller = HueController(HSVColor.fromColor(HexColor.fromHex(tfCatColor.text))).obs;
 
     ExDialog.custom(
       title: 'Edit Category',
@@ -169,13 +169,7 @@ class HomeController extends GetxController with StateMixin {
             controller: tfCatName,
             decoration: MyDecorationHelper.inputDecorator(hint: 'Name', label: 'Category Name'),
             style: TextStyle(fontSize: 13),
-          ).pOnly(bottom: 8),
-          TextField(
-            controller: tfCatColor,
-            decoration: MyDecorationHelper.inputDecorator(hint: 'Color', label: 'Color Tag'),
-            style: TextStyle(fontSize: 13, color: HexColor.fromHex(tfCatColor.text)),
-            inputFormatters: [LengthLimitingTextInputFormatter(7)],
-          ).pOnly(bottom: 8),
+          ).pOnly(bottom: 12),
           TextField(
             controller: tfMaxBudget,
             decoration: MyDecorationHelper.inputDecorator(hint: '1.000.000', label: 'Max Budget (Monthtly)'),
@@ -186,6 +180,19 @@ class HomeController extends GetxController with StateMixin {
             keyboardType: TextInputType.number,
             style: TextStyle(fontSize: 13),
           ).pOnly(bottom: 8),
+          HStack(
+            [
+              Obx(() => Icon(Icons.circle_outlined, size: 18, color: _controller.value.value.toColor()).pOnly(right: 8)),
+              Obx(() => HuePicker(
+                    controller: _controller.value,
+                    onChanged: (HSVColor color) {
+                      _controller.value.value = color;
+                      tfCatColor.text = color.toColor().toHex();
+                      Get.forceAppUpdate();
+                    },
+                  ).wh(220, 24)),
+            ],
+          ).pSymmetric(v: 12),
           Divider().pOnly(bottom: 8),
           HStack(
             [
@@ -193,9 +200,9 @@ class HomeController extends GetxController with StateMixin {
                 label: 'Delete',
                 labelSize: 11,
                 isLabelBold: false,
-                labelColor: Vx.orange300,
-                borderColor: Vx.orange300,
-                radius: 4,
+                labelColor: Vx.red400,
+                borderColor: Vx.red400,
+                radius: 90,
                 onPressed: () async {
                   try {
                     await repo.deleteCategory(entity?.id ?? '');
@@ -213,9 +220,9 @@ class HomeController extends GetxController with StateMixin {
                 label: 'Submit',
                 labelSize: 11,
                 isLabelBold: false,
-                labelColor: Vx.white,
-                borderColor: Vx.white,
-                radius: 4,
+                labelColor: AppColor.textReverse,
+                borderColor: AppColor.textReverse,
+                radius: 90,
                 onPressed: () async {
                   final newEntity = CategoryEntity(
                     id: entity?.id,
@@ -295,10 +302,11 @@ class HomeController extends GetxController with StateMixin {
           if (expense != null) ...[
             TextField(
               controller: _tfDate,
+              readOnly: true,
               decoration: MyDecorationHelper.inputDecorator(hint: 'Date', label: 'Date'),
               style: TextStyle(fontSize: 13),
               onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => _tfDate.text = c.toStringEx(format: yMd)),
-            ).wh(250, 33).pOnly(bottom: 16),
+            ).wh(250, 38).pOnly(bottom: 16),
           ],
           MyAutoComplete(
             autofocus: expense == null,
@@ -316,7 +324,7 @@ class HomeController extends GetxController with StateMixin {
                 _tfAmount.text = res[0].amount?.toInt()?.moneyFormat() ?? '';
               });
             },
-          ).wh(250, 33).pOnly(bottom: 16),
+          ).wh(250, 38).pOnly(bottom: 16),
           // ],
 
           /// field category
@@ -324,10 +332,10 @@ class HomeController extends GetxController with StateMixin {
             () => DropdownButtonFormField(
               value: '${_tfCategory.value}',
               items: categoryList.map((element) => DropdownMenuItem(value: '${element.name}', child: Text(element.name ?? ''))).toList(),
-              style: TextStyle(fontSize: 12, color: Colors.white),
+              style: TextStyle(fontSize: 12, color: AppColor.textReverse),
               decoration: MyDecorationHelper.inputDecorator(label: 'Category'),
               onChanged: (s) => _tfCategory.value = s ?? '',
-            ).wh(250, 33).pOnly(bottom: 16),
+            ).wh(250, 38).pOnly(bottom: 16),
           ),
 
           /// field amount
@@ -339,7 +347,7 @@ class HomeController extends GetxController with StateMixin {
                   hint: '10.000',
                   label: 'Amount',
                   suffixIcon: IconButton(
-                    icon: Icon(Icons.calculate, size: 16, color: Colors.white),
+                    icon: Icon(Icons.calculate, size: 16, color: AppColor.textReverse),
                     onPressed: () {
                       showModalBottomSheet(
                         isScrollControlled: true,
@@ -371,7 +379,7 @@ class HomeController extends GetxController with StateMixin {
                   await _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
                   await customCallback?.call(),
                 },
-              ).wh(250, 33).expand(),
+              ).wh(250, 38),
             ],
           ).pOnly(bottom: 8),
           Divider().pOnly(bottom: 8),
@@ -384,9 +392,9 @@ class HomeController extends GetxController with StateMixin {
                   label: 'Delete',
                   labelSize: 11,
                   isLabelBold: false,
-                  labelColor: Vx.orange300,
-                  borderColor: Vx.orange300,
-                  radius: 4,
+                  labelColor: Vx.red400,
+                  borderColor: Vx.red400,
+                  radius: 90,
                   onPressed: () async {
                     await repo.deleteExpense(expense.id!);
                     await getExpense();
@@ -401,9 +409,9 @@ class HomeController extends GetxController with StateMixin {
                 label: 'Submit',
                 labelSize: 11,
                 isLabelBold: false,
-                labelColor: Vx.white,
-                borderColor: Vx.white,
-                radius: 4,
+                labelColor: AppColor.textReverse,
+                borderColor: AppColor.textReverse,
+                radius: 90,
                 onPressed: () async => {
                   await _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
                   await customCallback?.call(),

@@ -6,6 +6,7 @@ import 'package:flutter_month_picker/flutter_month_picker.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 
+import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
@@ -23,7 +24,6 @@ class FilteringView extends GetView<FilteringController> {
         sideMenuContent: sideMenuContent(),
         bodyContent: bodyContent(),
         footerContent: footerContent(),
-        footerColor: Vx.neutral900,
       ),
     );
   }
@@ -46,7 +46,7 @@ class FilteringView extends GetView<FilteringController> {
                   onTap: () => controller.onCategoryChange(item.name!),
                   child: Container(
                     decoration: ExDecorator.box(
-                      fillColor: item.name == controller.categorySelected.value ? Colors.blue : Colors.transparent,
+                      fillColor: item.name == controller.categorySelected.value ? AppColor.sideMenuSelected : Colors.transparent,
                       borderColor: Colors.transparent,
                     ),
                     child: HStack([
@@ -68,19 +68,19 @@ class FilteringView extends GetView<FilteringController> {
       [
         Container(
           width: double.infinity,
-          decoration: ExDecorator.box(fillColor: Vx.neutral800, borderColor: Vx.neutral800, borderRadius: 2),
+          decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 2),
           child: VStack(
             [
-              'Setting'.text.bold.make().pOnly(bottom: 12),
+              'Filter Settings'.text.bold.make().pOnly(bottom: 12),
               Obx(
                 () => HStack([
-                  'Filter: '.text.size(12).neutral400.make(),
+                  'Filter: '.text.size(12).make(),
                   '${controller.categorySelected.value}'.text.size(12).make(),
                 ]),
               ),
               8.heightBox,
               HStack([
-                'Period: '.text.size(12).neutral400.make(),
+                'Period: '.text.size(12).make(),
 
                 // startDate
                 Obx(
@@ -93,7 +93,7 @@ class FilteringView extends GetView<FilteringController> {
                   ),
                 ),
 
-                ' to '.text.size(12).neutral400.make(),
+                ' to '.text.size(12).make(),
 
                 // endDate
                 Obx(
@@ -108,7 +108,7 @@ class FilteringView extends GetView<FilteringController> {
               ]),
               8.heightBox,
               HStack([
-                'Order By: '.text.size(12).neutral400.make(),
+                'Order By: '.text.size(12).make(),
                 Obx(
                   () => '${controller.orderBy.value.toTitleCase}'.text.underline.size(12).make().onTap(() {
                     ExDialog.custom(
@@ -151,7 +151,7 @@ class FilteringView extends GetView<FilteringController> {
               return Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Vx.neutral900,
+                  color: AppColor.cardHeaderPrimary,
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
                 ),
                 child: HStack(
@@ -163,20 +163,20 @@ class FilteringView extends GetView<FilteringController> {
                     ).tooltip('${MoneyHelper.getExpenseFlagText(controller.sumByDate[element.date]!)}').pOnly(right: 8),
                     '${element.date!.reformatDate(from: yMd, to: 'dd MMM y (E)')}'.text.size(11).make(),
                     Spacer(),
-                    '${MoneyHelper.toRupiah(controller.sumByDate[element.date]!)}'.text.size(12).make(),
+                    '${controller.sumByDate[element.date]!.moneyFormat()}'.text.size(12).make(),
                   ],
                 ).p8(),
               );
             },
             indexedItemBuilder: (context, item, index) {
               return Container(
-                decoration: BoxDecoration(color: Vx.neutral800),
+                decoration: BoxDecoration(color: AppColor.cardItemPrimary),
                 child: HStack(
                   [
                     // row 1
                     VStack([
-                      '${item.note}'.text.neutral400.size(13).make().pOnly(bottom: 4),
-                      '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.white.size(12).make(),
+                      '${item.note}'.text.size(13).make().pOnly(bottom: 4),
+                      '${item.amount?.moneyFormat()}'.text.size(12).make(),
                     ]).p12(),
 
                     Spacer(),
@@ -205,13 +205,13 @@ class FilteringView extends GetView<FilteringController> {
           onEmpty: ExUiErrorOrEmpty(
             illustration: Icon(CupertinoIcons.list_bullet),
             title: 'No Data'.text.bold.makeCentered(),
-            bgColor: Color(0xff242424),
+            bgColor: AppColor.emptyStatePrimary,
           ).expand(),
           onError: (e) => ExUiErrorOrEmpty(
             illustration: Icon(CupertinoIcons.wifi_slash),
             title: 'Offline'.text.bold.makeCentered(),
             message: 'No Internet'.text.neutral500.makeCentered(),
-            bgColor: Color(0xff242424),
+            bgColor: AppColor.emptyStatePrimary,
           ).expand(),
         ),
       ],
@@ -221,7 +221,7 @@ class FilteringView extends GetView<FilteringController> {
   Widget footerContent() {
     return HStack([
       Spacer(),
-      Obx(() => 'Total: ${MoneyHelper.toRupiah(controller.sumAll.value)}'.text.make()),
+      Obx(() => 'Total: ${controller.sumAll.value.moneyFormat()}'.text.make()),
     ]).p12();
   }
 }

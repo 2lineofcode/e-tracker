@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/app_color.dart';
+
 class MyLayout extends StatelessWidget {
   const MyLayout({
     super.key,
@@ -76,7 +78,7 @@ class MyLayout extends StatelessWidget {
 
   Widget sideMenu() {
     return Container(
-      color: Vx.neutral800,
+      color: AppColor.sideMenuPrimary,
       width: 250,
       height: double.infinity,
       child: VStack([
@@ -88,7 +90,7 @@ class MyLayout extends StatelessWidget {
 
   AppBar myAppBarMobile() {
     return AppBar(
-      backgroundColor: Vx.neutral900,
+      backgroundColor: AppColor.appbarPrimary,
       toolbarHeight: 44,
       title: appBarTitle,
       leadingWidth: 40,
@@ -99,7 +101,7 @@ class MyLayout extends StatelessWidget {
 
   Widget myAppBarDesktop() {
     return AppBar(
-      backgroundColor: Vx.neutral900,
+      backgroundColor: AppColor.appbarPrimary,
       toolbarHeight: 44,
       title: appBarTitle,
       centerTitle: false,
@@ -121,7 +123,7 @@ class MyLayout extends StatelessWidget {
   Widget footer() {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(color: footerColor ?? Vx.neutral800),
+      decoration: BoxDecoration(color: footerColor ?? AppColor.footerPrimary),
       child: Padding(
         padding: Get.context!.isMobile ? EdgeInsets.only(bottom: 20, right: 8, left: 8) : EdgeInsets.all(0),
         child: footerContent,

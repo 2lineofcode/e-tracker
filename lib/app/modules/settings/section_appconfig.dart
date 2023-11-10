@@ -1,7 +1,11 @@
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/app_color.dart';
+import '../../core/app_setting.dart';
+import '../../core/const.dart';
 import '../../helpers/helper_decoration.dart';
 import 'settings_controller.dart';
 
@@ -22,7 +26,7 @@ class SectionAppConfig extends GetView<SettingsController> {
   Widget settingCommon() {
     return Container(
       width: double.infinity,
-      decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
+      decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
       child: VStack(
         [
           HStack(
@@ -31,7 +35,7 @@ class SectionAppConfig extends GetView<SettingsController> {
               Spacer(),
               ExButtonOutline(
                 label: 'Apply',
-                labelColor: Colors.white,
+                labelColor: AppColor.textReverse,
                 borderColor: Vx.neutral500,
                 labelSize: 11,
                 height: 38,
@@ -40,47 +44,70 @@ class SectionAppConfig extends GetView<SettingsController> {
             ],
           ),
 
-          Divider().pSymmetric(v: 12),
+          Divider().pSymmetric(v: 8),
+
+          /// 0
+          HStack(
+            [
+              'Dark Mode:'.text.make().w(200),
+              Spacer(),
+              Switch.adaptive(
+                value: pref.read<bool>(kIsDarkMode) ?? true,
+                onChanged: (s) async {
+                  await Get.find<AppSettingService>().switchTheme();
+                  await 300.milliseconds.delay();
+                  await Get.forceAppUpdate();
+                },
+              ),
+            ],
+          ),
+          Divider().pSymmetric(v: 8),
 
           /// 1
           HStack([
-            'Max Flag Hemat Day:'.text.make().w(200),
+            'Max Flag Eco Day:'.text.make().w(200),
             TextField(
+              controller: controller.tfEco,
               decoration: MyDecorationHelper.inputDecorator(
                 hint: '< 50.000',
-                prefixIcon: 'Rp. '.text.make().pOnly(top: 4, left: 12),
+                prefixIcon: '< '.text.make().pOnly(left: 12, top: 4),
               ),
               style: TextStyle(fontSize: 13),
+              inputFormatters: [CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0)],
             ).h(28).expand(),
-            Icon(Icons.circle, color: Vx.green300, size: 8).pOnly(left: 8),
+            Icon(Icons.circle, color: AppColor.green, size: 8).pOnly(left: 8),
           ]),
           Divider().pSymmetric(v: 8),
 
           /// 2
           HStack([
-            'Max Flag Standart Day:'.text.make().w(200),
+            'Max Flag Average Day:'.text.make().w(200),
             TextField(
+              controller: controller.tfAverage,
               decoration: MyDecorationHelper.inputDecorator(
                 hint: '< 100.000',
-                prefixIcon: 'Rp. '.text.make().pOnly(top: 4, left: 12),
+                prefixIcon: '< '.text.make().pOnly(left: 12, top: 4),
               ),
               style: TextStyle(fontSize: 13),
+              inputFormatters: [CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0)],
             ).h(28).expand(),
-            Icon(Icons.circle, color: Vx.orange300, size: 8).pOnly(left: 8),
+            Icon(Icons.circle, color: AppColor.orange, size: 8).pOnly(left: 8),
           ]),
           Divider().pSymmetric(v: 8),
 
           /// 3
           HStack([
-            'Max Flag Boros Day:'.text.make().w(200),
+            'Max Flag Spender Day:'.text.make().w(200),
             TextField(
+              controller: controller.tfSpender,
               decoration: MyDecorationHelper.inputDecorator(
                 hint: '> 100.000',
-                prefixIcon: 'Rp. '.text.make().pOnly(top: 4, left: 12),
+                prefixIcon: '> '.text.make().pOnly(left: 12, top: 4),
               ),
               style: TextStyle(fontSize: 13),
+              inputFormatters: [CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0)],
             ).h(28).expand(),
-            Icon(Icons.circle, color: Vx.red500, size: 8).pOnly(left: 8),
+            Icon(Icons.circle, color: AppColor.red, size: 8).pOnly(left: 8),
           ]),
         ],
       ).p12(),
@@ -90,7 +117,7 @@ class SectionAppConfig extends GetView<SettingsController> {
   Widget settingCurrency() {
     return Container(
       width: double.infinity,
-      decoration: ExDecorator.box(fillColor: Vx.neutral900, borderColor: Vx.neutral900, borderRadius: 4),
+      decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
       child: VStack(
         [
           HStack(
@@ -99,7 +126,7 @@ class SectionAppConfig extends GetView<SettingsController> {
               Spacer(),
               ExButtonOutline(
                 label: 'Apply',
-                labelColor: Colors.white,
+                labelColor: AppColor.textReverse,
                 borderColor: Vx.neutral500,
                 labelSize: 11,
                 height: 38,

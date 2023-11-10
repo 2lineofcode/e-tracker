@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_misc.dart';
@@ -128,7 +129,7 @@ class HomeView extends GetView<HomeController> {
 
         /// category
         Container(
-          decoration: BoxDecoration(color: Vx.neutral700),
+          decoration: BoxDecoration(color: AppColor.sideMenuSecondary),
           child: VStack(
             [
               Obx(
@@ -147,7 +148,7 @@ class HomeView extends GetView<HomeController> {
                           '${item.name}'.text.size(12).make().pOnly(right: 8),
                           if (item.maxBudget != null) ...[
                             Container(
-                              color: Vx.neutral800,
+                              color: AppColor.sideMenuPrimary,
                               child: '${item.maxBudget!.moneyFormatCompact()}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
                             ).cornerRadius(4).pOnly(top: 2),
                           ],
@@ -184,7 +185,7 @@ class HomeView extends GetView<HomeController> {
                   ? HStack([
                       Container(
                         color: Colors.blue,
-                        child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.make().pSymmetric(h: 4, v: 2),
+                        child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).make().pSymmetric(h: 4, v: 2),
                       ).cornerRadius(4).pOnly(right: 8),
                       '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(11).bold.make(),
                       Spacer(),
@@ -217,7 +218,7 @@ class HomeView extends GetView<HomeController> {
                         final item = controller.expenseList[index];
                         return Container(
                           width: double.infinity,
-                          decoration: BoxDecoration(color: Vx.neutral900, borderRadius: BorderRadius.all(Radius.circular(4))),
+                          decoration: BoxDecoration(color: AppColor.cardItemSecondary, borderRadius: BorderRadius.all(Radius.circular(4))),
                           child: Row(
                             children: [
                               VStack([
@@ -230,7 +231,7 @@ class HomeView extends GetView<HomeController> {
                                 '${item.categoryName}'.text.size(12).make(),
                               ]),
                               Spacer(),
-                              '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.bold.size(16).make(),
+                              '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
                             ],
                           ).p12(),
                         ).pSymmetric(h: 8, v: 4).onTap(() => controller.onShowDialogExpense(expense: item));
@@ -246,7 +247,7 @@ class HomeView extends GetView<HomeController> {
                       order: GroupedListOrder.DESC,
                       groupHeaderBuilder: (element) => Container(
                         width: double.infinity,
-                        decoration: BoxDecoration(color: Vx.neutral700),
+                        decoration: BoxDecoration(color: AppColor.cardHeaderPrimary),
                         child: HStack([
                           '${element.date!.reformatDate(from: yMd, to: 'dd MMM y (E)')}'.text.size(11).bold.make(),
                         ]).p8(),
@@ -263,7 +264,7 @@ class HomeView extends GetView<HomeController> {
                               ]),
                             ]),
                             Spacer(),
-                            '${MoneyHelper.toRupiah(item.amount?.toDouble())}'.text.bold.size(16).make(),
+                            '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
                           ],
                         ).p12(),
                       ).pSymmetric(h: 8, v: 4).onInkTap(() => controller.onShowDialogExpense(expense: item)),
@@ -272,9 +273,9 @@ class HomeView extends GetView<HomeController> {
 
             /// sum
             HStack([
-              'Total:'.text.bold.make(),
+              'Total:'.text.bold.color(AppColor.textOnBackground).make(),
               Spacer(),
-              '${MoneyHelper.toRupiah(controller.countOfDay.value)}'.text.bold.make(),
+              '${controller.countOfDay.value.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).make(),
             ]).p12().color(MoneyHelper.getExpenseFlagColorDark(controller.countOfDay.value)),
           ],
         ),
@@ -287,17 +288,16 @@ class HomeView extends GetView<HomeController> {
         action: ExButtonOutline(
           label: 'Add Expense',
           labelSize: 12,
-          labelColor: Colors.white,
-          isLabelBold: false,
+          labelColor: AppColor.textReverse,
           onPressed: () => controller.onShowDialogExpense(),
         ).centered(),
-        bgColor: Color(0xff242424),
+        bgColor: AppColor.emptyStatePrimary,
       ),
       onError: (e) => ExUiErrorOrEmpty(
         illustration: Icon(CupertinoIcons.wifi_slash),
         title: 'Offline'.text.bold.makeCentered(),
         message: 'No Internet'.text.neutral500.makeCentered(),
-        bgColor: Color(0xff242424),
+        bgColor: AppColor.emptyStatePrimary,
       ),
     );
   }
@@ -305,11 +305,12 @@ class HomeView extends GetView<HomeController> {
   Widget footerContent() {
     return HStack([
       if (dotenv.get('APP_NAME').contains('Local')) ...[
-        '# LOCAL DB--'.text.green200.make(),
+        Icon(CupertinoIcons.wifi_slash).pOnly(right: 8),
+        'Localhost'.text.make(),
       ],
       Spacer(),
       Obx(
-        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${MoneyHelper.toRupiah(controller.countOfMonth.value)}'.text.make().onTap(() {
+        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${controller.countOfMonth.value.moneyFormat()}'.text.make().onTap(() {
           Get.toNamed(Routes.SUMMARY);
         }),
       ),
@@ -319,7 +320,7 @@ class HomeView extends GetView<HomeController> {
   Widget floatingActionButton() {
     return Obx(() => controller.expenseList.isNotEmpty
         ? FloatingActionButton(
-            backgroundColor: Vx.neutral600,
+            backgroundColor: AppColor.fabPrimary,
             child: Icon(Icons.add, color: Colors.white),
             onPressed: () => controller.onShowDialogExpense(),
           ).pOnly(bottom: 60)

@@ -1,10 +1,11 @@
-import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
+
+import '../core/app_color.dart';
 
 mixin MyDecorationHelper {
   static InputDecoration inputDecorator({
     String? hint,
-    Color? fillColor = Vx.neutral700,
+    Color? fillColor,
     Widget? suffix,
     Widget? suffixIcon,
     Widget? prefix,
@@ -15,7 +16,7 @@ mixin MyDecorationHelper {
   }) {
     return InputDecoration(
       filled: true,
-      fillColor: fillColor,
+      fillColor: fillColor ?? AppColor.textFieldPrimary,
       hintText: hint,
       hintStyle: TextStyle(fontSize: 13),
       border: OutlineInputBorder(borderSide: BorderSide.none),
@@ -26,7 +27,7 @@ mixin MyDecorationHelper {
       contentPadding: contentPadding ?? EdgeInsets.only(top: 2, bottom: 2, left: 12, right: 12),
       icon: icon,
       labelText: label,
-      labelStyle: TextStyle(fontSize: 12, color: Vx.white),
+      labelStyle: TextStyle(fontSize: 12, color: AppColor.textReverse),
       // prefix
       prefix: prefix,
       prefixIcon: prefixIcon,

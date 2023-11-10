@@ -1,5 +1,6 @@
 class RpcSumByCategoryEntity {
   String? period;
+  String? categoryId;
   String? categoryName;
   String? categoryColor;
   String? categoryIcon;
@@ -10,6 +11,7 @@ class RpcSumByCategoryEntity {
 
   RpcSumByCategoryEntity({
     this.period = '',
+    this.categoryId = '',
     this.categoryName = '',
     this.categoryColor = '',
     this.categoryIcon = '',
@@ -21,6 +23,7 @@ class RpcSumByCategoryEntity {
 
   RpcSumByCategoryEntity.fromJson(Map<String, dynamic> json) {
     period = json['period'];
+    categoryId = json['category_id'];
     categoryName = json['category_name'];
     categoryColor = json['category_color'];
     categoryIcon = json['category_icon'];
@@ -33,6 +36,7 @@ class RpcSumByCategoryEntity {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['period'] = period;
+    data['category_id'] = categoryId;
     data['category_name'] = categoryName;
     data['category_color'] = categoryColor;
     data['category_icon'] = categoryIcon;

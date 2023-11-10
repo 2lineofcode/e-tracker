@@ -1,10 +1,18 @@
+import 'package:get_storage/get_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// It's handy to then extract the Supabase client in a variable for later uses
 final db = Supabase.instance.client;
+final pref = GetStorage();
 
-
-/// dateformat db
+/// ------------------------------------------------------------------------
+/// dateformat from db
 const yM = 'yyyy-MM';
 const yMd = 'yyyy-MM-dd';
 
+/// ------------------------------------------------------------------------
+/// storage key
+const kFlagEco = 'kFlagEco';
+const kFlagAverage = 'kFlagAverage';
+const kFlagSpender = 'kFlagSpender';
+const kIsDarkMode = 'isDarkMode';
+const kCurrentLanguage = 'kCurrentLanguage';

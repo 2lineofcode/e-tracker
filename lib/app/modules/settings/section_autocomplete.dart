@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 
+import '../../core/app_color.dart';
 import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_money.dart';
 import '../../models/autocomplete_entity.dart';
@@ -23,7 +24,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
           groupHeaderBuilder: (element) {
             return Container(
               width: double.infinity,
-              color: Vx.neutral900,
+              color: AppColor.cardHeaderPrimary,
               child: Text(element.note?.first()?.toUpperCase() ?? '?').p8(),
             );
           },
@@ -38,7 +39,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
               if (item.amount.isNotEmptyAndNotNull) ...[
                 Container(
                   color: Vx.neutral800,
-                  child: '${item.amount?.toInt()?.moneyFormatCompact()}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
+                  child: '${item.amount?.toInt()?.moneyFormatCompact()}'.text.size(11).minFontSize(11).color(AppColor.textOnBackground).make().pSymmetric(h: 4, v: 2),
                 ).cornerRadius(4).pOnly(top: 2),
               ],
 
@@ -48,7 +49,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
               if (item.categoryName.isNotEmptyAndNotNull && !item.categoryName!.contains('Others')) ...[
                 Container(
                   color: Vx.neutral800,
-                  child: '${item.categoryName}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
+                  child: '${item.categoryName}'.text.size(11).minFontSize(11).color(AppColor.textOnBackground).make().pSymmetric(h: 4, v: 2),
                 ).cornerRadius(4).pOnly(top: 2, right: 4),
               ],
 

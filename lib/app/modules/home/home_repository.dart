@@ -20,7 +20,7 @@ class HomeRepository {
   }
 
   Future<void> editCategory(CategoryEntity categoryEntity) async {
-    final response = await db.from('category').update(categoryEntity.toJson()).match({'name': categoryEntity.name});
+    final response = await db.from('category').update(categoryEntity.toJson()).match({'id': categoryEntity.id});
     return response;
   }
 

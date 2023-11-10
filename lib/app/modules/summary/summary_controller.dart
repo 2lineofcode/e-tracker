@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../helpers/helper_misc.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
+import '../../models/rpc_sum_note_times_entity.dart';
 import '../../routes/app_pages.dart';
 import 'summary_repository.dart';
 
@@ -18,6 +19,7 @@ class SummaryController extends GetxController with StateMixin {
   // data
   final rpcSumAllMonth = <RpcSumAllMonthEntity>[].obs; // for sidemenu
   final rpcSumByCategory = <RpcSumByCategoryEntity>[].obs; // for body
+  final rpcSumNoteTimes = <RpcSumNoteTimesEntity>[].obs; // for noteTimes perMonth
 
   // count header
   final countBudget = 0.obs;
@@ -28,11 +30,13 @@ class SummaryController extends GetxController with StateMixin {
 
   // flag
   final isShowAllYear = false.obs;
+  final menuSelected = 1.obs;
 
   @override
   Future<void> onInit() async {
     await getSumAllMonth(year: yearSelected.value);
-    await getCountByCategory(year: yearSelected.value, month: monthSelected.value);
+    await getSumByCategory(year: yearSelected.value, month: monthSelected.value);
+    await getSumNoteTimes(year: yearSelected.value, month: monthSelected.value);
 
     await calculateBudgetStatForHeader();
     change(0, status: RxStatus.success());
@@ -44,8 +48,8 @@ class SummaryController extends GetxController with StateMixin {
     change(0, status: RxStatus.loading());
     monthSelected.value = month;
     isShowAllYear.value = false;
-    await getCountByCategory(year: yearSelected.value, month: monthSelected.value);
-
+    await getSumByCategory(year: yearSelected.value, month: monthSelected.value);
+    await getSumNoteTimes(year: yearSelected.value, month: monthSelected.value);
     await calculateBudgetStatForHeader();
     change(0, status: RxStatus.success());
   }
@@ -56,7 +60,8 @@ class SummaryController extends GetxController with StateMixin {
       closeDrawer();
       isShowAllYear.value = true;
       monthSelected.value = '';
-      await getCountByCategory(year: yearSelected.value);
+      await getSumByCategory(year: yearSelected.value);
+      await getSumNoteTimes(year: yearSelected.value);
     } else {
       isShowAllYear.value = false;
       monthSelected.value = '${DateTime.now().toStringEx(format: 'MMMM')}';
@@ -77,7 +82,8 @@ class SummaryController extends GetxController with StateMixin {
     if (isShowAllYear.isFalse) {
       await onMonthChange(monthSelected.value);
     } else {
-      await getCountByCategory(year: yearSelected.value);
+      await getSumByCategory(year: yearSelected.value);
+      await getSumNoteTimes(year: yearSelected.value);
     }
 
     await calculateBudgetStatForHeader();
@@ -102,7 +108,8 @@ class SummaryController extends GetxController with StateMixin {
     if (isShowAllYear.isFalse) {
       await onMonthChange(monthSelected.value);
     } else {
-      await getCountByCategory(year: yearSelected.value);
+      await getSumByCategory(year: yearSelected.value);
+      await getSumNoteTimes(year: yearSelected.value);
     }
 
     await calculateBudgetStatForHeader();
@@ -113,8 +120,12 @@ class SummaryController extends GetxController with StateMixin {
     rpcSumAllMonth.value = await repo.getSumAllMonth(year: year);
   }
 
-  Future<void> getCountByCategory({required String year, String? month}) async {
+  Future<void> getSumByCategory({required String year, String? month}) async {
     rpcSumByCategory.value = await repo.getSumByCategory(year: year, month: month);
+  }
+
+  Future<void> getSumNoteTimes({required String year, String? month}) async {
+    rpcSumNoteTimes.value = await repo.getSumNoteTimes(year: year, month: month);
   }
 
   Future<void> calculateBudgetStatForHeader() async {
