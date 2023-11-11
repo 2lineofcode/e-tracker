@@ -5,16 +5,16 @@ import 'package:intl/intl.dart';
 import '../core/app_color.dart';
 import '../core/const.dart';
 
-extension IntToMoneyExt on num {
-  /// example: '1000' -> 'Rp. 1,000'
+extension MoneyFormatExt on num {
+  /// example: 1000 -> 'Rp. 1,000'
   String moneyFormat() {
     String formattedText = 'Rp. ${toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
     return formattedText;
   }
 
+  /// example: 1000 -> '1K'
+  /// example: 1000000 -> '1M'
   String moneyFormatCompact() {
-    /// example: '1000' -> '1K'
-    /// example: '1000000' -> '1M'
     if (this < 1000) {
       return toString();
     } else if (this < 1000000) {
@@ -28,6 +28,7 @@ extension IntToMoneyExt on num {
     }
   }
 
+  /// example: 0,132 -> '1,32%'
   String percentageFormat({int decimalDigits = 1}) {
     var output = '';
 
@@ -49,73 +50,75 @@ extension IntToMoneyExt on num {
 }
 
 extension StringToMoneyExt on String {
-  /// example: 'Rp. 1.000' -> '1000'
+  /// example: 'Rp. 1.000' -> 1000
   int? moneyUnformat() => replaceAll(RegExp(r'[^0-9]'), '').toInt();
 }
 
-mixin MoneyHelper {
-  static Color getExpenseFlagColor(num amount) {
+extension ExpenseFlagColorExt on num {
+  Color getFlagColor() {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
     final spender = pref.read<num>(kFlagSpender) ?? 100000;
 
-    if (amount == 0) return Vx.white;
-    if (amount < eco) {
+    if (this == 0) return Vx.white;
+    if (this < eco) {
       return AppColor.green;
-    } else if (amount < average) {
+    } else if (this < average) {
       return AppColor.orange;
-    } else if (amount > spender) {
+    } else if (this > spender) {
       return AppColor.red;
     } else {
       return Colors.white;
     }
   }
 
-  static Color getExpenseFlagColorLight(num amount) {
+  Color getFlagColorLight() {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
     final spender = pref.read<num>(kFlagSpender) ?? 100000;
 
-    if (amount == 0) return Vx.white;
-    if (amount < eco) {
+    if (this == 0) return Vx.white;
+    if (this < eco) {
       return AppColor.greenLight;
-    } else if (amount < average) {
+    } else if (this < average) {
       return AppColor.orangeLight;
-    } else if (amount > spender) {
+    } else if (this > spender) {
       return AppColor.redLight;
     } else {
       return Colors.white;
     }
   }
 
-  static Color getExpenseFlagColorDark(num amount) {
+  Color getFlagColorDark() {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
     final spender = pref.read<num>(kFlagSpender) ?? 100000;
 
-    if (amount == 0) return Vx.white;
-    if (amount < eco) {
+    if (this == 0) return Vx.white;
+    if (this < eco) {
       return AppColor.greenDark;
-    } else if (amount < average) {
+    } else if (this < average) {
       return AppColor.orangeDark;
-    } else if (amount > spender) {
+    } else if (this > spender) {
       return AppColor.redDark;
     } else {
       return Colors.white;
     }
   }
+}
 
-  static String getExpenseFlagText(num amount) {
+extension ExpenseFlagTextExt on num {
+  String getFlagText() {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
     final spender = pref.read<num>(kFlagSpender) ?? 100000;
 
-    if (amount == 0) return '';
-    if (amount < eco) {
+    if (this == 0) return '';
+    if (this < eco) {
       return 'Eco';
-    } else if (amount < average) {
+    } else if (this < average) {
       return 'Average';
-    } else if (amount > spender) {
+    } else if (this > spender) {
       return 'Spender';
     } else {
       return 'ERR';

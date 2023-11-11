@@ -125,7 +125,7 @@ class HomeView extends GetView<HomeController> {
                 if (events.isNotEmpty) {
                   var total = 0;
                   for (var event in events) total += event.toInt()!;
-                  return Icon(Icons.circle, size: 6, color: MoneyHelper.getExpenseFlagColor(total)).positioned(top: 8, right: 8);
+                  return Icon(Icons.circle, size: 6, color: total.getFlagColor()).positioned(top: 8, right: 8);
                 }
                 return Container();
               },
@@ -150,7 +150,7 @@ class HomeView extends GetView<HomeController> {
                     return ListTile(
                       title: HStack(
                         [
-                          Icon(Icons.circle_outlined, color: MyColor.fromHex(item.color ?? ''), size: 12).pOnly(right: 8),
+                          Icon(Icons.circle_outlined, color: item.color?.fromHex, size: 12).pOnly(right: 8),
                           '${item.name}'.text.size(12).make().pOnly(right: 8),
                           if (item.maxBudget != null) ...[
                             Container(
@@ -199,7 +199,7 @@ class HomeView extends GetView<HomeController> {
                         ).cornerRadius(4).pOnly(right: 10),
                         VStack([
                           '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
-                          '${(MyDateTime.getTimeAgo(DateTime.now(), controller.focusedDay.value))}'.text.size(11).minFontSize(11).make(),
+                          '${controller.focusedDay.value.getTimeAgoFromNow()}'.text.size(11).minFontSize(11).make(),
                         ]),
                         Spacer(),
                         CustomPopup(
@@ -207,16 +207,9 @@ class HomeView extends GetView<HomeController> {
                           child: Container(
                             decoration: ExDecorator.box(
                               borderRadius: 90,
-                              borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value),
+                              borderColor: controller.countOfDay.value.getFlagColorLight(),
                             ),
-                            child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)} Day'
-                                .text
-                                .size(12)
-                                .minFontSize(12)
-                                .color(MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value))
-                                .make()
-                                .p4()
-                                .pSymmetric(h: 4),
+                            child: '${controller.countOfDay.value.getFlagText()} Day'.text.size(12).minFontSize(12).color(controller.countOfDay.value.getFlagColorLight()).make().p4().pSymmetric(h: 4),
                           ),
                         ),
                       ],
@@ -265,7 +258,7 @@ class HomeView extends GetView<HomeController> {
                         child: HStack([
                           '${item.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).bold.make(),
                           Spacer(),
-                          '(${MyDateTime.getTimeAgo(DateTime.now(), item.date!.toDateEx(format: yMd))})'.text.minFontSize(10).size(10).make(),
+                          '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'.text.minFontSize(10).size(10).make(),
                         ]).p8(),
                       ).onTap(() async => await controller.onCalenderGoDate(item)),
                       indexedItemBuilder: (context, item, index) => SizedBox(
@@ -275,7 +268,7 @@ class HomeView extends GetView<HomeController> {
                             VStack([
                               '${item.note}'.text.make().pOnly(bottom: 4),
                               HStack([
-                                Icon(Icons.circle_outlined, size: 8, color: MyColor.fromHex(item.category?.color ?? '')).pOnly(right: 8),
+                                Icon(Icons.circle_outlined, size: 8, color: item.category?.color?.fromHex).pOnly(right: 8),
                                 '${item.categoryName}'.text.size(12).make(),
                               ]),
                             ]),
@@ -292,7 +285,7 @@ class HomeView extends GetView<HomeController> {
               'Total:'.text.bold.color(AppColor.textOnBackground).make(),
               Spacer(),
               '${controller.countOfDay.value.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).make(),
-            ]).p12().color(MoneyHelper.getExpenseFlagColorDark(controller.countOfDay.value)),
+            ]).p12().color(controller.countOfDay.value.getFlagColorDark()),
           ],
         ),
       ),
@@ -309,12 +302,12 @@ class HomeView extends GetView<HomeController> {
                 ).cornerRadius(4).pOnly(right: 10),
                 VStack([
                   '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
-                  '${(MyDateTime.getTimeAgo(DateTime.now(), controller.focusedDay.value))}'.text.size(11).minFontSize(11).make(),
+                  '${controller.focusedDay.value.getTimeAgoFromNow()}'.text.size(11).minFontSize(11).make(),
                 ]),
                 Spacer(),
                 Container(
-                  decoration: ExDecorator.box(borderRadius: 90, borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value)),
-                  child: 'No Record'.text.size(12).minFontSize(12).color(MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value)).make().p4().pSymmetric(h: 4),
+                  decoration: ExDecorator.box(borderRadius: 90, borderColor: controller.countOfDay.value.getFlagColorLight()),
+                  child: 'No Record'.text.size(12).minFontSize(12).color(controller.countOfDay.value.getFlagColorLight()).make().p4().pSymmetric(h: 4),
                 ),
               ],
             ).pOnly(bottom: 12),

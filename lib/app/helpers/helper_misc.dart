@@ -1,54 +1,47 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:ex/ex.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-// ------------------------------------------------------------------------
-// Platform
-// ------------------------------------------------------------------------
-mixin MyPlatform {
-  static bool isDesktop() {
-    return !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
-  }
-}
+/// TOP LEVEL HELPER
 
-void closeDrawer() {
-  if (Get.context!.isMobile) Get.back();
-}
+bool get isDesktop => !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
 
-// ------------------------------------------------------------------------
-// Colors
-// ------------------------------------------------------------------------
-extension MyColor on Color {
-  /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
-  static Color fromHex(String hexString) {
-    try {
-      final buffer = StringBuffer();
-      if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-      buffer.write(hexString.replaceFirst('#', ''));
-      return Color(int.parse(buffer.toString(), radix: 16));
-    } catch (e) {
-      return Color(0xffffffff);
-    }
-  }
-}
-
-// ------------------------------------------------------------------------
-// DateTime
-// ------------------------------------------------------------------------
-mixin MyDateTime {
-  static String getTimeAgo(DateTime dateTime1, DateTime dateTime2) {
-    Duration difference = dateTime1.difference(dateTime2);
+extension TimeAgo on DateTime {
+  String getTimeAgoFromNow() {
+    Duration difference = DateTime.now().difference(this);
     int days = difference.inDays;
 
-    final diff = dateTime1.subtract(Duration(days: days));
+    final diff = DateTime.now().subtract(Duration(days: days));
     if (days.isNegative) {
       return '~';
     } else {
       return diff.ago().replaceAll('Just now', 'Today');
     }
   }
+}
+
+extension HexToColor on String {
+  Color get fromHex {
+    try {
+      if (isHexColor) {
+        final buffer = StringBuffer();
+        if (length == 6 || length == 7) buffer.write('FF');
+        buffer.write(replaceFirst('#', ''));
+        return Color(int.parse(buffer.toString(), radix: 16));
+      }
+    } catch (_) {
+      return Colors.white;
+    }
+    return Colors.white;
+  }
+}
+
+// ------------------------------------------------------------------------
+// Mobile Only
+// ------------------------------------------------------------------------
+void closeDrawer() {
+  if (Get.context!.isMobile) Get.back();
 }

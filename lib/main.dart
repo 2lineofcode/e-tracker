@@ -37,7 +37,7 @@ Future<void> main() async {
   Get.put(AppSettingService());
 
   /// desktop only
-  if (MyPlatform.isDesktop()) {
+  if (isDesktop) {
     final idealSize = Size(675, 700);
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = WindowOptions(

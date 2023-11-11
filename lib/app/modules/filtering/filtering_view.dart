@@ -50,7 +50,7 @@ class FilteringView extends GetView<FilteringController> {
                       borderColor: Colors.transparent,
                     ),
                     child: HStack([
-                      Icon(Icons.circle_outlined, color: MyColor.fromHex(item.color ?? '#FFFFFF'), size: 12).pOnly(right: 8),
+                      Icon(Icons.circle_outlined, color: item.color?.fromHex, size: 12).pOnly(right: 8),
                       '${item.name}'.text.size(11).make().expand(),
                     ]).p8(),
                   ).pSymmetric(h: 8),
@@ -158,9 +158,9 @@ class FilteringView extends GetView<FilteringController> {
                   [
                     Icon(
                       Icons.circle,
-                      size: 7,
-                      color: MoneyHelper.getExpenseFlagColor(controller.sumByDate[element.date]!),
-                    ).tooltip('${MoneyHelper.getExpenseFlagText(controller.sumByDate[element.date]!)}').pOnly(right: 8),
+                      size: 8,
+                      color: controller.sumByDate[element.date]?.getFlagColor(),
+                    ).tooltip('${controller.sumByDate[element.date]?.getFlagText()}').pOnly(right: 8),
                     '${element.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).make(),
                     Spacer(),
                     '${controller.sumByDate[element.date]!.moneyFormat()}'.text.size(12).make(),

@@ -158,7 +158,7 @@ class HomeController extends GetxController with StateMixin {
     final tfCatName = TextEditingController(text: entity?.name ?? '');
     final tfCatColor = TextEditingController(text: entity?.color ?? '');
     final tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget!.moneyFormat() : '');
-    final _controller = HueController(HSVColor.fromColor(MyColor.fromHex(tfCatColor.text))).obs;
+    final _controller = HueController(HSVColor.fromColor(tfCatColor.text.fromHex)).obs;
 
     ExDialog.custom(
       title: 'Edit Category',

@@ -58,7 +58,7 @@ class ViewPieChart extends GetView<SummaryController> {
                               Icon(
                                 Icons.circle,
                                 size: 8,
-                                color: MyColor.fromHex(item[i].categoryColor!),
+                                color: item[i].categoryColor?.fromHex,
                               ).pOnly(right: 8),
                               '${item[i].categoryName}'.text.make(),
                             ],
@@ -122,7 +122,7 @@ class ViewPieChart extends GetView<SummaryController> {
         yValueMapper: (ChartSampleData data, _) => data.total,
         dataLabelMapper: (ChartSampleData data, _) => data.name,
         radius: '55%',
-        pointColorMapper: (datum, index) => MyColor.fromHex(datum.color ?? ''),
+        pointColorMapper: (datum, index) => datum.color?.fromHex,
         dataLabelSettings: DataLabelSettings(
           isVisible: true,
           labelIntersectAction: LabelIntersectAction.hide,
