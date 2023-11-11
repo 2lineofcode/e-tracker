@@ -60,7 +60,9 @@ class ViewPieChart extends GetView<SummaryController> {
                                 size: 8,
                                 color: item[i].categoryColor?.fromHex,
                               ).pOnly(right: 8),
-                              '${item[i].categoryName}'.text.make(),
+                              '${item[i].categoryName}'.text.make().onTap(() {
+                                controller.goAdvanceFilter(item[i].categoryName ?? '');
+                              }),
                             ],
                           ).p8(),
                         ),

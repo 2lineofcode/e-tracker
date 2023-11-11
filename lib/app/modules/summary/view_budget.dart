@@ -134,6 +134,8 @@ class ViewBudget extends GetView<SummaryController> {
                 final item = controller.rpcSumByCategory[index];
                 return HStack(
                   [
+                    Icon(Icons.circle, size: 6, color: item.categoryColor?.fromHex).pOnly(right: 8),
+
                     /// 1
                     VStack([
                       '${item.categoryName}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
@@ -142,7 +144,7 @@ class ViewBudget extends GetView<SummaryController> {
                       ] else ...[
                         'No Budget'.text.size(11).bold.make(),
                       ],
-                    ]).w(150).pOnly(right: 12),
+                    ]).w(130).pOnly(right: 12),
 
                     /// 2
                     if (item.maxBudget != null && item.maxBudget! > 0) ...[

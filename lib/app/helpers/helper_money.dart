@@ -58,51 +58,42 @@ extension ExpenseFlagColorExt on num {
   Color getFlagColor() {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
-    final spender = pref.read<num>(kFlagSpender) ?? 100000;
 
     if (this == 0) return Vx.white;
-    if (this < eco) {
+    if (this <= eco) {
       return AppColor.green;
-    } else if (this < average) {
+    } else if (this <= average) {
       return AppColor.orange;
-    } else if (this > spender) {
-      return AppColor.red;
     } else {
-      return Colors.white;
+      return AppColor.red;
     }
   }
 
   Color getFlagColorLight() {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
-    final spender = pref.read<num>(kFlagSpender) ?? 100000;
 
     if (this == 0) return Vx.white;
-    if (this < eco) {
+    if (this <= eco) {
       return AppColor.greenLight;
-    } else if (this < average) {
+    } else if (this <= average) {
       return AppColor.orangeLight;
-    } else if (this > spender) {
-      return AppColor.redLight;
     } else {
-      return Colors.white;
+      return AppColor.redLight;
     }
   }
 
   Color getFlagColorDark() {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
-    final spender = pref.read<num>(kFlagSpender) ?? 100000;
 
     if (this == 0) return Vx.white;
-    if (this < eco) {
+    if (this <= eco) {
       return AppColor.greenDark;
-    } else if (this < average) {
+    } else if (this <= average) {
       return AppColor.orangeDark;
-    } else if (this > spender) {
-      return AppColor.redDark;
     } else {
-      return Colors.white;
+      return AppColor.redDark;
     }
   }
 }
@@ -111,17 +102,14 @@ extension ExpenseFlagTextExt on num {
   String getFlagText() {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
-    final spender = pref.read<num>(kFlagSpender) ?? 100000;
 
     if (this == 0) return '';
-    if (this < eco) {
+    if (this <= eco) {
       return 'Eco';
-    } else if (this < average) {
+    } else if (this <= average) {
       return 'Average';
-    } else if (this > spender) {
-      return 'Spender';
     } else {
-      return 'ERR';
+      return 'Spender';
     }
   }
 }

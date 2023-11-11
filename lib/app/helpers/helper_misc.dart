@@ -13,9 +13,9 @@ extension TimeAgo on DateTime {
   String getTimeAgoFromNow() {
     Duration difference = DateTime.now().difference(this);
     int days = difference.inDays;
-
     final diff = DateTime.now().subtract(Duration(days: days));
-    if (days.isNegative) {
+
+    if (DateTime.now().isBefore(this)) {
       return '~';
     } else {
       return diff.ago().replaceAll('Just now', 'Today');

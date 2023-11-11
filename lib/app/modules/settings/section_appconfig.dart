@@ -59,8 +59,8 @@ class SectionAppConfig extends GetView<SettingsController> {
             TextField(
               controller: controller.tfEco,
               decoration: MyDecoration.input(
-                hint: '< 50.000',
-                prefixIcon: '< '.text.make().pOnly(left: 12, top: 4),
+                hint: '≤ 50.000',
+                prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
               ),
               style: TextStyle(fontSize: 13),
               inputFormatters: [CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0)],
@@ -75,8 +75,8 @@ class SectionAppConfig extends GetView<SettingsController> {
             TextField(
               controller: controller.tfAverage,
               decoration: MyDecoration.input(
-                hint: '< 100.000',
-                prefixIcon: '< '.text.make().pOnly(left: 12, top: 4),
+                hint: '≤ 100.000',
+                prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
               ),
               style: TextStyle(fontSize: 13),
               inputFormatters: [CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0)],

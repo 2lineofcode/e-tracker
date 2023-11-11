@@ -1,5 +1,6 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_color.dart';
@@ -50,7 +51,11 @@ class ViewNoteTimes extends GetView<SummaryController> {
                   for (var i = 0; i < item.length; i++) ...[
                     TableRow(
                       children: [
-                        TableCell(child: '${item[i].note}'.text.make().p8()),
+                        TableCell(
+                          child: '${item[i].note}'.text.make().p8().onTap(
+                                () async => await Clipboard.setData(ClipboardData(text: '${item[i].note}')),
+                              ),
+                        ),
                         TableCell(child: '${item[i].times}'.text.align(TextAlign.center).make().p8()),
                         TableCell(child: '${item[i].total?.moneyFormat()}'.text.align(TextAlign.end).make().p8()),
                       ],

@@ -38,7 +38,7 @@ Future<void> main() async {
 
   /// desktop only
   if (isDesktop) {
-    final idealSize = Size(675, 700);
+    final idealSize = Size(690, 700);
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = WindowOptions(
       title: dotenv.get('APP_NAME'),
