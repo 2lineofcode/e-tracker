@@ -1,13 +1,15 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/app_color.dart';
+
 class MyShimmerHome extends StatelessWidget {
   const MyShimmerHome({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const pc = Vx.neutral600;
-    const sc = Vx.neutral700;
+    final pc = AppColor.shimmerPrimary;
+    final sc = AppColor.shimmerSecondary;
     return VStack(
       [
         HStack([

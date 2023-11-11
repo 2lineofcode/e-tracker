@@ -182,28 +182,38 @@ class HomeView extends GetView<HomeController> {
             /// header
             Obx(
               () => controller.isSearchMode.isFalse
-                  ? HStack([
-                      Container(
-                        color: Colors.blue,
-                        child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).make().pSymmetric(h: 4, v: 2),
-                      ).cornerRadius(4).pOnly(right: 8),
-                      '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(11).bold.make(),
-                      Spacer(),
-                      Container(
-                        decoration: ExDecorator.box(
-                          borderRadius: 90,
-                          borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value),
+
+                  // normal view
+                  ? HStack(
+                      [
+                        Container(
+                          color: Colors.blue,
+                          height: 28,
+                          child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).makeCentered().pSymmetric(h: 4, v: 2),
+                        ).cornerRadius(4).pOnly(right: 10),
+                        VStack([
+                          '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
+                          '${(DateUtil.getTimeAgo(DateTime.now(), controller.focusedDay.value))}'.text.size(11).minFontSize(11).make(),
+                        ]),
+                        Spacer(),
+                        Container(
+                          decoration: ExDecorator.box(
+                            borderRadius: 90,
+                            borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value),
+                          ),
+                          child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)} Day'
+                              .text
+                              .size(12)
+                              .minFontSize(12)
+                              .color(MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value))
+                              .make()
+                              .p4()
+                              .pSymmetric(h: 4),
                         ),
-                        child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)} Day'
-                            .text
-                            .size(12)
-                            .minFontSize(12)
-                            .color(MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value))
-                            .make()
-                            .p4()
-                            .pSymmetric(h: 4),
-                      ),
-                    ])
+                      ],
+                    ).pOnly(bottom: 12)
+
+                  // search mode
                   : 'Search for: "${controller.tfSearchExpense.text}"'.text.bold.make().pOnly(bottom: 12),
             ).pSymmetric(h: 12).pOnly(top: 12),
 
@@ -222,11 +232,6 @@ class HomeView extends GetView<HomeController> {
                           child: Row(
                             children: [
                               VStack([
-                                Obx(
-                                  () => controller.isSearchMode.isTrue
-                                      ? '${item.date!.reformatDate(from: yMd, to: 'EEE, dd MMM yyyy')}'.text.size(11).minFontSize(11).make().pOnly(bottom: 8)
-                                      : Container(),
-                                ),
                                 '${item.note}'.text.bold.make().pOnly(bottom: 4),
                                 '${item.categoryName}'.text.size(12).make(),
                               ]),
@@ -245,13 +250,15 @@ class HomeView extends GetView<HomeController> {
                       useStickyGroupSeparators: true,
                       floatingHeader: true,
                       order: GroupedListOrder.DESC,
-                      groupHeaderBuilder: (element) => Container(
+                      groupHeaderBuilder: (item) => Container(
                         width: double.infinity,
                         decoration: BoxDecoration(color: AppColor.cardHeaderPrimary),
                         child: HStack([
-                          '${element.date!.reformatDate(from: yMd, to: 'dd MMM y (E)')}'.text.size(11).bold.make(),
+                          '${item.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).bold.make(),
+                          Spacer(),
+                          '(${DateUtil.getTimeAgo(DateTime.now(), item.date!.toDateEx(format: yMd))})'.text.minFontSize(10).size(10).make(),
                         ]).p8(),
-                      ).onTap(() async => await controller.onCalenderGoDate(element)),
+                      ).onTap(() async => await controller.onCalenderGoDate(item)),
                       indexedItemBuilder: (context, item, index) => SizedBox(
                         width: double.infinity,
                         child: Row(

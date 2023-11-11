@@ -35,3 +35,18 @@ extension HexColor on Color {
     }
   }
 }
+
+// ------------------------------------------------------------------------
+// DateTime
+// ------------------------------------------------------------------------
+
+mixin DateUtil {
+  static String getTimeAgo(DateTime dateTime1, DateTime dateTime2) {
+    Duration difference = dateTime1.difference(dateTime2);
+    int days = difference.inDays;
+
+    final diff = dateTime1.subtract(Duration(days: days));
+
+    return diff.ago().replaceAll('Just now', 'Today');
+  }
+}

@@ -161,7 +161,7 @@ class FilteringView extends GetView<FilteringController> {
                       size: 7,
                       color: MoneyHelper.getExpenseFlagColor(controller.sumByDate[element.date]!),
                     ).tooltip('${MoneyHelper.getExpenseFlagText(controller.sumByDate[element.date]!)}').pOnly(right: 8),
-                    '${element.date!.reformatDate(from: yMd, to: 'dd MMM y (E)')}'.text.size(11).make(),
+                    '${element.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).make(),
                     Spacer(),
                     '${controller.sumByDate[element.date]!.moneyFormat()}'.text.size(12).make(),
                   ],

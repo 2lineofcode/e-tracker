@@ -112,7 +112,7 @@ class SummaryView extends GetView<SummaryController> {
                       ],
                     ],
                   ).p8(),
-                ).onTap(() {
+                ).onInkTap(() {
                   controller.onMonthChange(period);
                 });
               },

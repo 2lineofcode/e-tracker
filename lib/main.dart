@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app/core/app_setting.dart';
+import 'app/core/const.dart';
 import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
 
@@ -79,6 +80,14 @@ Future<void> main() async {
                       await Get.find<AppSettingService>().switchTheme();
                       await 300.milliseconds.delay();
                       await Get.forceAppUpdate();
+                    },
+                  ),
+                  12.widthBox,
+                  IconButton(
+                    icon: Icon(Icons.abc),
+                    onPressed: () async {
+                      await pref.erase();
+                      ExSnackbar.info('oke');
                     },
                   ),
                 ],

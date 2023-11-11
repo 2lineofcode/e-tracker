@@ -7,7 +7,6 @@ import 'const.dart';
 class AppSettingService extends GetxService {
   @override
   Future<void> onInit() async {
-    // await pref.erase();
     logI('-- app service init --');
 
     if (!pref.hasData(kFlagEco) || !pref.hasData(kFlagAverage) || !pref.hasData(kFlagSpender) || !pref.hasData(kIsDarkMode)) {

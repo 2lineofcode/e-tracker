@@ -38,6 +38,10 @@ mixin AppColor {
   /// table
   static Color get tableHeader => Get.isDarkMode ? Vx.neutral800 : Vx.neutral300;
 
+  /// shimmer
+  static Color get shimmerPrimary => Get.isDarkMode ? Vx.neutral700 : Vx.neutral300;
+  static Color get shimmerSecondary => Get.isDarkMode ? Vx.neutral600 : Vx.neutral200;
+
   /// ------------------------------------------------------------------------
   /// green
   static Color get green => Get.isDarkMode ? Vx.green300 : Vx.green600;
