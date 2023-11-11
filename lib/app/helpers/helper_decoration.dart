@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../core/app_color.dart';
 
-mixin MyDecorationHelper {
-  static InputDecoration inputDecorator({
+mixin MyDecoration {
+  static InputDecoration input({
     String? hint,
     Color? fillColor,
     Widget? suffix,

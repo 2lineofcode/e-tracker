@@ -10,6 +10,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app/core/app_setting.dart';
+import 'app/core/const.dart';
 import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
 
@@ -36,7 +37,7 @@ Future<void> main() async {
   Get.put(AppSettingService());
 
   /// desktop only
-  if (PlatformUtil.isDesktop()) {
+  if (MyPlatform.isDesktop()) {
     final idealSize = Size(675, 700);
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = WindowOptions(
@@ -85,6 +86,7 @@ Future<void> main() async {
                   IconButton(
                     icon: Icon(Icons.abc),
                     onPressed: () async {
+                      await pref.erase();
                       await Get.forceAppUpdate();
                     },
                   ),

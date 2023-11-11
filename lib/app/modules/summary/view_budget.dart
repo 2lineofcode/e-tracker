@@ -59,7 +59,7 @@ class ViewBudget extends GetView<SummaryController> {
                 final item = controller.rpcSumByCategory[index];
                 return HStack(
                   [
-                    Icon(Icons.circle_outlined, size: 12, color: HexColor.fromHex(item.categoryColor ?? '')).pOnly(right: 8),
+                    Icon(Icons.circle_outlined, size: 12, color: MyColor.fromHex(item.categoryColor ?? '')).pOnly(right: 8),
                     '${item.categoryName}'.text.ellipsis.maxLines(1).make().pOnly(bottom: 2).expand(),
                     '${item.total?.moneyFormat()}'.text.make(),
                   ],

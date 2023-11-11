@@ -158,7 +158,7 @@ class HomeController extends GetxController with StateMixin {
     final tfCatName = TextEditingController(text: entity?.name ?? '');
     final tfCatColor = TextEditingController(text: entity?.color ?? '');
     final tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget!.moneyFormat() : '');
-    final _controller = HueController(HSVColor.fromColor(HexColor.fromHex(tfCatColor.text))).obs;
+    final _controller = HueController(HSVColor.fromColor(MyColor.fromHex(tfCatColor.text))).obs;
 
     ExDialog.custom(
       title: 'Edit Category',
@@ -167,12 +167,12 @@ class HomeController extends GetxController with StateMixin {
         [
           TextField(
             controller: tfCatName,
-            decoration: MyDecorationHelper.inputDecorator(hint: 'Name', label: 'Category Name'),
+            decoration: MyDecoration.input(hint: 'Name', label: 'Category Name'),
             style: TextStyle(fontSize: 13),
           ).pOnly(bottom: 12),
           TextField(
             controller: tfMaxBudget,
-            decoration: MyDecorationHelper.inputDecorator(hint: '1.000.000', label: 'Max Budget (Monthtly)'),
+            decoration: MyDecoration.input(hint: '1.000.000', label: 'Max Budget (Monthtly)'),
             inputFormatters: [
               CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
               LengthLimitingTextInputFormatter(13),
@@ -204,15 +204,23 @@ class HomeController extends GetxController with StateMixin {
                 borderColor: Vx.red400,
                 radius: 90,
                 onPressed: () async {
-                  try {
-                    await repo.deleteCategory(entity?.id ?? '');
-                    await getCategory();
-                    await callback?.call();
-                    Get.back();
-                  } catch (e) {
-                    Get.back();
-                    ExSnackbar.danger(e);
-                  }
+                  ExAlert.confirm(
+                      title: 'Are you sure?',
+                      message: "you can't rollback this action",
+                      titleStyle: TextStyle(fontWeight: FontWeight.bold),
+                      messageStyle: TextStyle(fontSize: 13),
+                      onYes: () async {
+                        try {
+                          await repo.deleteCategory(entity?.id ?? '');
+                          await getCategory();
+                          await callback?.call();
+                          Get.close(2);
+                          Get.back();
+                        } catch (e) {
+                          Get.close(2);
+                          ExSnackbar.danger(e);
+                        }
+                      });
                 },
               ),
               8.widthBox,
@@ -258,7 +266,7 @@ class HomeController extends GetxController with StateMixin {
         isSearchMode.value = true;
       }
     } catch (e) {
-      change(0, status: RxStatus.error());
+      change(0, status: RxStatus.error('$e'));
     }
 
     /// search
@@ -303,7 +311,7 @@ class HomeController extends GetxController with StateMixin {
             TextField(
               controller: _tfDate,
               readOnly: true,
-              decoration: MyDecorationHelper.inputDecorator(hint: 'Date', label: 'Date'),
+              decoration: MyDecoration.input(hint: 'Date', label: 'Date'),
               style: TextStyle(fontSize: 13),
               onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => _tfDate.text = c.toStringEx(format: yMd)),
             ).wh(250, 38).pOnly(bottom: 16),
@@ -315,7 +323,7 @@ class HomeController extends GetxController with StateMixin {
               if (s.text.isBlank!) return [];
               return await repo.findAutoCompleteStringNote(s.text);
             },
-            decoration: MyDecorationHelper.inputDecorator(hint: 'Nasi Padang', label: 'Notes'),
+            decoration: MyDecoration.input(hint: 'Nasi Padang', label: 'Notes'),
             onChanged: (s) => _tfNote.text = s,
             onSelected: (s) async {
               _tfNote.text = s;
@@ -333,7 +341,7 @@ class HomeController extends GetxController with StateMixin {
               value: '${_tfCategory.value}',
               items: categoryList.map((element) => DropdownMenuItem(value: '${element.name}', child: Text(element.name ?? ''))).toList(),
               style: TextStyle(fontSize: 12, color: AppColor.textReverse),
-              decoration: MyDecorationHelper.inputDecorator(label: 'Category'),
+              decoration: MyDecoration.input(label: 'Category'),
               onChanged: (s) => _tfCategory.value = s ?? '',
             ).wh(250, 38).pOnly(bottom: 16),
           ),
@@ -343,7 +351,7 @@ class HomeController extends GetxController with StateMixin {
             [
               TextField(
                 controller: _tfAmount,
-                decoration: MyDecorationHelper.inputDecorator(
+                decoration: MyDecoration.input(
                   hint: '10.000',
                   label: 'Amount',
                   suffixIcon: IconButton(

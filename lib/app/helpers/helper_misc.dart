@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 // ------------------------------------------------------------------------
 // Platform
 // ------------------------------------------------------------------------
-mixin PlatformUtil {
+mixin MyPlatform {
   static bool isDesktop() {
     return !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
   }
@@ -22,7 +22,7 @@ void closeDrawer() {
 // ------------------------------------------------------------------------
 // Colors
 // ------------------------------------------------------------------------
-extension HexColor on Color {
+extension MyColor on Color {
   /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
   static Color fromHex(String hexString) {
     try {
@@ -39,14 +39,16 @@ extension HexColor on Color {
 // ------------------------------------------------------------------------
 // DateTime
 // ------------------------------------------------------------------------
-
-mixin DateUtil {
+mixin MyDateTime {
   static String getTimeAgo(DateTime dateTime1, DateTime dateTime2) {
     Duration difference = dateTime1.difference(dateTime2);
     int days = difference.inDays;
 
     final diff = dateTime1.subtract(Duration(days: days));
-
-    return diff.ago().replaceAll('Just now', 'Today');
+    if (days.isNegative) {
+      return '~';
+    } else {
+      return diff.ago().replaceAll('Just now', 'Today');
+    }
   }
 }

@@ -16,7 +16,8 @@ class SettingsController extends GetxController with StateMixin {
   final menuSelected = AUTO_COMPLETE.obs;
 
   /// Page: AutoComplete
-  final tfAutoComplete = TextEditingController();
+  final tfSearchAutoComplete = TextEditingController();
+  final tfAddAutoComplete = TextEditingController();
   final autoCompleteList = <AutoCompleteEntity>[].obs;
 
   /// Page: App Config
@@ -28,14 +29,13 @@ class SettingsController extends GetxController with StateMixin {
   Future<void> onInit() async {
     /// Page: AutoComplete
     menuList.value = await repo.getMenuList();
-    autoCompleteList.value = await repo.getAutoComplete();
+    await getAutoCompleteList();
 
     /// Page: App Config
     tfEco.text = pref.read<num>(kFlagEco)?.moneyFormat() ?? '';
     tfAverage.text = pref.read<num>(kFlagAverage)?.moneyFormat() ?? '';
     tfSpender.text = pref.read<num>(kFlagSpender)?.moneyFormat() ?? '';
 
-    change(0, status: RxStatus.success());
     super.onInit();
   }
 
@@ -44,11 +44,21 @@ class SettingsController extends GetxController with StateMixin {
     closeDrawer();
   }
 
+  Future<void> getAutoCompleteList({String? q}) async {
+    change(0, status: RxStatus.loading());
+    if (q != null) {
+      autoCompleteList.value = await repo.findAutoComplete(q);
+    } else {
+      autoCompleteList.value = await repo.getAutoComplete();
+    }
+    change(0, status: RxStatus.success());
+  }
+
   Future<void> onAddAutoComplete(String note) async {
     if (note.isEmpty) return;
     if (note.isBlank!) return;
     await repo.addAutoComplete(note);
-    tfAutoComplete.clear();
+    tfAddAutoComplete.clear();
     autoCompleteList.value = await repo.getAutoComplete();
     change(0, status: RxStatus.success());
   }

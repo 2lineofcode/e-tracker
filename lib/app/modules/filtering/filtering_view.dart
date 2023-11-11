@@ -50,7 +50,7 @@ class FilteringView extends GetView<FilteringController> {
                       borderColor: Colors.transparent,
                     ),
                     child: HStack([
-                      Icon(Icons.circle_outlined, color: HexColor.fromHex(item.color ?? '#FFFFFF'), size: 12).pOnly(right: 8),
+                      Icon(Icons.circle_outlined, color: MyColor.fromHex(item.color ?? '#FFFFFF'), size: 12).pOnly(right: 8),
                       '${item.name}'.text.size(11).make().expand(),
                     ]).p8(),
                   ).pSymmetric(h: 8),

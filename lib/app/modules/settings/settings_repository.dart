@@ -26,6 +26,13 @@ class SettingsRepository {
     return response;
   }
 
+  Future<List<AutoCompleteEntity>> findAutoComplete(String q) async {
+    final response = await db.from('autocomplete').select().ilike('note', '%$q%').order('note', ascending: true).withConverter<List<AutoCompleteEntity>>((data) {
+      return (data as List).map((e) => AutoCompleteEntity.fromJson(e)).toList();
+    });
+    return response;
+  }
+
   Future<void> addAutoComplete(String autocompleteNote) async {
     final response = await db.from('autocomplete').upsert({'note': autocompleteNote});
     return response;
@@ -35,6 +42,4 @@ class SettingsRepository {
     final response = await db.from('autocomplete').delete().match({'note': note});
     return response;
   }
-
-  
 }

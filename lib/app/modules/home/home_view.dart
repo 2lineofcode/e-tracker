@@ -40,7 +40,13 @@ class HomeView extends GetView<HomeController> {
     } else {
       return TextField(
         controller: controller.tfSearchExpense,
-        decoration: MyDecorationHelper.inputDecorator(hint: 'Search...'),
+        decoration: MyDecoration.input(
+          hint: 'Search...',
+          suffix: Icon(Icons.clear, size: 10, color: AppColor.textReverse).pOnly(top: 4, right: 8).onInkTap(() async {
+            controller.tfSearchExpense.clear();
+            await controller.getExpense();
+          }),
+        ),
         style: TextStyle(fontSize: 13),
         onSubmitted: (s) {
           if (s.isNotEmpty) {
@@ -67,7 +73,7 @@ class HomeView extends GetView<HomeController> {
         if (Get.size.width >= 1024) ...[
           TextField(
             controller: controller.tfSearchExpense,
-            decoration: MyDecorationHelper.inputDecorator(hint: 'Search...'),
+            decoration: MyDecoration.input(hint: 'Search...'),
             style: TextStyle(fontSize: 13),
             onSubmitted: (s) {
               if (s.isNotEmpty) {
@@ -144,7 +150,7 @@ class HomeView extends GetView<HomeController> {
                     return ListTile(
                       title: HStack(
                         [
-                          Icon(Icons.circle_outlined, color: HexColor.fromHex(item.color ?? ''), size: 12).pOnly(right: 8),
+                          Icon(Icons.circle_outlined, color: MyColor.fromHex(item.color ?? ''), size: 12).pOnly(right: 8),
                           '${item.name}'.text.size(12).make().pOnly(right: 8),
                           if (item.maxBudget != null) ...[
                             Container(
@@ -163,7 +169,7 @@ class HomeView extends GetView<HomeController> {
               ),
               TextField(
                 controller: controller.tfCategory,
-                decoration: MyDecorationHelper.inputDecorator(hint: 'Add Category'),
+                decoration: MyDecoration.input(hint: 'Add Category'),
                 style: TextStyle(fontSize: 13),
                 onSubmitted: (value) => controller.onAddCategory(value),
               ).h(33).p8(),
@@ -193,7 +199,7 @@ class HomeView extends GetView<HomeController> {
                         ).cornerRadius(4).pOnly(right: 10),
                         VStack([
                           '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
-                          '${(DateUtil.getTimeAgo(DateTime.now(), controller.focusedDay.value))}'.text.size(11).minFontSize(11).make(),
+                          '${(MyDateTime.getTimeAgo(DateTime.now(), controller.focusedDay.value))}'.text.size(11).minFontSize(11).make(),
                         ]),
                         Spacer(),
                         CustomPopup(
@@ -259,7 +265,7 @@ class HomeView extends GetView<HomeController> {
                         child: HStack([
                           '${item.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).bold.make(),
                           Spacer(),
-                          '(${DateUtil.getTimeAgo(DateTime.now(), item.date!.toDateEx(format: yMd))})'.text.minFontSize(10).size(10).make(),
+                          '(${MyDateTime.getTimeAgo(DateTime.now(), item.date!.toDateEx(format: yMd))})'.text.minFontSize(10).size(10).make(),
                         ]).p8(),
                       ).onTap(() async => await controller.onCalenderGoDate(item)),
                       indexedItemBuilder: (context, item, index) => SizedBox(
@@ -269,7 +275,7 @@ class HomeView extends GetView<HomeController> {
                             VStack([
                               '${item.note}'.text.make().pOnly(bottom: 4),
                               HStack([
-                                Icon(Icons.circle_outlined, size: 8, color: HexColor.fromHex(item.category?.color ?? '')).pOnly(right: 8),
+                                Icon(Icons.circle_outlined, size: 8, color: MyColor.fromHex(item.category?.color ?? '')).pOnly(right: 8),
                                 '${item.categoryName}'.text.size(12).make(),
                               ]),
                             ]),
@@ -291,22 +297,47 @@ class HomeView extends GetView<HomeController> {
         ),
       ),
       onLoading: MyShimmerHome(),
-      onEmpty: ExUiErrorOrEmpty(
-        illustration: Icon(CupertinoIcons.list_bullet),
-        title: 'No Expense'.text.bold.align(TextAlign.center).makeCentered(),
-        message: Obx(() => '${controller.focusedDay.value.toStringEx(format: 'dd MMM yyyy')}'.text.neutral500.size(11).makeCentered()),
-        action: ExButtonOutline(
-          label: 'Add Expense',
-          labelSize: 12,
-          labelColor: AppColor.textReverse,
-          onPressed: () => controller.onShowDialogExpense(),
-        ).centered(),
-        bgColor: AppColor.emptyStatePrimary,
-      ),
+      onEmpty: VStack(
+        [
+          Obx(
+            () => HStack(
+              [
+                Container(
+                  color: Colors.blue,
+                  height: 28,
+                  child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).makeCentered().pSymmetric(h: 4, v: 2),
+                ).cornerRadius(4).pOnly(right: 10),
+                VStack([
+                  '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
+                  '${(MyDateTime.getTimeAgo(DateTime.now(), controller.focusedDay.value))}'.text.size(11).minFontSize(11).make(),
+                ]),
+                Spacer(),
+                Container(
+                  decoration: ExDecorator.box(borderRadius: 90, borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value)),
+                  child: 'No Record'.text.size(12).minFontSize(12).color(MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value)).make().p4().pSymmetric(h: 4),
+                ),
+              ],
+            ).pOnly(bottom: 12),
+          ),
+          Divider(),
+          ExUiErrorOrEmpty(
+            illustration: Icon(CupertinoIcons.list_bullet),
+            title: 'No Expense'.text.bold.align(TextAlign.center).makeCentered(),
+            message: Obx(() => '${controller.focusedDay.value.toStringEx(format: 'dd MMM yyyy')}'.text.neutral500.size(11).makeCentered()),
+            bgColor: Theme.of(Get.context!).scaffoldBackgroundColor,
+            action: ExButtonOutline(
+              label: 'Add Expense',
+              labelSize: 12,
+              labelColor: AppColor.textReverse,
+              onPressed: () => controller.onShowDialogExpense(),
+            ).centered(),
+          ).expand(),
+        ],
+      ).p12(),
       onError: (e) => ExUiErrorOrEmpty(
         illustration: Icon(CupertinoIcons.wifi_slash),
         title: 'Offline'.text.bold.makeCentered(),
-        message: 'No Internet'.text.neutral500.makeCentered(),
+        message: '$e'.text.neutral500.makeCentered(),
         bgColor: AppColor.emptyStatePrimary,
       ),
     );
@@ -314,10 +345,6 @@ class HomeView extends GetView<HomeController> {
 
   Widget footerContent() {
     return HStack([
-      if (dotenv.get('APP_NAME').contains('Local')) ...[
-        Icon(CupertinoIcons.wifi_slash).pOnly(right: 8),
-        'Localhost'.text.make(),
-      ],
       Spacer(),
       Obx(
         () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${controller.countOfMonth.value.moneyFormat()}'.text.bold.make().onTap(() {

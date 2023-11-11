@@ -77,7 +77,6 @@ class SettingsView extends GetView<SettingsController> {
         ),
       ],
       Spacer(),
-      Obx(() => '(${controller.autoCompleteList.length} Record)'.text.bold.make()),
     ]).p12();
   }
 }

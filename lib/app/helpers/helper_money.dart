@@ -1,10 +1,9 @@
-import 'dart:ui';
-
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../core/app_color.dart';
+import '../core/const.dart';
 
 extension IntToMoneyExt on num {
   /// example: '1000' -> 'Rp. 1,000'
@@ -56,46 +55,70 @@ extension StringToMoneyExt on String {
 
 mixin MoneyHelper {
   static Color getExpenseFlagColor(num amount) {
+    final eco = pref.read<num>(kFlagEco) ?? 50000;
+    final average = pref.read<num>(kFlagAverage) ?? 100000;
+    final spender = pref.read<num>(kFlagSpender) ?? 100000;
+
     if (amount == 0) return Vx.white;
-    if (amount < 50000) {
+    if (amount < eco) {
       return AppColor.green;
-    } else if (amount < 100000) {
+    } else if (amount < average) {
       return AppColor.orange;
-    } else {
+    } else if (amount > spender) {
       return AppColor.red;
+    } else {
+      return Colors.white;
     }
   }
 
   static Color getExpenseFlagColorLight(num amount) {
+    final eco = pref.read<num>(kFlagEco) ?? 50000;
+    final average = pref.read<num>(kFlagAverage) ?? 100000;
+    final spender = pref.read<num>(kFlagSpender) ?? 100000;
+
     if (amount == 0) return Vx.white;
-    if (amount < 50000) {
+    if (amount < eco) {
       return AppColor.greenLight;
-    } else if (amount < 100000) {
+    } else if (amount < average) {
       return AppColor.orangeLight;
-    } else {
+    } else if (amount > spender) {
       return AppColor.redLight;
+    } else {
+      return Colors.white;
     }
   }
 
   static Color getExpenseFlagColorDark(num amount) {
+    final eco = pref.read<num>(kFlagEco) ?? 50000;
+    final average = pref.read<num>(kFlagAverage) ?? 100000;
+    final spender = pref.read<num>(kFlagSpender) ?? 100000;
+
     if (amount == 0) return Vx.white;
-    if (amount < 50000) {
+    if (amount < eco) {
       return AppColor.greenDark;
-    } else if (amount < 100000) {
+    } else if (amount < average) {
       return AppColor.orangeDark;
-    } else {
+    } else if (amount > spender) {
       return AppColor.redDark;
+    } else {
+      return Colors.white;
     }
   }
 
   static String getExpenseFlagText(num amount) {
+    final eco = pref.read<num>(kFlagEco) ?? 50000;
+    final average = pref.read<num>(kFlagAverage) ?? 100000;
+    final spender = pref.read<num>(kFlagSpender) ?? 100000;
+
     if (amount == 0) return '';
-    if (amount < 50000) {
+    if (amount < eco) {
       return 'Eco';
-    } else if (amount < 100000) {
+    } else if (amount < average) {
       return 'Average';
-    } else {
+    } else if (amount > spender) {
       return 'Spender';
+    } else {
+      return 'ERR';
     }
   }
 }
