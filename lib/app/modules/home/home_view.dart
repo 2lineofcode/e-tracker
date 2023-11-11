@@ -1,8 +1,8 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -35,7 +35,7 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget appBarTitle() {
-    if (kIsWeb) {
+    if (Get.size.width >= 1024) {
       return '${dotenv.get('APP_NAME')}'.text.size(11).bold.make();
     } else {
       return TextField(
@@ -64,7 +64,7 @@ class HomeView extends GetView<HomeController> {
     return HStack(
       [
         /// Web Only
-        if (kIsWeb) ...[
+        if (Get.size.width >= 1024) ...[
           TextField(
             controller: controller.tfSearchExpense,
             decoration: MyDecorationHelper.inputDecorator(hint: 'Search...'),
@@ -196,19 +196,22 @@ class HomeView extends GetView<HomeController> {
                           '${(DateUtil.getTimeAgo(DateTime.now(), controller.focusedDay.value))}'.text.size(11).minFontSize(11).make(),
                         ]),
                         Spacer(),
-                        Container(
-                          decoration: ExDecorator.box(
-                            borderRadius: 90,
-                            borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value),
+                        CustomPopup(
+                          content: 'Your score of spend this day'.text.color(AppColor.textOnWhiteBackground).make(),
+                          child: Container(
+                            decoration: ExDecorator.box(
+                              borderRadius: 90,
+                              borderColor: MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value),
+                            ),
+                            child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)} Day'
+                                .text
+                                .size(12)
+                                .minFontSize(12)
+                                .color(MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value))
+                                .make()
+                                .p4()
+                                .pSymmetric(h: 4),
                           ),
-                          child: '${MoneyHelper.getExpenseFlagText(controller.countOfDay.value)} Day'
-                              .text
-                              .size(12)
-                              .minFontSize(12)
-                              .color(MoneyHelper.getExpenseFlagColorLight(controller.countOfDay.value))
-                              .make()
-                              .p4()
-                              .pSymmetric(h: 4),
                         ),
                       ],
                     ).pOnly(bottom: 12)
@@ -317,7 +320,7 @@ class HomeView extends GetView<HomeController> {
       ],
       Spacer(),
       Obx(
-        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${controller.countOfMonth.value.moneyFormat()}'.text.make().onTap(() {
+        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${controller.countOfMonth.value.moneyFormat()}'.text.bold.make().onTap(() {
           Get.toNamed(Routes.SUMMARY);
         }),
       ),
@@ -330,7 +333,7 @@ class HomeView extends GetView<HomeController> {
             backgroundColor: AppColor.fabPrimary,
             child: Icon(Icons.add, color: Colors.white),
             onPressed: () => controller.onShowDialogExpense(),
-          ).pOnly(bottom: 60)
+          ).pOnly(bottom: Get.context!.isMobile ? 90 : 68)
         : 0.heightBox);
   }
 }

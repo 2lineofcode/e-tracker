@@ -220,8 +220,14 @@ class FilteringView extends GetView<FilteringController> {
 
   Widget footerContent() {
     return HStack([
+      if (Get.context!.isMobile) ...[
+        IconButton(
+          onPressed: () => Get.back(),
+          icon: Icon(Icons.arrow_back),
+        ),
+      ],
       Spacer(),
-      Obx(() => 'Total: ${controller.sumAll.value.moneyFormat()}'.text.make()),
+      Obx(() => 'Total: ${controller.sumAll.value.moneyFormat()}'.text.bold.make()),
     ]).p12();
   }
 }

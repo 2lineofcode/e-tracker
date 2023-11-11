@@ -138,9 +138,18 @@ class SummaryView extends GetView<SummaryController> {
 
   Widget footerContent() {
     return HStack([
-      Obx(() => 'Total in ${controller.yearSelected}:'.text.make()),
+      if (Get.context!.isMobile) ...[
+        IconButton(
+          onPressed: () => Get.back(),
+          icon: Icon(Icons.arrow_back),
+        ),
+      ],
       Spacer(),
-      Obx(() => '${controller.countOnly1Year.value.moneyFormat()}'.text.bold.color(AppColor.red).make()),
+      Obx(
+        () => '${controller.countOnly1Year.value.moneyFormat()}'.text.bold.make().onTap(() {
+          controller.onShowAllYear();
+        }),
+      ),
     ]).p12();
   }
 }

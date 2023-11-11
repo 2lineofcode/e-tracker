@@ -21,7 +21,7 @@ class SettingsView extends GetView<SettingsController> {
         appBarTitle: 'Settings'.text.size(11).bold.make(),
         sideMenuContent: sideMenuContent(),
         bodyContent: Obx(() => bodyContent().p8()),
-        footerContent: Container(),
+        footerContent: footerContent(),
       ),
     );
   }
@@ -66,5 +66,18 @@ class SettingsView extends GetView<SettingsController> {
       default:
         return Container();
     }
+  }
+
+  Widget footerContent() {
+    return HStack([
+      if (Get.context!.isMobile) ...[
+        IconButton(
+          onPressed: () => Get.back(),
+          icon: Icon(Icons.arrow_back),
+        ),
+      ],
+      Spacer(),
+      Obx(() => '(${controller.autoCompleteList.length} Record)'.text.bold.make()),
+    ]).p12();
   }
 }

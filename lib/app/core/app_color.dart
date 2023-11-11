@@ -7,7 +7,7 @@ mixin AppColor {
   static Color get sideMenuPrimary => Get.isDarkMode ? Vx.neutral800 : Vx.neutral100;
   static Color get sideMenuSecondary => Get.isDarkMode ? Vx.neutral700 : Vx.white;
   static Color get appbarPrimary => Get.isDarkMode ? Vx.neutral900 : Vx.blue600;
-  static Color get footerPrimary => Get.isDarkMode ? Vx.neutral900 : Vx.neutral200;
+  static Color get footerPrimary => Get.isDarkMode ? Vx.neutral900 : Vx.neutral300;
   static Color get emptyStatePrimary => Get.isDarkMode ? Vx.neutral800 : Vx.neutral200;
 
   /// calender
@@ -34,6 +34,7 @@ mixin AppColor {
   /// text on background (special case)
   static Color get textOnBackground => Get.isDarkMode ? Vx.white : Vx.neutral100;
   static Color get textReverse => Get.isDarkMode ? Vx.white : Vx.black;
+  static Color get textOnWhiteBackground => Get.isDarkMode ? Vx.black : Vx.black;
 
   /// table
   static Color get tableHeader => Get.isDarkMode ? Vx.neutral800 : Vx.neutral300;
