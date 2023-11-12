@@ -153,7 +153,7 @@ class SummaryController extends GetxController with StateMixin {
     if (_maxBudget.value.isZero) {
       _percentage.value = 0;
     } else {
-      _percentage.value = rpcSumAllMonth[_month.value].total! / _maxBudget.value;
+      _percentage.value = rpcSumAllMonth[_month.value].total! / _maxBudget.value * 100;
     }
 
     /// apply

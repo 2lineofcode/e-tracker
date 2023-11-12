@@ -1,6 +1,5 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../core/app_color.dart';
 import '../core/const.dart';
@@ -26,26 +25,6 @@ extension MoneyFormatExt on num {
     } else {
       return '${(this / 1000000000000).toStringAsFixed(0)}T';
     }
-  }
-
-  /// example: 0,132 -> '1,32%'
-  String percentageFormat({int decimalDigits = 1}) {
-    var output = '';
-
-    try {
-      output = NumberFormat.decimalPercentPattern(decimalDigits: decimalDigits).format(this);
-    } catch (_) {
-      try {
-        final x = double.parse(toString());
-        output = '${x * 100}'.substring(0, 3).replaceAll('.', '');
-      } catch (_) {
-        output = '';
-      }
-    }
-
-    if (output == '0.0') output = '0';
-
-    return '$output';
   }
 }
 

@@ -151,7 +151,7 @@ class HomeView extends GetView<HomeController> {
                     return ListTile(
                       title: HStack(
                         [
-                          Icon(item.icon?.getIconData() ?? Icons.circle_outlined, color: item.color?.fromHex, size: 12).pOnly(right: 8),
+                          Icon(item.icon?.getIconData() ?? Icons.circle_outlined, color: item.color?.fromHex, size: 16).pOnly(right: 8),
                           '${item.name}'.text.size(12).make().pOnly(right: 8),
                           if (item.maxBudget != null) ...[
                             Container(

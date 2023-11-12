@@ -22,9 +22,10 @@ import 'home_repository.dart';
 
 /// * @{HomeDialogInput}
 /// ? seperate dialog input part coz this function is shared (can be use to another page)
-/// ?
+/// ? this code too long coz to many customize and i dont want put in controller
+/// ? that way i seperate on here.
 /// ~
-
+///
 mixin HomeDialogInput {
   static final _controller = Get.find<HomeController>();
   static final _repo = Get.find<HomeRepository>();
@@ -75,21 +76,21 @@ mixin HomeDialogInput {
                   iconSize: 20,
                   constraints: BoxConstraints(maxWidth: 250, maxHeight: 250),
                 ).then((icon) {
-                  if (icon != null) {
-                    _iconSelected.value = icon;
-                  }
+                  if (icon != null) _iconSelected.value = icon;
                 });
               }),
 
               /// hue picker
-              Obx(() => HuePicker(
-                    controller: _hueController.value,
-                    onChanged: (HSVColor color) {
-                      _hueController.value.value = color;
-                      _tfCatColor.text = color.toColor().toHex();
-                      Get.forceAppUpdate();
-                    },
-                  ).wh(220, 24)),
+              Obx(
+                () => HuePicker(
+                  controller: _hueController.value,
+                  onChanged: (HSVColor color) {
+                    _hueController.value.value = color;
+                    _tfCatColor.text = color.toColor().toHex();
+                    Get.forceAppUpdate();
+                  },
+                ).wh(220, 24),
+              ),
             ],
           ).pSymmetric(v: 12),
           HStack(
@@ -99,11 +100,30 @@ mixin HomeDialogInput {
                 'More Color',
                 style: TextStyle(fontSize: 11, decoration: TextDecoration.underline),
               ).pOnly(right: 8).onTap(() async {
+                /// open dialog more color
                 ExDialog.custom(
                   title: 'Pick Custom Color',
                   titleTextStyle: TextStyle(),
-                  content: Column(
-                    children: [
+                  content: VStack(
+                    [
+                      Text('Current color set:', style: TextStyle(fontSize: 12)).pOnly(bottom: 8),
+                      Wrap(
+                        children: [
+                          for (var i = 0; i < _controller.categoryList.length; i++) ...[
+                            Icon(
+                              _controller.categoryList[i].icon?.getIconData() ?? Icons.circle_outlined,
+                              color: _controller.categoryList[i].color?.fromHex,
+                              size: 20,
+                            ).pOnly(right: 8),
+                          ],
+                        ],
+                      ).pOnly(bottom: 8),
+                      Text('Edit For:', style: TextStyle(fontSize: 12)).pOnly(bottom: 8),
+                      Obx(() => Icon(
+                            entity?.icon?.getIconData() ?? Icons.circle_outlined,
+                            color: _hueController.value.value.toColor(),
+                            size: 20,
+                          )),
                       ColorPicker(
                         pickerColor: _tfCatColor.text.fromHex,
                         colorPickerWidth: 300,
@@ -118,8 +138,8 @@ mixin HomeDialogInput {
                           _hueController.value.value = HSVColor.fromColor(s);
                           _tfCatColor.text = s.toHex();
                         },
-                      ),
-                      TextButton(onPressed: Get.back, child: Text('Close')),
+                      ).pSymmetric(v: 8),
+                      TextButton(onPressed: Get.back, child: Text('Close')).w(300).centered(),
                     ],
                   ),
                 );

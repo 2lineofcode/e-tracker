@@ -115,7 +115,7 @@ class ViewBudget extends GetView<SummaryController> {
           /// col3
           HStack(
             [
-              'Used: ${controller.countPercentage.value.percentageFormat()}'.text.size(11).minFontSize(11).make().pOnly(left: 4),
+              'Used: ${controller.countPercentage.value.toDoubleStringAsFixed()}%'.text.size(11).minFontSize(11).make().pOnly(left: 4),
               Spacer(),
               '${controller.countOnly1Month.value.moneyFormat()}'
                   .text
