@@ -48,7 +48,7 @@ class HomeRepository {
 
   // get list by @date
   Future<List<ExpenseEntity>> getExpense(String date) async {
-    final response = await db.from('expense').select().eq('date', date).order('amount').withConverter<List<ExpenseEntity>>((data) {
+    final response = await db.from('expense').select('*, category(*)').eq('date', date).order('amount').withConverter<List<ExpenseEntity>>((data) {
       return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
     return response;

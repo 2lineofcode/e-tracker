@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,6 +9,7 @@ import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
 import '../../models/category_entity.dart';
 import '../home/home_controller.dart';
+import '../home/section_dialog_input.dart';
 import '../widgets/widget_percentagebar.dart';
 import '../widgets/widget_shimmer_summary.dart';
 import 'summary_controller.dart';
@@ -73,6 +76,16 @@ class ViewBudget extends GetView<SummaryController> {
   }
 
   Widget headerPerMonth() {
+    if (controller.countBudget.value.isZero) {
+      return Container(
+        width: double.infinity,
+        decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+        child: VStack([
+          'Total:'.text.make().pOnly(bottom: 8),
+          '${controller.countOnly1Month.value.moneyFormat()}'.text.bold.make(),
+        ]).p12(),
+      );
+    }
     return Container(
       width: double.infinity,
       decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
@@ -93,8 +106,8 @@ class ViewBudget extends GetView<SummaryController> {
 
           /// col2
           MyPercentageBar(
-            value: (controller.countPercentage.value * 100).toInt(),
-            color1: (controller.countPercentage.value * 100).toInt() < 100 ? AppColor.green : AppColor.red,
+            value: (controller.countPercentage.value).toInt(),
+            color1: (controller.countPercentage.value).toInt() < 100 ? AppColor.green : AppColor.red,
             color2: Vx.neutral700,
             radius: 8,
           ).pSymmetric(v: 12),
@@ -108,7 +121,9 @@ class ViewBudget extends GetView<SummaryController> {
                   .text
                   .size(11)
                   .bold
-                  .color((controller.countPercentage.value * 100).toInt() < 100 ? AppColor.green : AppColor.red)
+                  .color(
+                    (controller.countPercentage.value).toInt() < 100 ? AppColor.green : AppColor.red,
+                  )
                   .minFontSize(11)
                   .make(),
               ' / '.text.size(11).minFontSize(11).make(),
@@ -172,6 +187,7 @@ class ViewBudget extends GetView<SummaryController> {
                           InkWell(
                             child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
                             onTap: () {
+                              logI(jsonEncode(item));
                               final entity = CategoryEntity(
                                 id: item.categoryId,
                                 createdAt: DateTime.now().toStringEx(),
@@ -181,7 +197,7 @@ class ViewBudget extends GetView<SummaryController> {
                                 maxBudget: item.maxBudget,
                               );
 
-                              Get.find<HomeController>().onEditCategory(
+                              HomeDialogInput.onEditCategory(
                                 entity: entity,
                                 callback: () async {
                                   await Get.find<HomeController>().getCategory();

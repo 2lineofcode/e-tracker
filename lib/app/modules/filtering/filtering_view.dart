@@ -11,6 +11,7 @@ import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
 import '../../models/expense_entity.dart';
+import '../home/section_dialog_input.dart';
 import '../widgets/widgets.dart';
 import 'filtering_controller.dart';
 
@@ -50,7 +51,7 @@ class FilteringView extends GetView<FilteringController> {
                       borderColor: Colors.transparent,
                     ),
                     child: HStack([
-                      Icon(Icons.circle_outlined, color: item.color?.fromHex, size: 12).pOnly(right: 8),
+                      Icon(item.icon?.getIconData() ?? Icons.circle_outlined, color: item.color?.fromHex, size: 12).pOnly(right: 8),
                       '${item.name}'.text.size(11).make().expand(),
                     ]).p8(),
                   ).pSymmetric(h: 8),
@@ -186,7 +187,7 @@ class FilteringView extends GetView<FilteringController> {
                       IconButton(
                         icon: Icon(Icons.edit, size: 16),
                         onPressed: () async {
-                          await controller.home.onShowDialogExpense(
+                          await HomeDialogInput.onShowDialogExpense(
                             expense: item,
                             customCallback: () async {
                               await controller.findExpense(item.categoryName!);

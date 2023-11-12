@@ -1,5 +1,6 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -55,18 +56,32 @@ class ViewPieChart extends GetView<SummaryController> {
                         TableCell(
                           child: HStack(
                             [
-                              Icon(
-                                Icons.circle,
-                                size: 8,
-                                color: item[i].categoryColor?.fromHex,
-                              ).pOnly(right: 8),
+                              CustomPopup(
+                                content: VStack(
+                                  [
+                                    if (item[i].maxBudget != null) ...[
+                                      'Usage ${item[i].usePercentage ?? '0'}%'.text.black.make(),
+                                      'Remaining ${item[i].remainingBudget?.moneyFormat() ?? 'Rp. 0'} / ${item[i].maxBudget?.moneyFormat() ?? 'Rp. 0'}'.text.black.make(),
+                                    ] else ...[
+                                      'No Budget'.text.black.make(),
+                                    ],
+                                  ],
+                                ),
+                                child: Icon(
+                                  item[i].categoryIcon?.getIconData() ?? Icons.circle_outlined,
+                                  size: 12,
+                                  color: item[i].categoryColor?.fromHex,
+                                ).pOnly(right: 8),
+                              ),
                               '${item[i].categoryName}'.text.make().onTap(() {
                                 controller.goAdvanceFilter(item[i].categoryName ?? '');
                               }),
                             ],
                           ).p8(),
                         ),
-                        TableCell(child: '${item[i].total?.moneyFormat()}'.text.align(TextAlign.end).make().p8()),
+                        TableCell(
+                          child: '${item[i].total?.moneyFormat()}'.text.align(TextAlign.end).make().p8(),
+                        ),
                       ],
                     ),
                   ],

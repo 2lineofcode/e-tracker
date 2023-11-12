@@ -16,6 +16,7 @@ import '../../models/expense_entity.dart';
 import '../../routes/app_pages.dart';
 import '../widgets/widgets.dart';
 import 'home_controller.dart';
+import 'section_dialog_input.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
@@ -62,7 +63,7 @@ class HomeView extends GetView<HomeController> {
   Widget appBarLeading() {
     return IconButton(
       icon: Icon(Icons.add),
-      onPressed: () => controller.onShowDialogExpense(),
+      onPressed: () => HomeDialogInput.onShowDialogExpense(),
     );
   }
 
@@ -150,7 +151,7 @@ class HomeView extends GetView<HomeController> {
                     return ListTile(
                       title: HStack(
                         [
-                          Icon(Icons.circle_outlined, color: item.color?.fromHex, size: 12).pOnly(right: 8),
+                          Icon(item.icon?.getIconData() ?? Icons.circle_outlined, color: item.color?.fromHex, size: 12).pOnly(right: 8),
                           '${item.name}'.text.size(12).make().pOnly(right: 8),
                           if (item.maxBudget != null) ...[
                             Container(
@@ -162,7 +163,7 @@ class HomeView extends GetView<HomeController> {
                           if (item.maxBudget == null) Icon(Icons.edit, size: 16, color: Vx.red400),
                         ],
                       ),
-                      onTap: () => controller.onEditCategory(entity: item),
+                      onTap: () => HomeDialogInput.onEditCategory(entity: item),
                     ).pSymmetric(h: 4);
                   },
                 ).expand(),
@@ -234,14 +235,17 @@ class HomeView extends GetView<HomeController> {
                           child: Row(
                             children: [
                               VStack([
-                                '${item.note}'.text.bold.make().pOnly(bottom: 4),
-                                '${item.categoryName}'.text.size(12).make(),
+                                '${item.note}'.text.bold.make().pOnly(bottom: 8),
+                                HStack([
+                                  Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, color: item.category?.color?.fromHex, size: 12).pOnly(right: 8),
+                                  '${item.category?.name}'.text.size(12).make(),
+                                ]),
                               ]),
                               Spacer(),
                               '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
                             ],
                           ).p12(),
-                        ).pSymmetric(h: 8, v: 4).onTap(() => controller.onShowDialogExpense(expense: item));
+                        ).pSymmetric(h: 8, v: 4).onTap(() => HomeDialogInput.onShowDialogExpense(expense: item));
                       },
                     ).pSymmetric(v: 8).expand()
 
@@ -266,9 +270,9 @@ class HomeView extends GetView<HomeController> {
                         child: Row(
                           children: [
                             VStack([
-                              '${item.note}'.text.make().pOnly(bottom: 4),
+                              '${item.note}'.text.make().pOnly(bottom: 8),
                               HStack([
-                                Icon(Icons.circle_outlined, size: 8, color: item.category?.color?.fromHex).pOnly(right: 8),
+                                Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, size: 12, color: item.category?.color?.fromHex).pOnly(right: 8),
                                 '${item.categoryName}'.text.size(12).make(),
                               ]),
                             ]),
@@ -276,7 +280,7 @@ class HomeView extends GetView<HomeController> {
                             '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
                           ],
                         ).p12(),
-                      ).pSymmetric(h: 8, v: 4).onInkTap(() => controller.onShowDialogExpense(expense: item)),
+                      ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item)),
                     ).pSymmetric(v: 8).expand(),
             ),
 
@@ -306,8 +310,8 @@ class HomeView extends GetView<HomeController> {
                 ]),
                 Spacer(),
                 Container(
-                  decoration: ExDecorator.box(borderRadius: 90, borderColor: controller.countOfDay.value.getFlagColorLight()),
-                  child: 'No Record'.text.size(12).minFontSize(12).color(controller.countOfDay.value.getFlagColorLight()).make().p4().pSymmetric(h: 4),
+                  decoration: ExDecorator.box(borderRadius: 90, borderColor: AppColor.textReverse),
+                  child: 'No Record'.text.size(12).minFontSize(12).color(AppColor.textReverse).make().p4().pSymmetric(h: 4),
                 ),
               ],
             ).pOnly(bottom: 12),
@@ -322,7 +326,7 @@ class HomeView extends GetView<HomeController> {
               label: 'Add Expense',
               labelSize: 12,
               labelColor: AppColor.textReverse,
-              onPressed: () => controller.onShowDialogExpense(),
+              onPressed: () => HomeDialogInput.onShowDialogExpense(),
             ).centered(),
           ).expand(),
         ],
@@ -352,7 +356,7 @@ class HomeView extends GetView<HomeController> {
         ? FloatingActionButton(
             backgroundColor: AppColor.fabPrimary,
             child: Icon(Icons.add, color: Colors.white),
-            onPressed: () => controller.onShowDialogExpense(),
+            onPressed: () => HomeDialogInput.onShowDialogExpense(),
           ).pOnly(bottom: Get.context!.isMobile ? 90 : 68)
         : 0.heightBox);
   }

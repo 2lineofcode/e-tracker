@@ -1,23 +1,15 @@
 import 'dart:collection';
 
-import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:get/get.dart';
-import 'package:hsv_color_pickers/hsv_color_pickers.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:uuid/v4.dart';
 
-import '../../core/app_color.dart';
 import '../../core/const.dart';
-import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_misc.dart';
-import '../../helpers/helper_money.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
-import '../widgets/widget_autocomplete.dart';
 import 'home_repository.dart';
 
 class HomeController extends GetxController with StateMixin {
@@ -57,7 +49,7 @@ class HomeController extends GetxController with StateMixin {
     await getCategory();
     await getExpense();
     await getCount1Month(DateTime.now());
-    await _onCalenderRefreshEvent();
+    await onCalenderRefreshEvent();
     super.onInit();
   }
 
@@ -108,7 +100,7 @@ class HomeController extends GetxController with StateMixin {
     return kEvents[day] ?? [];
   }
 
-  Future<void> _onCalenderRefreshEvent() async {
+  Future<void> onCalenderRefreshEvent() async {
     events.clear();
     await repo.getExpenseAll().then((res) {
       // Membuat Map untuk mengelompokkan data berdasarkan tanggal
@@ -147,110 +139,11 @@ class HomeController extends GetxController with StateMixin {
       id: UuidV4().generate(),
       createdAt: DateTime.now().toStringEx(),
       name: categoryName,
-      color: Vx.randomOpaqueColor.toHex(),
+      color: Vx.randomColor.toHex(), // todo Fix me
     );
     await repo.addCategory(categoryEntity);
     await getCategory();
     tfCategory.clear();
-  }
-
-  Future<void> onEditCategory({CategoryEntity? entity, Function? callback}) async {
-    final tfCatName = TextEditingController(text: entity?.name ?? '');
-    final tfCatColor = TextEditingController(text: entity?.color ?? '');
-    final tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget!.moneyFormat() : '');
-    final _controller = HueController(HSVColor.fromColor(tfCatColor.text.fromHex)).obs;
-
-    ExDialog.custom(
-      title: 'Edit Category',
-      titleTextStyle: TextStyle(fontWeight: FontWeight.bold),
-      content: VStack(
-        [
-          TextField(
-            controller: tfCatName,
-            decoration: MyDecoration.input(hint: 'Name', label: 'Category Name'),
-            style: TextStyle(fontSize: 13),
-          ).pOnly(bottom: 12),
-          TextField(
-            controller: tfMaxBudget,
-            decoration: MyDecoration.input(hint: '1.000.000', label: 'Max Budget (Monthtly)'),
-            inputFormatters: [
-              CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
-              LengthLimitingTextInputFormatter(13),
-            ],
-            keyboardType: TextInputType.number,
-            style: TextStyle(fontSize: 13),
-          ).pOnly(bottom: 8),
-          HStack(
-            [
-              Obx(() => Icon(Icons.circle_outlined, size: 18, color: _controller.value.value.toColor()).pOnly(right: 8)),
-              Obx(() => HuePicker(
-                    controller: _controller.value,
-                    onChanged: (HSVColor color) {
-                      _controller.value.value = color;
-                      tfCatColor.text = color.toColor().toHex();
-                      Get.forceAppUpdate();
-                    },
-                  ).wh(220, 24)),
-            ],
-          ).pSymmetric(v: 12),
-          Divider().pOnly(bottom: 8),
-          HStack(
-            [
-              ExButtonOutline(
-                label: 'Delete',
-                labelSize: 11,
-                isLabelBold: false,
-                labelColor: Vx.red400,
-                borderColor: Vx.red400,
-                radius: 90,
-                onPressed: () async {
-                  ExAlert.confirm(
-                      title: 'Are you sure?',
-                      message: "you can't rollback this action",
-                      titleStyle: TextStyle(fontWeight: FontWeight.bold),
-                      messageStyle: TextStyle(fontSize: 13),
-                      onYes: () async {
-                        try {
-                          await repo.deleteCategory(entity?.id ?? '');
-                          await getCategory();
-                          await callback?.call();
-                          Get.close(2);
-                          Get.back();
-                        } catch (e) {
-                          Get.close(2);
-                          ExSnackbar.danger(e);
-                        }
-                      });
-                },
-              ),
-              8.widthBox,
-              ExButtonOutline(
-                label: 'Submit',
-                labelSize: 11,
-                isLabelBold: false,
-                labelColor: AppColor.textReverse,
-                borderColor: AppColor.textReverse,
-                radius: 90,
-                onPressed: () async {
-                  final newEntity = CategoryEntity(
-                    id: entity?.id,
-                    createdAt: DateTime.now().toStringEx(),
-                    name: tfCatName.text,
-                    color: tfCatColor.text.isEmpty ? '' : tfCatColor.text,
-                    icon: null,
-                    maxBudget: tfMaxBudget.text.moneyUnformat(),
-                  );
-                  await repo.editCategory(newEntity);
-                  await getCategory();
-                  await callback?.call();
-                  Get.back();
-                },
-              ).expand(),
-            ],
-          ),
-        ],
-      ),
-    );
   }
 
   /// expense
@@ -287,178 +180,5 @@ class HomeController extends GetxController with StateMixin {
     } else {
       change(0, status: RxStatus.success());
     }
-  }
-
-  Future<void> onShowDialogExpense({ExpenseEntity? expense, Function? customCallback}) async {
-    if (categoryList.isEmptyOrNull) {
-      ExSnackbar.danger('add some category first:))');
-      return;
-    }
-
-    final _tfDate = TextEditingController(text: expense != null ? expense.date : '');
-    final _tfNote = TextEditingController(text: expense != null ? expense.note : '');
-    final _tfCategory = '${expense != null ? '${expense.categoryName}' : '${categoryList[0].name}'}'.obs;
-    final _tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
-
-    ExDialog.custom(
-      title: expense != null ? 'Edit Expense' : 'Add Expense',
-      titleTextStyle: TextStyle(fontWeight: FontWeight.bold),
-      width: 250,
-      content: VStack(
-        [
-          /// field select date: edit mode only
-          if (expense != null) ...[
-            TextField(
-              controller: _tfDate,
-              readOnly: true,
-              decoration: MyDecoration.input(hint: 'Date', label: 'Date'),
-              style: TextStyle(fontSize: 13),
-              onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => _tfDate.text = c.toStringEx(format: yMd)),
-            ).wh(250, 38).pOnly(bottom: 16),
-          ],
-          MyAutoComplete(
-            autofocus: expense == null,
-            initialValue: _tfNote.value,
-            asyncSuggestions: (s) async {
-              if (s.text.isBlank!) return [];
-              return await repo.findAutoCompleteStringNote(s.text);
-            },
-            decoration: MyDecoration.input(hint: 'Nasi Padang', label: 'Notes'),
-            onChanged: (s) => _tfNote.text = s,
-            onSelected: (s) async {
-              _tfNote.text = s;
-              await repo.findAutoCompleteFullObject(s).then((res) {
-                _tfCategory.value = res[0].categoryName ?? '';
-                _tfAmount.text = res[0].amount?.toInt()?.moneyFormat() ?? '';
-              });
-            },
-          ).wh(250, 38).pOnly(bottom: 16),
-          // ],
-
-          /// field category
-          Obx(
-            () => DropdownButtonFormField(
-              value: '${_tfCategory.value}',
-              items: categoryList.map((element) => DropdownMenuItem(value: '${element.name}', child: Text(element.name ?? ''))).toList(),
-              style: TextStyle(fontSize: 12, color: AppColor.textReverse),
-              decoration: MyDecoration.input(label: 'Category'),
-              onChanged: (s) => _tfCategory.value = s ?? '',
-            ).wh(250, 38).pOnly(bottom: 16),
-          ),
-
-          /// field amount
-          HStack(
-            [
-              TextField(
-                controller: _tfAmount,
-                decoration: MyDecoration.input(
-                  hint: '10.000',
-                  label: 'Amount',
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.calculate, size: 16, color: AppColor.textReverse),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        isScrollControlled: true,
-                        context: Get.context!,
-                        builder: (context) => FractionallySizedBox(
-                          heightFactor: 0.7,
-                          child: SimpleCalculator(
-                            autofocus: true,
-                            hideSurroundingBorder: true,
-                            value: _tfAmount.text.moneyUnformat()?.toDouble() ?? 0.0,
-                            onTappedDisplay: (p0, p1) => Get.back(),
-                            onChanged: (key, value, expression) {
-                              final moneyFormat = value!.toString().toInt()?.moneyFormat() ?? '';
-                              _tfAmount.text = moneyFormat;
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                style: TextStyle(fontSize: 13),
-                inputFormatters: [
-                  CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
-                  LengthLimitingTextInputFormatter(13),
-                ],
-                keyboardType: TextInputType.number,
-                onSubmitted: (_) async => {
-                  await _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
-                  await customCallback?.call(),
-                },
-              ).wh(250, 38),
-            ],
-          ).pOnly(bottom: 8),
-          Divider().pOnly(bottom: 8),
-
-          /// action
-          HStack(
-            [
-              if (expense != null) ...[
-                ExButtonOutline(
-                  label: 'Delete',
-                  labelSize: 11,
-                  isLabelBold: false,
-                  labelColor: Vx.red400,
-                  borderColor: Vx.red400,
-                  radius: 90,
-                  onPressed: () async {
-                    await repo.deleteExpense(expense.id!);
-                    await getExpense();
-                    await _onCalenderRefreshEvent();
-                    await customCallback?.call();
-
-                    Get.back();
-                  },
-                ).pOnly(right: 8),
-              ],
-              ExButtonOutline(
-                label: 'Submit',
-                labelSize: 11,
-                isLabelBold: false,
-                labelColor: AppColor.textReverse,
-                borderColor: AppColor.textReverse,
-                radius: 90,
-                onPressed: () async => {
-                  await _submit(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
-                  await customCallback?.call(),
-                },
-              ).expand(),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _submit(String tfNote, String tfCategory, String tfAmount, {ExpenseEntity? expense, String? tfDate}) async {
-    if (tfNote.isEmptyOrNull) return;
-    if (tfCategory.isEmptyOrNull) return;
-    if (tfAmount.isEmptyOrNull) return;
-
-    final entity = ExpenseEntity(
-      id: expense != null ? expense.id : UuidV4().generate(),
-      createdAt: DateTime.now().toStringEx(),
-      date: tfDate.isNotEmptyAndNotNull ? tfDate : focusedDay.value.toStringEx(format: yMd),
-      amount: tfAmount.moneyUnformat(),
-      categoryName: tfCategory,
-      note: '${tfNote.toTitleCase}',
-    );
-
-    try {
-      if (expense != null) {
-        await repo.editExpense(entity);
-      } else {
-        await repo.addExpense(entity);
-      }
-      await repo.addAutoComplete('${tfNote.toTitleCase}', categoryName: '${entity.categoryName}', amount: '${entity.amount}');
-      await getExpense(find: tfSearchExpense.text.isNotBlank ? tfSearchExpense.text : null);
-    } catch (e) {
-      logE('e: $e');
-      ExSnackbar.danger('$e', duration: 5);
-    }
-    await _onCalenderRefreshEvent();
-    Get.back(); // close dialog
   }
 }

@@ -21,16 +21,19 @@ dependencies:
   window_manager: ^0.3.7
   syncfusion_flutter_charts: ^23.1.44
   flutter_popup: ^3.1.6
+  flutter_iconpicker_plus: ^3.2.3
+
+  # picker
   hsv_color_pickers: ^0.3.0
+  flutter_colorpicker: ^1.0.3
+  flutter_month_picker: ^0.0.2 
   
   # utils
   intl: ^0.18.1
   currency_text_input_formatter: ^2.1.10
-  flutter_month_picker: ^0.0.2 
   uuid: ^4.1.0
 
   # misc 
-  faker: ^2.1.0
   flutter_simple_calculator: ^2.2.4
 
   flutter: 

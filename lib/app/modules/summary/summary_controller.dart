@@ -37,7 +37,6 @@ class SummaryController extends GetxController with StateMixin {
     await getSumAllMonth(year: yearSelected.value);
     await getSumByCategory(year: yearSelected.value, month: monthSelected.value);
     await getSumNoteTimes(year: yearSelected.value, month: monthSelected.value);
-
     await calculateBudgetStatForHeader();
     change(0, status: RxStatus.success());
     super.onInit();
@@ -149,13 +148,18 @@ class SummaryController extends GetxController with StateMixin {
       _month.value = monthSelected.value.reformatDate(from: 'MMMM', to: 'MM').toInt()! - 1;
     }
 
-    _percentage.value = rpcSumAllMonth[_month.value].total! / _maxBudget.value;
     _remainingBudget.value = _maxBudget.value - rpcSumAllMonth[_month.value].total!;
+
+    if (_maxBudget.value.isZero) {
+      _percentage.value = 0;
+    } else {
+      _percentage.value = rpcSumAllMonth[_month.value].total! / _maxBudget.value;
+    }
 
     /// apply
     countBudget.value = _maxBudget.value;
     countRemainingBudget.value = _remainingBudget.value;
-    countPercentage.value = _percentage.toDouble();
+    countPercentage.value = _percentage.value;
     countOnly1Month.value = rpcSumAllMonth[_month.value].total ?? 0;
     countOnly1Year.value = _totalAllyear.value;
   }

@@ -6,24 +6,42 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 /// TOP LEVEL HELPER
-
 bool get isDesktop => !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
 
-extension TimeAgo on DateTime {
+extension TimeAgoToString on DateTime {
+  /// Overview:
+  /// This extension provides a method, that calculates and returns a human-readable string
+  /// indicating how much time has passed from a given point in time until now.
+  /// Example:
+  /// ```
+  /// DateTime postTime = DateTime(2023, 1, 1);
+  /// String timeAgo = postTime.getTimeAgoFromNow();
+  /// ```
+  /// Output: '2 months ago'
   String getTimeAgoFromNow() {
     Duration difference = DateTime.now().difference(this);
     int days = difference.inDays;
     final diff = DateTime.now().subtract(Duration(days: days));
 
     if (DateTime.now().isBefore(this)) {
-      return '~';
+      return '~'; // don't allow future
     } else {
       return diff.ago().replaceAll('Just now', 'Today');
     }
   }
 }
 
-extension HexToColor on String {
+extension ConvertHexToString on String {
+  /// Overview:
+  /// This function, when called on a hexadecimal color code (String),
+  /// attempts to convert it into a Flutter Color object. It also handles some edge cases,
+  /// such as invalid color codes or color codes with varying lengths.
+  /// Example:
+  /// ```
+  /// String hexColorCode = '#FF5733';
+  /// Color color = hexColorCode.fromHex;
+  /// ```
+  /// Output: Color(0xFFFF5733)
   Color get fromHex {
     try {
       if (isHexColor) {
@@ -37,6 +55,40 @@ extension HexToColor on String {
     }
     return Colors.white;
   }
+}
+
+extension StringToIconData on String {
+  /// ### Overview:
+  /// The getIconData method is a utility method in Dart designed to extract information from a string
+  /// containing parameters related to an icon. It returns a Flutter IconData object based on the extracted information
+  /// Example:
+  /// ```
+  /// String iconString = 'code=59462&family=MaterialIcons&pack=null';
+  /// IconData? iconData = iconString.getIconData();
+  /// ```
+  /// Output: IconData(U+EB3E, fontFamily: 'MaterialIcons')
+  /// String -> IconData
+  IconData? getIconData() {
+    final _iconCode = allBetween('code=', '&family=').toInt() ?? 59462;
+    String? _iconFamily = allBetween('&family=', '&pack=');
+    String? _iconPack = allAfter('&pack=');
+    bool? isPackNull = _iconPack.contains('null');
+    return IconData(_iconCode, fontFamily: _iconFamily, fontPackage: isPackNull ? null : _iconPack);
+  }
+}
+
+extension IconDataToString on IconData {
+  /// ### Overview:
+  /// This extension provides a method, setIconData(), to convert an instance of IconData into
+  /// a string representation containing information about the icon code, icon family, and icon pack.
+  /// Example:
+  /// ```
+  /// IconData myIcon = IconData(59462, fontFamily: 'MaterialIcons', fontPackage: 'null');
+  /// String? iconString = myIcon.setIconData();
+  /// ```
+  /// Output: 'code=59462&family=MaterialIcons&pack=null'
+  /// IconData -> String
+  String? setIconData() => 'code=$codePoint&family=$fontFamily&pack=$fontPackage';
 }
 
 // ------------------------------------------------------------------------

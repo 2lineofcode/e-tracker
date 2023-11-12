@@ -8,7 +8,7 @@
         "**/Thumbs.db": true,
         ".idea": true,
         ".dart_**": true,
-        "firebase**": true,
+        "firebase**": false,
         ".firebase**": true,
         ".flutter-**": true,
         "linux": true,
