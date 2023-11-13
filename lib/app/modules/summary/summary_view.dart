@@ -13,7 +13,7 @@ import 'view_note_times.dart';
 import 'view_pie_chart.dart';
 
 class SummaryView extends GetView<SummaryController> {
-  const SummaryView({Key? key}) : super(key: key);
+  const SummaryView({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(

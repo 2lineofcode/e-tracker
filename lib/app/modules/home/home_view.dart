@@ -19,7 +19,7 @@ import 'home_controller.dart';
 import 'section_dialog_input.dart';
 
 class HomeView extends GetView<HomeController> {
-  const HomeView({Key? key}) : super(key: key);
+  const HomeView({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(

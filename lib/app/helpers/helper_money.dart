@@ -28,7 +28,7 @@ extension MoneyFormatExt on num {
   }
 }
 
-extension StringToMoneyExt on String {
+extension MoneyUnformatExt on String {
   /// example: 'Rp. 1.000' -> 1000
   int? moneyUnformat() => replaceAll(RegExp(r'[^0-9]'), '').toInt();
 }

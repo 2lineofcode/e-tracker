@@ -18,7 +18,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   /// env
-  if (kDebugMode) {
+  if (kDebugMode && isDesktop) {
     await dotenv.load(fileName: '.env.local');
   } else {
     await dotenv.load(fileName: '.env');

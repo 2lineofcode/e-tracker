@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 class MyCalendarHeader extends StatelessWidget {
   const MyCalendarHeader({
-    Key? key,
+    super.key,
     required this.focusedDay,
     required this.onGoPrevMonth,
     required this.onGoToday,
     required this.onGoNextMonth,
-  }) : super(key: key);
+  });
 
   final Widget focusedDay;
   final void Function() onGoPrevMonth;

@@ -91,7 +91,7 @@ class MyLayout extends StatelessWidget {
   AppBar myAppBarMobile() {
     return AppBar(
       backgroundColor: AppColor.appbarPrimary,
-      toolbarHeight: 44,
+      // toolbarHeight: 44,
       title: appBarTitle,
       leadingWidth: 40,
       centerTitle: false,

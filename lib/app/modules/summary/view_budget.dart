@@ -159,7 +159,7 @@ class ViewBudget extends GetView<SummaryController> {
                       ] else ...[
                         'No Budget'.text.size(11).bold.make(),
                       ],
-                    ]).w(130).pOnly(right: 12),
+                    ]).w(100).pOnly(right: 12),
 
                     /// 2
                     if (item.maxBudget != null && item.maxBudget! > 0) ...[

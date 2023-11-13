@@ -16,7 +16,7 @@ import '../widgets/widgets.dart';
 import 'filtering_controller.dart';
 
 class FilteringView extends GetView<FilteringController> {
-  const FilteringView({Key? key}) : super(key: key);
+  const FilteringView({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
