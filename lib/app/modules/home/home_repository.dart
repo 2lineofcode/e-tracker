@@ -35,12 +35,7 @@ class HomeRepository {
 
   // get all list
   Future<List<ExpenseEntity>> getExpenseAll() async {
-    final response = await db
-        .from('expense')
-        //
-        .select('date, amount')
-        .order('date')
-        .withConverter<List<ExpenseEntity>>((data) {
+    final response = await db.from('expense').select('date, amount').order('date').withConverter<List<ExpenseEntity>>((data) {
       return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
     return response;
@@ -110,11 +105,7 @@ class HomeRepository {
     return response;
   }
 
-  Future<void> addAutoComplete(
-    String note, {
-    String? categoryName,
-    String? amount,
-  }) async {
+  Future<void> addAutoComplete(String note, {String? categoryName, String? amount}) async {
     final response = await db.from('autocomplete').upsert({
       'note': note,
       'category_name': categoryName,

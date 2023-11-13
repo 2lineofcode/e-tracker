@@ -1,8 +1,10 @@
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex/ex.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:flutter_iconpicker_plus/IconPicker/icons.dart';
 import 'package:flutter_iconpicker_plus/flutter_iconpicker.dart';
 import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:get/get.dart';
@@ -14,6 +16,7 @@ import '../../core/const.dart';
 import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
+import '../../helpers/helper_notif.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
 import '../widgets/widget_autocomplete.dart';
@@ -23,7 +26,6 @@ import 'home_repository.dart';
 /// * @{HomeDialogInput}
 /// ? seperate dialog input part coz this function is shared (can be use to another page)
 /// ? this code too long coz to many customize and i dont want put in controller
-/// ? that way i seperate on here.
 /// ~
 ///
 mixin HomeDialogInput {
@@ -47,12 +49,20 @@ mixin HomeDialogInput {
         [
           TextField(
             controller: _tfCatName,
-            decoration: MyDecoration.input(hint: 'Name', label: 'Category Name'),
+            decoration: MyDecoration.input(
+              hint: 'Name',
+              label: 'Category Name',
+              suffixIcon: Icon(CupertinoIcons.textformat_abc, size: 16, color: AppColor.textReverse),
+            ),
             style: TextStyle(fontSize: 13),
           ).pOnly(bottom: 12),
           TextField(
             controller: _tfMaxBudget,
-            decoration: MyDecoration.input(hint: '1.000.000', label: 'Max Budget (Monthtly)'),
+            decoration: MyDecoration.input(
+              hint: '1.000.000',
+              label: 'Max Budget (Monthtly)',
+              suffixIcon: Icon(CupertinoIcons.archivebox_fill, size: 16, color: AppColor.textReverse),
+            ),
             inputFormatters: [
               CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
               LengthLimitingTextInputFormatter(13),
@@ -72,8 +82,16 @@ mixin HomeDialogInput {
               ).pOnly(right: 8).tooltip('Click to change icon').onTap(() async {
                 await FlutterIconPicker.showIconPicker(
                   Get.context!,
-                  iconPackModes: [IconPack.lineAwesomeIcons, IconPack.custom, IconPack.cupertino, IconPack.material],
+                  iconPackModes: [
+                    IconPack.lineAwesomeIcons,
+                    IconPack.custom,
+                    IconPack.cupertino,
+                    IconPack.material,
+                    IconPack.fontAwesomeIcons,
+                    IconPack.custom,
+                  ],
                   iconSize: 20,
+                  customIconPack: {},
                   constraints: BoxConstraints(maxWidth: 250, maxHeight: 250),
                 ).then((icon) {
                   if (icon != null) _iconSelected.value = icon;
@@ -167,8 +185,8 @@ mixin HomeDialogInput {
                           await _repo.deleteCategory(entity?.id ?? '');
                           await _controller.getCategory();
                           await callback?.call();
+                          AppNotif.show('Category ${entity?.name} Deleted', color: Vx.red600);
                           Get.close(2);
-                          Get.back();
                         } catch (e) {
                           Get.close(2);
                           ExSnackbar.danger(e);
@@ -195,6 +213,7 @@ mixin HomeDialogInput {
                   );
                   await _repo.editCategory(newEntity);
                   await _controller.getCategory();
+                  await _controller.getExpense();
                   await callback?.call();
                   Get.back();
                 },
@@ -231,10 +250,14 @@ mixin HomeDialogInput {
             TextField(
               controller: _tfDate,
               readOnly: true,
-              decoration: MyDecoration.input(hint: 'Date', label: 'Date'),
+              decoration: MyDecoration.input(
+                hint: 'Date',
+                label: 'Date',
+                suffixIcon: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse),
+              ),
               style: TextStyle(fontSize: 13),
               onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => _tfDate.text = c.toStringEx(format: yMd)),
-            ).wh(250, 38).pOnly(bottom: 16),
+            ).wh(250, 42).pOnly(bottom: 16),
           ],
           MyAutoComplete(
             autofocus: expense == null,
@@ -243,7 +266,11 @@ mixin HomeDialogInput {
               if (s.text.isBlank!) return [];
               return await _repo.findAutoCompleteStringNote(s.text);
             },
-            decoration: MyDecoration.input(hint: 'Nasi Padang', label: 'Notes'),
+            decoration: MyDecoration.input(
+              hint: 'Nasi Padang',
+              label: 'Notes',
+              suffixIcon: Icon(CupertinoIcons.doc_plaintext, size: 16, color: AppColor.textReverse),
+            ),
             onChanged: (s) => _tfNote.text = s,
             onSelected: (s) async {
               _tfNote.text = s;
@@ -252,7 +279,7 @@ mixin HomeDialogInput {
                 _tfAmount.text = res[0].amount?.toInt()?.moneyFormat() ?? '';
               });
             },
-          ).wh(250, 38).pOnly(bottom: 16),
+          ).wh(250, 42).pOnly(bottom: 16),
           // ],
 
           /// field category
@@ -277,7 +304,7 @@ mixin HomeDialogInput {
                 );
               }).toList(),
               onChanged: (s) => _tfCategory.value = s ?? '',
-            ).wh(250, 38).pOnly(bottom: 16),
+            ).wh(250, 42).pOnly(bottom: 16),
           ),
 
           /// field amount
@@ -289,7 +316,7 @@ mixin HomeDialogInput {
                   hint: '10.000',
                   label: 'Amount',
                   suffixIcon: IconButton(
-                    icon: Icon(Icons.calculate, size: 16, color: AppColor.textReverse),
+                    icon: Icon(fontAwesomeIcons['calculator'], size: 14, color: AppColor.textReverse),
                     onPressed: () {
                       showModalBottomSheet(
                         isScrollControlled: true,
@@ -321,7 +348,7 @@ mixin HomeDialogInput {
                   await _submitExpense(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
                   await customCallback?.call(),
                 },
-              ).wh(250, 38),
+              ).wh(250, 42),
             ],
           ).pOnly(bottom: 8),
           Divider().pOnly(bottom: 8),
@@ -342,7 +369,7 @@ mixin HomeDialogInput {
                     await _controller.getExpense();
                     await _controller.onCalenderRefreshEvent();
                     await customCallback?.call();
-
+                    AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
                     Get.back();
                   },
                 ).pOnly(right: 8),
@@ -381,16 +408,14 @@ mixin HomeDialogInput {
     );
 
     try {
-      if (expense != null) {
-        await _repo.editExpense(entity);
-      } else {
-        await _repo.addExpense(entity);
-      }
+      expense != null ? await _repo.editExpense(entity) : await _repo.addExpense(entity);
       await _repo.addAutoComplete('${tfNote.toTitleCase}', categoryName: '${entity.categoryName}', amount: '${entity.amount}');
-      await _controller.getExpense(find: _controller.tfSearchExpense.text.isNotBlank ? _controller.tfSearchExpense.text : null);
+      await _controller.getExpense(find: _controller.tfSearchExpense.value.text.isNotBlank ? _controller.tfSearchExpense.value.text : null);
+      AppNotif.show('Successfully ${expense != null ? 'Edit' : 'Added'} $tfNote', color: Vx.green600);
+      Get.back();
     } catch (e) {
       logE('e: $e');
-      ExSnackbar.danger('$e', duration: 5);
+      AppNotif.show('$e', color: Vx.green600);
     }
     await _controller.onCalenderRefreshEvent();
     Get.back(); // close dialog

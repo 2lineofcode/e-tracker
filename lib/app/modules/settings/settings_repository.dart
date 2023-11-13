@@ -9,8 +9,8 @@ const IMPORT_EXPORT = 'Import/Export';
 class SettingsRepository {
   Future<List<String>> getMenuList() async {
     return [
-      AUTO_COMPLETE,
       APP_CONFIG,
+      AUTO_COMPLETE,
       REPEAT_SETTING,
       IMPORT_EXPORT,
     ];

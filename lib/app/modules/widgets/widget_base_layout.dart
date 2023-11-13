@@ -1,4 +1,5 @@
 import 'package:ex/ex.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -91,7 +92,6 @@ class MyLayout extends StatelessWidget {
   AppBar myAppBarMobile() {
     return AppBar(
       backgroundColor: AppColor.appbarPrimary,
-      // toolbarHeight: 44,
       title: appBarTitle,
       leadingWidth: 40,
       centerTitle: false,
@@ -102,13 +102,12 @@ class MyLayout extends StatelessWidget {
   Widget myAppBarDesktop() {
     return AppBar(
       backgroundColor: AppColor.appbarPrimary,
-      toolbarHeight: 44,
       title: appBarTitle,
       centerTitle: false,
       leading: isShowAppBarLeading == true
           ? appBarLeading?.pOnly(right: 8) ??
               IconButton(
-                icon: Icon(Icons.arrow_back),
+                icon: Icon(CupertinoIcons.arrow_left, size: 22),
                 onPressed: Get.back,
               ).pOnly(right: 8)
           : null,

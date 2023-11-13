@@ -8,6 +8,7 @@ import 'package:uuid/v4.dart';
 
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
+import '../../helpers/helper_notif.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
 import 'home_repository.dart';
@@ -19,10 +20,7 @@ class HomeController extends GetxController with StateMixin {
   /// calendar
   late PageController calenderPageController;
   final focusedDay = DateTime.now().obs;
-  final selectedDays = LinkedHashSet<DateTime>(
-    equals: isSameDay,
-    hashCode: (key) => key.day * 1000000 + key.month * 10000 + key.year,
-  );
+  final selectedDays = LinkedHashSet<DateTime>(equals: isSameDay, hashCode: (key) => key.day * 1000000 + key.month * 10000 + key.year);
   final events = <DateTime, List<String>>{}.obs;
 
   /// category
@@ -32,7 +30,7 @@ class HomeController extends GetxController with StateMixin {
 
   /// list
   final expenseList = <ExpenseEntity>[].obs;
-  final tfSearchExpense = TextEditingController();
+  final tfSearchExpense = TextEditingController().obs;
 
   /// count
   final countOfDay = 0.obs;
@@ -139,10 +137,11 @@ class HomeController extends GetxController with StateMixin {
       id: UuidV4().generate(),
       createdAt: DateTime.now().toStringEx(),
       name: categoryName,
-      color: Vx.randomColor.toHex(), // todo Fix me
+      color: Vx.randomColor.toHex(),
     );
     await repo.addCategory(categoryEntity);
     await getCategory();
+    AppNotif.show('Category $categoryName Added', color: Vx.green600);
     tfCategory.clear();
   }
 
@@ -164,7 +163,7 @@ class HomeController extends GetxController with StateMixin {
 
     /// search
     if (find == null) {
-      tfSearchExpense.clear();
+      tfSearchExpense.value.clear();
       isSearchMode.value = false;
     }
 

@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 mixin AppColor {
+  ///
+  static Color get _primaryLight => Vx.blue600;
+
   /// layout
   static Color get sideMenuPrimary => Get.isDarkMode ? Vx.neutral800 : Vx.neutral100;
   static Color get sideMenuSecondary => Get.isDarkMode ? Vx.neutral700 : Vx.white;
-  static Color get appbarPrimary => Get.isDarkMode ? Vx.neutral900 : Vx.blue600;
+  static Color get appbarPrimary => Get.isDarkMode ? Vx.neutral900 : _primaryLight;
   static Color get footerPrimary => Get.isDarkMode ? Vx.neutral900 : Vx.neutral300;
   static Color get emptyStatePrimary => Get.isDarkMode ? Vx.neutral800 : Vx.neutral200;
 
@@ -29,7 +32,7 @@ mixin AppColor {
   static Color get cardItemSecondary => Get.isDarkMode ? Vx.neutral800 : Vx.neutral200;
 
   /// fab
-  static Color get fabPrimary => Get.isDarkMode ? Vx.neutral600 : Vx.blue600;
+  static Color get fabPrimary => Get.isDarkMode ? Vx.neutral600 : _primaryLight;
 
   /// text on background (special case)
   static Color get textOnBackground => Get.isDarkMode ? Vx.white : Vx.neutral100;

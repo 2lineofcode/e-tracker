@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:lottie/lottie.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../core/app_color.dart';
@@ -40,29 +41,24 @@ class HomeView extends GetView<HomeController> {
       return '${dotenv.get('APP_NAME')}'.text.size(11).bold.make();
     } else {
       return TextField(
-        controller: controller.tfSearchExpense,
+        controller: controller.tfSearchExpense.value,
+        style: TextStyle(fontSize: 13),
         decoration: MyDecoration.input(
+          prefixIcon: Icon(CupertinoIcons.search, size: 14, color: AppColor.textReverse).pOnly(top: 0),
           hint: 'Search...',
-          suffix: Icon(Icons.clear, size: 10, color: AppColor.textReverse).pOnly(top: 4, right: 8).onInkTap(() async {
-            controller.tfSearchExpense.clear();
+          suffix: Icon(CupertinoIcons.clear, size: 12, color: AppColor.textReverse).pOnly(top: 0).onInkTap(() async {
+            controller.tfSearchExpense.value.clear();
             await controller.getExpense();
           }),
         ),
-        style: TextStyle(fontSize: 13),
-        onSubmitted: (s) {
-          if (s.isNotEmpty) {
-            controller.getExpense(find: s);
-          } else {
-            controller.getExpense();
-          }
-        },
+        onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
       ).wh(double.infinity, 30);
     }
   }
 
   Widget appBarLeading() {
     return IconButton(
-      icon: Icon(Icons.add),
+      icon: Icon(CupertinoIcons.add, size: 22),
       onPressed: () => HomeDialogInput.onShowDialogExpense(),
     );
   }
@@ -73,7 +69,7 @@ class HomeView extends GetView<HomeController> {
         /// Web Only
         if (Get.size.width >= 1024) ...[
           TextField(
-            controller: controller.tfSearchExpense,
+            controller: controller.tfSearchExpense.value,
             decoration: MyDecoration.input(hint: 'Search...'),
             style: TextStyle(fontSize: 13),
             onSubmitted: (s) {
@@ -86,11 +82,11 @@ class HomeView extends GetView<HomeController> {
           ).wh(150, 30).pSymmetric(h: 8),
         ],
         IconButton(
-          icon: Icon(Icons.settings),
+          icon: Icon(CupertinoIcons.settings, size: 22),
           onPressed: () => Get.toNamed(Routes.SETTINGS),
         ),
         IconButton(
-          icon: Icon(Icons.bar_chart),
+          icon: Icon(CupertinoIcons.chart_bar_square_fill, size: 22),
           onPressed: () => Get.toNamed(Routes.SUMMARY),
         ),
       ],
@@ -160,7 +156,7 @@ class HomeView extends GetView<HomeController> {
                             ).cornerRadius(4).pOnly(top: 2),
                           ],
                           Spacer(),
-                          if (item.maxBudget == null) Icon(Icons.edit, size: 16, color: Vx.red400),
+                          if (item.maxBudget == null) Icon(Icons.edit, size: 16, color: AppColor.red),
                         ],
                       ),
                       onTap: () => HomeDialogInput.onEditCategory(entity: item),
@@ -217,7 +213,7 @@ class HomeView extends GetView<HomeController> {
                     ).pOnly(bottom: 12)
 
                   // search mode
-                  : 'Search for: "${controller.tfSearchExpense.text}"'.text.bold.make().pOnly(bottom: 12),
+                  : 'Search for: "${controller.tfSearchExpense.value.text}"'.text.bold.make().pOnly(bottom: 12),
             ).pSymmetric(h: 12).pOnly(top: 12),
 
             /// item
@@ -245,7 +241,7 @@ class HomeView extends GetView<HomeController> {
                               '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
                             ],
                           ).p12(),
-                        ).pSymmetric(h: 8, v: 4).onTap(() => HomeDialogInput.onShowDialogExpense(expense: item));
+                        ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item));
                       },
                     ).pSymmetric(v: 8).expand()
 
@@ -318,17 +314,31 @@ class HomeView extends GetView<HomeController> {
           ),
           Divider(),
           ExUiErrorOrEmpty(
-            illustration: Icon(CupertinoIcons.list_bullet),
-            title: 'No Expense'.text.bold.align(TextAlign.center).makeCentered(),
-            message: Obx(() => '${controller.focusedDay.value.toStringEx(format: 'dd MMM yyyy')}'.text.neutral500.size(11).makeCentered()),
             bgColor: Theme.of(Get.context!).scaffoldBackgroundColor,
-            action: ExButtonOutline(
-              label: 'Add Expense',
-              labelSize: 12,
-              labelColor: AppColor.textReverse,
-              onPressed: () => HomeDialogInput.onShowDialogExpense(),
-            ).centered(),
-          ).expand(),
+            illustration: Column(
+              children: [
+                Lottie.asset('assets/lottie/empty-1.json', width: 150, reverse: true),
+                'No Expense'.text.bold.align(TextAlign.center).make().pOnly(bottom: 8),
+                Obx(
+                  () => '${controller.tfSearchExpense.value.text.isNotEmptyAndNotNull //-
+                          ? '"${controller.tfSearchExpense.value.text}" Not found' //-
+                          : ' in ${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'} '
+                      .text
+                      .neutral500
+                      .size(11)
+                      .align(TextAlign.center)
+                      .makeCentered(),
+                ),
+                16.heightBox,
+                ExButtonOutline(
+                  label: 'Add Expense',
+                  labelSize: 12,
+                  labelColor: AppColor.textReverse,
+                  onPressed: () => HomeDialogInput.onShowDialogExpense(),
+                ),
+              ],
+            ),
+          ).pOnly(bottom: 90).expand(),
         ],
       ).p12(),
       onError: (e) => ExUiErrorOrEmpty(
@@ -355,7 +365,7 @@ class HomeView extends GetView<HomeController> {
     return Obx(() => controller.expenseList.isNotEmpty
         ? FloatingActionButton(
             backgroundColor: AppColor.fabPrimary,
-            child: Icon(Icons.add, color: Colors.white),
+            child: Icon(CupertinoIcons.add, color: Colors.white),
             onPressed: () => HomeDialogInput.onShowDialogExpense(),
           ).pOnly(bottom: Get.context!.isMobile ? 90 : 68)
         : 0.heightBox);

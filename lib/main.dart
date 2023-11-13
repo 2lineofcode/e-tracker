@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ex/ex.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -22,7 +23,7 @@ Future<void> main() async {
 
 Future<void> initAppConfig() async {
   /// env
-  await dotenv.load(fileName: '.env.local');
+  await dotenv.load(fileName: kReleaseMode ? '.env' : '.env.local');
 
   /// supabase
   await Supabase.initialize(url: dotenv.get('SUPABASE_URL'), anonKey: dotenv.get('SUPABASE_ANON_KEY'));
@@ -58,13 +59,33 @@ Future<void> initAppService() async {
 }
 
 Widget expenseTracker() {
-  return GetMaterialApp(
-    title: dotenv.get('APP_NAME'),
-    initialRoute: AppPages.INITIAL,
-    theme: ThemeData.light(),
-    themeMode: Get.find<AppSettingService>().theme,
-    darkTheme: ThemeData.dark(),
-    debugShowCheckedModeBanner: false,
-    getPages: AppPages.routes,
+  return GestureDetector(
+    onTap: () {
+      FocusScopeNode currentFocus = FocusScope.of(Get.context!);
+      if (!currentFocus.hasPrimaryFocus) currentFocus.unfocus();
+    },
+    child: GetMaterialApp(
+      title: dotenv.get('APP_NAME'),
+      initialRoute: AppPages.INITIAL,
+      theme: ThemeData.light(),
+      themeMode: Get.find<AppSettingService>().theme,
+      darkTheme: ThemeData.dark(),
+      debugShowCheckedModeBanner: false,
+      getPages: AppPages.routes,
+      builder: (context, child) {
+        if (kReleaseMode) return child!;
+        return Scaffold(
+          body: Stack(
+            children: [
+              child!,
+              IconButton(
+                icon: Icon(CupertinoIcons.square_stack_3d_down_right_fill),
+                onPressed: () => Get.find<AppSettingService>().switchTheme(),
+              ).positioned(left: 72),
+            ],
+          ),
+        );
+      },
+    ),
   );
 }

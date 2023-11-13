@@ -20,8 +20,10 @@ dependencies:
   grouped_list: ^5.1.2
   window_manager: ^0.3.7
   syncfusion_flutter_charts: ^23.1.44
-  flutter_popup: ^3.1.6
+  flutter_popup: ^3.1.8
   flutter_iconpicker_plus: ^3.2.3
+  overlayment: ^0.2.1
+  lottie: ^2.7.0
 
   # picker
   hsv_color_pickers: ^0.3.0
@@ -53,6 +55,7 @@ flutter:
   assets:
   - .env
   - .env.local
+  - assets/lottie/
 
 get_cli: 
   sub_folder: false

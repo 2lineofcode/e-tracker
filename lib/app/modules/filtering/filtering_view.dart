@@ -189,9 +189,7 @@ class FilteringView extends GetView<FilteringController> {
                         onPressed: () async {
                           await HomeDialogInput.onShowDialogExpense(
                             expense: item,
-                            customCallback: () async {
-                              await controller.findExpense(item.categoryName!);
-                            },
+                            customCallback: () async => await controller.findExpense(item.categoryName!),
                           );
                         },
                       ),

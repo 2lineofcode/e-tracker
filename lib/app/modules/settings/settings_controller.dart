@@ -14,7 +14,7 @@ class SettingsController extends GetxController with StateMixin {
 
   // menu
   final menuList = <String>[].obs;
-  final menuSelected = AUTO_COMPLETE.obs;
+  final menuSelected = APP_CONFIG.obs;
 
   /// Page: AutoComplete
   final tfSearchAutoComplete = TextEditingController();
@@ -25,6 +25,7 @@ class SettingsController extends GetxController with StateMixin {
   final tfEco = TextEditingController();
   final tfAverage = TextEditingController();
   final tfSpender = TextEditingController();
+  final tfCurrencySymbol = TextEditingController();
 
   @override
   Future<void> onInit() async {
@@ -36,7 +37,7 @@ class SettingsController extends GetxController with StateMixin {
     tfEco.text = pref.read<num>(kFlagEco)?.moneyFormat() ?? '';
     tfAverage.text = pref.read<num>(kFlagAverage)?.moneyFormat() ?? '';
     tfSpender.text = pref.read<num>(kFlagSpender)?.moneyFormat() ?? '';
-
+    tfCurrencySymbol.text = pref.read<String>(kCurrencySymbol) ?? '';
     super.onInit();
   }
 

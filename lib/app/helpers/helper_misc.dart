@@ -9,9 +9,6 @@ import 'package:get/get.dart';
 bool get isDesktop => !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
 
 extension TimeAgoToString on DateTime {
-  /// Overview:
-  /// This extension provides a method, that calculates and returns a human-readable string
-  /// indicating how much time has passed from a given point in time until now.
   /// Example:
   /// ```
   /// DateTime postTime = DateTime(2023, 1, 1);
@@ -32,10 +29,6 @@ extension TimeAgoToString on DateTime {
 }
 
 extension ConvertHexToString on String {
-  /// Overview:
-  /// This function, when called on a hexadecimal color code (String),
-  /// attempts to convert it into a Flutter Color object. It also handles some edge cases,
-  /// such as invalid color codes or color codes with varying lengths.
   /// Example:
   /// ```
   /// String hexColorCode = '#FF5733';
@@ -58,9 +51,6 @@ extension ConvertHexToString on String {
 }
 
 extension StringToIconData on String {
-  /// ### Overview:
-  /// The getIconData method is a utility method in Dart designed to extract information from a string
-  /// containing parameters related to an icon. It returns a Flutter IconData object based on the extracted information
   /// Example:
   /// ```
   /// String iconString = 'code=59462&family=MaterialIcons&pack=null';
@@ -78,9 +68,6 @@ extension StringToIconData on String {
 }
 
 extension IconDataToString on IconData {
-  /// ### Overview:
-  /// This extension provides a method, setIconData(), to convert an instance of IconData into
-  /// a string representation containing information about the icon code, icon family, and icon pack.
   /// Example:
   /// ```
   /// IconData myIcon = IconData(59462, fontFamily: 'MaterialIcons', fontPackage: 'null');

@@ -7,8 +7,7 @@ import '../../core/app_base.dart';
 import '../../core/app_color.dart';
 import '../../core/app_setting.dart';
 import '../../core/const.dart';
-import '../../helpers/helper_decoration.dart';
-import '../../helpers/helper_money.dart';
+import '../../helpers/helpers.dart';
 import 'settings_controller.dart';
 
 class SectionAppConfig extends GetView<SettingsController> {
@@ -53,6 +52,31 @@ class SectionAppConfig extends GetView<SettingsController> {
           Divider().pSymmetric(v: 8),
 
           /// 1
+          // HStack([
+          //   'Currency Symbol:'.text.make().w(200),
+          //   DropdownMenu(
+          //     controller: controller.tfCurrencySymbol,
+          //     trailingIcon: 0.heightBox,
+          //     textStyle: TextStyle(fontSize: 13),
+          //     inputDecorationTheme: InputDecorationTheme(
+          //       filled: true,
+          //       fillColor: AppColor.textFieldPrimary,
+          //       enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
+          //       disabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
+          //       focusedBorder: OutlineInputBorder(borderSide: BorderSide.none),
+          //       focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide.none),
+          //       contentPadding: EdgeInsets.only(top: 2, bottom: 2, left: 12, right: 12),
+          //       constraints: BoxConstraints(maxHeight: 28),
+          //     ),
+          //     dropdownMenuEntries: [
+          //       DropdownMenuEntry(value: 'Rp. ', label: 'Rp. '),
+          //       DropdownMenuEntry(value: '\$ ', label: '\$ '),
+          //     ],
+          //   ),
+          // ]),
+          // Divider().pSymmetric(v: 8),
+
+          /// 2
           HStack([
             'Max Flag Eco Day:'.text.make().w(200),
             TextField(
@@ -68,7 +92,7 @@ class SectionAppConfig extends GetView<SettingsController> {
           ]),
           Divider().pSymmetric(v: 8),
 
-          /// 2
+          /// 3
           HStack([
             'Max Flag Average Day:'.text.make().w(200),
             TextField(
@@ -85,7 +109,7 @@ class SectionAppConfig extends GetView<SettingsController> {
           ]),
           Divider().pSymmetric(v: 8),
 
-          /// 3
+          /// 4
           HStack([
             'Max Flag Spender Day:'.text.make().w(200),
             TextField(
@@ -115,6 +139,7 @@ class SectionAppConfig extends GetView<SettingsController> {
                   controller.tfEco.text = 50000.moneyFormat();
                   controller.tfAverage.text = 100000.moneyFormat();
                   controller.tfSpender.text = 100000.moneyFormat();
+                  controller.tfCurrencySymbol.text = 'Rp. ';
                 },
               ),
               12.widthBox,
@@ -133,63 +158,9 @@ class SectionAppConfig extends GetView<SettingsController> {
                   await pref.write(kFlagEco, controller.tfEco.text.moneyUnformat());
                   await pref.write(kFlagAverage, controller.tfAverage.text.moneyUnformat());
                   await pref.write(kFlagSpender, controller.tfSpender.text.moneyUnformat());
+                  await pref.write(kCurrencySymbol, controller.tfCurrencySymbol.text);
+                  AppNotif.show('Config Saved', color: Vx.green600);
                   await Get.forceAppUpdate();
-                  ExSnackbar.success('Saved');
-                },
-              ),
-            ],
-          ),
-        ],
-      ).p12(),
-    );
-  }
-
-  Widget settingCurrency() {
-    return Container(
-      width: double.infinity,
-      decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
-      child: VStack(
-        [
-          HStack([
-            'Currency'.text.bold.make(),
-          ]),
-          Divider().pSymmetric(v: 12),
-
-          /// 1
-          HStack([
-            'Currency Symbol:'.text.make().w(200),
-            TextField(
-              decoration: MyDecoration.input(hint: 'Rp.'),
-              style: TextStyle(fontSize: 13),
-            ).h(28).expand(),
-          ]),
-
-          Divider().pSymmetric(v: 8),
-
-          /// action
-          HStack(
-            [
-              Spacer(),
-              ExButtonOutline(
-                label: 'Reset to default',
-                labelColor: AppColor.textReverse,
-                borderColor: Vx.neutral500,
-                labelSize: 11,
-                height: 38,
-                onPressed: () {
-                  //
-                },
-              ),
-              12.widthBox,
-              ExButtonOutline(
-                width: 120,
-                label: 'Apply',
-                labelColor: AppColor.textReverse,
-                borderColor: Vx.neutral500,
-                labelSize: 11,
-                height: 38,
-                onPressed: () {
-                  //
                 },
               ),
             ],

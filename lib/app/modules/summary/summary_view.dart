@@ -32,15 +32,15 @@ class SummaryView extends GetView<SummaryController> {
       () => HStack(
         [
           IconButton(
-            icon: Icon(CupertinoIcons.archivebox, size: 18, color: controller.menuSelected.value == 1 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            icon: Icon(CupertinoIcons.archivebox_fill, size: 18, color: controller.menuSelected.value == 1 ? AppColor.menuSelected : AppColor.menuUnSelected),
             onPressed: () => controller.menuSelected.value = 1,
           ),
           IconButton(
-            icon: Icon(CupertinoIcons.chart_pie, size: 18, color: controller.menuSelected.value == 2 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            icon: Icon(CupertinoIcons.chart_pie_fill, size: 18, color: controller.menuSelected.value == 2 ? AppColor.menuSelected : AppColor.menuUnSelected),
             onPressed: () => controller.menuSelected.value = 2,
           ),
           IconButton(
-            icon: Icon(CupertinoIcons.doc_plaintext, size: 18, color: controller.menuSelected.value == 3 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            icon: Icon(CupertinoIcons.doc_chart_fill, size: 18, color: controller.menuSelected.value == 3 ? AppColor.menuSelected : AppColor.menuUnSelected),
             onPressed: () => controller.menuSelected.value = 3,
           ),
         ],

@@ -55,10 +55,10 @@ class SettingsView extends GetView<SettingsController> {
 
   Widget bodyContent() {
     switch (controller.menuSelected.value) {
-      case AUTO_COMPLETE:
-        return controller.obx((state) => SectionAutoComplete());
       case APP_CONFIG:
         return controller.obx((state) => SectionAppConfig());
+      case AUTO_COMPLETE:
+        return controller.obx((state) => SectionAutoComplete());
       case REPEAT_SETTING:
         return controller.obx((state) => SectionRepeat());
       case IMPORT_EXPORT:
