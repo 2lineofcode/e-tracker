@@ -1,4 +1,4 @@
-import '../../core/const.dart';
+import '../../core/app_base.dart';
 import '../../models/autocomplete_entity.dart';
 
 const AUTO_COMPLETE = 'Auto Complete';

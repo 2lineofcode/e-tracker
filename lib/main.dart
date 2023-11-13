@@ -10,33 +10,27 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app/core/app_setting.dart';
-import 'app/core/const.dart';
 import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initAppConfig();
+  await initAppService();
+  runApp(expenseTracker());
+}
 
+Future<void> initAppConfig() async {
   /// env
-  if (kDebugMode && isDesktop) {
-    await dotenv.load(fileName: '.env.local');
-  } else {
-    await dotenv.load(fileName: '.env');
-  }
+  await dotenv.load(fileName: '.env.local');
 
   /// supabase
-  await Supabase.initialize(
-    url: dotenv.get('SUPABASE_URL'),
-    anonKey: dotenv.get('SUPABASE_ANON_KEY'),
-  );
+  await Supabase.initialize(url: dotenv.get('SUPABASE_URL'), anonKey: dotenv.get('SUPABASE_ANON_KEY'));
 
   /// local storage
   await GetStorage.init();
 
-  /// load app setting
-  Get.put(AppSettingService());
-
-  /// desktop only
+  /// setup for desktop
   if (isDesktop) {
     final idealSize = Size(690, 700);
     await windowManager.ensureInitialized();
@@ -56,46 +50,21 @@ Future<void> main() async {
       await windowManager.focus();
     });
   }
+}
 
-  runApp(
-    GetMaterialApp(
-      title: dotenv.get('APP_NAME'),
-      initialRoute: AppPages.INITIAL,
-      theme: ThemeData.light(),
-      themeMode: Get.find<AppSettingService>().theme,
-      darkTheme: ThemeData.dark(),
-      debugShowCheckedModeBanner: false,
-      getPages: AppPages.routes,
-      builder: (context, child) {
-        if (kReleaseMode) return child!;
-        return Scaffold(
-          body: Stack(
-            children: [
-              child!,
-              HStack(
-                [
-                  IconButton(
-                    icon: Icon(Icons.bug_report),
-                    onPressed: () async {
-                      await Get.find<AppSettingService>().switchTheme();
-                      await 300.milliseconds.delay();
-                      await Get.forceAppUpdate();
-                    },
-                  ),
-                  12.widthBox,
-                  IconButton(
-                    icon: Icon(Icons.abc),
-                    onPressed: () async {
-                      await pref.erase();
-                      await Get.forceAppUpdate();
-                    },
-                  ),
-                ],
-              ).positioned(left: 100),
-            ],
-          ),
-        );
-      },
-    ),
+Future<void> initAppService() async {
+  Get.put(AppSettingService());
+  Get.put(ExHttp(baseURL: dotenv.get('BIBIT_API_URL')), tag: 'bibit');
+}
+
+Widget expenseTracker() {
+  return GetMaterialApp(
+    title: dotenv.get('APP_NAME'),
+    initialRoute: AppPages.INITIAL,
+    theme: ThemeData.light(),
+    themeMode: Get.find<AppSettingService>().theme,
+    darkTheme: ThemeData.dark(),
+    debugShowCheckedModeBanner: false,
+    getPages: AppPages.routes,
   );
 }

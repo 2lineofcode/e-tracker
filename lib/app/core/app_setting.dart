@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../models/category_entity.dart';
+import 'app_base.dart';
 import 'const.dart';
 import 'generator.dart';
 
@@ -52,11 +53,14 @@ class AppSettingService extends GetxService {
   // ------------------------------------------------------------------------
   // theme management
   // ------------------------------------------------------------------------
-  ThemeMode get theme => _getCurrentTheme() ? ThemeMode.dark : ThemeMode.light;
-  bool _getCurrentTheme() => pref.read(kIsDarkMode) ?? true;
-  Future<void> _changeCurrentTheme(bool isDarkMode) async => await pref.write(kIsDarkMode, isDarkMode);
   Future<void> switchTheme() async {
     Get.changeThemeMode(_getCurrentTheme() ? ThemeMode.light : ThemeMode.dark);
     await _changeCurrentTheme(!_getCurrentTheme());
+    await 600.milliseconds.delay(); // free up time
+    await Get.forceAppUpdate();
   }
+
+  ThemeMode get theme => _getCurrentTheme() ? ThemeMode.dark : ThemeMode.light;
+  bool _getCurrentTheme() => pref.read(kIsDarkMode) ?? true;
+  Future<void> _changeCurrentTheme(bool isDarkMode) async => await pref.write(kIsDarkMode, isDarkMode);
 }

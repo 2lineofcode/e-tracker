@@ -3,6 +3,7 @@ import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../core/app_base.dart';
 import '../../core/app_color.dart';
 import '../../core/app_setting.dart';
 import '../../core/const.dart';
@@ -45,8 +46,6 @@ class SectionAppConfig extends GetView<SettingsController> {
                 value: pref.read<bool>(kIsDarkMode) ?? true,
                 onChanged: (s) async {
                   await Get.find<AppSettingService>().switchTheme();
-                  await 300.milliseconds.delay();
-                  await Get.forceAppUpdate();
                 },
               ),
             ],

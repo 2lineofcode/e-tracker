@@ -1,8 +1,4 @@
-import 'package:get_storage/get_storage.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-final db = Supabase.instance.client;
-final pref = GetStorage();
 
 /// ------------------------------------------------------------------------
 /// dateformat from db
@@ -16,3 +12,5 @@ const kFlagAverage = 'kFlagAverage';
 const kFlagSpender = 'kFlagSpender';
 const kIsDarkMode = 'isDarkMode';
 const kCurrentLanguage = 'kCurrentLanguage';
+const kBibitToken = 'kBibitToken';
+const kBibitRefreshToken = 'kBibitRefreshToken';
