@@ -72,13 +72,7 @@ class HomeView extends GetView<HomeController> {
             controller: controller.tfSearchExpense.value,
             decoration: MyDecoration.input(hint: 'Search...'),
             style: TextStyle(fontSize: 13),
-            onSubmitted: (s) {
-              if (s.isNotEmpty) {
-                controller.getExpense(find: s);
-              } else {
-                controller.getExpense();
-              }
-            },
+            onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
           ).wh(150, 30).pSymmetric(h: 8),
         ],
         IconButton(
