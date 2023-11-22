@@ -67,9 +67,9 @@ Widget expenseTracker() {
     child: GetMaterialApp(
       title: dotenv.get('APP_NAME'),
       initialRoute: AppPages.INITIAL,
-      theme: ThemeData.light(),
+      theme: ThemeData.light(useMaterial3: false),
       themeMode: Get.find<AppSettingService>().theme,
-      darkTheme: ThemeData.dark(),
+      darkTheme: ThemeData.dark(useMaterial3: false),
       debugShowCheckedModeBanner: false,
       getPages: AppPages.routes,
       builder: (context, child) {
