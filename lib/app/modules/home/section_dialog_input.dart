@@ -239,7 +239,7 @@ mixin HomeDialogInput {
     final _tfDescription = TextEditingController(text: expense != null ? expense.detail : '');
     final _tfCategory = '${expense != null ? '${expense.categoryName}' : '${_controller.categoryList[0].name}'}'.obs;
     final _tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
-    final isShowDetail = false.obs;
+    final isShowDetail = expense?.detail.isNotEmptyAndNotNull.obs;
     ExDialog.custom(
       title: expense != null ? 'Edit Expense' : 'Add Expense',
       titleTextStyle: TextStyle(fontWeight: FontWeight.bold),
@@ -272,7 +272,7 @@ mixin HomeDialogInput {
               label: 'Notes',
               suffixIcon: IconButton(
                 icon: Icon(CupertinoIcons.doc_plaintext, size: 16, color: AppColor.textReverse),
-                onPressed: () async => isShowDetail.value = !isShowDetail.value,
+                onPressed: () async => isShowDetail?.value = !isShowDetail.value,
               ),
             ),
             onChanged: (s) => _tfNote.text = s,
@@ -288,7 +288,7 @@ mixin HomeDialogInput {
           /// description / detail
           Obx(
             () => Visibility(
-              visible: isShowDetail.value,
+              visible: isShowDetail?.value ?? false,
               child: TextField(
                 controller: _tfDescription,
                 decoration: MyDecoration.input(
