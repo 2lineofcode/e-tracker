@@ -221,18 +221,21 @@ class HomeView extends GetView<HomeController> {
                         final item = controller.expenseList[index];
                         return Container(
                           width: double.infinity,
-                          decoration: BoxDecoration(color: AppColor.cardItemSecondary, borderRadius: BorderRadius.all(Radius.circular(4))),
+                          decoration: BoxDecoration(
+                            color: item.amount != 0 ? AppColor.cardItemSecondary : Vx.randomColor,
+                            borderRadius: BorderRadius.all(Radius.circular(4)),
+                          ),
                           child: Row(
                             children: [
                               VStack([
                                 '${item.note}'.text.bold.make().pOnly(bottom: 8),
+                                item.detail.isNotEmptyAndNotNull ? '${item.detail}'.text.size(12).neutral500.make().pOnly(bottom: 8) : 0.heightBox,
                                 HStack([
                                   Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, color: item.category?.color?.fromHex, size: 12).pOnly(right: 8),
                                   '${item.category?.name}'.text.size(12).make(),
                                 ]),
-                              ]),
-                              Spacer(),
-                              '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
+                              ]).expand(),
+                              item.amount != 0 ? '${item.amount?.moneyFormat()}'.text.bold.size(16).make() : 0.heightBox,
                             ],
                           ).p12(),
                         ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item));

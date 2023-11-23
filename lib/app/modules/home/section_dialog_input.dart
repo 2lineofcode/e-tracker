@@ -236,9 +236,10 @@ mixin HomeDialogInput {
 
     final _tfDate = TextEditingController(text: expense != null ? expense.date : '');
     final _tfNote = TextEditingController(text: expense != null ? expense.note : '');
+    final _tfDescription = TextEditingController(text: expense != null ? expense.detail : '');
     final _tfCategory = '${expense != null ? '${expense.categoryName}' : '${_controller.categoryList[0].name}'}'.obs;
     final _tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
-
+    final isShowDetail = false.obs;
     ExDialog.custom(
       title: expense != null ? 'Edit Expense' : 'Add Expense',
       titleTextStyle: TextStyle(fontWeight: FontWeight.bold),
@@ -269,7 +270,10 @@ mixin HomeDialogInput {
             decoration: MyDecoration.input(
               hint: 'Nasi Padang',
               label: 'Notes',
-              suffixIcon: Icon(CupertinoIcons.doc_plaintext, size: 16, color: AppColor.textReverse),
+              suffixIcon: IconButton(
+                icon: Icon(CupertinoIcons.doc_plaintext, size: 16, color: AppColor.textReverse),
+                onPressed: () async => isShowDetail.value = !isShowDetail.value,
+              ),
             ),
             onChanged: (s) => _tfNote.text = s,
             onSelected: (s) async {
@@ -280,7 +284,21 @@ mixin HomeDialogInput {
               });
             },
           ).wh(250, 42).pOnly(bottom: 16),
-          // ],
+
+          /// description / detail
+          Obx(
+            () => Visibility(
+              visible: isShowDetail.value,
+              child: TextField(
+                controller: _tfDescription,
+                decoration: MyDecoration.input(
+                  hint: 'Nama Toko/Waktu',
+                  label: 'Detail',
+                ),
+                style: TextStyle(fontSize: 13),
+              ).wh(250, 42).pOnly(bottom: 16),
+            ),
+          ),
 
           /// field category
           Obx(
@@ -345,7 +363,7 @@ mixin HomeDialogInput {
                 ],
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) async => {
-                  await _submitExpense(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
+                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
                   await customCallback?.call(),
                 },
               ).wh(250, 42),
@@ -382,7 +400,7 @@ mixin HomeDialogInput {
                 borderColor: AppColor.textReverse,
                 radius: 90,
                 onPressed: () async => {
-                  await _submitExpense(_tfNote.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
+                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
                   await customCallback?.call(),
                 },
               ).expand(),
@@ -393,7 +411,7 @@ mixin HomeDialogInput {
     );
   }
 
-  static Future<void> _submitExpense(String tfNote, String tfCategory, String tfAmount, {ExpenseEntity? expense, String? tfDate}) async {
+  static Future<void> _submitExpense(String tfNote, String? tfDescription, String tfCategory, String tfAmount, {ExpenseEntity? expense, String? tfDate}) async {
     if (tfNote.isEmptyOrNull) return;
     if (tfCategory.isEmptyOrNull) return;
     if (tfAmount.isEmptyOrNull) return;
@@ -405,6 +423,7 @@ mixin HomeDialogInput {
       amount: tfAmount.moneyUnformat(),
       categoryName: tfCategory,
       note: '${tfNote.toTitleCase}',
+      detail: tfDescription ?? '',
     );
 
     try {
