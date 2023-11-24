@@ -112,11 +112,13 @@ class FilteringView extends GetView<FilteringController> {
                 'Order By: '.text.size(12).make(),
                 Obx(
                   () => '${controller.orderBy.value.toTitleCase}'.text.underline.size(12).make().onTap(() {
-                    ExDialog.custom(
-                      title: 'Order By',
-                      titleTextStyle: TextStyle(),
+                    ExAlert.adaptive(
                       content: VStack(
                         [
+                          Text(
+                            'Order By',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ).pOnly(bottom: 24),
                           for (var i = 0; i < controller.orderByList.length; i++) ...[
                             ListTile(
                               title: HStack(
@@ -203,13 +205,13 @@ class FilteringView extends GetView<FilteringController> {
           // ~
           onEmpty: ExUiErrorOrEmpty(
             illustration: Icon(CupertinoIcons.list_bullet),
-            title: 'No Data'.text.bold.makeCentered(),
+            title: 'No Data',
             bgColor: AppColor.emptyStatePrimary,
           ).expand(),
           onError: (e) => ExUiErrorOrEmpty(
             illustration: Icon(CupertinoIcons.wifi_slash),
-            title: 'Offline'.text.bold.makeCentered(),
-            message: 'No Internet'.text.neutral500.makeCentered(),
+            title: 'Offline',
+            message: 'No Internet',
             bgColor: AppColor.emptyStatePrimary,
           ).expand(),
         ),

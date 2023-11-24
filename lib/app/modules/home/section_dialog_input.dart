@@ -42,187 +42,181 @@ mixin HomeDialogInput {
     final _hueController = HueController(HSVColor.fromColor(_tfCatColor.text.fromHex)).obs;
     final _iconSelected = (entity?.icon?.getIconData() ?? Icons.circle_outlined).obs;
 
-    ExDialog.custom(
-      title: 'Edit Category',
-      titleTextStyle: TextStyle(fontWeight: FontWeight.bold),
-      content: VStack(
-        [
-          TextField(
-            controller: _tfCatName,
-            decoration: MyDecoration.input(
-              hint: 'Name',
-              label: 'Category Name',
-              suffixIcon: Icon(CupertinoIcons.textformat_abc, size: 16, color: AppColor.textReverse),
-            ),
-            style: TextStyle(fontSize: 13),
-          ).pOnly(bottom: 12),
-          TextField(
-            controller: _tfMaxBudget,
-            decoration: MyDecoration.input(
-              hint: '1.000.000',
-              label: 'Max Budget (Monthtly)',
-              suffixIcon: Icon(CupertinoIcons.archivebox_fill, size: 16, color: AppColor.textReverse),
-            ),
-            inputFormatters: [
-              CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
-              LengthLimitingTextInputFormatter(13),
-            ],
-            keyboardType: TextInputType.number,
-            style: TextStyle(fontSize: 13),
-          ).pOnly(bottom: 8),
-          HStack(
-            [
-              /// icon preview
-              Obx(
-                () => Icon(
-                  _iconSelected.value,
-                  size: 18,
-                  color: _hueController.value.value.toColor(),
-                ),
-              ).pOnly(right: 8).tooltip('Click to change icon').onTap(() async {
-                await FlutterIconPicker.showIconPicker(
-                  Get.context!,
-                  iconPackModes: [
-                    IconPack.lineAwesomeIcons,
-                    IconPack.custom,
-                    IconPack.cupertino,
-                    IconPack.material,
-                    IconPack.fontAwesomeIcons,
-                    IconPack.custom,
-                  ],
-                  iconSize: 20,
-                  customIconPack: {},
-                  constraints: BoxConstraints(maxWidth: 250, maxHeight: 250),
-                ).then((icon) {
-                  if (icon != null) _iconSelected.value = icon;
-                });
-              }),
-
-              /// hue picker
-              Obx(
-                () => HuePicker(
-                  controller: _hueController.value,
-                  onChanged: (HSVColor color) {
-                    _hueController.value.value = color;
-                    _tfCatColor.text = color.toColor().toHex();
-                    Get.forceAppUpdate();
-                  },
-                ).wh(220, 24),
+    ExAlert.adaptive(
+        content: VStack(
+          [
+            Text(
+              'Edit Category',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ).pOnly(bottom: 24),
+            TextField(
+              controller: _tfCatName,
+              decoration: MyDecoration.input(
+                hint: 'Name',
+                label: 'Category Name',
+                suffixIcon: Icon(CupertinoIcons.textformat_abc, size: 16, color: AppColor.textReverse),
               ),
-            ],
-          ).pSymmetric(v: 12),
-          HStack(
-            [
-              Spacer(),
-              Text(
-                'More Color',
-                style: TextStyle(fontSize: 11, decoration: TextDecoration.underline),
-              ).pOnly(right: 8).onTap(() async {
-                /// open dialog more color
-                ExDialog.custom(
-                  title: 'Pick Custom Color',
-                  titleTextStyle: TextStyle(),
-                  content: VStack(
-                    [
-                      Text('Current color set:', style: TextStyle(fontSize: 12)).pOnly(bottom: 8),
-                      Wrap(
-                        children: [
-                          for (var i = 0; i < _controller.categoryList.length; i++) ...[
-                            Icon(
-                              _controller.categoryList[i].icon?.getIconData() ?? Icons.circle_outlined,
-                              color: _controller.categoryList[i].color?.fromHex,
-                              size: 20,
-                            ).pOnly(right: 8),
-                          ],
-                        ],
-                      ).pOnly(bottom: 8),
-                      Text('Edit For:', style: TextStyle(fontSize: 12)).pOnly(bottom: 8),
-                      Obx(() => Icon(
-                            entity?.icon?.getIconData() ?? Icons.circle_outlined,
-                            color: _hueController.value.value.toColor(),
-                            size: 20,
-                          )),
-                      ColorPicker(
-                        pickerColor: _tfCatColor.text.fromHex,
-                        colorPickerWidth: 300,
-                        pickerAreaHeightPercent: 0.5,
-                        enableAlpha: true,
-                        labelTypes: [],
-                        displayThumbColor: true,
-                        paletteType: PaletteType.hsl,
-                        pickerAreaBorderRadius: const BorderRadius.all(Radius.circular(12)),
-                        portraitOnly: true,
-                        onColorChanged: (s) async {
-                          _hueController.value.value = HSVColor.fromColor(s);
-                          _tfCatColor.text = s.toHex();
-                        },
-                      ).pSymmetric(v: 8),
-                      TextButton(onPressed: Get.back, child: Text('Close')).w(300).centered(),
-                    ],
+              style: TextStyle(fontSize: 13),
+            ).pOnly(bottom: 12),
+            TextField(
+              controller: _tfMaxBudget,
+              decoration: MyDecoration.input(
+                hint: '1.000.000',
+                label: 'Max Budget (Monthtly)',
+                suffixIcon: Icon(CupertinoIcons.archivebox_fill, size: 16, color: AppColor.textReverse),
+              ),
+              inputFormatters: [
+                CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
+                LengthLimitingTextInputFormatter(13),
+              ],
+              keyboardType: TextInputType.number,
+              style: TextStyle(fontSize: 13),
+            ).pOnly(bottom: 8),
+            HStack(
+              [
+                /// icon preview
+                Obx(
+                  () => Icon(
+                    _iconSelected.value,
+                    size: 18,
+                    color: _hueController.value.value.toColor(),
                   ),
-                );
-              }),
-            ],
-          ),
-          Divider().pOnly(bottom: 8),
-          HStack(
-            [
-              ExButtonOutline(
-                label: 'Delete',
-                labelSize: 11,
-                isLabelBold: false,
-                labelColor: Vx.red400,
-                borderColor: Vx.red400,
-                radius: 90,
-                onPressed: () async {
-                  ExAlert.confirm(
-                      title: 'Are you sure?',
-                      message: "you can't rollback this action",
-                      titleStyle: TextStyle(fontWeight: FontWeight.bold),
-                      messageStyle: TextStyle(fontSize: 13),
-                      onYes: () async {
-                        try {
-                          await _repo.deleteCategory(entity?.id ?? '');
-                          await _controller.getCategory();
-                          await callback?.call();
-                          AppNotif.show('Category ${entity?.name} Deleted', color: Vx.red600);
-                          Get.close(2);
-                        } catch (e) {
-                          Get.close(2);
-                          ExSnackbar.danger(e);
-                        }
-                      });
-                },
-              ),
-              8.widthBox,
-              ExButtonOutline(
-                label: 'Submit',
-                labelSize: 11,
-                isLabelBold: false,
-                labelColor: AppColor.textReverse,
-                borderColor: AppColor.textReverse,
-                radius: 90,
-                onPressed: () async {
-                  final newEntity = CategoryEntity(
-                    id: entity?.id,
-                    createdAt: DateTime.now().toStringEx(),
-                    name: _tfCatName.text,
-                    color: _tfCatColor.text,
-                    icon: _iconSelected.value.setIconData(),
-                    maxBudget: _tfMaxBudget.text.moneyUnformat(),
+                ).pOnly(right: 8).tooltip('Click to change icon').onTap(() async {
+                  await FlutterIconPicker.showIconPicker(
+                    Get.context!,
+                    iconPackModes: [
+                      IconPack.lineAwesomeIcons,
+                      IconPack.custom,
+                      IconPack.cupertino,
+                      IconPack.material,
+                      IconPack.fontAwesomeIcons,
+                      IconPack.custom,
+                    ],
+                    iconSize: 20,
+                    customIconPack: {},
+                    constraints: BoxConstraints(maxWidth: 250, maxHeight: 250),
+                  ).then((icon) {
+                    if (icon != null) _iconSelected.value = icon;
+                  });
+                }),
+
+                /// hue picker
+                Obx(
+                  () => HuePicker(
+                    controller: _hueController.value,
+                    onChanged: (HSVColor color) {
+                      _hueController.value.value = color;
+                      _tfCatColor.text = color.toColor().toHex();
+                      Get.forceAppUpdate();
+                    },
+                  ).wh(200, 24),
+                ),
+              ],
+            ).pSymmetric(v: 12),
+            HStack(
+              [
+                Spacer(),
+                Text(
+                  'More Color',
+                  style: TextStyle(fontSize: 11, decoration: TextDecoration.underline),
+                ).pOnly(right: 8).onTap(() async {
+                  /// open dialog more color
+                  ExAlert.adaptive(
+                    content: VStack(
+                      [
+                        Text(
+                          'Pick Custom Color',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ).pOnly(bottom: 24),
+                        Text('Current color set:', style: TextStyle(fontSize: 12)).pOnly(bottom: 8),
+                        Wrap(
+                          children: [
+                            for (var i = 0; i < _controller.categoryList.length; i++) ...[
+                              Icon(
+                                _controller.categoryList[i].icon?.getIconData() ?? Icons.circle_outlined,
+                                color: _controller.categoryList[i].color?.fromHex,
+                                size: 20,
+                              ).pOnly(right: 8, bottom: 8),
+                            ],
+                          ],
+                        ).pOnly(bottom: 8),
+                        Text('Edit For:', style: TextStyle(fontSize: 12)).pOnly(bottom: 8),
+                        Obx(() => Icon(
+                              entity?.icon?.getIconData() ?? Icons.circle_outlined,
+                              color: _hueController.value.value.toColor(),
+                              size: 20,
+                            )),
+                        ColorPicker(
+                          pickerColor: _tfCatColor.text.fromHex,
+                          // colorPickerWidth: 300,
+                          pickerAreaHeightPercent: 0.5,
+                          enableAlpha: true,
+                          labelTypes: [],
+                          displayThumbColor: true,
+                          paletteType: PaletteType.hsl,
+                          pickerAreaBorderRadius: const BorderRadius.all(Radius.circular(12)),
+                          portraitOnly: true,
+                          onColorChanged: (s) async {
+                            _hueController.value.value = HSVColor.fromColor(s);
+                            _tfCatColor.text = s.toHex();
+                          },
+                        ).pSymmetric(v: 8),
+                      ],
+                    ),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: Text('Submit', style: TextStyle(fontSize: 13)),
+                        onPressed: () => Get.back(),
+                      ),
+                    ],
                   );
-                  await _repo.editCategory(newEntity);
-                  await _controller.getCategory();
-                  await _controller.getExpense();
-                  await callback?.call();
-                  Get.back();
-                },
-              ).expand(),
-            ],
+                }),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: Text('Delete', style: TextStyle(fontSize: 13, color: Vx.red500)),
+            onPressed: () {
+              ExAlert.confirm(
+                  title: 'Are you sure?',
+                  message: "you can't rollback this action",
+                  titleStyle: TextStyle(fontWeight: FontWeight.bold),
+                  messageStyle: TextStyle(fontSize: 13),
+                  onYes: () async {
+                    try {
+                      await _repo.deleteCategory(entity?.id ?? '');
+                      await _controller.getCategory();
+                      await callback?.call();
+                      AppNotif.show('Category ${entity?.name} Deleted', color: Vx.red600);
+                      Get.close(2);
+                    } catch (e) {
+                      Get.close(2);
+                      ExSnackbar.danger(e);
+                    }
+                  });
+            },
           ),
-        ],
-      ),
-    );
+          CupertinoDialogAction(
+            child: Text('Submit', style: TextStyle(fontSize: 13)),
+            onPressed: () async {
+              final newEntity = CategoryEntity(
+                id: entity?.id,
+                createdAt: DateTime.now().toStringEx(),
+                name: _tfCatName.text,
+                color: _tfCatColor.text,
+                icon: _iconSelected.value.setIconData(),
+                maxBudget: _tfMaxBudget.text.moneyUnformat(),
+              );
+              await _repo.editCategory(newEntity);
+              await _controller.getCategory();
+              await _controller.getExpense();
+              await callback?.call();
+              Get.back();
+            },
+          ),
+        ]);
   }
 
   // ------------------------------------------------------------------------
@@ -239,13 +233,15 @@ mixin HomeDialogInput {
     final _tfDescription = TextEditingController(text: expense != null ? expense.detail : '');
     final _tfCategory = '${expense != null ? '${expense.categoryName}' : '${_controller.categoryList[0].name}'}'.obs;
     final _tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
-    final isShowDetail = expense?.detail.isNotEmptyAndNotNull.obs;
-    ExDialog.custom(
-      title: expense != null ? 'Edit Expense' : 'Add Expense',
-      titleTextStyle: TextStyle(fontWeight: FontWeight.bold),
-      width: 250,
+    final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
+    ExAlert.adaptive(
       content: VStack(
         [
+          Text(
+            '${expense != null ? 'Edit Expense' : 'Add Expense'}',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ).pOnly(bottom: 24),
+
           /// field select date: edit mode only
           if (expense != null) ...[
             TextField(
@@ -257,7 +253,7 @@ mixin HomeDialogInput {
                 suffixIcon: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse),
               ),
               style: TextStyle(fontSize: 13),
-              onTap: () => ExDatePicker.datePickerMaterial(callback: (c) => _tfDate.text = c.toStringEx(format: yMd)),
+              onTap: () => ExDatePicker.materialDatePicker(callback: (c) => _tfDate.text = c.toStringEx(format: yMd)),
             ).wh(250, 42).pOnly(bottom: 16),
           ],
           MyAutoComplete(
@@ -272,7 +268,7 @@ mixin HomeDialogInput {
               label: 'Notes',
               suffixIcon: IconButton(
                 icon: Icon(CupertinoIcons.doc_plaintext, size: 16, color: AppColor.textReverse),
-                onPressed: () async => isShowDetail?.value = !isShowDetail.value,
+                onPressed: () async => isShowDetail.value = !isShowDetail.value,
               ),
             ),
             onChanged: (s) => _tfNote.text = s,
@@ -288,7 +284,7 @@ mixin HomeDialogInput {
           /// description / detail
           Obx(
             () => Visibility(
-              visible: isShowDetail?.value ?? false,
+              visible: isShowDetail.value,
               child: TextField(
                 controller: _tfDescription,
                 decoration: MyDecoration.input(
@@ -366,48 +362,33 @@ mixin HomeDialogInput {
                   await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
                   await customCallback?.call(),
                 },
-              ).wh(250, 42),
+              ).wh(230, 42),
             ],
           ).pOnly(bottom: 8),
-          Divider().pOnly(bottom: 8),
-
-          /// action
-          HStack(
-            [
-              if (expense != null) ...[
-                ExButtonOutline(
-                  label: 'Delete',
-                  labelSize: 11,
-                  isLabelBold: false,
-                  labelColor: Vx.red400,
-                  borderColor: Vx.red400,
-                  radius: 90,
-                  onPressed: () async {
-                    await _repo.deleteExpense(expense.id!);
-                    await _controller.getExpense();
-                    await _controller.onCalenderRefreshEvent();
-                    await customCallback?.call();
-                    AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
-                    Get.back();
-                  },
-                ).pOnly(right: 8),
-              ],
-              ExButtonOutline(
-                label: 'Submit',
-                labelSize: 11,
-                isLabelBold: false,
-                labelColor: AppColor.textReverse,
-                borderColor: AppColor.textReverse,
-                radius: 90,
-                onPressed: () async => {
-                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
-                  await customCallback?.call(),
-                },
-              ).expand(),
-            ],
-          ),
         ],
       ),
+      actions: [
+        if (expense != null) ...[
+          CupertinoDialogAction(
+            child: Text('Delete', style: TextStyle(color: Vx.red500, fontSize: 13)),
+            onPressed: () async {
+              await _repo.deleteExpense(expense.id!);
+              await _controller.getExpense();
+              await _controller.onCalenderRefreshEvent();
+              await customCallback?.call();
+              AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
+              Get.back();
+            },
+          ),
+        ],
+        CupertinoDialogAction(
+          child: Text('Submit', style: TextStyle(fontSize: 13)),
+          onPressed: () async {
+            await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text);
+            await customCallback?.call();
+          },
+        ),
+      ],
     );
   }
 

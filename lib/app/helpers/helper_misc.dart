@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 /// TOP LEVEL HELPER
-bool get isDesktop => !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
+bool get isDesktop =>
+    !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
 
 extension TimeAgoToString on DateTime {
   /// Example:
@@ -36,8 +37,17 @@ extension ConvertHexToString on String {
   /// ```
   /// Output: Color(0xFFFF5733)
   Color get fromHex {
+    bool isHexColor() {
+      if (startsWith('#') && (length == 7 || length == 9)) {
+        return substring(1).toLowerCase().split('').every((char) {
+          return '0123456789abcdef'.contains(char);
+        });
+      }
+      return false;
+    }
+
     try {
-      if (isHexColor) {
+      if (isHexColor()) {
         final buffer = StringBuffer();
         if (length == 6 || length == 7) buffer.write('FF');
         buffer.write(replaceFirst('#', ''));
@@ -63,7 +73,8 @@ extension StringToIconData on String {
     String? _iconFamily = allBetween('&family=', '&pack=');
     String? _iconPack = allAfter('&pack=');
     bool? isPackNull = _iconPack.contains('null');
-    return IconData(_iconCode, fontFamily: _iconFamily, fontPackage: isPackNull ? null : _iconPack);
+    return IconData(_iconCode,
+        fontFamily: _iconFamily, fontPackage: isPackNull ? null : _iconPack);
   }
 }
 
@@ -75,7 +86,8 @@ extension IconDataToString on IconData {
   /// ```
   /// Output: 'code=59462&family=MaterialIcons&pack=null'
   /// IconData -> String
-  String? setIconData() => 'code=$codePoint&family=$fontFamily&pack=$fontPackage';
+  String? setIconData() =>
+      'code=$codePoint&family=$fontFamily&pack=$fontPackage';
 }
 
 // ------------------------------------------------------------------------

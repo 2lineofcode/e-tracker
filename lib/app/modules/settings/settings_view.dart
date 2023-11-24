@@ -21,7 +21,7 @@ class SettingsView extends GetView<SettingsController> {
         appBarTitle: 'Settings'.text.size(11).bold.make(),
         sideMenuContent: sideMenuContent(),
         bodyContent: Obx(() => bodyContent().p8()),
-        footerContent: footerContent(),
+        footerContent: 0.heightBox,
       ),
     );
   }

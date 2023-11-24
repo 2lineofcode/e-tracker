@@ -11,6 +11,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'app/core/app_setting.dart';
+import 'app/core/app_theme.dart';
 import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
 
@@ -67,9 +68,9 @@ Widget expenseTracker() {
     child: GetMaterialApp(
       title: dotenv.get('APP_NAME'),
       initialRoute: AppPages.INITIAL,
-      theme: ThemeData.light(useMaterial3: false),
-      themeMode: Get.find<AppSettingService>().theme,
-      darkTheme: ThemeData.dark(useMaterial3: false),
+      theme: AppTheme.light,
+      themeMode: AppTheme.theme,
+      darkTheme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
       getPages: AppPages.routes,
       builder: (context, child) {
@@ -80,7 +81,7 @@ Widget expenseTracker() {
               child!,
               IconButton(
                 icon: Icon(CupertinoIcons.square_stack_3d_down_right_fill),
-                onPressed: () => Get.find<AppSettingService>().switchTheme(),
+                onPressed: () => AppTheme.switchTheme(),
               ).positioned(left: 72),
             ],
           ),

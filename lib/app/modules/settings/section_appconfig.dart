@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 
 import '../../core/app_base.dart';
 import '../../core/app_color.dart';
-import '../../core/app_setting.dart';
+import '../../core/app_theme.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import 'settings_controller.dart';
@@ -44,7 +44,7 @@ class SectionAppConfig extends GetView<SettingsController> {
               Switch.adaptive(
                 value: pref.read<bool>(kIsDarkMode) ?? true,
                 onChanged: (s) async {
-                  await Get.find<AppSettingService>().switchTheme();
+                  await AppTheme.switchTheme();
                 },
               ),
             ],

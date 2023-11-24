@@ -67,8 +67,8 @@ class ViewNoteTimes extends GetView<SummaryController> {
           ] else ...[
             ExUiErrorOrEmpty(
               bgColor: AppColor.emptyStatePrimary,
-              title: 'No data to see'.text.bold.make(),
-              message: 'You dont have any transaction on this period'.text.make(),
+              title: 'No data to see',
+              message: 'You dont have any transaction on this period',
             ).h(250),
           ],
         ],

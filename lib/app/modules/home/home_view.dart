@@ -44,14 +44,20 @@ class HomeView extends GetView<HomeController> {
         controller: controller.tfSearchExpense.value,
         style: TextStyle(fontSize: 13),
         decoration: MyDecoration.input(
-          prefixIcon: Icon(CupertinoIcons.search, size: 14, color: AppColor.textReverse).pOnly(top: 0),
+          prefixIcon:
+              Icon(CupertinoIcons.search, size: 14, color: AppColor.textReverse)
+                  .pOnly(top: 0),
           hint: 'Search...',
-          suffix: Icon(CupertinoIcons.clear, size: 12, color: AppColor.textReverse).pOnly(top: 0).onInkTap(() async {
+          suffix:
+              Icon(CupertinoIcons.clear, size: 12, color: AppColor.textReverse)
+                  .pOnly(top: 0)
+                  .onInkTap(() async {
             controller.tfSearchExpense.value.clear();
             await controller.getExpense();
           }),
         ),
-        onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
+        onSubmitted: (s) =>
+            controller.getExpense(find: s.isNotEmpty ? s : null),
       ).wh(double.infinity, 30);
     }
   }
@@ -72,7 +78,8 @@ class HomeView extends GetView<HomeController> {
             controller: controller.tfSearchExpense.value,
             decoration: MyDecoration.input(hint: 'Search...'),
             style: TextStyle(fontSize: 13),
-            onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
+            onSubmitted: (s) =>
+                controller.getExpense(find: s.isNotEmpty ? s : null),
           ).wh(150, 30).pSymmetric(h: 8),
         ],
         IconButton(
@@ -93,7 +100,12 @@ class HomeView extends GetView<HomeController> {
         /// calendar
         Obx(
           () => MyCalendarHeader(
-            focusedDay: '${controller.focusedDay.value.toStringEx(format: 'MMMM yyyy')}'.text.bold.make().pSymmetric(h: 8),
+            focusedDay:
+                '${controller.focusedDay.value.toStringEx(format: 'MMMM yyyy')}'
+                    .text
+                    .bold
+                    .make()
+                    .pSymmetric(h: 8),
             onGoPrevMonth: () => controller.onCalenderGoPrevMonth(),
             onGoToday: () => controller.onCalenderGoToday(),
             onGoNextMonth: () => controller.onCalenderGoNextMonth(),
@@ -105,9 +117,11 @@ class HomeView extends GetView<HomeController> {
             minimumDate: DateTime.utc(2020),
             maximumDate: DateTime.utc(2030),
             onCalendarCreated: (c) => controller.calenderPageController = c,
-            onPageChanged: (focusedDay) => controller.focusedDay.value = focusedDay,
+            onPageChanged: (focusedDay) =>
+                controller.focusedDay.value = focusedDay,
             onDaySelected: controller.onCalenderDayChange,
-            selectedDayPredicate: (day) => controller.selectedDays.contains(day),
+            selectedDayPredicate: (day) =>
+                controller.selectedDays.contains(day),
             eventLoader: controller.onCalenderLoadEvent,
 
             /// custom
@@ -116,7 +130,9 @@ class HomeView extends GetView<HomeController> {
                 if (events.isNotEmpty) {
                   var total = 0;
                   for (var event in events) total += event.toInt()!;
-                  return Icon(Icons.circle, size: 6, color: total.getFlagColor()).positioned(top: 8, right: 8);
+                  return Icon(Icons.circle,
+                          size: 6, color: total.getFlagColor())
+                      .positioned(top: 8, right: 8);
                 }
                 return Container();
               },
@@ -130,7 +146,12 @@ class HomeView extends GetView<HomeController> {
           child: VStack(
             [
               Obx(
-                () => ' 📦 CATEGORY (${controller.categoryList.length})'.text.bold.make().onTap(() => controller.getCategory()).pSymmetric(h: 8, v: 16),
+                () => ' 📦 CATEGORY (${controller.categoryList.length})'
+                    .text
+                    .bold
+                    .make()
+                    .onTap(() => controller.getCategory())
+                    .pSymmetric(h: 8, v: 16),
               ),
               Obx(
                 () => ListView.builder(
@@ -141,16 +162,27 @@ class HomeView extends GetView<HomeController> {
                     return ListTile(
                       title: HStack(
                         [
-                          Icon(item.icon?.getIconData() ?? Icons.circle_outlined, color: item.color?.fromHex, size: 16).pOnly(right: 8),
+                          Icon(
+                                  item.icon?.getIconData() ??
+                                      Icons.circle_outlined,
+                                  color: item.color?.fromHex,
+                                  size: 16)
+                              .pOnly(right: 8),
                           '${item.name}'.text.size(12).make().pOnly(right: 8),
                           if (item.maxBudget != null) ...[
                             Container(
                               color: AppColor.sideMenuPrimary,
-                              child: '${item.maxBudget!.moneyFormatCompact()}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
+                              child: '${item.maxBudget!.moneyFormatCompact()}'
+                                  .text
+                                  .size(11)
+                                  .minFontSize(11)
+                                  .make()
+                                  .pSymmetric(h: 4, v: 2),
                             ).cornerRadius(4).pOnly(top: 2),
                           ],
                           Spacer(),
-                          if (item.maxBudget == null) Icon(Icons.edit, size: 16, color: AppColor.red),
+                          if (item.maxBudget == null)
+                            Icon(Icons.edit, size: 16, color: AppColor.red),
                         ],
                       ),
                       onTap: () => HomeDialogInput.onEditCategory(entity: item),
@@ -186,28 +218,60 @@ class HomeView extends GetView<HomeController> {
                         Container(
                           color: Colors.blue,
                           height: 28,
-                          child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).makeCentered().pSymmetric(h: 4, v: 2),
+                          child:
+                              '${controller.focusedDay.value.toStringEx(format: 'E')}'
+                                  .text
+                                  .size(11)
+                                  .bold
+                                  .color(AppColor.textOnBackground)
+                                  .makeCentered()
+                                  .pSymmetric(h: 4, v: 2),
                         ).cornerRadius(4).pOnly(right: 10),
                         VStack([
-                          '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
-                          '${controller.focusedDay.value.getTimeAgoFromNow()}'.text.size(11).minFontSize(11).make(),
+                          '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'
+                              .text
+                              .size(12)
+                              .bold
+                              .make(),
+                          '${controller.focusedDay.value.getTimeAgoFromNow()}'
+                              .text
+                              .size(11)
+                              .minFontSize(11)
+                              .make(),
                         ]),
                         Spacer(),
                         CustomPopup(
-                          content: 'Your score of spend this day'.text.color(AppColor.textOnWhiteBackground).make(),
+                          content: 'Your score of spend this day'
+                              .text
+                              .color(AppColor.textOnWhiteBackground)
+                              .make(),
                           child: Container(
                             decoration: ExDecorator.box(
                               borderRadius: 90,
-                              borderColor: controller.countOfDay.value.getFlagColorLight(),
+                              borderColor: controller.countOfDay.value
+                                  .getFlagColorLight(),
                             ),
-                            child: '${controller.countOfDay.value.getFlagText()} Day'.text.size(12).minFontSize(12).color(controller.countOfDay.value.getFlagColorLight()).make().p4().pSymmetric(h: 4),
+                            child:
+                                '${controller.countOfDay.value.getFlagText()} Day'
+                                    .text
+                                    .size(12)
+                                    .minFontSize(12)
+                                    .color(controller.countOfDay.value
+                                        .getFlagColorLight())
+                                    .make()
+                                    .p4()
+                                    .pSymmetric(h: 4),
                           ),
                         ),
                       ],
                     ).pOnly(bottom: 12)
 
                   // search mode
-                  : 'Search for: "${controller.tfSearchExpense.value.text}"'.text.bold.make().pOnly(bottom: 12),
+                  : 'Search for: "${controller.tfSearchExpense.value.text}"'
+                      .text
+                      .bold
+                      .make()
+                      .pOnly(bottom: 12),
             ).pSymmetric(h: 12).pOnly(top: 12),
 
             /// item
@@ -222,23 +286,48 @@ class HomeView extends GetView<HomeController> {
                         return Container(
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: item.amount != 0 ? AppColor.cardItemSecondary : Vx.randomColor,
+                            color: item.amount != 0
+                                ? AppColor.cardItemSecondary
+                                : Vx.randomColor,
                             borderRadius: BorderRadius.all(Radius.circular(4)),
                           ),
                           child: Row(
                             children: [
                               VStack([
-                                '${item.note}'.text.bold.make().pOnly(bottom: 8),
-                                item.detail.isNotEmptyAndNotNull ? '${item.detail}'.text.size(12).neutral500.make().pOnly(bottom: 8) : 0.heightBox,
+                                '${item.note}'
+                                    .text
+                                    .bold
+                                    .make()
+                                    .pOnly(bottom: 8),
+                                item.detail.isNotEmptyAndNotNull
+                                    ? '${item.detail}'
+                                        .text
+                                        .size(12)
+                                        .neutral500
+                                        .make()
+                                        .pOnly(bottom: 8)
+                                    : 0.heightBox,
                                 HStack([
-                                  Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, color: item.category?.color?.fromHex, size: 12).pOnly(right: 8),
+                                  Icon(
+                                          item.category?.icon?.getIconData() ??
+                                              Icons.circle_outlined,
+                                          color: item.category?.color?.fromHex,
+                                          size: 12)
+                                      .pOnly(right: 8),
                                   '${item.category?.name}'.text.size(12).make(),
                                 ]),
                               ]).expand(),
-                              item.amount != 0 ? '${item.amount?.moneyFormat()}'.text.bold.size(16).make() : 0.heightBox,
+                              item.amount != 0
+                                  ? '${item.amount?.moneyFormat()}'
+                                      .text
+                                      .bold
+                                      .size(16)
+                                      .make()
+                                  : 0.heightBox,
                             ],
                           ).p12(),
-                        ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item));
+                        ).pSymmetric(h: 8, v: 4).onInkTap(() =>
+                            HomeDialogInput.onShowDialogExpense(expense: item));
                       },
                     ).pSymmetric(v: 8).expand()
 
@@ -251,13 +340,23 @@ class HomeView extends GetView<HomeController> {
                       order: GroupedListOrder.DESC,
                       groupHeaderBuilder: (item) => Container(
                         width: double.infinity,
-                        decoration: BoxDecoration(color: AppColor.cardHeaderPrimary),
+                        decoration:
+                            BoxDecoration(color: AppColor.cardHeaderPrimary),
                         child: HStack([
-                          '${item.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).bold.make(),
+                          '${item.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'
+                              .text
+                              .size(11)
+                              .bold
+                              .make(),
                           Spacer(),
-                          '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'.text.minFontSize(10).size(10).make(),
+                          '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'
+                              .text
+                              .minFontSize(10)
+                              .size(10)
+                              .make(),
                         ]).p8(),
-                      ).onTap(() async => await controller.onCalenderGoDate(item)),
+                      ).onTap(
+                          () async => await controller.onCalenderGoDate(item)),
                       indexedItemBuilder: (context, item, index) => SizedBox(
                         width: double.infinity,
                         child: Row(
@@ -265,15 +364,25 @@ class HomeView extends GetView<HomeController> {
                             VStack([
                               '${item.note}'.text.make().pOnly(bottom: 8),
                               HStack([
-                                Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, size: 12, color: item.category?.color?.fromHex).pOnly(right: 8),
+                                Icon(
+                                        item.category?.icon?.getIconData() ??
+                                            Icons.circle_outlined,
+                                        size: 12,
+                                        color: item.category?.color?.fromHex)
+                                    .pOnly(right: 8),
                                 '${item.categoryName}'.text.size(12).make(),
                               ]),
                             ]),
                             Spacer(),
-                            '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
+                            '${item.amount?.moneyFormat()}'
+                                .text
+                                .bold
+                                .size(16)
+                                .make(),
                           ],
                         ).p12(),
-                      ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item)),
+                      ).pSymmetric(h: 8, v: 4).onInkTap(() =>
+                          HomeDialogInput.onShowDialogExpense(expense: item)),
                     ).pSymmetric(v: 8).expand(),
             ),
 
@@ -281,7 +390,11 @@ class HomeView extends GetView<HomeController> {
             HStack([
               'Total:'.text.bold.color(AppColor.textOnBackground).make(),
               Spacer(),
-              '${controller.countOfDay.value.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).make(),
+              '${controller.countOfDay.value.moneyFormat()}'
+                  .text
+                  .bold
+                  .color(AppColor.textOnBackground)
+                  .make(),
             ]).p12().color(controller.countOfDay.value.getFlagColorDark()),
           ],
         ),
@@ -295,16 +408,39 @@ class HomeView extends GetView<HomeController> {
                 Container(
                   color: Colors.blue,
                   height: 28,
-                  child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).makeCentered().pSymmetric(h: 4, v: 2),
+                  child:
+                      '${controller.focusedDay.value.toStringEx(format: 'E')}'
+                          .text
+                          .size(11)
+                          .bold
+                          .color(AppColor.textOnBackground)
+                          .makeCentered()
+                          .pSymmetric(h: 4, v: 2),
                 ).cornerRadius(4).pOnly(right: 10),
                 VStack([
-                  '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
-                  '${controller.focusedDay.value.getTimeAgoFromNow()}'.text.size(11).minFontSize(11).make(),
+                  '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'
+                      .text
+                      .size(12)
+                      .bold
+                      .make(),
+                  '${controller.focusedDay.value.getTimeAgoFromNow()}'
+                      .text
+                      .size(11)
+                      .minFontSize(11)
+                      .make(),
                 ]),
                 Spacer(),
                 Container(
-                  decoration: ExDecorator.box(borderRadius: 90, borderColor: AppColor.textReverse),
-                  child: 'No Record'.text.size(12).minFontSize(12).color(AppColor.textReverse).make().p4().pSymmetric(h: 4),
+                  decoration: ExDecorator.box(
+                      borderRadius: 90, borderColor: AppColor.textReverse),
+                  child: 'No Record'
+                      .text
+                      .size(12)
+                      .minFontSize(12)
+                      .color(AppColor.textReverse)
+                      .make()
+                      .p4()
+                      .pSymmetric(h: 4),
                 ),
               ],
             ).pOnly(bottom: 12),
@@ -314,8 +450,14 @@ class HomeView extends GetView<HomeController> {
             bgColor: Theme.of(Get.context!).scaffoldBackgroundColor,
             illustration: Column(
               children: [
-                Lottie.asset('assets/lottie/empty-1.json', width: 150, reverse: true),
-                'No Expense'.text.bold.align(TextAlign.center).make().pOnly(bottom: 8),
+                Lottie.asset('assets/lottie/empty-1.json',
+                    width: 150, reverse: true),
+                'No Expense'
+                    .text
+                    .bold
+                    .align(TextAlign.center)
+                    .make()
+                    .pOnly(bottom: 8),
                 Obx(
                   () => '${controller.tfSearchExpense.value.text.isNotEmptyAndNotNull //-
                           ? '"${controller.tfSearchExpense.value.text}" Not found' //-
@@ -340,8 +482,8 @@ class HomeView extends GetView<HomeController> {
       ).p12(),
       onError: (e) => ExUiErrorOrEmpty(
         illustration: Icon(CupertinoIcons.wifi_slash),
-        title: 'Offline'.text.bold.makeCentered(),
-        message: '$e'.text.neutral500.makeCentered(),
+        title: 'Offline',
+        message: '$e',
         bgColor: AppColor.emptyStatePrimary,
       ),
     );
@@ -351,7 +493,12 @@ class HomeView extends GetView<HomeController> {
     return HStack([
       Spacer(),
       Obx(
-        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${controller.countOfMonth.value.moneyFormat()}'.text.bold.make().onTap(() {
+        () =>
+            '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${controller.countOfMonth.value.moneyFormat()}'
+                .text
+                .bold
+                .make()
+                .onTap(() {
           Get.toNamed(Routes.SUMMARY);
         }),
       ),
