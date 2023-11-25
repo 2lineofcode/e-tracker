@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 mixin AppColor {
   ///
   static Color get _primaryLight => Vx.blue600;
+  static Color get noteColor => Vx.blue600;
 
   /// layout
   static Color get sideMenuPrimary => Get.isDarkMode ? Vx.neutral800 : Vx.neutral100;

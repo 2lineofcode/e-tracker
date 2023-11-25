@@ -229,7 +229,11 @@ mixin HomeDialogInput {
     final _tfDescription = TextEditingController(text: expense != null ? expense.detail : '');
     final _tfCategory = '${expense != null ? '${expense.categoryName}' : '${_controller.categoryList[0].name}'}'.obs;
     final _tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
+
+    /// flag
     final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
+    final isTypeNotes = expense != null && expense.categoryName == 'Notes' ? true.obs : false.obs;
+
     ExAlert.adaptive(
       title: Text(
         '${expense != null ? 'Edit Expense' : 'Add Expense'}',
@@ -331,48 +335,64 @@ mixin HomeDialogInput {
                   ),
                 );
               }).toList(),
-              onChanged: (s) => _tfCategory.value = s ?? '',
+              onChanged: (s) {
+                _tfCategory.value = s ?? '';
+                if (s!.contains('Notes')) {
+                  _tfAmount.text = 'Rp. 0';
+                  isTypeNotes.value = true;
+                  isShowDetail.value = true;
+                } else {
+                  _tfAmount.text = '';
+                  isTypeNotes.value = false;
+                  isShowDetail.value = false;
+                }
+              },
             ).wh(double.infinity, 32).pOnly(bottom: 16),
           ),
 
           /// field amount
-          CupertinoTextField(
-            controller: _tfAmount,
-            placeholder: 'Rp. 10.000',
-            placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-            style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-            prefix: IconButton(
-              icon: Icon(fontAwesomeIcons['calculator'], size: 14, color: AppColor.textReverse),
-              onPressed: () {
-                showModalBottomSheet(
-                  isScrollControlled: true,
-                  context: Get.context!,
-                  builder: (context) => FractionallySizedBox(
-                    heightFactor: 0.7,
-                    child: SimpleCalculator(
-                      autofocus: true,
-                      hideSurroundingBorder: true,
-                      value: _tfAmount.text.moneyUnformat()?.toDouble() ?? 0.0,
-                      onTappedDisplay: (p0, p1) => Get.back(),
-                      onChanged: (key, value, expression) {
-                        final moneyFormat = value!.toString().toInt()?.moneyFormat() ?? '';
-                        _tfAmount.text = moneyFormat;
-                      },
-                    ),
-                  ),
-                );
-              },
+          Obx(
+            () => Visibility(
+              visible: isTypeNotes.isFalse,
+              child: CupertinoTextField(
+                controller: _tfAmount,
+                placeholder: 'Rp. 10.000',
+                placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+                style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+                prefix: IconButton(
+                  icon: Icon(fontAwesomeIcons['calculator'], size: 14, color: AppColor.textReverse),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      isScrollControlled: true,
+                      context: Get.context!,
+                      builder: (context) => FractionallySizedBox(
+                        heightFactor: 0.7,
+                        child: SimpleCalculator(
+                          autofocus: true,
+                          hideSurroundingBorder: true,
+                          value: _tfAmount.text.moneyUnformat()?.toDouble() ?? 0.0,
+                          onTappedDisplay: (p0, p1) => Get.back(),
+                          onChanged: (key, value, expression) {
+                            final moneyFormat = value!.toString().toInt()?.moneyFormat() ?? '';
+                            _tfAmount.text = moneyFormat;
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                inputFormatters: [
+                  CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
+                  LengthLimitingTextInputFormatter(13),
+                ],
+                keyboardType: TextInputType.number,
+                onSubmitted: (_) async => {
+                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
+                  await customCallback?.call(),
+                },
+              ).h(32),
             ),
-            inputFormatters: [
-              CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
-              LengthLimitingTextInputFormatter(13),
-            ],
-            keyboardType: TextInputType.number,
-            onSubmitted: (_) async => {
-              await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
-              await customCallback?.call(),
-            },
-          ).h(32),
+          ),
         ],
       ),
       actions: [

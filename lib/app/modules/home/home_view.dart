@@ -233,27 +233,47 @@ class HomeView extends GetView<HomeController> {
                         itemCount: controller.expenseList.length,
                         itemBuilder: (context, index) {
                           final item = controller.expenseList[index];
-                          print('item.category?.name: ${item.categoryName}');
+                          final isTypeNotes = item.categoryName?.contains('Notes') ?? false;
 
                           return Container(
                             width: double.infinity,
                             decoration: BoxDecoration(
-                              color: !item.categoryName!.contains('Notes') ? AppColor.cardItemSecondary : Vx.randomPrimaryColor,
+                              color: isTypeNotes ? AppColor.noteColor : AppColor.cardItemSecondary,
                               borderRadius: BorderRadius.all(Radius.circular(4)),
                             ),
                             child: Row(
                               children: [
                                 VStack([
+                                  /// note
                                   '${item.note}'.text.bold.make().pOnly(bottom: 8),
+
+                                  /// detail
                                   item.detail.isNotEmptyAndNotNull
-                                      ? '${item.detail}'.text.size(12).color(!item.categoryName!.contains('Notes') ? Vx.neutral500 : Vx.white).make().pOnly(bottom: 8)
+                                      ? '${item.detail}'
+                                          //
+                                          .text
+                                          .size(12)
+                                          .color(isTypeNotes ? Vx.neutral300 : Vx.neutral500)
+                                          .make()
+                                          .pOnly(bottom: 8)
                                       : 0.heightBox,
+
+                                  /// category
                                   HStack([
                                     Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, color: item.category?.color?.fromHex, size: 12).pOnly(right: 8),
-                                    '${item.category?.name}'.text.size(12).make(),
+                                    '${item.category?.name}'
+                                        //
+                                        .text
+                                        .size(12)
+                                        .color(isTypeNotes ? Vx.white : AppColor.textReverse)
+                                        .make(),
+                                    Spacer(),
+                                    isTypeNotes ? '${item.createdAt?.reformatDate(to: 'HH:mm')}'.text.size(11).minFontSize(11).make() : 0.heightBox,
                                   ]),
                                 ]).expand(),
-                                !item.categoryName!.contains('Notes') ? '${item.amount?.moneyFormat()}'.text.bold.size(16).make() : 0.heightBox,
+
+                                /// amount
+                                isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
                               ],
                             ).p12(),
                           ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item));
@@ -276,22 +296,44 @@ class HomeView extends GetView<HomeController> {
                             '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'.text.minFontSize(10).size(10).make(),
                           ]).p8(),
                         ).onTap(() async => await controller.onCalenderGoDate(item)),
-                        indexedItemBuilder: (context, item, index) => SizedBox(
-                          width: double.infinity,
-                          child: Row(
-                            children: [
-                              VStack([
-                                '${item.note}'.text.make().pOnly(bottom: 8),
-                                HStack([
-                                  Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, size: 12, color: item.category?.color?.fromHex).pOnly(right: 8),
-                                  '${item.categoryName}'.text.size(12).make(),
+                        indexedItemBuilder: (context, item, index) {
+                          final isTypeNotes = item.categoryName?.contains('Notes') ?? false;
+                          return Container(
+                            color: isTypeNotes ? AppColor.noteColor : null,
+                            width: double.infinity,
+                            child: Row(
+                              children: [
+                                VStack([
+                                  /// note
+                                  '${item.note}'.text.bold.make().pOnly(bottom: 8),
+
+                                  /// detail
+                                  item.detail.isNotEmptyAndNotNull
+                                      ? '${item.detail}'
+                                          //
+                                          .text
+                                          .size(12)
+                                          .color(isTypeNotes ? Vx.neutral300 : Vx.neutral500)
+                                          .make()
+                                          .pOnly(bottom: 8)
+                                      : 0.heightBox,
+
+                                  /// category
+                                  HStack([
+                                    Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, size: 12, color: item.category?.color?.fromHex).pOnly(right: 8),
+                                    '${item.categoryName}'.text.size(12).make(),
+                                    12.widthBox,
+                                    isTypeNotes ? '(${item.createdAt?.reformatDate(to: 'HH:mm')})'.text.size(11).minFontSize(11).make() : 0.heightBox,
+                                  ]),
                                 ]),
-                              ]),
-                              Spacer(),
-                              '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
-                            ],
-                          ).p12(),
-                        ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item)),
+
+                                /// amount
+                                Spacer(),
+                                isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
+                              ],
+                            ).p12(),
+                          ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item));
+                        },
                       ).pSymmetric(v: 8).expand(),
               ),
 
