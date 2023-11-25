@@ -12,6 +12,7 @@ mixin MyDecoration {
     Widget? prefixIcon,
     Widget? icon,
     String? label,
+    InputBorder? border,
     EdgeInsetsGeometry? contentPadding,
   }) {
     return InputDecoration(
@@ -19,8 +20,8 @@ mixin MyDecoration {
       fillColor: fillColor ?? AppColor.textFieldPrimary,
       hintText: hint,
       hintStyle: TextStyle(fontSize: 13),
-      border: OutlineInputBorder(borderSide: BorderSide.none),
-      enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
+      border: border ?? OutlineInputBorder(borderSide: BorderSide.none),
+      enabledBorder: border ?? OutlineInputBorder(borderSide: BorderSide.none),
       disabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
       focusedBorder: OutlineInputBorder(borderSide: BorderSide.none),
       focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide.none),

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_month_picker/flutter_month_picker.dart';
 
 import 'package:get/get.dart';
+import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../core/app_color.dart';
 import '../../core/const.dart';
@@ -67,9 +69,16 @@ class FilteringView extends GetView<FilteringController> {
   Widget bodyContent() {
     return VStack(
       [
-        Container(
+        GlassContainer(
+          color: AppColor.cardHeaderPrimary,
           width: double.infinity,
-          decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 2),
+          blur: 50,
+          border: Border.all(color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20)),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColor.cardHeaderPrimary, Get.theme.scaffoldBackgroundColor],
+          ),
           child: VStack(
             [
               'Filter Settings'.text.bold.make().pOnly(bottom: 12),
@@ -204,15 +213,15 @@ class FilteringView extends GetView<FilteringController> {
 
           // ~
           onEmpty: ExUiErrorOrEmpty(
-            illustration: Icon(CupertinoIcons.list_bullet),
+            illustration: Lottie.asset('assets/lottie/empty-1.json', width: 150, reverse: true),
             title: 'No Data',
-            bgColor: AppColor.emptyStatePrimary,
+            // bgColor: AppColor.emptyStatePrimary,
           ).expand(),
           onError: (e) => ExUiErrorOrEmpty(
             illustration: Icon(CupertinoIcons.wifi_slash),
             title: 'Offline',
             message: 'No Internet',
-            bgColor: AppColor.emptyStatePrimary,
+            // bgColor: AppColor.emptyStatePrimary,
           ).expand(),
         ),
       ],

@@ -140,6 +140,7 @@ class ViewPieChart extends GetView<SummaryController> {
         dataLabelMapper: (ChartSampleData data, _) => data.name,
         radius: '55%',
         pointColorMapper: (datum, index) => datum.color?.fromHex,
+        animationDuration: 500,
         dataLabelSettings: DataLabelSettings(
           isVisible: true,
           labelIntersectAction: LabelIntersectAction.hide,

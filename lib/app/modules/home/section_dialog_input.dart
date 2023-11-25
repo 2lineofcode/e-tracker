@@ -49,28 +49,24 @@ mixin HomeDialogInput {
               'Edit Category',
               style: TextStyle(fontWeight: FontWeight.bold),
             ).pOnly(bottom: 24),
-            TextField(
+            CupertinoTextField(
               controller: _tfCatName,
-              decoration: MyDecoration.input(
-                hint: 'Name',
-                label: 'Category Name',
-                suffixIcon: Icon(CupertinoIcons.textformat_abc, size: 16, color: AppColor.textReverse),
-              ),
-              style: TextStyle(fontSize: 13),
+              placeholder: 'Category Name',
+              placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+              prefix: Icon(CupertinoIcons.number, size: 16, color: AppColor.textReverse).pOnly(left: 8),
+              style: TextStyle(fontSize: 13, color: AppColor.textReverse),
             ).pOnly(bottom: 12),
-            TextField(
+            CupertinoTextField(
               controller: _tfMaxBudget,
-              decoration: MyDecoration.input(
-                hint: '1.000.000',
-                label: 'Max Budget (Monthtly)',
-                suffixIcon: Icon(CupertinoIcons.archivebox_fill, size: 16, color: AppColor.textReverse),
-              ),
+              placeholder: 'Max Budget (Monthtly)',
+              placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+              prefix: Icon(CupertinoIcons.money_dollar, size: 16, color: AppColor.textReverse).pOnly(left: 8),
+              style: TextStyle(fontSize: 13, color: AppColor.textReverse),
               inputFormatters: [
                 CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
                 LengthLimitingTextInputFormatter(13),
               ],
               keyboardType: TextInputType.number,
-              style: TextStyle(fontSize: 13),
             ).pOnly(bottom: 8),
             HStack(
               [
@@ -235,26 +231,27 @@ mixin HomeDialogInput {
     final _tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
     final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
     ExAlert.adaptive(
+      title: Text(
+        '${expense != null ? 'Edit Expense' : 'Add Expense'}',
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textAlign: TextAlign.left,
+      ).pOnly(bottom: 16),
       content: VStack(
         [
-          Text(
-            '${expense != null ? 'Edit Expense' : 'Add Expense'}',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ).pOnly(bottom: 24),
-
           /// field select date: edit mode only
           if (expense != null) ...[
-            TextField(
+            CupertinoTextField(
               controller: _tfDate,
               readOnly: true,
-              decoration: MyDecoration.input(
-                hint: 'Date',
-                label: 'Date',
-                suffixIcon: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse),
+              placeholder: 'Date',
+              placeholderStyle: TextStyle(fontSize: 13),
+              prefix: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse).pOnly(left: 8),
+              style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+              onTap: () => ExDatePicker.adaptiveDatePicker(
+                minDate: DateTime(2020),
+                callback: (c) => _tfDate.text = c.toStringEx(format: yMd),
               ),
-              style: TextStyle(fontSize: 13),
-              onTap: () => ExDatePicker.materialDatePicker(callback: (c) => _tfDate.text = c.toStringEx(format: yMd)),
-            ).wh(250, 42).pOnly(bottom: 16),
+            ).pOnly(bottom: 16),
           ],
           MyAutoComplete(
             autofocus: expense == null,
@@ -263,14 +260,7 @@ mixin HomeDialogInput {
               if (s.text.isBlank!) return [];
               return await _repo.findAutoCompleteStringNote(s.text);
             },
-            decoration: MyDecoration.input(
-              hint: 'Nasi Padang',
-              label: 'Notes',
-              suffixIcon: IconButton(
-                icon: Icon(CupertinoIcons.doc_plaintext, size: 16, color: AppColor.textReverse),
-                onPressed: () async => isShowDetail.value = !isShowDetail.value,
-              ),
-            ),
+            hint: 'Note: Nasi Padang',
             onChanged: (s) => _tfNote.text = s,
             onSelected: (s) async {
               _tfNote.text = s;
@@ -279,20 +269,33 @@ mixin HomeDialogInput {
                 _tfAmount.text = res[0].amount?.toInt()?.moneyFormat() ?? '';
               });
             },
-          ).wh(250, 42).pOnly(bottom: 16),
+          ),
+
+          HStack(
+            [
+              Spacer(),
+              Text(
+                'with Detail?',
+                style: TextStyle(fontSize: 11, decoration: TextDecoration.underline),
+              ).onInkTap(() {
+                isShowDetail.value = !isShowDetail.value;
+              }),
+            ],
+          ).pOnly(bottom: 12, top: 3),
 
           /// description / detail
           Obx(
             () => Visibility(
               visible: isShowDetail.value,
-              child: TextField(
+              child: CupertinoTextField(
                 controller: _tfDescription,
-                decoration: MyDecoration.input(
-                  hint: 'Nama Toko/Waktu',
-                  label: 'Detail',
-                ),
-                style: TextStyle(fontSize: 13),
-              ).wh(250, 42).pOnly(bottom: 16),
+                placeholder: 'Detail: Nama Toko/Waktu',
+                placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+                style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+                minLines: 2,
+                maxLines: 2,
+                clearButtonMode: OverlayVisibilityMode.editing,
+              ).pOnly(bottom: 16),
             ),
           ),
 
@@ -301,11 +304,22 @@ mixin HomeDialogInput {
             () => DropdownButtonFormField(
               value: '${_tfCategory.value}',
               style: TextStyle(fontSize: 12, color: AppColor.textReverse),
-              decoration: MyDecoration.input(label: 'Category'),
+              decoration: MyDecoration.input(
+                fillColor: Get.isDarkMode ? Vx.black : Vx.white,
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    style: BorderStyle.solid,
+                    color: Get.isDarkMode ? Vx.neutral800 : Vx.neutral300,
+                  ),
+                ),
+              ),
+              icon: 0.heightBox,
               items: _controller.categoryList.map((element) {
                 return DropdownMenuItem(
                   value: '${element.name}',
                   child: HStack(
+                    alignment: MainAxisAlignment.spaceEvenly,
                     [
                       Icon(
                         element.icon?.getIconData() ?? Icons.circle_outlined,
@@ -318,53 +332,47 @@ mixin HomeDialogInput {
                 );
               }).toList(),
               onChanged: (s) => _tfCategory.value = s ?? '',
-            ).wh(250, 42).pOnly(bottom: 16),
+            ).wh(double.infinity, 32).pOnly(bottom: 16),
           ),
 
           /// field amount
-          HStack(
-            [
-              TextField(
-                controller: _tfAmount,
-                decoration: MyDecoration.input(
-                  hint: '10.000',
-                  label: 'Amount',
-                  suffixIcon: IconButton(
-                    icon: Icon(fontAwesomeIcons['calculator'], size: 14, color: AppColor.textReverse),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        isScrollControlled: true,
-                        context: Get.context!,
-                        builder: (context) => FractionallySizedBox(
-                          heightFactor: 0.7,
-                          child: SimpleCalculator(
-                            autofocus: true,
-                            hideSurroundingBorder: true,
-                            value: _tfAmount.text.moneyUnformat()?.toDouble() ?? 0.0,
-                            onTappedDisplay: (p0, p1) => Get.back(),
-                            onChanged: (key, value, expression) {
-                              final moneyFormat = value!.toString().toInt()?.moneyFormat() ?? '';
-                              _tfAmount.text = moneyFormat;
-                            },
-                          ),
-                        ),
-                      );
-                    },
+          CupertinoTextField(
+            controller: _tfAmount,
+            placeholder: 'Rp. 10.000',
+            placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+            style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+            prefix: IconButton(
+              icon: Icon(fontAwesomeIcons['calculator'], size: 14, color: AppColor.textReverse),
+              onPressed: () {
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  context: Get.context!,
+                  builder: (context) => FractionallySizedBox(
+                    heightFactor: 0.7,
+                    child: SimpleCalculator(
+                      autofocus: true,
+                      hideSurroundingBorder: true,
+                      value: _tfAmount.text.moneyUnformat()?.toDouble() ?? 0.0,
+                      onTappedDisplay: (p0, p1) => Get.back(),
+                      onChanged: (key, value, expression) {
+                        final moneyFormat = value!.toString().toInt()?.moneyFormat() ?? '';
+                        _tfAmount.text = moneyFormat;
+                      },
+                    ),
                   ),
-                ),
-                style: TextStyle(fontSize: 13),
-                inputFormatters: [
-                  CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
-                  LengthLimitingTextInputFormatter(13),
-                ],
-                keyboardType: TextInputType.number,
-                onSubmitted: (_) async => {
-                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
-                  await customCallback?.call(),
-                },
-              ).wh(230, 42),
+                );
+              },
+            ),
+            inputFormatters: [
+              CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
+              LengthLimitingTextInputFormatter(13),
             ],
-          ).pOnly(bottom: 8),
+            keyboardType: TextInputType.number,
+            onSubmitted: (_) async => {
+              await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
+              await customCallback?.call(),
+            },
+          ).h(32),
         ],
       ),
       actions: [
@@ -406,6 +414,8 @@ mixin HomeDialogInput {
       note: '${tfNote.toTitleCase}',
       detail: tfDescription ?? '',
     );
+
+    if (entity.categoryName == 'Notes') entity.amount = 0;
 
     try {
       expense != null ? await _repo.editExpense(entity) : await _repo.addExpense(entity);

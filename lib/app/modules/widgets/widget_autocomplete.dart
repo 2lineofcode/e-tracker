@@ -1,7 +1,11 @@
 import 'dart:async';
 
+import 'package:ex/ex.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+
+import '../../core/app_color.dart';
 
 class MyAutoComplete extends StatelessWidget {
   const MyAutoComplete({
@@ -9,21 +13,26 @@ class MyAutoComplete extends StatelessWidget {
     this.initialValue,
     required this.asyncSuggestions,
     this.autofocus = false,
-    this.decoration,
     this.onSelected,
     this.onChanged,
     this.onSubmitted,
+    this.prefix,
+    this.suffix,
+    this.hint,
   });
 
   final TextEditingValue? initialValue;
 
   final FutureOr<Iterable<String>> Function(TextEditingValue) asyncSuggestions;
-  final InputDecoration? decoration;
-
   final void Function(String)? onSelected;
   final void Function(String)? onChanged;
   final Function(String)? onSubmitted;
   final bool autofocus;
+
+  /// custom
+  final Widget? prefix;
+  final Widget? suffix;
+  final String? hint;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +41,7 @@ class MyAutoComplete extends StatelessWidget {
       optionsBuilder: asyncSuggestions,
       onSelected: onSelected,
       fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-        return TextField(
+        return CupertinoTextField(
           autofocus: autofocus,
           controller: textEditingController,
           focusNode: focusNode,
@@ -41,8 +50,12 @@ class MyAutoComplete extends StatelessWidget {
             onSubmitted?.call(value),
           },
           onChanged: onChanged,
-          decoration: decoration,
-          style: TextStyle(fontSize: 13),
+          style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+          suffix: suffix,
+          prefix: prefix,
+          placeholder: hint,
+          placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+          clearButtonMode: OverlayVisibilityMode.editing,
         );
       },
       optionsViewBuilder: (context, onSelected, options) {

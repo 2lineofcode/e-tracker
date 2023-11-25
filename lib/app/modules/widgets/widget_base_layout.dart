@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 
 import '../../core/app_color.dart';
 
@@ -13,7 +14,7 @@ class MyLayout extends StatelessWidget {
     this.appBarLeading,
     this.appBarAction,
     required this.sideMenuContent,
-    this.sideMenuWidht,
+    this.sideMenuWidth,
     this.sideMenuColor,
     required this.bodyContent,
     required this.footerContent,
@@ -31,7 +32,7 @@ class MyLayout extends StatelessWidget {
 
   // sideMenu
   final Widget sideMenuContent;
-  final double? sideMenuWidht;
+  final double? sideMenuWidth;
   final Color? sideMenuColor;
 
   // body
@@ -57,7 +58,7 @@ class MyLayout extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           /// row 1 -> Desktop
-          if (!context.isMobile) sideMenu().wh(sideMenuWidht ?? 255, double.infinity),
+          if (!context.isMobile) sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
 
           /// row 2
           VStack(
@@ -78,8 +79,20 @@ class MyLayout extends StatelessWidget {
   }
 
   Widget sideMenu() {
-    return Container(
+    return GlassContainer(
       color: AppColor.sideMenuPrimary,
+      borderRadius: BorderRadius.all(Radius.circular(0)),
+      border: Border.all(color: Colors.transparent),
+      blur: 50,
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Get.theme.scaffoldBackgroundColor,
+          AppColor.sideMenuPrimary,
+          // AppColor.sideMenuSecondary,
+        ],
+      ),
       width: 250,
       height: double.infinity,
       child: VStack([

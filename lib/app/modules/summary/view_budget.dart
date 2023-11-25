@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 
 import '../../core/app_color.dart';
 import '../../helpers/helper_misc.dart';
@@ -36,9 +37,21 @@ class ViewBudget extends GetView<SummaryController> {
   }
 
   Widget headerAllYear() {
-    return Container(
+    return GlassContainer(
       width: double.infinity,
-      decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+      // decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+      color: AppColor.cardHeaderPrimary,
+      blur: 50,
+      border: Border.all(color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20)),
+      borderRadius: BorderRadius.all(Radius.circular(4)),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AppColor.cardHeaderPrimary,
+          Get.theme.scaffoldBackgroundColor,
+        ],
+      ),
       child: VStack(
         [
           'Total Expense ${controller.yearSelected}'.text.size(12).make().pOnly(bottom: 8),
@@ -77,18 +90,40 @@ class ViewBudget extends GetView<SummaryController> {
 
   Widget headerPerMonth() {
     if (controller.countBudget.value.isZero) {
-      return Container(
+      return GlassContainer(
         width: double.infinity,
-        decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+        color: AppColor.cardHeaderPrimary,
+        blur: 50,
+        border: Border.all(color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20)),
+        borderRadius: BorderRadius.all(Radius.circular(4)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColor.cardHeaderPrimary,
+            Get.theme.scaffoldBackgroundColor,
+          ],
+        ),
         child: VStack([
           'Total:'.text.make().pOnly(bottom: 8),
           '${controller.countOnly1Month.value.moneyFormat()}'.text.bold.make(),
         ]).p12(),
       );
     }
-    return Container(
+    return GlassContainer(
       width: double.infinity,
-      decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+      color: AppColor.cardHeaderPrimary,
+      blur: 50,
+      border: Border.all(color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20)),
+      borderRadius: BorderRadius.all(Radius.circular(4)),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AppColor.cardHeaderPrimary,
+          Get.theme.scaffoldBackgroundColor,
+        ],
+      ),
       child: VStack(
         [
           /// col1
