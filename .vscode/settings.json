@@ -8,7 +8,7 @@
         "**/Thumbs.db": true,
         ".idea": true,
         ".dart_**": true,
-        "firebase**": false,
+        "firebase**": true,
         ".firebase**": true,
         ".flutter-**": true,
         "linux": true,
@@ -16,7 +16,7 @@
         "windows": true,
         "macos": true,
         "ios": true,
-        "web": true,
+        "web": false,
         "build": true
     },
     "explorerExclude.backup": {}

@@ -1,3 +1,4 @@
+import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -9,15 +10,12 @@ mixin AppTheme {
   // light
   // —————————————————————————————————————————————————————————————————————————————
   static final light = ThemeData.light(useMaterial3: true).copyWith(
+    /// light -> appbar
     appBarTheme: AppBarTheme(
       elevation: 0,
       centerTitle: false,
-      // backgroundColor: Colors.transparent,
-      // foregroundColor: Colors.white,
       iconTheme: IconThemeData(color: Colors.white),
-      titleTextStyle: TextStyle(
-        color: Colors.white,
-      ),
+      titleTextStyle: TextStyle(color: Colors.white),
     ),
   );
 

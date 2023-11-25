@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
+import 'package:keymap/keymap.dart';
 
+import '../../../shortcut.dart';
 import '../../core/app_color.dart';
 
 class MyLayout extends StatelessWidget {
@@ -47,33 +49,38 @@ class MyLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      /// drawer -> Mobile
-      drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
+    return KeyboardWidget(
+      columnCount: 2,
+      bindings: keyBindings,
+      hasFocus: true,
+      child: Scaffold(
+        /// drawer -> Mobile
+        drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
 
-      /// appbar -> Mobile
-      appBar: context.isMobile ? myAppBarMobile() : null,
-      floatingActionButton: floatingActionButton?.pOnly(bottom: 16),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// row 1 -> Desktop
-          if (!context.isMobile) sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
+        /// appbar -> Mobile
+        appBar: context.isMobile ? myAppBarMobile() : null,
+        floatingActionButton: floatingActionButton?.pOnly(bottom: 16),
+        body: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// row 1 -> Desktop
+            if (!context.isMobile) sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
 
-          /// row 2
-          VStack(
-            [
-              /// appbar -> Desktop
-              if (!context.isMobile) myAppBarDesktop(),
+            /// row 2
+            VStack(
+              [
+                /// appbar -> Desktop
+                if (!context.isMobile) myAppBarDesktop(),
 
-              /// body
-              body().expand(),
+                /// body
+                body().expand(),
 
-              /// footer
-              footer(),
-            ],
-          ).expand(),
-        ],
+                /// footer
+                footer(),
+              ],
+            ).expand(),
+          ],
+        ),
       ),
     );
   }
