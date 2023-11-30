@@ -285,7 +285,7 @@ mixin HomeDialogInput {
                 isShowDetail.value = !isShowDetail.value;
               }),
             ],
-          ).pOnly(bottom: 12, top: 3),
+          ).pOnly(bottom: 12, top: 6),
 
           /// description / detail
           Obx(
