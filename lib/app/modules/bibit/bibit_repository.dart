@@ -1,13 +1,16 @@
-import 'dart:io';
-
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../core/app_base.dart';
+import '../../models/bibit_allocation_summary_entity.dart';
+import '../../models/bibit_chart_entity.dart';
+import '../../models/bibit_index_indices_entity.dart';
 import '../../models/bibit_portpolio_entity.dart';
 import '../../models/bibit_portpolio_performance_chart_entity.dart';
+import '../../models/bibit_stock_tranding_entity.dart';
+import '../../models/bibit_stock_watchlist_entity.dart';
 import '../../models/bibit_watchlist_entity.dart';
-import '../../models/cnbc_entity.dart';
+import '../../models/pintu_price_changes_entity.dart';
+import '../../models/pintu_supported_currencies_entity.dart';
 
 class BibitRepository {
   List<Map<String, Object>> menuList() {
@@ -19,16 +22,10 @@ class BibitRepository {
   }
 
   ///ihsg
-  Future<CnbcMarketEntity> getIHSG() async {
+  Future<BibitChartData> getIHSG() async {
     try {
-      final res = await ExHttp().post(
-        dotenv.get('CNBC_IHSG_URL'),
-        header: {
-          HttpHeaders.acceptHeader: 'application/json',
-          HttpHeaders.authorizationHeader: dotenv.get('CNBC_DEFAULT_TOKEN'),
-        },
-      );
-      return CnbcMarketEntity.fromJson(res.body);
+      final res = await api.get('/stocks/companies/IHSG/charts?period=1d');
+      return BibitChartEntity.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
     }
@@ -59,6 +56,69 @@ class BibitRepository {
     try {
       final res = await api.get('/watchlists?instrument_group=$instrumentGroup');
       return BibitWatchlistEntity.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getIndeksIndices
+  Future<List<BibitIndexIndicesData>> getIndexIndices() async {
+    try {
+      final res = await api.get('/stocks/indices?type=main');
+      return BibitIndexIndices.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getAllocationSummary
+  Future<BibitAllocationSummaryData> getAllocationSummary() async {
+    try {
+      final res = await api.get('/portfolio/allocations/summary');
+      return BibitAllocationSummary.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getStockTranding
+  Future<List<BibitStockTrandingData>> getStockTranding() async {
+    try {
+      final res = await api.get('/stocks/companies/trending');
+      return BibitStockTranding.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getStockWatchList
+  Future<List<BibitStockWatchlistData>> getStockWatchList() async {
+    try {
+      final res = await api.get('/watchlists?instrument_group=2');
+      return BibitStockWatchlist.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// ------------------------------------------------------------------------
+  /// p i n t u
+  /// ------------------------------------------------------------------------
+  /// getSupportedCurrencies
+  Future<List<PintuSupportedCurrenciesPayload>> getSupportedCurrencies() async {
+    try {
+      final res = await api.get('https://api.pintu.co.id/v2/wallet/supportedCurrencies');
+      return PintuSupportedCurrencies.fromJson(res.body).payload!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getPriceChanges
+  Future<List<PintuPriceChangesPayload>> getPriceChanges() async {
+    try {
+      final res = await api.get('https://api.pintu.co.id/v2/trade/price-changes');
+      return PintuPriceChanges.fromJson(res.body).payload!;
     } catch (e) {
       throw ApiException('$e');
     }

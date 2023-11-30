@@ -4,9 +4,9 @@ import 'package:get/get.dart';
 
 import '../../core/app_color.dart';
 import '../widgets/widgets.dart';
-import '_explore/section_bibit_explore.dart';
+import '_explore/section_bibit_explore_view.dart';
 import '_home/section_bibit_home_view.dart';
-import '_portfolio/section_bibit_portfolio.dart';
+import '_portfolio/section_bibit_portfolio_view.dart';
 import 'bibit_controller.dart';
 
 class BibitView extends GetView<BibitController> {
@@ -64,11 +64,11 @@ class BibitView extends GetView<BibitController> {
   Widget bodyContent() {
     switch (controller.menuSelected.value) {
       case 'Home':
-        return controller.obx((state) => SectionBibitHome());
+        return controller.obx((state) => SectionBibitHomeView());
       case 'Portfolio':
-        return controller.obx((state) => SectionBibitPorfolio());
+        return controller.obx((state) => SectionBibitPorfolioView());
       case 'Explore':
-        return controller.obx((state) => SectionBibitExplore());
+        return controller.obx((state) => SectionBibitExploreView());
       default:
         return Container();
     }

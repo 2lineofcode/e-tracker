@@ -2,11 +2,8 @@ import 'dart:ui';
 import '../core/app_color.dart';
 
 mixin BibitHelper {
-  /// isWeekday
-  static final isWeekday = DateTime.now().weekday >= 1 && DateTime.now().weekday <= 5;
-
   /// isStockMarketOpen
-  static bool isStockMarketOpen() {
+  static bool get isStockMarketOpen {
     final now = DateTime.now();
     final dayOfWeek = now.weekday;
     final currentHour = now.hour;

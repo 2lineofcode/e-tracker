@@ -49,7 +49,7 @@ class MyLayout extends StatelessWidget {
     return Scaffold(
       /// drawer -> Mobile
       drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
-    
+
       /// appbar -> Mobile
       appBar: context.isMobile ? myAppBarMobile() : null,
       floatingActionButton: floatingActionButton?.pOnly(bottom: 16),
@@ -58,16 +58,16 @@ class MyLayout extends StatelessWidget {
         children: [
           /// row 1 -> Desktop
           if (!context.isMobile) sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
-    
+
           /// row 2
           VStack(
             [
               /// appbar -> Desktop
               if (!context.isMobile) myAppBarDesktop(),
-    
+
               /// body
               body().expand(),
-    
+
               /// footer
               footer(),
             ],
