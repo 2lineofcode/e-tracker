@@ -4,9 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
-import 'package:keymap/keymap.dart';
-
-import '../../../shortcut.dart';
 import '../../core/app_color.dart';
 
 class MyLayout extends StatelessWidget {
@@ -26,14 +23,14 @@ class MyLayout extends StatelessWidget {
   });
 
   // appBar
-  final Widget appBarTitle;
+  final Widget? appBarTitle;
   final Widget? appBarLeading;
   final bool isShowAppBarLeading;
 
   final Widget? appBarAction;
 
   // sideMenu
-  final Widget sideMenuContent;
+  final Widget? sideMenuContent;
   final double? sideMenuWidth;
   final Color? sideMenuColor;
 
@@ -49,38 +46,33 @@ class MyLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardWidget(
-      columnCount: 2,
-      bindings: keyBindings,
-      hasFocus: true,
-      child: Scaffold(
-        /// drawer -> Mobile
-        drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
-
-        /// appbar -> Mobile
-        appBar: context.isMobile ? myAppBarMobile() : null,
-        floatingActionButton: floatingActionButton?.pOnly(bottom: 16),
-        body: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// row 1 -> Desktop
-            if (!context.isMobile) sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
-
-            /// row 2
-            VStack(
-              [
-                /// appbar -> Desktop
-                if (!context.isMobile) myAppBarDesktop(),
-
-                /// body
-                body().expand(),
-
-                /// footer
-                footer(),
-              ],
-            ).expand(),
-          ],
-        ),
+    return Scaffold(
+      /// drawer -> Mobile
+      drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
+    
+      /// appbar -> Mobile
+      appBar: context.isMobile ? myAppBarMobile() : null,
+      floatingActionButton: floatingActionButton?.pOnly(bottom: 16),
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// row 1 -> Desktop
+          if (!context.isMobile) sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
+    
+          /// row 2
+          VStack(
+            [
+              /// appbar -> Desktop
+              if (!context.isMobile) myAppBarDesktop(),
+    
+              /// body
+              body().expand(),
+    
+              /// footer
+              footer(),
+            ],
+          ).expand(),
+        ],
       ),
     );
   }
@@ -104,7 +96,7 @@ class MyLayout extends StatelessWidget {
       height: double.infinity,
       child: VStack([
         kIsWeb ? 8.heightBox : 32.heightBox,
-        sideMenuContent,
+        sideMenuContent ?? Container(),
       ]),
     );
   }

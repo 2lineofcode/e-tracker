@@ -27,30 +27,27 @@ class SettingsView extends GetView<SettingsController> {
   }
 
   Widget sideMenuContent() {
-    return VStack([
-      16.heightBox,
-      Obx(
-        () => ListView.builder(
-          physics: NeverScrollableScrollPhysics(),
-          itemCount: controller.menuList.length,
-          itemBuilder: (context, index) {
-            final item = controller.menuList[index];
-            return Obx(
-              () => InkWell(
-                onTap: () => controller.onMenuChange(item),
-                child: Container(
-                  decoration: ExDecorator.box(
-                    fillColor: item == controller.menuSelected.value ? AppColor.sideMenuSelected : Colors.transparent,
-                    borderColor: Colors.transparent,
-                  ),
-                  child: '$item'.text.size(11).make().p8(),
-                ).pSymmetric(h: 10).pOnly(bottom: 8),
-              ),
-            );
-          },
-        ).expand(),
-      ),
-    ]).expand();
+    return Obx(
+      () => ListView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        itemCount: controller.menuList.length,
+        itemBuilder: (context, index) {
+          final item = controller.menuList[index];
+          return Obx(
+            () => InkWell(
+              onTap: () => controller.onMenuChange(item),
+              child: Container(
+                decoration: ExDecorator.box(
+                  fillColor: item == controller.menuSelected.value ? AppColor.sideMenuSelected : Colors.transparent,
+                  borderColor: Colors.transparent,
+                ),
+                child: '$item'.text.size(11).make().p8(),
+              ).pSymmetric(h: 10).pOnly(bottom: 8),
+            ),
+          );
+        },
+      ).pOnly(top: 16).expand(),
+    );
   }
 
   Widget bodyContent() {

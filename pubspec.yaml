@@ -16,6 +16,7 @@ dependencies:
   # ui
   ex: ^0.5.7
   cupertino_icons: ^1.0.6
+  flutter_svg: ^2.0.9
   table_calendar: ^3.0.9
   grouped_list: ^5.1.2
   window_manager: ^0.3.7
@@ -35,7 +36,6 @@ dependencies:
   intl: ^0.18.1
   currency_text_input_formatter: ^2.1.10
   uuid: ^4.2.1
-  keymap: ^0.0.92
 
   # misc 
   flutter_simple_calculator: ^2.2.4
@@ -58,6 +58,7 @@ flutter:
   - .env
   - .env.local
   - assets/lottie/
+  - assets/icons/
 
 get_cli: 
   sub_folder: false

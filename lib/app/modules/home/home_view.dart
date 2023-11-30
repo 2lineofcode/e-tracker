@@ -1,8 +1,11 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_popup/flutter_popup.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:lottie/lottie.dart';
@@ -76,6 +79,12 @@ class HomeView extends GetView<HomeController> {
             onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
           ).wh(150, 30).pSymmetric(h: 8),
         ],
+
+        IconButton(
+          icon: SvgPicture.asset('assets/icons/ic_robo.svg', width: 22, color: Get.isDarkMode ? Colors.white70 : Colors.white),
+          onPressed: () => Get.toNamed(Routes.BIBIT),
+        ).pOnly(right: 4),
+
         IconButton(
           icon: Icon(CupertinoIcons.settings, size: 22),
           onPressed: () => Get.toNamed(Routes.SETTINGS),
@@ -213,8 +222,15 @@ class HomeView extends GetView<HomeController> {
                                 borderRadius: 90,
                                 borderColor: controller.countOfDay.value.getFlagColorLight(),
                               ),
-                              child:
-                                  '${controller.countOfDay.value.getFlagText()} Day'.text.size(12).minFontSize(12).color(controller.countOfDay.value.getFlagColorLight()).make().p4().pSymmetric(h: 4),
+                              child: '${controller.countOfDay.value.getFlagText()} Day'
+                                  //
+                                  .text
+                                  .size(12)
+                                  .minFontSize(12)
+                                  .color(controller.countOfDay.value.getFlagColorLight())
+                                  .make()
+                                  .p4()
+                                  .pSymmetric(h: 4),
                             ),
                           ),
                         ],
