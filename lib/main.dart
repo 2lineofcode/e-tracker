@@ -17,14 +17,14 @@ import 'app/routes/app_pages.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initAppConfig();
   await initAppService();
+  await initForDesktop();
   runApp(expenseTracker());
 }
 
-Future<void> initAppConfig() async {
+Future<void> initAppService() async {
   /// env
-  await dotenv.load(fileName: kReleaseMode ? '.env' : '.env');
+  await dotenv.load(fileName: kReleaseMode ? '.env' : '.env.local');
 
   /// supabase
   await Supabase.initialize(url: dotenv.get('SUPABASE_URL'), anonKey: dotenv.get('SUPABASE_ANON_KEY'));
@@ -32,7 +32,14 @@ Future<void> initAppConfig() async {
   /// local storage
   await GetStorage.init();
 
-  /// setup for desktop
+  /// app setting
+  Get.put(AppSettingService());
+
+  /// http
+  Get.put(ExHttp(baseURL: dotenv.get('BIBIT_API_URL')), tag: 'bibit');
+}
+
+Future<void> initForDesktop() async {
   if (isDesktop) {
     final idealSize = Size(690, 700);
     await windowManager.ensureInitialized();
@@ -54,11 +61,6 @@ Future<void> initAppConfig() async {
   }
 }
 
-Future<void> initAppService() async {
-  Get.put(AppSettingService());
-  Get.put(ExHttp(baseURL: dotenv.get('BIBIT_API_URL')), tag: 'bibit');
-}
-
 Widget expenseTracker() {
   return GestureDetector(
     onTap: () {
@@ -76,15 +78,13 @@ Widget expenseTracker() {
       builder: (context, child) {
         if (kReleaseMode) return child!;
         return Scaffold(
-          body: Stack(
-            children: [
-              child!,
-              IconButton(
-                icon: Icon(CupertinoIcons.square_stack_3d_down_right_fill),
-                onPressed: () => AppTheme.switchTheme(),
-              ).positioned(left: 72),
-            ],
-          ),
+          body: Stack(children: [
+            child!,
+            IconButton(
+              icon: Icon(CupertinoIcons.square_stack_3d_down_right_fill),
+              onPressed: () => AppTheme.switchTheme(),
+            ).positioned(left: 72),
+          ]),
         );
       },
     ),

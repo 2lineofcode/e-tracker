@@ -19,6 +19,7 @@ class MySvg extends StatelessWidget {
     return ScalableImageWidget.fromSISource(
       background: backgroundColor,
       si: ScalableImageSource.fromSvgHttpUrl(Uri.parse('$url'), warnF: (p0) {}),
+      cache: ScalableImageCache(size: 2000),
     ).wh(size, size);
   }
 }

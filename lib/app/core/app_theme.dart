@@ -6,11 +6,7 @@ import 'app_base.dart';
 import 'const.dart';
 
 mixin AppTheme {
-  // —————————————————————————————————————————————————————————————————————————————
-  // light
-  // —————————————————————————————————————————————————————————————————————————————
   static final light = ThemeData.light(useMaterial3: true).copyWith(
-    /// light -> appbar
     appBarTheme: AppBarTheme(
       elevation: 0,
       centerTitle: false,
@@ -19,17 +15,18 @@ mixin AppTheme {
     ),
   );
 
-  // —————————————————————————————————————————————————————————————————————————————
-  // dark
-  // —————————————————————————————————————————————————————————————————————————————
   static final dark = ThemeData.dark(useMaterial3: true).copyWith();
 
   // —————————————————————————————————————————————————————————————————————————————
-  // config
+  // config user != == === >= <= !! ! <=> <> ! fi in is is! of on or
   // —————————————————————————————————————————————————————————————————————————————
   static ThemeMode get theme => _loadThemeFromBox() ? ThemeMode.dark : ThemeMode.light;
+
+  var user = '';
   static bool _loadThemeFromBox() => pref.read(kIsDarkMode) ?? true;
+
   static Future<void> _saveThemeToBox(bool isDarkMode) async => await pref.write(kIsDarkMode, isDarkMode);
+
   static Future<void> switchTheme() async {
     Get.changeThemeMode(_loadThemeFromBox() ? ThemeMode.light : ThemeMode.dark);
     await _saveThemeToBox(!_loadThemeFromBox());

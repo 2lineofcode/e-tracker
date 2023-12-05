@@ -4,6 +4,7 @@ import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../helpers/helper_bibit.dart';
 import '../../../models/bibit_stock_tranding_entity.dart';
 import '../../../models/bibit_stock_watchlist_entity.dart';
 import '../../../models/pintu_list_crypto_entity.dart';
@@ -23,18 +24,23 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
   final pintuListCrypto = <PintuListCrypto>[].obs;
 
   late TabController? tabController;
-  late Timer? timerPriceChanges;
+  late Timer? timerPintuPriceChanges;
+  late Timer? timerBibitPriceChanges;
 
   @override
   Future<void> onInit() async {
     change(0, status: RxStatus.loading());
-    // bibitStockTranding.value = await repo.getStockTranding();
-    // bibitStockWatchlist.value = await repo.getStockWatchList();
+
+    /// pintu
     _pintuSupportedCurrencies.value = await repo.getSupportedCurrencies();
     _pintuPriceChanges.value = await repo.getPriceChanges();
-
     fixPintu();
     initPintuRealTimePriceChange();
+
+    /// stockbit
+    bibitStockTranding.value = await repo.getStockTranding();
+    bibitStockWatchlist.value = await repo.getStockWatchList();
+    initBibitRealTimePriceChange();
 
     tabController = TabController(length: 2, vsync: this);
     change(200, status: RxStatus.success());
@@ -72,7 +78,7 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
   }
 
   void initPintuRealTimePriceChange() {
-    timerPriceChanges = Timer.periodic(1.seconds, (timer) async {
+    timerPintuPriceChanges = Timer.periodic(1.seconds, (timer) async {
       _pintuPriceChanges.value = await repo.getPriceChanges();
       pintuListCrypto.clear();
       for (var priceChanges in _pintuPriceChanges) {
@@ -99,9 +105,19 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
     });
   }
 
+  void initBibitRealTimePriceChange() {
+    if (BibitHelper.isStockMarketOpen) {
+      timerBibitPriceChanges = Timer.periodic(1.seconds, (timer) async {
+        bibitStockTranding.value = await repo.getStockTranding();
+        bibitStockWatchlist.value = await repo.getStockWatchList();
+      });
+    }
+  }
+
   @override
   void onClose() {
-    timerPriceChanges?.cancel();
+    timerPintuPriceChanges?.cancel();
+    timerBibitPriceChanges?.cancel();
     super.onClose();
   }
 }

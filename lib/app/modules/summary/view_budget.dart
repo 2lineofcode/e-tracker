@@ -232,7 +232,7 @@ class ViewBudget extends GetView<SummaryController> {
                                 maxBudget: item.maxBudget,
                               );
 
-                              HomeDialogInput.onEditCategory(
+                              DialogInputHelper.showDialogCategory(
                                 entity: entity,
                                 callback: () async {
                                   await Get.find<HomeController>().getCategory();

@@ -12,6 +12,7 @@ dependencies:
   get_storage: ^2.1.1
   supabase_flutter: ^1.10.25
   flutter_dotenv: ^5.1.0
+  web_socket_client: ^0.1.0
 
   # ui
   ex: ^0.5.8
@@ -21,7 +22,7 @@ dependencies:
   table_calendar: ^3.0.9
   grouped_list: ^5.1.2
   window_manager: ^0.3.7
-  syncfusion_flutter_charts: ^23.2.4
+  syncfusion_flutter_charts: ^23.2.7
   flutter_popup: ^3.1.8
   flutter_iconpicker_plus: ^3.2.3
   overlayment: ^0.2.1

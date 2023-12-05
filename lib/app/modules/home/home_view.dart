@@ -63,7 +63,7 @@ class HomeView extends GetView<HomeController> {
   Widget appBarLeading() {
     return IconButton(
       icon: Icon(CupertinoIcons.add, size: 22),
-      onPressed: () => HomeDialogInput.onShowDialogExpense(),
+      onPressed: () => DialogInputHelper.showDialogExpense(),
     );
   }
 
@@ -163,7 +163,7 @@ class HomeView extends GetView<HomeController> {
                           if (item.maxBudget == null) Icon(Icons.edit, size: 16, color: AppColor.red),
                         ],
                       ),
-                      onTap: () => HomeDialogInput.onEditCategory(entity: item),
+                      onTap: () => DialogInputHelper.showDialogCategory(entity: item),
                     ).pSymmetric(h: 4);
                   },
                 ).expand(),
@@ -292,7 +292,7 @@ class HomeView extends GetView<HomeController> {
                                 isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
                               ],
                             ).p12(),
-                          ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item));
+                          ).pSymmetric(h: 8, v: 4).onInkTap(() => DialogInputHelper.showDialogExpense(expense: item));
                         },
                       ).pSymmetric(v: 8).expand()
 
@@ -348,7 +348,7 @@ class HomeView extends GetView<HomeController> {
                                 isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
                               ],
                             ).p12(),
-                          ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item));
+                          ).pSymmetric(h: 8, v: 4).onInkTap(() => DialogInputHelper.showDialogExpense(expense: item));
                         },
                       ).pSymmetric(v: 8).expand(),
               ),
@@ -407,7 +407,7 @@ class HomeView extends GetView<HomeController> {
                     label: 'Add Expense',
                     labelSize: 12,
                     labelColor: AppColor.textReverse,
-                    onPressed: () => HomeDialogInput.onShowDialogExpense(),
+                    onPressed: () => DialogInputHelper.showDialogExpense(),
                   ),
                 ],
               ),
@@ -440,7 +440,7 @@ class HomeView extends GetView<HomeController> {
         ? FloatingActionButton(
             backgroundColor: AppColor.fabPrimary,
             child: Icon(CupertinoIcons.add, color: Colors.white),
-            onPressed: () => HomeDialogInput.onShowDialogExpense(),
+            onPressed: () => DialogInputHelper.showDialogExpense(),
           ).pOnly(bottom: Get.context!.isMobile ? 90 : 68)
         : 0.heightBox);
   }

@@ -23,19 +23,18 @@ import '../widgets/widget_autocomplete.dart';
 import 'home_controller.dart';
 import 'home_repository.dart';
 
-/// * @{HomeDialogInput}
-/// ? seperate dialog input part coz this function is shared (can be use to another page)
-/// ? this code too long coz to many customize and i dont want put in controller
-/// ~
-///
-mixin HomeDialogInput {
+/// [DialogInputHelper]
+/// This class provides helper methods for dialog input functionality. 
+/// It is designed to be shared and can be used in multiple pages.
+/// The class includes methods for handling dialog categories.
+mixin DialogInputHelper {
   static final _controller = Get.find<HomeController>();
   static final _repo = Get.find<HomeRepository>();
 
   // ------------------------------------------------------------------------
   // Dialog Category
   // ------------------------------------------------------------------------
-  static Future<void> onEditCategory({CategoryEntity? entity, Function? callback}) async {
+  static Future<void> showDialogCategory({CategoryEntity? entity, Function? callback}) async {
     final _tfCatName = TextEditingController(text: entity?.name ?? '');
     final _tfCatColor = TextEditingController(text: entity?.color ?? '');
     final _tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget!.moneyFormat() : '');
@@ -218,7 +217,7 @@ mixin HomeDialogInput {
   // ------------------------------------------------------------------------
   // Dialog Expense
   // ------------------------------------------------------------------------
-  static Future<void> onShowDialogExpense({ExpenseEntity? expense, Function? customCallback}) async {
+  static Future<void> showDialogExpense({ExpenseEntity? expense, Function? customCallback}) async {
     if (_controller.categoryList.isEmptyOrNull) {
       ExSnackbar.danger('add some category first:))');
       return;

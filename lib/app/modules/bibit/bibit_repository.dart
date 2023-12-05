@@ -21,6 +21,16 @@ class BibitRepository {
     ];
   }
 
+  /// ws
+  Future<String> getWSKey() async {
+    try {
+      final res = await api.get('/stocks/auth/wskey');
+      return res.body['data']['wskey'];
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
   ///ihsg
   Future<BibitChartData> getIHSG() async {
     try {

@@ -17,6 +17,7 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
       (s) => VStack(
         [
           TabBar(
+            physics: NeverScrollableScrollPhysics(),
             controller: controller.tabController,
             indicatorColor: AppColor.noteColor,
             labelColor: AppColor.textReverse,
@@ -31,6 +32,7 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
 
           /// body
           TabBarView(
+            physics: NeverScrollableScrollPhysics(),
             controller: controller.tabController,
             children: [
               tabCrypto(),
@@ -86,6 +88,46 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
   }
 
   Widget tabStock() {
-    return Center(child: Text('coming soon'));
+    return Obx(
+      () => VStack(
+        [
+          'Tranding'.text.bold.make(),
+          ListView.builder(
+            shrinkWrap: true,
+            scrollDirection: Axis.horizontal,
+            itemCount: controller.bibitStockTranding.length,
+            itemBuilder: (context, index) {
+              final item = controller.bibitStockTranding[index];
+              return VStack(
+                [
+                  ExAvatarView(url: item.iconUrl ?? '', size: 32).pOnly(bottom: 8),
+                  '${item.symbol}'.text.size(12).bold.make(),
+                  '${item.percent?.toStringAsFixed(2)}%'.text.color(BibitHelper.getColor(item.percent)).size(11).minFontSize(11).make(),
+                ],
+                alignment: MainAxisAlignment.center,
+                crossAlignment: CrossAxisAlignment.center,
+              ).pOnly(right: 16);
+            },
+          ).h(120),
+          'Watchlist'.text.bold.make().pOnly(bottom: 12),
+          ListView.separated(
+            itemCount: controller.bibitStockWatchlist.length,
+            separatorBuilder: (context, index) => Divider(),
+            itemBuilder: (context, index) {
+              final item = controller.bibitStockWatchlist[index];
+              return HStack([
+                ExAvatarView(url: item.iconUrl ?? '', size: 32).pOnly(right: 12),
+                VStack([
+                  '${item.symbol}'.text.bold.make(),
+                  '${item.price?.moneyFormat(symbol: '')}'.text.size(12).make(),
+                ]),
+                Spacer(),
+                '${item.percent?.toStringAsFixed(2)}% ${BibitHelper.getSymbol(item.percent)}'.text.color(BibitHelper.getColor(item.percent)).make(),
+              ]);
+            },
+          ).expand(),
+        ],
+      ).pOnly(top: 16, left: 12, right: 12),
+    );
   }
 }
