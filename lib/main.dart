@@ -24,7 +24,7 @@ Future<void> main() async {
 
 Future<void> initAppConfig() async {
   /// env
-  await dotenv.load(fileName: kReleaseMode ? '.env' : '.env.local');
+  await dotenv.load(fileName: kReleaseMode ? '.env' : '.env');
 
   /// supabase
   await Supabase.initialize(url: dotenv.get('SUPABASE_URL'), anonKey: dotenv.get('SUPABASE_ANON_KEY'));

@@ -14,9 +14,10 @@ dependencies:
   flutter_dotenv: ^5.1.0
 
   # ui
-  ex: ^0.5.7
+  ex: ^0.5.8
   cupertino_icons: ^1.0.6
   flutter_svg: ^2.0.9
+  jovial_svg: ^1.1.19
   table_calendar: ^3.0.9
   grouped_list: ^5.1.2
   window_manager: ^0.3.7

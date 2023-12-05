@@ -1,14 +1,13 @@
 import 'package:ex/ex.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_color.dart';
 import '../widgets/widgets.dart';
+import '_explore/section_bibit_explore_view.dart';
+import '_home/section_bibit_home_view.dart';
+import '_portfolio/section_bibit_portfolio_view.dart';
 import 'bibit_controller.dart';
-import 'section_explore.dart';
-import 'section_home.dart';
-import 'section_portfolio.dart';
 
 class BibitView extends GetView<BibitController> {
   const BibitView({super.key});
@@ -27,11 +26,12 @@ class BibitView extends GetView<BibitController> {
     return 'Investment'.text.size(11).bold.make();
   }
 
-  IconButton appBarAction() {
-    return IconButton(
-      icon: Icon(CupertinoIcons.refresh_bold, size: 22),
-      onPressed: () {},
-    );
+  Widget appBarAction() {
+    // return IconButton(
+    //   icon: Icon(CupertinoIcons.refresh_bold, size: 22),
+    //   onPressed: () {},
+    // );
+    return Container();
   }
 
   Widget sideMenuContent() {
@@ -64,11 +64,11 @@ class BibitView extends GetView<BibitController> {
   Widget bodyContent() {
     switch (controller.menuSelected.value) {
       case 'Home':
-        return controller.obx((state) => SectionHome());
+        return controller.obx((state) => SectionBibitHomeView());
       case 'Portfolio':
-        return controller.obx((state) => SectionPorfolio());
+        return controller.obx((state) => SectionBibitPorfolioView());
       case 'Explore':
-        return controller.obx((state) => SectionExplore());
+        return controller.obx((state) => SectionBibitExploreView());
       default:
         return Container();
     }

@@ -9,7 +9,7 @@ class BibitController extends GetxController with StateMixin {
   final menuSelected = 'Home'.obs;
 
   @override
-  void onInit() {
+  Future<void> onInit() async {
     menuList.value = repo.menuList();
     change(200, status: RxStatus.success());
     super.onInit();

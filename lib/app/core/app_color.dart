@@ -68,4 +68,5 @@ mixin AppColor {
 
   /// neutral
   static Color get neutral => Get.isDarkMode ? Vx.neutral700 : Vx.neutral300;
+  static Color get neutralLight => Get.isDarkMode ? Vx.neutral300 : Vx.neutral700;
 }
