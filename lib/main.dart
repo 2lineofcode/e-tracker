@@ -13,6 +13,7 @@ import 'package:window_manager/window_manager.dart';
 import 'app/core/app_setting.dart';
 import 'app/core/app_theme.dart';
 import 'app/helpers/helper_misc.dart';
+import 'app/helpers/helper_seed.dart';
 import 'app/routes/app_pages.dart';
 
 Future<void> main() async {
@@ -24,7 +25,7 @@ Future<void> main() async {
 
 Future<void> initAppService() async {
   /// env
-  await dotenv.load(fileName: kReleaseMode ? '.env' : '.env.local');
+  await dotenv.load(fileName: kReleaseMode ? '.env' : '.env');
 
   /// supabase
   await Supabase.initialize(url: dotenv.get('SUPABASE_URL'), anonKey: dotenv.get('SUPABASE_ANON_KEY'));
@@ -37,6 +38,8 @@ Future<void> initAppService() async {
 
   /// http
   Get.put(ExHttp(baseURL: dotenv.get('BIBIT_API_URL')), tag: 'bibit');
+
+  SeedHelper.genCategory();
 }
 
 Future<void> initForDesktop() async {

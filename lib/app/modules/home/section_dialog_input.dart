@@ -24,7 +24,9 @@ import 'home_controller.dart';
 import 'home_repository.dart';
 
 /// [DialogInputHelper]
-/// This class provides helper methods for dialog input functionality. 
+/// - [showDialogCategory]
+/// - [showDialogExpense]
+/// This class provides helper methods for dialog input functionality.
 /// It is designed to be shared and can be used in multiple pages.
 /// The class includes methods for handling dialog categories.
 mixin DialogInputHelper {
@@ -59,7 +61,7 @@ mixin DialogInputHelper {
               controller: _tfMaxBudget,
               placeholder: 'Max Budget (Monthtly)',
               placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-              prefix: Icon(CupertinoIcons.money_dollar, size: 16, color: AppColor.textReverse).pOnly(left: 8),
+              prefix: Icon(CupertinoIcons.bag_fill, size: 16, color: AppColor.textReverse).pOnly(left: 8),
               style: TextStyle(fontSize: 13, color: AppColor.textReverse),
               inputFormatters: [
                 CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
@@ -386,6 +388,7 @@ mixin DialogInputHelper {
                 ],
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) async => {
+                  Get.back(),
                   await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
                   await customCallback?.call(),
                 },
@@ -399,18 +402,19 @@ mixin DialogInputHelper {
           CupertinoDialogAction(
             child: Text('Delete', style: TextStyle(color: Vx.red500, fontSize: 13)),
             onPressed: () async {
+              Get.back();
               await _repo.deleteExpense(expense.id!);
               await _controller.getExpense();
               await _controller.onCalenderRefreshEvent();
               await customCallback?.call();
               AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
-              Get.back();
             },
           ),
         ],
         CupertinoDialogAction(
           child: Text('Submit', style: TextStyle(fontSize: 13)),
           onPressed: () async {
+            Get.back();
             await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text);
             await customCallback?.call();
           },
@@ -447,6 +451,5 @@ mixin DialogInputHelper {
       AppNotif.show('$e', color: Vx.green600);
     }
     await _controller.onCalenderRefreshEvent();
-    Get.back(); // close dialog
   }
 }
