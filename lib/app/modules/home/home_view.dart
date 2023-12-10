@@ -191,7 +191,6 @@ class HomeView extends GetView<HomeController> {
       onSwipeRight: () async {
         controller.focusedDay.value = controller.focusedDay.value.subtract(1.days);
         await controller.onCalenderDayChange(controller.focusedDay.value, controller.focusedDay.value);
-
         await controller.getExpense();
       },
       child: controller.obx(
@@ -390,7 +389,17 @@ class HomeView extends GetView<HomeController> {
               bgColor: Theme.of(Get.context!).scaffoldBackgroundColor,
               illustration: Column(
                 children: [
-                  Lottie.asset('assets/lottie/empty-1.json', width: 150, reverse: true),
+                  Get.context!.isMobile
+                      ? Image.asset(
+                          'assets/icons/app_icon.png',
+                          width: 56,
+                          height: 56,
+                        ).pOnly(bottom: 16)
+                      : Lottie.asset(
+                          'assets/lottie/empty-1.json',
+                          width: 150,
+                          reverse: true,
+                        ),
                   'No Expense'.text.bold.align(TextAlign.center).make().pOnly(bottom: 8),
                   Obx(
                     () => '${controller.tfSearchExpense.value.text.isNotEmptyAndNotNull //-

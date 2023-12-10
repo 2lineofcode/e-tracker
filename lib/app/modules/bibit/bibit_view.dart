@@ -18,7 +18,7 @@ class BibitView extends GetView<BibitController> {
       appBarAction: appBarAction().pOnly(right: 4),
       sideMenuContent: sideMenuContent(),
       bodyContent: Obx(() => bodyContent().p8()),
-      footerContent: Container(),
+      footerContent: footerContent(),
     );
   }
 
@@ -72,5 +72,17 @@ class BibitView extends GetView<BibitController> {
       default:
         return Container();
     }
+  }
+
+  Widget footerContent() {
+    return HStack([
+      if (Get.context!.isMobile) ...[
+        IconButton(
+          onPressed: () => Get.back(),
+          icon: Icon(Icons.arrow_back),
+        ),
+      ],
+      Spacer(),
+    ]).p12();
   }
 }

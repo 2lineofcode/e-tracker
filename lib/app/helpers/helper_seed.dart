@@ -14,6 +14,8 @@ mixin SeedHelper {
     /// if category table is empty just return~
     if (check.isNotEmpty) return;
 
+    log('-- seed data category --');
+
     /// category table is empty, seed data
     final _catFood = CategoryEntity(
       id: UuidV4().generate(),
