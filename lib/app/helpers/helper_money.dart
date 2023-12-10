@@ -7,8 +7,8 @@ import '../core/const.dart';
 
 extension MoneyFormatExt on num {
   /// example: 1000 -> 'Rp. 1,000'
-  String moneyFormat() {
-    String formattedText = 'Rp. ${toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
+  String moneyFormat({String? symbol = 'Rp. '}) {
+    String formattedText = '$symbol${toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
     return formattedText;
   }
 
@@ -26,6 +26,11 @@ extension MoneyFormatExt on num {
     } else {
       return '${(this / 1000000000000).toStringAsFixed(0)}T';
     }
+  }
+
+  String percentageFormat({String? symbol = '%'}) {
+    String formattedText = '${(this * 100).toStringAsFixed(2).replaceAll('.00', '')}$symbol';
+    return formattedText;
   }
 }
 
@@ -67,7 +72,7 @@ extension ExpenseFlagColorExt on num {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
 
-    if (this == 0) return Vx.white;
+    if (this == 0) return Colors.white10;
     if (this <= eco) {
       return AppColor.greenDark;
     } else if (this <= average) {
@@ -83,7 +88,7 @@ extension ExpenseFlagTextExt on num {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
 
-    if (this == 0) return '';
+    if (this == 0) return 'Note';
     if (this <= eco) {
       return 'Eco';
     } else if (this <= average) {

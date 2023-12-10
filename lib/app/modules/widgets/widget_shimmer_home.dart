@@ -15,7 +15,7 @@ class MyShimmerHome extends StatelessWidget {
         HStack([
           Container(color: Colors.white).wh(100, 16).cornerRadius(2).shimmer(primaryColor: pc, secondaryColor: sc),
           Spacer(),
-          Container(color: Colors.white).wh(50, 24).cornerRadius(2).shimmer(primaryColor: pc, secondaryColor: sc),
+          Container(color: Colors.white).wh(70, 24).cornerRadius(90).shimmer(primaryColor: pc, secondaryColor: sc),
         ]),
         16.heightBox,
         ListView.builder(

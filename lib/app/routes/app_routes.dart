@@ -7,6 +7,7 @@ abstract class Routes {
   static const SUMMARY = _Paths.SUMMARY;
   static const SETTINGS = _Paths.SETTINGS;
   static const FILTERING = _Paths.FILTERING;
+  static const BIBIT = _Paths.BIBIT;
 }
 
 abstract class _Paths {
@@ -15,4 +16,5 @@ abstract class _Paths {
   static const SUMMARY = '/summary';
   static const SETTINGS = '/settings';
   static const FILTERING = '/filtering';
+  static const BIBIT = '/bibit';
 }

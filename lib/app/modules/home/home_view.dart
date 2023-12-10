@@ -1,8 +1,11 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_popup/flutter_popup.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:lottie/lottie.dart';
@@ -60,7 +63,7 @@ class HomeView extends GetView<HomeController> {
   Widget appBarLeading() {
     return IconButton(
       icon: Icon(CupertinoIcons.add, size: 22),
-      onPressed: () => HomeDialogInput.onShowDialogExpense(),
+      onPressed: () => DialogInputHelper.showDialogExpense(),
     );
   }
 
@@ -76,6 +79,12 @@ class HomeView extends GetView<HomeController> {
             onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
           ).wh(150, 30).pSymmetric(h: 8),
         ],
+
+        IconButton(
+          icon: SvgPicture.asset('assets/icons/ic_robo.svg', width: 22, color: Get.isDarkMode ? Colors.white70 : Colors.white),
+          onPressed: () => Get.toNamed(Routes.BIBIT),
+        ).pOnly(right: 4),
+
         IconButton(
           icon: Icon(CupertinoIcons.settings, size: 22),
           onPressed: () => Get.toNamed(Routes.SETTINGS),
@@ -154,7 +163,7 @@ class HomeView extends GetView<HomeController> {
                           if (item.maxBudget == null) Icon(Icons.edit, size: 16, color: AppColor.red),
                         ],
                       ),
-                      onTap: () => HomeDialogInput.onEditCategory(entity: item),
+                      onTap: () => DialogInputHelper.showDialogCategory(entity: item),
                     ).pSymmetric(h: 4);
                   },
                 ).expand(),
@@ -182,7 +191,6 @@ class HomeView extends GetView<HomeController> {
       onSwipeRight: () async {
         controller.focusedDay.value = controller.focusedDay.value.subtract(1.days);
         await controller.onCalenderDayChange(controller.focusedDay.value, controller.focusedDay.value);
-
         await controller.getExpense();
       },
       child: controller.obx(
@@ -213,8 +221,15 @@ class HomeView extends GetView<HomeController> {
                                 borderRadius: 90,
                                 borderColor: controller.countOfDay.value.getFlagColorLight(),
                               ),
-                              child:
-                                  '${controller.countOfDay.value.getFlagText()} Day'.text.size(12).minFontSize(12).color(controller.countOfDay.value.getFlagColorLight()).make().p4().pSymmetric(h: 4),
+                              child: '${controller.countOfDay.value.getFlagText()} Day'
+                                  //
+                                  .text
+                                  .size(12)
+                                  .minFontSize(12)
+                                  .color(controller.countOfDay.value.getFlagColorLight())
+                                  .make()
+                                  .p4()
+                                  .pSymmetric(h: 4),
                             ),
                           ),
                         ],
@@ -276,7 +291,7 @@ class HomeView extends GetView<HomeController> {
                                 isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
                               ],
                             ).p12(),
-                          ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item));
+                          ).pSymmetric(h: 8, v: 4).onInkTap(() => DialogInputHelper.showDialogExpense(expense: item));
                         },
                       ).pSymmetric(v: 8).expand()
 
@@ -332,7 +347,7 @@ class HomeView extends GetView<HomeController> {
                                 isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
                               ],
                             ).p12(),
-                          ).pSymmetric(h: 8, v: 4).onInkTap(() => HomeDialogInput.onShowDialogExpense(expense: item));
+                          ).pSymmetric(h: 8, v: 4).onInkTap(() => DialogInputHelper.showDialogExpense(expense: item));
                         },
                       ).pSymmetric(v: 8).expand(),
               ),
@@ -374,7 +389,17 @@ class HomeView extends GetView<HomeController> {
               bgColor: Theme.of(Get.context!).scaffoldBackgroundColor,
               illustration: Column(
                 children: [
-                  Lottie.asset('assets/lottie/empty-1.json', width: 150, reverse: true),
+                  Get.context!.isMobile
+                      ? Image.asset(
+                          'assets/icons/app_icon.png',
+                          width: 56,
+                          height: 56,
+                        ).pOnly(bottom: 16)
+                      : Lottie.asset(
+                          'assets/lottie/empty-1.json',
+                          width: 150,
+                          reverse: true,
+                        ),
                   'No Expense'.text.bold.align(TextAlign.center).make().pOnly(bottom: 8),
                   Obx(
                     () => '${controller.tfSearchExpense.value.text.isNotEmptyAndNotNull //-
@@ -391,7 +416,7 @@ class HomeView extends GetView<HomeController> {
                     label: 'Add Expense',
                     labelSize: 12,
                     labelColor: AppColor.textReverse,
-                    onPressed: () => HomeDialogInput.onShowDialogExpense(),
+                    onPressed: () => DialogInputHelper.showDialogExpense(),
                   ),
                 ],
               ),
@@ -424,7 +449,7 @@ class HomeView extends GetView<HomeController> {
         ? FloatingActionButton(
             backgroundColor: AppColor.fabPrimary,
             child: Icon(CupertinoIcons.add, color: Colors.white),
-            onPressed: () => HomeDialogInput.onShowDialogExpense(),
+            onPressed: () => DialogInputHelper.showDialogExpense(),
           ).pOnly(bottom: Get.context!.isMobile ? 90 : 68)
         : 0.heightBox);
   }

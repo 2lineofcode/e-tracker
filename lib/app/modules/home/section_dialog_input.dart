@@ -23,19 +23,20 @@ import '../widgets/widget_autocomplete.dart';
 import 'home_controller.dart';
 import 'home_repository.dart';
 
-/// * @{HomeDialogInput}
-/// ? seperate dialog input part coz this function is shared (can be use to another page)
-/// ? this code too long coz to many customize and i dont want put in controller
-/// ~
-///
-mixin HomeDialogInput {
+/// [DialogInputHelper]
+/// - [showDialogCategory]
+/// - [showDialogExpense]
+/// This class provides helper methods for dialog input functionality.
+/// It is designed to be shared and can be used in multiple pages.
+/// The class includes methods for handling dialog categories.
+mixin DialogInputHelper {
   static final _controller = Get.find<HomeController>();
   static final _repo = Get.find<HomeRepository>();
 
   // ------------------------------------------------------------------------
   // Dialog Category
   // ------------------------------------------------------------------------
-  static Future<void> onEditCategory({CategoryEntity? entity, Function? callback}) async {
+  static Future<void> showDialogCategory({CategoryEntity? entity, Function? callback}) async {
     final _tfCatName = TextEditingController(text: entity?.name ?? '');
     final _tfCatColor = TextEditingController(text: entity?.color ?? '');
     final _tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget!.moneyFormat() : '');
@@ -60,7 +61,7 @@ mixin HomeDialogInput {
               controller: _tfMaxBudget,
               placeholder: 'Max Budget (Monthtly)',
               placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-              prefix: Icon(CupertinoIcons.money_dollar, size: 16, color: AppColor.textReverse).pOnly(left: 8),
+              prefix: Icon(CupertinoIcons.bag_fill, size: 16, color: AppColor.textReverse).pOnly(left: 8),
               style: TextStyle(fontSize: 13, color: AppColor.textReverse),
               inputFormatters: [
                 CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
@@ -218,7 +219,15 @@ mixin HomeDialogInput {
   // ------------------------------------------------------------------------
   // Dialog Expense
   // ------------------------------------------------------------------------
-  static Future<void> onShowDialogExpense({ExpenseEntity? expense, Function? customCallback}) async {
+  static Future<void> showDialogExpense({ExpenseEntity? expense, Function? customCallback}) async {
+    if (Get.context!.isMobile) {
+      await _dialogExpenseMobile(expense: expense, customCallback: customCallback);
+    } else {
+      await _dialogExpenseDesktop(expense: expense, customCallback: customCallback);
+    }
+  }
+
+  static Future<void> _dialogExpenseMobile({ExpenseEntity? expense, Function? customCallback}) async {
     if (_controller.categoryList.isEmptyOrNull) {
       ExSnackbar.danger('add some category first:))');
       return;
@@ -234,15 +243,10 @@ mixin HomeDialogInput {
     final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
     final isTypeNotes = expense != null && expense.categoryName == 'Notes' ? true.obs : false.obs;
 
-    ExAlert.adaptive(
-      title: Text(
-        '${expense != null ? 'Edit Expense' : 'Add Expense'}',
-        style: TextStyle(fontWeight: FontWeight.bold),
-        textAlign: TextAlign.left,
-      ).pOnly(bottom: 16),
+    ExBottomSheet.basic(
+      title: '${expense != null ? 'Edit Expense' : 'Add Expense'}',
       content: VStack(
         [
-          /// field select date: edit mode only
           if (expense != null) ...[
             CupertinoTextField(
               controller: _tfDate,
@@ -257,6 +261,7 @@ mixin HomeDialogInput {
               ),
             ).pOnly(bottom: 16),
           ],
+
           MyAutoComplete(
             autofocus: expense == null,
             initialValue: _tfNote.value,
@@ -285,7 +290,7 @@ mixin HomeDialogInput {
                 isShowDetail.value = !isShowDetail.value;
               }),
             ],
-          ).pOnly(bottom: 12, top: 3),
+          ).pOnly(bottom: 12, top: 6),
 
           /// description / detail
           Obx(
@@ -387,6 +392,217 @@ mixin HomeDialogInput {
                 ],
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) async => {
+                  Get.back(),
+                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
+                  await customCallback?.call(),
+                },
+              ).h(32),
+            ),
+          ),
+
+          Divider().pSymmetric(v: 12),
+
+          /// action
+          HStack(
+            [
+              if (expense != null) ...[
+                ExButtonElevated(
+                  child: Text('Delete', style: TextStyle(color: Vx.red500, fontSize: 13)),
+                  onPressed: () async {
+                    Get.back();
+                    await _repo.deleteExpense(expense.id!);
+                    await _controller.getExpense();
+                    await _controller.onCalenderRefreshEvent();
+                    await customCallback?.call();
+                    AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
+                  },
+                ).pOnly(right: 12).expand(),
+              ],
+              ExButtonElevated(
+                child: Text('Submit', style: TextStyle(fontSize: 13)),
+                onPressed: () async {
+                  Get.back();
+                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text);
+                  await customCallback?.call();
+                },
+              ).expand(),
+            ],
+          ).pOnly(bottom: 12),
+        ],
+      ),
+    );
+  }
+
+  static Future<void> _dialogExpenseDesktop({ExpenseEntity? expense, Function? customCallback}) async {
+    if (_controller.categoryList.isEmptyOrNull) {
+      ExSnackbar.danger('add some category first:))');
+      return;
+    }
+
+    final _tfDate = TextEditingController(text: expense != null ? expense.date : '');
+    final _tfNote = TextEditingController(text: expense != null ? expense.note : '');
+    final _tfDescription = TextEditingController(text: expense != null ? expense.detail : '');
+    final _tfCategory = '${expense != null ? '${expense.categoryName}' : '${_controller.categoryList[0].name}'}'.obs;
+    final _tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
+
+    /// flag
+    final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
+    final isTypeNotes = expense != null && expense.categoryName == 'Notes' ? true.obs : false.obs;
+
+    ExAlert.adaptive(
+      title: Text(
+        '${expense != null ? 'Edit Expense' : 'Add Expense'}',
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textAlign: TextAlign.left,
+      ).pOnly(bottom: 16),
+      content: VStack(
+        [
+          /// field select date: edit mode only
+          if (expense != null) ...[
+            CupertinoTextField(
+              controller: _tfDate,
+              readOnly: true,
+              placeholder: 'Date',
+              placeholderStyle: TextStyle(fontSize: 13),
+              prefix: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse).pOnly(left: 8),
+              style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+              onTap: () => ExDatePicker.adaptiveDatePicker(
+                minDate: DateTime(2020),
+                callback: (c) => _tfDate.text = c.toStringEx(format: yMd),
+              ),
+            ).pOnly(bottom: 16),
+          ],
+          MyAutoComplete(
+            autofocus: expense == null,
+            initialValue: _tfNote.value,
+            asyncSuggestions: (s) async {
+              if (s.text.isBlank!) return [];
+              return await _repo.findAutoCompleteStringNote(s.text);
+            },
+            hint: 'Note: Nasi Padang',
+            onChanged: (s) => _tfNote.text = s,
+            onSelected: (s) async {
+              _tfNote.text = s;
+              await _repo.findAutoCompleteFullObject(s).then((res) {
+                _tfCategory.value = res[0].categoryName ?? '';
+                _tfAmount.text = res[0].amount?.toInt()?.moneyFormat() ?? '';
+              });
+            },
+          ),
+
+          HStack(
+            [
+              Spacer(),
+              Text(
+                'with Detail?',
+                style: TextStyle(fontSize: 11, decoration: TextDecoration.underline),
+              ).onInkTap(() {
+                isShowDetail.value = !isShowDetail.value;
+              }),
+            ],
+          ).pOnly(bottom: 12, top: 6),
+
+          /// description / detail
+          Obx(
+            () => Visibility(
+              visible: isShowDetail.value,
+              child: CupertinoTextField(
+                controller: _tfDescription,
+                placeholder: 'Detail: Nama Toko/Waktu',
+                placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+                style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+                minLines: 2,
+                maxLines: 2,
+                clearButtonMode: OverlayVisibilityMode.editing,
+              ).pOnly(bottom: 16),
+            ),
+          ),
+
+          /// field category
+          Obx(
+            () => DropdownButtonFormField(
+              value: '${_tfCategory.value}',
+              style: TextStyle(fontSize: 12, color: AppColor.textReverse),
+              decoration: MyDecoration.input(
+                fillColor: Get.isDarkMode ? Vx.black : Vx.white,
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    width: 1,
+                    style: BorderStyle.solid,
+                    color: Get.isDarkMode ? Vx.neutral800 : Vx.neutral300,
+                  ),
+                ),
+              ),
+              icon: 0.heightBox,
+              items: _controller.categoryList.map((element) {
+                return DropdownMenuItem(
+                  value: '${element.name}',
+                  child: HStack(
+                    alignment: MainAxisAlignment.spaceEvenly,
+                    [
+                      Icon(
+                        element.icon?.getIconData() ?? Icons.circle_outlined,
+                        size: 16,
+                        color: element.color?.fromHex,
+                      ).pOnly(right: 8),
+                      Text(element.name ?? ''),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (s) {
+                _tfCategory.value = s ?? '';
+                if (s!.contains('Notes')) {
+                  _tfAmount.text = 'Rp. 0';
+                  isTypeNotes.value = true;
+                  isShowDetail.value = true;
+                } else {
+                  _tfAmount.text = '';
+                  isTypeNotes.value = false;
+                  isShowDetail.value = false;
+                }
+              },
+            ).wh(double.infinity, 32).pOnly(bottom: 16),
+          ),
+
+          /// field amount
+          Obx(
+            () => Visibility(
+              visible: isTypeNotes.isFalse,
+              child: CupertinoTextField(
+                controller: _tfAmount,
+                placeholder: 'Rp. 10.000',
+                placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+                style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+                prefix: IconButton(
+                  icon: Icon(fontAwesomeIcons['calculator'], size: 14, color: AppColor.textReverse),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      isScrollControlled: true,
+                      context: Get.context!,
+                      builder: (context) => FractionallySizedBox(
+                        heightFactor: 0.7,
+                        child: SimpleCalculator(
+                          autofocus: true,
+                          hideSurroundingBorder: true,
+                          value: _tfAmount.text.moneyUnformat()?.toDouble() ?? 0.0,
+                          onTappedDisplay: (p0, p1) => Get.back(),
+                          onChanged: (key, value, expression) {
+                            final moneyFormat = value!.toString().toInt()?.moneyFormat() ?? '';
+                            _tfAmount.text = moneyFormat;
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                inputFormatters: [
+                  CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
+                  LengthLimitingTextInputFormatter(13),
+                ],
+                keyboardType: TextInputType.number,
+                onSubmitted: (_) async => {
+                  Get.back(),
                   await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
                   await customCallback?.call(),
                 },
@@ -400,18 +616,19 @@ mixin HomeDialogInput {
           CupertinoDialogAction(
             child: Text('Delete', style: TextStyle(color: Vx.red500, fontSize: 13)),
             onPressed: () async {
+              Get.back();
               await _repo.deleteExpense(expense.id!);
               await _controller.getExpense();
               await _controller.onCalenderRefreshEvent();
               await customCallback?.call();
               AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
-              Get.back();
             },
           ),
         ],
         CupertinoDialogAction(
           child: Text('Submit', style: TextStyle(fontSize: 13)),
           onPressed: () async {
+            Get.back();
             await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text);
             await customCallback?.call();
           },
@@ -448,6 +665,5 @@ mixin HomeDialogInput {
       AppNotif.show('$e', color: Vx.green600);
     }
     await _controller.onCalenderRefreshEvent();
-    Get.back(); // close dialog
   }
 }

@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../modules/bibit/bibit_binding.dart';
+import '../modules/bibit/bibit_view.dart';
 import '../modules/filtering/filtering_binding.dart';
 import '../modules/filtering/filtering_view.dart';
 import '../modules/home/home_binding.dart';
@@ -36,6 +38,11 @@ class AppPages {
       name: _Paths.FILTERING,
       page: () => const FilteringView(),
       binding: FilteringBinding(),
+    ),
+    GetPage(
+      name: _Paths.BIBIT,
+      page: () => const BibitView(),
+      binding: BibitBinding(),
     ),
   ];
 }

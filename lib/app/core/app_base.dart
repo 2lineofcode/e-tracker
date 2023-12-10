@@ -15,12 +15,13 @@ final db = Supabase.instance.client;
 final pref = GetStorage();
 
 /// handy call api
+final _bibitUrl = dotenv.get('BIBIT_API_URL');
 final api = Get.find<ExHttp>(tag: 'bibit')
   ..httpClient.addAuthenticator<void>((request) async {
     logW('== REFRESH TOKEN ==');
     await pref.erase();
     final response = await ExHttp().post(
-      '${dotenv.get('BIBIT_API_URL')}/auth/token',
+      '$_bibitUrl/auth/token',
       body: {
         'refresh_id': dotenv.get('BIBIT_DEFAULT_REFRESH_ID'),
         'refresh_token': dotenv.get('BIBIT_DEFAULT_REFRESH_TOKEN'),
@@ -37,7 +38,7 @@ final api = Get.find<ExHttp>(tag: 'bibit')
     return request;
   })
   ..httpClient.addRequestModifier<void>((request) async {
-    final baseHeader = {'Origin': '${dotenv.get('BIBIT_API_URL')}', 'Referer': '${dotenv.get('BIBIT_API_URL')}/'};
+    final baseHeader = {'Origin': '$_bibitUrl', 'Referer': '$_bibitUrl/'};
     request.headers[HttpHeaders.authorizationHeader] = 'Bearer ${await pref.read(kBibitToken)}';
     request.headers.addAll(baseHeader);
     return request;

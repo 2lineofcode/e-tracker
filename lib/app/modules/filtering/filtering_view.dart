@@ -198,7 +198,7 @@ class FilteringView extends GetView<FilteringController> {
                       IconButton(
                         icon: Icon(Icons.edit, size: 16),
                         onPressed: () async {
-                          await HomeDialogInput.onShowDialogExpense(
+                          await DialogInputHelper.showDialogExpense(
                             expense: item,
                             customCallback: () async => await controller.findExpense(item.categoryName!),
                           );
