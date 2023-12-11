@@ -8,6 +8,9 @@ abstract class Routes {
   static const SETTINGS = _Paths.SETTINGS;
   static const FILTERING = _Paths.FILTERING;
   static const BIBIT = _Paths.BIBIT;
+  static const DETAIL_STOCK = _Paths.DETAIL_STOCK;
+  static const DETAIL_CRYPTO = _Paths.DETAIL_CRYPTO;
+  static const DETAIL_MUTUAL = _Paths.DETAIL_MUTUAL;
 }
 
 abstract class _Paths {
@@ -17,4 +20,7 @@ abstract class _Paths {
   static const SETTINGS = '/settings';
   static const FILTERING = '/filtering';
   static const BIBIT = '/bibit';
+  static const DETAIL_STOCK = '/detail-stock';
+  static const DETAIL_CRYPTO = '/detail-crypto';
+  static const DETAIL_MUTUAL = '/detail-mutual';
 }

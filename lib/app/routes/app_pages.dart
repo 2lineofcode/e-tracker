@@ -2,6 +2,12 @@ import 'package:get/get.dart';
 
 import '../modules/bibit/bibit_binding.dart';
 import '../modules/bibit/bibit_view.dart';
+import '../modules/bibit/detail_crypto/detail_crypto_binding.dart';
+import '../modules/bibit/detail_crypto/detail_crypto_view.dart';
+import '../modules/bibit/detail_mutual/detail_mutual_binding.dart';
+import '../modules/bibit/detail_mutual/detail_mutual_view.dart';
+import '../modules/bibit/detail_stock/detail_stock_binding.dart';
+import '../modules/bibit/detail_stock/detail_stock_view.dart';
 import '../modules/filtering/filtering_binding.dart';
 import '../modules/filtering/filtering_view.dart';
 import '../modules/home/home_binding.dart';
@@ -43,6 +49,21 @@ class AppPages {
       name: _Paths.BIBIT,
       page: () => const BibitView(),
       binding: BibitBinding(),
+    ),
+    GetPage(
+      name: _Paths.DETAIL_STOCK,
+      page: () => const DetailStockView(),
+      binding: DetailStockBinding(),
+    ),
+    GetPage(
+      name: _Paths.DETAIL_CRYPTO,
+      page: () => const DetailCryptoView(),
+      binding: DetailCryptoBinding(),
+    ),
+    GetPage(
+      name: _Paths.DETAIL_MUTUAL,
+      page: () => const DetailMutualView(),
+      binding: DetailMutualBinding(),
     ),
   ];
 }
