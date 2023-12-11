@@ -347,7 +347,7 @@ mixin DialogInputHelper {
                   isTypeNotes.value = true;
                   isShowDetail.value = true;
                 } else {
-                  _tfAmount.text = '';
+                  _tfAmount.text = expense?.amount?.moneyFormat() ?? '';
                   isTypeNotes.value = false;
                   isShowDetail.value = false;
                 }
@@ -557,7 +557,7 @@ mixin DialogInputHelper {
                   isTypeNotes.value = true;
                   isShowDetail.value = true;
                 } else {
-                  _tfAmount.text = '';
+                  _tfAmount.text = expense?.amount?.moneyFormat() ?? '';
                   isTypeNotes.value = false;
                   isShowDetail.value = false;
                 }

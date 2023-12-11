@@ -92,7 +92,13 @@ class SectionBibitPorfolioView extends GetView<SectionBibitPorfolioController> {
               return Container(
                 decoration: ExDecorator.box(borderColor: AppColor.neutral, borderRadius: 4),
                 child: HStack([
-                  SvgPicture.network('https://app.bibit.id/assets/images/portfolio/green/dark/${item.templateid}.svg', height: 32, width: 32),
+                  SvgPicture.network(
+                    Get.isDarkMode //
+                        ? 'https://app.bibit.id/assets/images/portfolio/green/dark/${item.templateid}.svg'
+                        : 'https://app.bibit.id/assets/images/portfolio/green/${item.templateid}.svg',
+                    height: 32,
+                    width: 32,
+                  ),
                   VStack([
                     '${item.name}'.text.size(12).bold.make().pOnly(bottom: 4),
                     '${item.invested?.moneyFormat()}'.text.size(12).make(),

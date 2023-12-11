@@ -212,7 +212,7 @@ class FilteringView extends GetView<FilteringController> {
           TableRow(
             children: [
               TableCell(
-                child: '${date?.reformatDate(from: yMd, to: 'dd/MM/yyyy')}'.text.make().pOnly(left: 8, top: 8, bottom: 8),
+                child: '${date?.reformatDate(from: yMd, to: 'dd/MM/yyyy')}'.text.size(11).bold.make().pOnly(left: 8),
               ),
               TableCell(
                 child: VStack([
@@ -234,7 +234,7 @@ class FilteringView extends GetView<FilteringController> {
               ),
               TableCell(
                 child: VStack([
-                  '${controller.sumByDate[date]?.moneyFormat()}'.text.align(TextAlign.end).make(),
+                  '${controller.sumByDate[date]?.moneyFormatCompact()}'.text.align(TextAlign.end).make(),
                 ]).p8(),
               ),
             ],
