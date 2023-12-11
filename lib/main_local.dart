@@ -39,7 +39,7 @@ Future<void> initAppService() async {
   /// http
   Get.put(ExHttp(baseURL: dotenv.get('BIBIT_API_URL')), tag: 'bibit');
 
-  SeedHelper.genCategory();
+  SeedHelper.generate();
 }
 
 Future<void> initForDesktop() async {

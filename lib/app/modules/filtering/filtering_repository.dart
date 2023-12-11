@@ -23,16 +23,30 @@ class FilteringRepository {
     String endDate, {
     String? orderBy,
   }) async {
-    final response = await db
-        .from('expense')
-        .select()
-        .eq('category_name', categoryName)
-        .filter('date', 'gte', startDate)
-        .filter('date', 'lte', endDate)
-        .order(orderBy ?? 'amount', ascending: false)
-        .withConverter<List<ExpenseEntity>>((data) {
-      return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
-    });
+    var response = <ExpenseEntity>[];
+    if (categoryName == '*' || categoryName == 'All') {
+      response = await db
+          .from('expense')
+          //
+          .select()
+          .filter('date', 'gte', startDate)
+          .filter('date', 'lte', endDate)
+          .order(orderBy ?? 'amount', ascending: false)
+          .withConverter<List<ExpenseEntity>>((data) {
+        return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
+      });
+    } else {
+      response = await db
+          .from('expense')
+          .select()
+          .eq('category_name', categoryName)
+          .filter('date', 'gte', startDate)
+          .filter('date', 'lte', endDate)
+          .order(orderBy ?? 'amount', ascending: false)
+          .withConverter<List<ExpenseEntity>>((data) {
+        return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
+      });
+    }
     return response;
   }
 }

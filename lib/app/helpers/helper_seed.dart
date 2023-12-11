@@ -3,9 +3,15 @@ import 'package:uuid/v4.dart';
 
 import '../core/app_base.dart';
 import '../models/category_entity.dart';
+import '../models/expense_entity.dart';
 
 mixin SeedHelper {
-  static void genCategory() async {
+  static void generate() async {
+    await genCategory();
+    await genExpense();
+  }
+
+  static Future<void> genCategory() async {
     /// check if category table is empty
     final check = await db.from('category').select().withConverter<List<CategoryEntity>>((data) {
       return (data as List).map((e) => CategoryEntity.fromJson(e)).toList();
@@ -41,5 +47,26 @@ mixin SeedHelper {
     ).toJson();
 
     await db.from('category').insert([_catFood, _catNotes, _catOthers]);
+  }
+
+  static Future<void> genExpense() async {
+    /// check if expense table is empty
+    final check = await db.from('expense').select().withConverter<List<ExpenseEntity>>((data) {
+      return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
+    });
+
+    /// if category table is empty just return~
+    if (check.isNotEmpty) return;
+
+    final _expense = ExpenseEntity(
+      id: UuidV4().generate(),
+      note: 'Example Note',
+      categoryName: 'Notes',
+      amount: 0,
+      detail: 'here is detail of note',
+      date: DateTime.now().toStringEx(format: 'yyyy-MM-dd'),
+      createdAt: DateTime.now().toStringEx(),
+    ).toJson();
+    await db.from('expense').insert(_expense);
   }
 }

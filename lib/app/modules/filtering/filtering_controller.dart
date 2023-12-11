@@ -1,3 +1,4 @@
+import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -31,6 +32,10 @@ class FilteringController extends GetxController with StateMixin {
   final expenseList = <ExpenseEntity>[].obs;
   final orderByList = <String>[].obs;
 
+  /// uiSelected
+  final uiSelected = 'list'.obs;
+  late Map<String?, List<ExpenseEntity>>? grouppedByDate; // <- for tabel view [group date manually]
+
   /// init ~~
   @override
   Future<void> onInit() async {
@@ -40,6 +45,8 @@ class FilteringController extends GetxController with StateMixin {
 
     orderByList.value = await repo.getOrderList();
     categoryList.value = await repo.getCategory();
+    categoryList.insert(0, CategoryEntity(name: 'All'));
+
     await findExpense(categorySelected.value);
     super.onInit();
   }
@@ -73,10 +80,19 @@ class FilteringController extends GetxController with StateMixin {
     } catch (e) {
       change(0, status: RxStatus.error('$e'));
     }
+
     if (expenseList.isNotEmpty) {
       change(0, status: RxStatus.success());
     } else {
       change(0, status: RxStatus.empty());
+    }
+
+    /// for tabel view [group date manually]
+    final _grouping = expenseList.groupBy((element) => element.date);
+    final _sorting = _grouping.entries.toList()..sort((e1, e2) => e1.key!.compareTo(e2.key!));
+    grouppedByDate = <String?, List<ExpenseEntity>>{};
+    for (var element in _sorting) {
+      grouppedByDate![element.key] = List<ExpenseEntity>.from(element.value);
     }
   }
 }
