@@ -28,6 +28,7 @@ extension MoneyFormatExt on num {
     }
   }
 
+  /// example: 100 -> '100%'
   String percentageFormat({String? symbol = '%'}) {
     String formattedText = '${(this * 100).toStringAsFixed(2).replaceAll('.00', '')}$symbol';
     return formattedText;

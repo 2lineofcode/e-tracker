@@ -25,7 +25,7 @@ Future<void> main() async {
 
 Future<void> initAppService() async {
   /// env
-  await dotenv.load(fileName: kReleaseMode ? '.env' : '.env');
+  await dotenv.load(fileName: '.env.local');
 
   /// supabase
   await Supabase.initialize(url: dotenv.get('SUPABASE_URL'), anonKey: dotenv.get('SUPABASE_ANON_KEY'));
@@ -74,7 +74,7 @@ Widget expenseTracker() {
       title: dotenv.get('APP_NAME'),
       initialRoute: AppPages.INITIAL,
       theme: AppTheme.light,
-      themeMode: AppTheme.theme,
+      themeMode: AppTheme.currentTheme,
       darkTheme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
       getPages: AppPages.routes,

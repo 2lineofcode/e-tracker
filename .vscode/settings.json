@@ -17,7 +17,7 @@
         "macos": true,
         "ios": true,
         "web": false,
-        "build": true
+        "build": false
     },
-    "explorerExclude.backup": {}
+    "explorerExclude.backup": {},
 }

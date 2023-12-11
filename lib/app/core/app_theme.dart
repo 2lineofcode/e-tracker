@@ -17,20 +17,15 @@ mixin AppTheme {
 
   static final dark = ThemeData.dark(useMaterial3: true).copyWith();
 
-  // —————————————————————————————————————————————————————————————————————————————
-  // config user != == === >= <= !! ! <=> <> ! fi in is is! of on or
-  // —————————————————————————————————————————————————————————————————————————————
-  static ThemeMode get theme => _loadThemeFromBox() ? ThemeMode.dark : ThemeMode.light;
+  /// load theme
+  static bool _isDarkMode() => pref.read(kIsDarkMode) ?? true;
 
-  var user = '';
-  static bool _loadThemeFromBox() => pref.read(kIsDarkMode) ?? true;
-
-  static Future<void> _saveThemeToBox(bool isDarkMode) async => await pref.write(kIsDarkMode, isDarkMode);
+  static ThemeMode get currentTheme => _isDarkMode() ? ThemeMode.dark : ThemeMode.light;
 
   static Future<void> switchTheme() async {
-    Get.changeThemeMode(_loadThemeFromBox() ? ThemeMode.light : ThemeMode.dark);
-    await _saveThemeToBox(!_loadThemeFromBox());
-    await 600.milliseconds.delay(); // free up time
+    Get.changeThemeMode(_isDarkMode() ? ThemeMode.light : ThemeMode.dark);
+    await pref.write(kIsDarkMode, !_isDarkMode());
+    await 600.milliseconds.delay();
     await Get.forceAppUpdate();
   }
 }
