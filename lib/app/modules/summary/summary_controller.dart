@@ -1,6 +1,7 @@
 import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 
+import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
@@ -13,7 +14,7 @@ class SummaryController extends GetxController with StateMixin {
   final repo = Get.find<SummaryRepository>();
 
   // calander
-  final yearSelected = DateTime.now().toStringEx(format: 'yyyy').obs;
+  final yearSelected = DateTime.now().toStringEx(format: 'y').obs;
   final monthSelected = DateTime.now().toStringEx(format: 'MMMM').obs;
 
   // data
@@ -34,10 +35,14 @@ class SummaryController extends GetxController with StateMixin {
 
   @override
   Future<void> onInit() async {
+    yearSelected.value = Get.parameters['period'].toString().reformatDate(from: yM, to: 'y');
+    monthSelected.value = Get.parameters['period'].toString().reformatDate(from: yM, to: 'MMMM');
+
     await getSumAllMonth(year: yearSelected.value);
     await getSumByCategory(year: yearSelected.value, month: monthSelected.value);
     await getSumNoteTimes(year: yearSelected.value, month: monthSelected.value);
     await calculateBudgetStatForHeader();
+
     change(0, status: RxStatus.success());
     super.onInit();
   }

@@ -15,7 +15,6 @@ import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../models/expense_entity.dart';
-import '../../routes/app_pages.dart';
 import '../widgets/widgets.dart';
 import 'home_controller.dart';
 import 'section_dialog_input.dart';
@@ -80,16 +79,16 @@ class HomeView extends GetView<HomeController> {
 
         IconButton(
           icon: SvgPicture.asset('assets/icons/ic_robo.svg', width: 22, color: Get.isDarkMode ? Colors.white70 : Colors.white),
-          onPressed: () => Get.toNamed(Routes.BIBIT),
+          onPressed: () => controller.goBibit(),
         ).pOnly(right: 4),
 
         IconButton(
           icon: Icon(CupertinoIcons.settings, size: 22),
-          onPressed: () => Get.toNamed(Routes.SETTINGS),
+          onPressed: () => controller.goSetting(),
         ),
         IconButton(
           icon: Icon(CupertinoIcons.chart_bar_square_fill, size: 22),
-          onPressed: () => Get.toNamed(Routes.SUMMARY),
+          onPressed: () => controller.goSummary(),
         ),
       ],
     );
@@ -489,9 +488,11 @@ class HomeView extends GetView<HomeController> {
     return HStack([
       Spacer(),
       Obx(
-        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${controller.countOfMonth.value.moneyFormat()}'.text.bold.make().onTap(() {
-          Get.toNamed(Routes.SUMMARY);
-        }),
+        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${controller.countOfMonth.value.moneyFormat()}' //
+            .text
+            .bold
+            .make()
+            .onTap(() => controller.goSummary()),
       ),
     ]).p12();
   }

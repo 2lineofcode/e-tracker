@@ -12,6 +12,7 @@ import '../../helpers/helper_notif.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
+import '../../routes/app_pages.dart';
 import 'home_repository.dart';
 
 class HomeController extends GetxController with StateMixin {
@@ -195,5 +196,17 @@ class HomeController extends GetxController with StateMixin {
     } else {
       change(0, status: RxStatus.success());
     }
+  }
+
+  void goSummary() {
+    Get.toNamed(Routes.SUMMARY, parameters: {'period': focusedDay.value.toStringEx(format: yM)});
+  }
+
+  void goSetting() {
+    Get.toNamed(Routes.SETTINGS);
+  }
+
+  void goBibit() {
+    Get.toNamed(Routes.BIBIT);
   }
 }
