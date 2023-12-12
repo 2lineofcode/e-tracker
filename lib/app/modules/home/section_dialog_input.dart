@@ -72,41 +72,49 @@ mixin DialogInputHelper {
             HStack(
               [
                 /// icon preview
-                Obx(
-                  () => Icon(
-                    _iconSelected.value,
-                    size: 18,
-                    color: _hueController.value.value.toColor(),
-                  ),
-                ).pOnly(right: 8).tooltip('Click to change icon').onTap(() async {
-                  await FlutterIconPicker.showIconPicker(
-                    Get.context!,
-                    iconPackModes: [
-                      IconPack.lineAwesomeIcons,
-                      IconPack.custom,
-                      IconPack.cupertino,
-                      IconPack.material,
-                      IconPack.fontAwesomeIcons,
-                      IconPack.custom,
-                    ],
-                    iconSize: 20,
-                    customIconPack: {},
-                    constraints: BoxConstraints(maxWidth: 250, maxHeight: 250),
-                  ).then((icon) {
-                    if (icon != null) _iconSelected.value = icon;
-                  });
-                }),
+                GetBuilder<HomeController>(
+                  init: HomeController(),
+                  initState: (_) {},
+                  builder: (_) {
+                    return Icon(
+                      _iconSelected.value,
+                      size: 18,
+                      color: _hueController.value.value.toColor(),
+                    ).pOnly(right: 8).tooltip('Click to change icon').onTap(() async {
+                      await FlutterIconPicker.showIconPicker(
+                        Get.context!,
+                        iconPackModes: [
+                          IconPack.lineAwesomeIcons,
+                          IconPack.custom,
+                          IconPack.cupertino,
+                          IconPack.material,
+                          IconPack.fontAwesomeIcons,
+                          IconPack.custom,
+                        ],
+                        iconSize: 20,
+                        customIconPack: {},
+                        constraints: BoxConstraints(maxWidth: 250, maxHeight: 250),
+                      ).then((icon) {
+                        if (icon != null) _iconSelected.value = icon;
+                      });
+                    });
+                  },
+                ),
 
                 /// hue picker
-                Obx(
-                  () => HuePicker(
-                    controller: _hueController.value,
-                    onChanged: (HSVColor color) {
-                      _hueController.value.value = color;
-                      _tfCatColor.text = color.toColor().toHex();
-                      Get.forceAppUpdate(); // TODO: fix me
-                    },
-                  ).wh(200, 24),
+                GetBuilder(
+                  init: HomeController(),
+                  initState: (_) {},
+                  builder: (_) {
+                    return HuePicker(
+                      controller: _hueController.value,
+                      onChanged: (HSVColor color) {
+                        _hueController.value.value = color;
+                        _tfCatColor.text = color.toColor().toHex();
+                        _controller.update();
+                      },
+                    ).wh(200, 24);
+                  },
                 ),
               ],
             ).pSymmetric(v: 12),
@@ -138,11 +146,17 @@ mixin DialogInputHelper {
                           ],
                         ).pOnly(bottom: 8),
                         Text('Edit For:', style: TextStyle(fontSize: 12)).pOnly(bottom: 8),
-                        Obx(() => Icon(
+                        GetBuilder<HomeController>(
+                          init: HomeController(),
+                          initState: (_) {},
+                          builder: (_) {
+                            return Icon(
                               entity?.icon?.getIconData() ?? Icons.circle_outlined,
                               color: _hueController.value.value.toColor(),
                               size: 20,
-                            )),
+                            );
+                          },
+                        ),
                         ColorPicker(
                           pickerColor: _tfCatColor.text.fromHex,
                           // colorPickerWidth: 300,
