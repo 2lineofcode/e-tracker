@@ -104,7 +104,7 @@ mixin DialogInputHelper {
                     onChanged: (HSVColor color) {
                       _hueController.value.value = color;
                       _tfCatColor.text = color.toColor().toHex();
-                      Get.forceAppUpdate();
+                      Get.forceAppUpdate(); // TODO: fix me
                     },
                   ).wh(200, 24),
                 ),

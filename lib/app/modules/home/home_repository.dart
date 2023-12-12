@@ -36,12 +36,12 @@ class HomeRepository {
   /// ------------------------------------------------------------------------
   /// ! expense
   /// ------------------------------------------------------------------------
-  // get all list
+  // get all list: for calendar painting
   Future<List<ExpenseEntity>> getExpenseAll({String period = ''}) async {
     final response = await db //
         .from('expense')
         .select('date, amount')
-        .or('date.ilike.%$period%')
+        .or('date.ilike.$period%')
         .order('date')
         .withConverter<List<ExpenseEntity>>((data) {
       return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
@@ -75,7 +75,7 @@ class HomeRepository {
     return response;
   }
 
-  //
+  // get sum by @date [1month]
   Future<int> getCount1Month(String date) async {
     final response = await db.from('expense').select('amount, date').like('date', '%$date%');
     num x = 0;
@@ -137,10 +137,8 @@ class HomeRepository {
 
   Future<List<RpcSumByCategoryEntity>> rpcSumByCategory(DateTime focusedDay) async {
     final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
-    final res = await db
-        .rpc('sum_by_category', params: {
-          'periode': fixYM,
-        })
+    final res = await db //
+        .rpc('sum_by_category', params: {'periode': fixYM})
         .order('use_percentage', ascending: false)
         .withConverter<List<RpcSumByCategoryEntity>>((data) {
           return (data as List).map((e) => RpcSumByCategoryEntity.fromJson(e)).toList();

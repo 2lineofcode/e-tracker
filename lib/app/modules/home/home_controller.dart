@@ -128,7 +128,7 @@ class HomeController extends GetxController with StateMixin {
       events.addAll(groupedData);
     });
 
-    await Get.forceAppUpdate();
+    update();
   }
 
   /// count total per month

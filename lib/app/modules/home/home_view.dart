@@ -98,43 +98,52 @@ class HomeView extends GetView<HomeController> {
     return VStack(
       [
         /// calendar
-        Obx(
-          () => MyCalendarHeader(
-            focusedDay: controller.focusedDay.value,
-            onGoPrevMonth: () => controller.onCalenderGoPrevMonth(),
-            onGoToday: () => controller.onCalenderGoToday(),
-            onGoNextMonth: () => controller.onCalenderGoNextMonth(),
-            onGoDate: (dt) {
-              controller.selectedDays.clear();
-              controller.selectedDays.add(dt);
-              controller.focusedDay.value = dt;
-              controller.getExpense();
-            },
-          ),
-        ),
-        Obx(
-          () => MyCalenderBody<String>(
-            focusedDay: controller.focusedDay.value,
-            minimumDate: DateTime.utc(2020),
-            maximumDate: DateTime.utc(2030),
-            onCalendarCreated: (c) => controller.calenderPageController = c,
-            onPageChanged: (fd) => controller.onCalenderPageChanged(fd),
-            onDaySelected: controller.onCalenderDayChange,
-            selectedDayPredicate: (day) => controller.selectedDays.contains(day),
-            eventLoader: controller.onCalenderLoadEvent,
-
-            /// custom
-            calendarBuilders: CalendarBuilders(
-              markerBuilder: (context, day, events) {
-                if (events.isNotEmpty) {
-                  var total = 0;
-                  for (var event in events) total += event.toInt()!;
-                  return Icon(Icons.circle, size: 6, color: total.getFlagColor()).positioned(top: 8, right: 8);
-                }
-                return Container();
+        GetBuilder<HomeController>(
+          init: HomeController(),
+          initState: (_) {},
+          builder: (_) {
+            return MyCalendarHeader(
+              focusedDay: controller.focusedDay.value,
+              onGoPrevMonth: () => controller.onCalenderGoPrevMonth(),
+              onGoToday: () => controller.onCalenderGoToday(),
+              onGoNextMonth: () => controller.onCalenderGoNextMonth(),
+              onGoDate: (dt) {
+                controller.selectedDays.clear();
+                controller.selectedDays.add(dt);
+                controller.focusedDay.value = dt;
+                controller.getExpense();
               },
-            ),
-          ).pOnly(bottom: 8),
+            );
+          },
+        ),
+
+        GetBuilder<HomeController>(
+          init: HomeController(),
+          initState: (_) {},
+          builder: (_) {
+            return MyCalenderBody<String>(
+              focusedDay: controller.focusedDay.value,
+              minimumDate: DateTime.utc(2020),
+              maximumDate: DateTime.utc(2030),
+              onCalendarCreated: (c) => controller.calenderPageController = c,
+              onPageChanged: (fd) => controller.onCalenderPageChanged(fd),
+              onDaySelected: controller.onCalenderDayChange,
+              selectedDayPredicate: (day) => controller.selectedDays.contains(day),
+              eventLoader: controller.onCalenderLoadEvent,
+
+              /// custom
+              calendarBuilders: CalendarBuilders(
+                markerBuilder: (context, day, events) {
+                  if (events.isNotEmpty) {
+                    var total = 0;
+                    for (var event in events) total += event.toInt()!;
+                    return Icon(Icons.circle, size: 6, color: total.getFlagColor()).positioned(top: 8, right: 8);
+                  }
+                  return Container();
+                },
+              ),
+            ).pOnly(bottom: 8);
+          },
         ),
 
         /// category

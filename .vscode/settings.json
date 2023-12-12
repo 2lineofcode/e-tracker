@@ -20,4 +20,6 @@
         "build": false
     },
     "explorerExclude.backup": {},
+
+    "dart.lineLength": 200,
 }
