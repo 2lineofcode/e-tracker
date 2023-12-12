@@ -53,7 +53,7 @@ class HomeController extends GetxController with StateMixin {
     await getCategory();
     await getExpense();
     await getCount1Month(DateTime.now());
-    await onCalenderRefreshEvent();
+    await onCalenderRefreshEvent(period: focusedDay.value.toStringEx(format: yM));
     countSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
     rpcSumByCategory.value = await repo.rpcSumByCategory(focusedDay.value);
     super.onInit();
@@ -94,6 +94,7 @@ class HomeController extends GetxController with StateMixin {
 
   Future<void> onCalenderPageChanged(DateTime fd) async {
     focusedDay.value = fd;
+    await onCalenderRefreshEvent(period: fd.toStringEx(format: yM));
     await getCount1Month(fd);
     countSpenderDay.value = await repo.rpcGetSpenderDay(fd);
     rpcSumByCategory.value = await repo.rpcSumByCategory(focusedDay.value);
@@ -109,9 +110,9 @@ class HomeController extends GetxController with StateMixin {
     return kEvents[day] ?? [];
   }
 
-  Future<void> onCalenderRefreshEvent({String year = ''}) async {
+  Future<void> onCalenderRefreshEvent({String period = ''}) async {
     events.clear();
-    await repo.getExpenseAll(year: year).then((res) {
+    await repo.getExpenseAll(period: period).then((res) {
       // Membuat Map untuk mengelompokkan data berdasarkan tanggal
       Map<DateTime, List<String>> groupedData = {};
 

@@ -620,7 +620,7 @@ mixin DialogInputHelper {
     Get.back(); // close dialog first
     await _repo.deleteExpense(expense!.id!);
     await _controller.getExpense();
-    await _controller.onCalenderRefreshEvent();
+    await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
     await _controller.getCount1Month(_controller.focusedDay.value);
     _controller.countSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
     _controller.rpcSumByCategory.value = await _repo.rpcSumByCategory(_controller.focusedDay.value);
@@ -668,6 +668,6 @@ mixin DialogInputHelper {
       logE('e: $e');
       AppNotif.show('$e', color: Vx.green600);
     }
-    await _controller.onCalenderRefreshEvent();
+    await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
   }
 }

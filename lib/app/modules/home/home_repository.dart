@@ -37,11 +37,11 @@ class HomeRepository {
   /// ! expense
   /// ------------------------------------------------------------------------
   // get all list
-  Future<List<ExpenseEntity>> getExpenseAll({String year = ''}) async {
+  Future<List<ExpenseEntity>> getExpenseAll({String period = ''}) async {
     final response = await db //
         .from('expense')
         .select('date, amount')
-        .or('date.ilike.%$year%')
+        .or('date.ilike.%$period%')
         .order('date')
         .withConverter<List<ExpenseEntity>>((data) {
       return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();

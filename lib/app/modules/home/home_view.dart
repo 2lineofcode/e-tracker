@@ -108,9 +108,7 @@ class HomeView extends GetView<HomeController> {
               controller.selectedDays.clear();
               controller.selectedDays.add(dt);
               controller.focusedDay.value = dt;
-
               controller.getExpense();
-              controller.onCalenderRefreshEvent(year: dt.toStringEx(format: 'y'));
             },
           ),
         ),
