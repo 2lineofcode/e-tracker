@@ -89,7 +89,7 @@ class FilteringController extends GetxController with StateMixin {
 
     /// for tabel view [group date manually]
     final _grouping = expenseList.groupBy((element) => element.date);
-    final _sorting = _grouping.entries.toList()..sort((e1, e2) => e1.key!.compareTo(e2.key!));
+    final _sorting = _grouping.entries.toList()..sort((e1, e2) => e2.key!.compareTo(e1.key!));
     grouppedByDate = <String?, List<ExpenseEntity>>{};
     for (var element in _sorting) {
       grouppedByDate![element.key] = List<ExpenseEntity>.from(element.value);

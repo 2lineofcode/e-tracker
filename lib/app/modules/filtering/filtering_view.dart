@@ -212,7 +212,7 @@ class FilteringView extends GetView<FilteringController> {
           TableRow(
             children: [
               TableCell(
-                child: '${date?.reformatDate(from: yMd, to: 'dd/MM/yyyy')}'.text.size(11).bold.make().pOnly(left: 8),
+                child: '${date?.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.size(11).bold.make().pOnly(left: 8),
               ),
               TableCell(
                 child: VStack([
