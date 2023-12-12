@@ -99,7 +99,7 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
               final item = controller.bibitStockTranding[index];
               return VStack(
                 [
-                  ExAvatarView(url: item.iconUrl ?? '', size: 32).pOnly(bottom: 8),
+                  ExAvatarView(source: item.iconUrl ?? '', size: 32).pOnly(bottom: 8),
                   '${item.symbol}'.text.size(12).bold.make(),
                   '${item.percent?.toStringAsFixed(2)}%'.text.color(BibitHelper.getColor(item.percent)).size(11).minFontSize(11).make(),
                 ],
@@ -115,7 +115,7 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
             itemBuilder: (context, index) {
               final item = controller.bibitStockWatchlist[index];
               return HStack([
-                ExAvatarView(url: item.iconUrl ?? '', size: 32).pOnly(right: 12),
+                ExAvatarView(source: item.iconUrl ?? '', size: 32).pOnly(right: 12),
                 VStack([
                   '${item.symbol}'.text.bold.make(),
                   '${item.price?.moneyFormat(symbol: '')}'.text.size(12).make(),

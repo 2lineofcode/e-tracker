@@ -166,11 +166,12 @@ class HomeView extends GetView<HomeController> {
                 () => controller.countRemainingBudget.value != 0
                     ? HStack([
                         '💰 Budget'.text.size(12).make(),
-                        ExProgress(
+                        ExProgressBar(
                           value: controller.countRemainingBudget.value,
                           color1: (controller.countRemainingBudget.value).toInt() < 100 ? AppColor.greenDark : AppColor.redDark,
                           color2: Vx.neutral300,
                           height: 8,
+                          radius: 4,
                         ).pSymmetric(h: 12).expand(),
                         CustomPopup(
                           content: VStack([
