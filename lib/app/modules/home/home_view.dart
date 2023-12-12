@@ -168,7 +168,9 @@ class HomeView extends GetView<HomeController> {
                                   .neutral500
                                   .size(11)
                                   .minFontSize(11)
-                                  .make(),
+                                  .make()
+                                  .pOnly(top: 4)
+                                  .onTap(() => controller.onCalenderGoDate(e['date'].toString().toDateEx(format: yMd))),
                             ],
                           ]).w(200),
                           child: Container(
@@ -389,7 +391,7 @@ class HomeView extends GetView<HomeController> {
                             Spacer(),
                             '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'.text.minFontSize(10).size(10).make(),
                           ]).p8(),
-                        ).onTap(() async => await controller.onCalenderGoDate(item)),
+                        ).onTap(() async => await controller.onCalenderGoDate(item.date!.toDateEx(format: yMd))),
                         indexedItemBuilder: (context, item, index) {
                           final isTypeNotes = item.categoryName?.contains('Notes') ?? false;
                           return Container(

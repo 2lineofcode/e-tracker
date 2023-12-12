@@ -76,11 +76,10 @@ class HomeController extends GetxController with StateMixin {
     closeDrawer();
   }
 
-  Future<void> onCalenderGoDate(ExpenseEntity element) async {
-    final selectedDate = element.date!.toDateEx(format: yMd);
+  Future<void> onCalenderGoDate(DateTime dateTime) async {
     selectedDays.clear();
-    focusedDay.value = selectedDate;
-    selectedDays.add(selectedDate);
+    focusedDay.value = dateTime;
+    selectedDays.add(dateTime);
     await getExpense();
   }
 
