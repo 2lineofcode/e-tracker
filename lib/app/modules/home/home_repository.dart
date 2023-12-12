@@ -129,10 +129,10 @@ class HomeRepository {
   /// ------------------------------------------------------------------------
   /// ! rpc
   /// ------------------------------------------------------------------------
-  Future<int> rpcGetSpenderDay(DateTime focusedDay) async {
+  Future<List<dynamic>> rpcGetSpenderDay(DateTime focusedDay) async {
     final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
-    final result = await db.rpc('get_spender_day', params: {'periode': fixYM});
-    return result.length;
+    final result = await db.rpc('get_spender_day', params: {'periode': fixYM}).order('total', ascending: false);
+    return result;
   }
 
   Future<List<RpcSumByCategoryEntity>> rpcSumByCategory(DateTime focusedDay) async {

@@ -636,7 +636,7 @@ mixin DialogInputHelper {
     await _controller.getExpense();
     await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
     await _controller.getCount1Month(_controller.focusedDay.value);
-    _controller.countSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
+    _controller.rpcSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
     _controller.rpcSumByCategory.value = await _repo.rpcSumByCategory(_controller.focusedDay.value);
     await customCallback?.call();
     AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
@@ -674,7 +674,7 @@ mixin DialogInputHelper {
       await _repo.addAutoComplete('${tfNote.toTitleCase}', categoryName: '${entity.categoryName}', amount: '${entity.amount}');
       await _controller.getExpense(find: _controller.tfSearchExpense.value.text.isNotBlank ? _controller.tfSearchExpense.value.text : null);
       await _controller.getCount1Month(_controller.focusedDay.value);
-      _controller.countSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
+      _controller.rpcSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
       _controller.rpcSumByCategory.value = await _repo.rpcSumByCategory(_controller.focusedDay.value);
       await customCallback?.call();
       AppNotif.show('Successfully ${expense != null ? 'Edit' : 'Added'} $tfNote', color: Vx.green600);

@@ -37,7 +37,7 @@ class HomeController extends GetxController with StateMixin {
   /// count
   final countOfDay = 0.obs;
   final countOfMonth = 0.obs;
-  final countSpenderDay = 0.obs;
+  final rpcSpenderDay = [].obs;
   final countMaxBudget = 0.obs;
   final countRemainingBudget = 0.obs;
   final rpcSumByCategory = <RpcSumByCategoryEntity>[].obs;
@@ -54,7 +54,7 @@ class HomeController extends GetxController with StateMixin {
     await getExpense();
     await getCount1Month(DateTime.now());
     await onCalenderRefreshEvent(period: focusedDay.value.toStringEx(format: yM));
-    countSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
+    rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
     rpcSumByCategory.value = await repo.rpcSumByCategory(focusedDay.value);
     super.onInit();
   }
@@ -96,7 +96,7 @@ class HomeController extends GetxController with StateMixin {
     focusedDay.value = fd;
     await onCalenderRefreshEvent(period: fd.toStringEx(format: yM));
     await getCount1Month(fd);
-    countSpenderDay.value = await repo.rpcGetSpenderDay(fd);
+    rpcSpenderDay.value = await repo.rpcGetSpenderDay(fd);
     rpcSumByCategory.value = await repo.rpcSumByCategory(focusedDay.value);
   }
 

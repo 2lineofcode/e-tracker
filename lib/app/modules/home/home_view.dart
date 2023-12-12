@@ -146,29 +146,34 @@ class HomeView extends GetView<HomeController> {
           },
         ),
 
-        /// category
+        /// info
         Container(
           decoration: BoxDecoration(color: AppColor.sideMenuSecondary),
           child: VStack(
             [
               /// 1
               Obx(
-                () => controller.countSpenderDay.value != 0 && controller.rpcSumByCategory.isNotEmpty
+                () => controller.rpcSpenderDay.isNotEmpty && controller.rpcSumByCategory.isNotEmpty
                     ? HStack([
                         '🔥 High Spendings!'.text.size(12).make(),
                         Spacer(),
                         CustomPopup(
                           content: VStack([
-                            HStack([
-                              'You spend a lot on `${controller.rpcSumByCategory[0].categoryName}`.'.text.black.make(),
-                              Icon(controller.rpcSumByCategory[0].categoryIcon?.getIconData(), size: 12, color: Colors.black).pSymmetric(h: 8),
-                            ]),
-                            Divider().w(220),
-                            'Total Usage: ${controller.rpcSumByCategory[0].total?.moneyFormat()} (${controller.rpcSumByCategory[0].usePercentage}%) '.text.size(12).neutral500.make(),
-                          ]),
+                            'You spend a lot on `${controller.rpcSumByCategory[0].categoryName}`.'.text.size(13).black.make(),
+                            'Total Usage: ${controller.rpcSumByCategory[0].total?.moneyFormat()} (${controller.rpcSumByCategory[0].usePercentage}%) '.text.size(11).minFontSize(11).neutral500.make(),
+                            Divider(),
+                            for (var e in controller.rpcSpenderDay) ...[
+                              '- ${e['date'].toString().reformatDate(from: yMd, to: 'dd MMM')} \t\t ${e['total'].toString().toInt()?.moneyFormat()}'
+                                  .text //
+                                  .neutral500
+                                  .size(11)
+                                  .minFontSize(11)
+                                  .make(),
+                            ],
+                          ]).w(200),
                           child: Container(
                             decoration: ExDecorator.box(borderRadius: 90, borderColor: Colors.transparent, fillColor: AppColor.cardHeaderPrimary),
-                            child: '${controller.countSpenderDay}'.text.size(11).minFontSize(11).makeCentered().pOnly(left: 8, right: 8, top: 2, bottom: 2),
+                            child: '${controller.rpcSpenderDay.length}'.text.size(11).minFontSize(11).makeCentered().pOnly(left: 8, right: 8, top: 2, bottom: 2),
                           ),
                         ),
                       ]).p8()
@@ -189,12 +194,22 @@ class HomeView extends GetView<HomeController> {
                         ).pSymmetric(h: 12).expand(),
                         CustomPopup(
                           content: VStack([
-                            'Budget: ${controller.focusedDay.value.toStringEx(format: 'MMMM')}'.text.black.make(),
+                            'Budget: ${controller.focusedDay.value.toStringEx(format: 'MMMM')}'.text.size(13).black.make(),
                             'Max Budget: ${controller.countMaxBudget.value.moneyFormat()}'.text.size(11).neutral500.make(),
                             'Usage: ${controller.countOfMonth.value.moneyFormat()} (${controller.countRemainingBudget}%)'.text.size(11).neutral500.make(),
-                            Divider(color: Colors.black).w(150),
+                            Divider(color: Colors.black),
                             'Remaining: ${(controller.countMaxBudget.value - controller.countOfMonth.value).moneyFormat()}'.text.size(11).black.make(),
-                          ]),
+                            HStack([
+                              Spacer(),
+                              ExButtonElevated(
+                                label: 'Detail',
+                                labelSize: 10,
+                                labelColor: Colors.white,
+                                height: 28,
+                                onPressed: () => {Get.back(), controller.goSummary()},
+                              )
+                            ]).pOnly(top: 8),
+                          ]).w(180),
                           child: Container(
                             decoration: ExDecorator.box(borderRadius: 90, borderColor: Colors.transparent, fillColor: AppColor.cardHeaderPrimary),
                             child: '${controller.countRemainingBudget}%'.text.size(11).minFontSize(11).makeCentered().pOnly(left: 8, right: 8, top: 2, bottom: 2),
