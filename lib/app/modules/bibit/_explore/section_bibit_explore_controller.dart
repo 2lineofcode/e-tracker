@@ -116,8 +116,10 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
 
   @override
   void onClose() {
-    timerPintuPriceChanges?.cancel();
-    timerBibitPriceChanges?.cancel();
+    try {
+      timerPintuPriceChanges?.cancel();
+      timerBibitPriceChanges?.cancel();
+    } catch (_) {}
     super.onClose();
   }
 }

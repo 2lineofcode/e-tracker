@@ -100,10 +100,18 @@ class HomeView extends GetView<HomeController> {
         /// calendar
         Obx(
           () => MyCalendarHeader(
-            focusedDay: '${controller.focusedDay.value.toStringEx(format: 'MMMM yyyy')}'.text.bold.make().pSymmetric(h: 8),
+            focusedDay: controller.focusedDay.value,
             onGoPrevMonth: () => controller.onCalenderGoPrevMonth(),
             onGoToday: () => controller.onCalenderGoToday(),
             onGoNextMonth: () => controller.onCalenderGoNextMonth(),
+            onGoDate: (dt) {
+              controller.selectedDays.clear();
+              controller.selectedDays.add(dt);
+              controller.focusedDay.value = dt;
+
+              controller.getExpense();
+              controller.onCalenderRefreshEvent(year: dt.toStringEx(format: 'y'));
+            },
           ),
         ),
         Obx(
@@ -237,12 +245,10 @@ class HomeView extends GetView<HomeController> {
       onSwipeLeft: () async {
         controller.focusedDay.value = controller.focusedDay.value.add(1.days);
         await controller.onCalenderDayChange(controller.focusedDay.value, controller.focusedDay.value);
-        await controller.getExpense();
       },
       onSwipeRight: () async {
         controller.focusedDay.value = controller.focusedDay.value.subtract(1.days);
         await controller.onCalenderDayChange(controller.focusedDay.value, controller.focusedDay.value);
-        await controller.getExpense();
       },
       child: controller.obx(
         (state) => Obx(

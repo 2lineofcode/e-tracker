@@ -109,9 +109,9 @@ class HomeController extends GetxController with StateMixin {
     return kEvents[day] ?? [];
   }
 
-  Future<void> onCalenderRefreshEvent() async {
+  Future<void> onCalenderRefreshEvent({String year = ''}) async {
     events.clear();
-    await repo.getExpenseAll().then((res) {
+    await repo.getExpenseAll(year: year).then((res) {
       // Membuat Map untuk mengelompokkan data berdasarkan tanggal
       Map<DateTime, List<String>> groupedData = {};
 
