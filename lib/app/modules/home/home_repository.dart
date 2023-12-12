@@ -1,12 +1,16 @@
+import 'package:ex/ex.dart';
+
 import '../../core/app_base.dart';
+import '../../core/const.dart';
 import '../../models/autocomplete_entity.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
+import '../../models/rpc_sum_by_category_entity.dart';
 
 class HomeRepository {
-  // ------------------------------------------------------------------------
-  // category
-  // ------------------------------------------------------------------------
+  /// ------------------------------------------------------------------------
+  /// ! category
+  /// ------------------------------------------------------------------------
   Future<List<CategoryEntity>> getCategory() async {
     final response = await db.from('category').select().order('max_budget').withConverter<List<CategoryEntity>>((data) {
       return (data as List).map((e) => CategoryEntity.fromJson(e)).toList();
@@ -29,10 +33,9 @@ class HomeRepository {
     return response;
   }
 
-  // ------------------------------------------------------------------------
-  // expense
-  // ------------------------------------------------------------------------
-
+  /// ------------------------------------------------------------------------
+  /// ! expense
+  /// ------------------------------------------------------------------------
   // get all list
   Future<List<ExpenseEntity>> getExpenseAll() async {
     final response = await db.from('expense').select('date, amount').order('date').withConverter<List<ExpenseEntity>>((data) {
@@ -88,9 +91,9 @@ class HomeRepository {
     return response;
   }
 
-  // ------------------------------------------------------------------------
-  // autocomplete
-  // ------------------------------------------------------------------------
+  /// ------------------------------------------------------------------------
+  /// ! autocomplete
+  /// ------------------------------------------------------------------------
   Future<List<String>> findAutoCompleteStringNote(String note) async {
     final response = await db.from('autocomplete').select().ilike('note', '%$note%').withConverter<List<String>>((data) {
       return (data as List).map((e) => e['note'].toString()).toList();
@@ -112,5 +115,27 @@ class HomeRepository {
       'amount': amount,
     });
     return response;
+  }
+
+  /// ------------------------------------------------------------------------
+  /// ! rpc
+  /// ------------------------------------------------------------------------
+  Future<int> rpcGetSpenderDay(DateTime focusedDay) async {
+    final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
+    final result = await db.rpc('get_spender_day', params: {'periode': fixYM});
+    return result.length;
+  }
+
+  Future<List<RpcSumByCategoryEntity>> rpcSumByCategory(DateTime focusedDay) async {
+    final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
+    final res = await db
+        .rpc('sum_by_category', params: {
+          'periode': fixYM,
+        })
+        .order('use_percentage', ascending: false)
+        .withConverter<List<RpcSumByCategoryEntity>>((data) {
+          return (data as List).map((e) => RpcSumByCategoryEntity.fromJson(e)).toList();
+        });
+    return res;
   }
 }

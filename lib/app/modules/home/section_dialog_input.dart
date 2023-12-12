@@ -392,9 +392,7 @@ mixin DialogInputHelper {
                 ],
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) async => {
-                  Get.back(),
-                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
-                  await customCallback?.call(),
+                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text, customCallback: customCallback),
                 },
               ).h(32),
             ),
@@ -408,22 +406,13 @@ mixin DialogInputHelper {
               if (expense != null) ...[
                 ExButtonElevated(
                   child: Text('Delete', style: TextStyle(color: Vx.red500, fontSize: 13)),
-                  onPressed: () async {
-                    Get.back();
-                    await _repo.deleteExpense(expense.id!);
-                    await _controller.getExpense();
-                    await _controller.onCalenderRefreshEvent();
-                    await customCallback?.call();
-                    AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
-                  },
+                  onPressed: () async => await _deleteExpense(expense: expense, customCallback: customCallback),
                 ).pOnly(right: 12).expand(),
               ],
               ExButtonElevated(
                 child: Text('Submit', style: TextStyle(fontSize: 13)),
                 onPressed: () async {
-                  Get.back();
-                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text);
-                  await customCallback?.call();
+                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text, customCallback: customCallback);
                 },
               ).expand(),
             ],
@@ -602,9 +591,7 @@ mixin DialogInputHelper {
                 ],
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) async => {
-                  Get.back(),
-                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text),
-                  await customCallback?.call(),
+                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text, customCallback: customCallback),
                 },
               ).h(32),
             ),
@@ -615,29 +602,43 @@ mixin DialogInputHelper {
         if (expense != null) ...[
           CupertinoDialogAction(
             child: Text('Delete', style: TextStyle(color: Vx.red500, fontSize: 13)),
-            onPressed: () async {
-              Get.back();
-              await _repo.deleteExpense(expense.id!);
-              await _controller.getExpense();
-              await _controller.onCalenderRefreshEvent();
-              await customCallback?.call();
-              AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
-            },
+            onPressed: () async => await _deleteExpense(expense: expense, customCallback: customCallback),
           ),
         ],
         CupertinoDialogAction(
           child: Text('Submit', style: TextStyle(fontSize: 13)),
           onPressed: () async {
-            Get.back();
-            await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text);
-            await customCallback?.call();
+            await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategory.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text, customCallback: customCallback);
           },
         ),
       ],
     );
   }
 
-  static Future<void> _submitExpense(String tfNote, String? tfDescription, String tfCategory, String tfAmount, {ExpenseEntity? expense, String? tfDate}) async {
+  /// delete
+  static Future<void> _deleteExpense({ExpenseEntity? expense, Function? customCallback}) async {
+    Get.back(); // close dialog first
+    await _repo.deleteExpense(expense!.id!);
+    await _controller.getExpense();
+    await _controller.onCalenderRefreshEvent();
+    await _controller.getCount1Month(_controller.focusedDay.value);
+    _controller.countSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
+    _controller.rpcSumByCategory.value = await _repo.rpcSumByCategory(_controller.focusedDay.value);
+    await customCallback?.call();
+    AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
+  }
+
+  /// submit
+  static Future<void> _submitExpense(
+    String tfNote,
+    String? tfDescription,
+    String tfCategory,
+    String tfAmount, {
+    ExpenseEntity? expense,
+    String? tfDate,
+    Function? customCallback,
+  }) async {
+    Get.back(); // close dialog first
     if (tfNote.isEmptyOrNull) return;
     if (tfCategory.isEmptyOrNull) return;
     if (tfAmount.isEmptyOrNull) return;
@@ -658,8 +659,11 @@ mixin DialogInputHelper {
       expense != null ? await _repo.editExpense(entity) : await _repo.addExpense(entity);
       await _repo.addAutoComplete('${tfNote.toTitleCase}', categoryName: '${entity.categoryName}', amount: '${entity.amount}');
       await _controller.getExpense(find: _controller.tfSearchExpense.value.text.isNotBlank ? _controller.tfSearchExpense.value.text : null);
+      await _controller.getCount1Month(_controller.focusedDay.value);
+      _controller.countSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
+      _controller.rpcSumByCategory.value = await _repo.rpcSumByCategory(_controller.focusedDay.value);
+      await customCallback?.call();
       AppNotif.show('Successfully ${expense != null ? 'Edit' : 'Added'} $tfNote', color: Vx.green600);
-      Get.back();
     } catch (e) {
       logE('e: $e');
       AppNotif.show('$e', color: Vx.green600);

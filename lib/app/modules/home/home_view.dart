@@ -13,9 +13,7 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../core/app_color.dart';
 import '../../core/const.dart';
-import '../../helpers/helper_decoration.dart';
-import '../../helpers/helper_misc.dart';
-import '../../helpers/helper_money.dart';
+import '../../helpers/helpers.dart';
 import '../../models/expense_entity.dart';
 import '../../routes/app_pages.dart';
 import '../widgets/widgets.dart';
@@ -115,7 +113,7 @@ class HomeView extends GetView<HomeController> {
             minimumDate: DateTime.utc(2020),
             maximumDate: DateTime.utc(2030),
             onCalendarCreated: (c) => controller.calenderPageController = c,
-            onPageChanged: (focusedDay) => controller.focusedDay.value = focusedDay,
+            onPageChanged: (fd) => controller.onCalenderPageChanged(fd),
             onDaySelected: controller.onCalenderDayChange,
             selectedDayPredicate: (day) => controller.selectedDays.contains(day),
             eventLoader: controller.onCalenderLoadEvent,
@@ -139,9 +137,60 @@ class HomeView extends GetView<HomeController> {
           decoration: BoxDecoration(color: AppColor.sideMenuSecondary),
           child: VStack(
             [
+              /// 1
               Obx(
-                () => ' 📦 CATEGORY (${controller.categoryList.length})'.text.bold.make().onTap(() => controller.getCategory()).pSymmetric(h: 8, v: 16),
+                () => controller.countSpenderDay.value != 0 && controller.rpcSumByCategory.isNotEmpty
+                    ? HStack([
+                        '🔥 High Spendings!'.text.size(12).make(),
+                        Spacer(),
+                        CustomPopup(
+                          content: VStack([
+                            HStack([
+                              'You spend a lot on `${controller.rpcSumByCategory[0].categoryName}`.'.text.black.make(),
+                              Icon(controller.rpcSumByCategory[0].categoryIcon?.getIconData(), size: 12, color: Colors.black).pSymmetric(h: 8),
+                            ]),
+                            Divider().w(220),
+                            'Total Usage: ${controller.rpcSumByCategory[0].total?.moneyFormat()} (${controller.rpcSumByCategory[0].usePercentage}%) '.text.size(12).neutral500.make(),
+                          ]),
+                          child: Container(
+                            decoration: ExDecorator.box(borderRadius: 90, borderColor: Colors.transparent, fillColor: AppColor.cardHeaderPrimary),
+                            child: '${controller.countSpenderDay}'.text.size(11).minFontSize(11).makeCentered().pOnly(left: 8, right: 8, top: 2, bottom: 2),
+                          ),
+                        ),
+                      ]).p8()
+                    : Container(),
               ),
+
+              /// 2
+              Obx(
+                () => controller.countRemainingBudget.value != 0
+                    ? HStack([
+                        '💰 Budget'.text.size(12).make(),
+                        ExProgress(
+                          value: controller.countRemainingBudget.value,
+                          color1: (controller.countRemainingBudget.value).toInt() < 100 ? AppColor.greenDark : AppColor.redDark,
+                          color2: Vx.neutral300,
+                          height: 8,
+                        ).pSymmetric(h: 12).expand(),
+                        CustomPopup(
+                          content: VStack([
+                            'Budget: ${controller.focusedDay.value.toStringEx(format: 'MMMM')}'.text.black.make(),
+                            'Max Budget: ${controller.countMaxBudget.value.moneyFormat()}'.text.size(11).neutral500.make(),
+                            'Usage: ${controller.countOfMonth.value.moneyFormat()} (${controller.countRemainingBudget}%)'.text.size(11).neutral500.make(),
+                            Divider(color: Colors.black).w(150),
+                            'Remaining: ${(controller.countMaxBudget.value - controller.countOfMonth.value).moneyFormat()}'.text.size(11).black.make(),
+                          ]),
+                          child: Container(
+                            decoration: ExDecorator.box(borderRadius: 90, borderColor: Colors.transparent, fillColor: AppColor.cardHeaderPrimary),
+                            child: '${controller.countRemainingBudget}%'.text.size(11).minFontSize(11).makeCentered().pOnly(left: 8, right: 8, top: 2, bottom: 2),
+                          ),
+                        ),
+                      ]).p8()
+                    : Container(),
+              ),
+
+              /// 3
+              Divider(),
               Obx(
                 () => ListView.builder(
                   padding: EdgeInsets.zero,
@@ -168,6 +217,8 @@ class HomeView extends GetView<HomeController> {
                   },
                 ).expand(),
               ),
+
+              /// 4
               TextField(
                 controller: controller.tfCategory,
                 decoration: MyDecoration.input(hint: 'Add Category'),

@@ -16,9 +16,9 @@ class SettingsRepository {
     ];
   }
 
-  // ------------------------------------------------------------------------
-  // autocomplete
-  // ------------------------------------------------------------------------
+  /// ------------------------------------------------------------------------
+  /// ! autocomplete
+  /// ------------------------------------------------------------------------
   Future<List<AutoCompleteEntity>> getAutoComplete() async {
     final response = await db.from('autocomplete').select().order('note', ascending: true).withConverter<List<AutoCompleteEntity>>((data) {
       return (data as List).map((e) => AutoCompleteEntity.fromJson(e)).toList();

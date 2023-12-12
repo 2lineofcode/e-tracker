@@ -10,6 +10,9 @@ class FilteringRepository {
     ];
   }
 
+  /// ------------------------------------------------------------------------
+  /// ! category
+  /// ------------------------------------------------------------------------
   Future<List<CategoryEntity>> getCategory() async {
     final response = await db.from('category').select().order('max_budget').withConverter<List<CategoryEntity>>((data) {
       return (data as List).map((e) => CategoryEntity.fromJson(e)).toList();
@@ -17,6 +20,9 @@ class FilteringRepository {
     return response;
   }
 
+  /// ------------------------------------------------------------------------
+  /// ! expense
+  /// ------------------------------------------------------------------------
   Future<List<ExpenseEntity>> findExpense(
     String categoryName,
     String startDate,

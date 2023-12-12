@@ -6,7 +6,9 @@ import '../../models/rpc_sum_by_category_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
 
 class SummaryRepository {
-  /// rpc
+  /// ------------------------------------------------------------------------
+  /// ! rpc
+  /// ------------------------------------------------------------------------
   Future<List<RpcSumAllMonthEntity>> getSumAllMonth({required String year}) async {
     return await db.rpc('sum_all_month', params: {
       'year_param': year.toInt(),

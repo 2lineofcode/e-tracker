@@ -21,6 +21,9 @@ class BibitRepository {
     ];
   }
 
+  /// ------------------------------------------------------------------------
+  /// ! bibit
+  /// ------------------------------------------------------------------------
   /// ws
   Future<String> getWSKey() async {
     try {
@@ -112,7 +115,7 @@ class BibitRepository {
   }
 
   /// ------------------------------------------------------------------------
-  /// p i n t u
+  /// ! pintu
   /// ------------------------------------------------------------------------
   /// getSupportedCurrencies
   Future<List<PintuSupportedCurrenciesPayload>> getSupportedCurrencies() async {

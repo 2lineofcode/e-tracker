@@ -11,6 +11,7 @@ import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_notif.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
+import '../../models/rpc_sum_by_category_entity.dart';
 import 'home_repository.dart';
 
 class HomeController extends GetxController with StateMixin {
@@ -28,13 +29,17 @@ class HomeController extends GetxController with StateMixin {
   final categoryList = <CategoryEntity>[].obs;
   final categorySelected = ''.obs;
 
-  /// list
+  /// expense
   final expenseList = <ExpenseEntity>[].obs;
   final tfSearchExpense = TextEditingController().obs;
 
   /// count
   final countOfDay = 0.obs;
   final countOfMonth = 0.obs;
+  final countSpenderDay = 0.obs;
+  final countMaxBudget = 0.obs;
+  final countRemainingBudget = 0.obs;
+  final rpcSumByCategory = <RpcSumByCategoryEntity>[].obs;
 
   /// flag
   final isSearchMode = false.obs;
@@ -48,6 +53,8 @@ class HomeController extends GetxController with StateMixin {
     await getExpense();
     await getCount1Month(DateTime.now());
     await onCalenderRefreshEvent();
+    countSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
+    rpcSumByCategory.value = await repo.rpcSumByCategory(focusedDay.value);
     super.onInit();
   }
 
@@ -65,7 +72,6 @@ class HomeController extends GetxController with StateMixin {
     focusedDay.value = DateTime.now();
     selectedDays.add(DateTime.now());
     await getExpense();
-    await getCount1Month(DateTime.now());
     closeDrawer();
   }
 
@@ -75,17 +81,21 @@ class HomeController extends GetxController with StateMixin {
     focusedDay.value = selectedDate;
     selectedDays.add(selectedDate);
     await getExpense();
-    await getCount1Month(selectedDate);
   }
 
   Future<void> onCalenderGoPrevMonth() async {
     await calenderPageController.previousPage(duration: 300.milliseconds, curve: Curves.easeIn);
-    await getCount1Month(focusedDay.value);
   }
 
   Future<void> onCalenderGoNextMonth() async {
     await calenderPageController.nextPage(duration: 300.milliseconds, curve: Curves.easeIn);
-    await getCount1Month(focusedDay.value);
+  }
+
+  Future<void> onCalenderPageChanged(DateTime fd) async {
+    focusedDay.value = fd;
+    await getCount1Month(fd);
+    countSpenderDay.value = await repo.rpcGetSpenderDay(fd);
+    rpcSumByCategory.value = await repo.rpcSumByCategory(focusedDay.value);
   }
 
   List<String> onCalenderLoadEvent(DateTime day) {
@@ -123,6 +133,12 @@ class HomeController extends GetxController with StateMixin {
   Future<void> getCount1Month(DateTime dateTime) async {
     final month = dateTime.toStringEx(format: yM);
     countOfMonth.value = await repo.getCount1Month(month);
+
+    // count percentage of remain budget
+    var sum = 0;
+    for (var e in categoryList) sum += e.maxBudget ?? 0;
+    countMaxBudget.value = sum;
+    countRemainingBudget.value = (countOfMonth.value / sum * 100).toInt();
   }
 
   /// category
