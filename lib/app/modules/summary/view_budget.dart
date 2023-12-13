@@ -156,8 +156,14 @@ class ViewBudget extends GetView<SummaryController> {
             [
               'Remaining Budget'.text.size(11).make().pOnly(right: 8),
               Container(
-                color: Colors.blue,
-                child: '${controller.monthSelected.value} ${controller.yearSelected.value}'.text.size(11).minFontSize(11).color(AppColor.textOnBackground).make().pSymmetric(h: 4, v: 2),
+                color: Vx.blue500,
+                child: '${controller.monthSelected.value.reformatDate(from: 'MMMM', to: 'MMM')} ${controller.yearSelected.value}'
+                    .text
+                    .size(11)
+                    .minFontSize(11)
+                    .color(AppColor.textOnBackground)
+                    .make()
+                    .pSymmetric(h: 4, v: 2),
               ).cornerRadius(4),
               Spacer(),
               Obx(() => '${controller.countRemainingBudget.value.moneyFormat()}'.text.bold.size(16).make()),

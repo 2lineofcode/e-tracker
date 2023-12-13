@@ -1,4 +1,6 @@
 import 'dart:ui';
+import 'package:ex/ex.dart';
+
 import '../core/app_color.dart';
 
 mixin BibitHelper {
@@ -82,6 +84,22 @@ mixin BibitHelper {
         return AppColor.red;
       } else {
         return AppColor.textReverse;
+      }
+    } catch (_) {
+      return AppColor.textReverse;
+    }
+  }
+
+  /// #### getColorForPercentage
+  /// if number > 100, return red, else if number > 80, return orange, else return green
+  static Color getColorForPercentage(dynamic number) {
+    try {
+      if (number > 100) {
+        return Vx.red600;
+      } else if (number > 80) {
+        return Vx.orange600;
+      } else {
+        return Vx.green600;
       }
     } catch (_) {
       return AppColor.textReverse;

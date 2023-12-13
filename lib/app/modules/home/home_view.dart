@@ -163,7 +163,12 @@ class HomeView extends GetView<HomeController> {
                         CustomPopup(
                           content: VStack([
                             'You spend a lot on `${controller.rpcSumByCategory[0].categoryName}`.'.text.size(13).black.make(),
-                            'Total Usage: ${controller.rpcSumByCategory[0].total?.moneyFormat()} (${controller.rpcSumByCategory[0].usePercentage}%) '.text.size(11).minFontSize(11).neutral500.make(),
+                            'Total Usage: ${controller.rpcSumByCategory[0].total?.moneyFormat()} (${controller.rpcSumByCategory[0].usePercentage}%) '
+                                .text
+                                .size(11)
+                                .minFontSize(11)
+                                .color(controller.rpcSumByCategory[0].usePercentage! > 100 ? Colors.red : Vx.neutral500)
+                                .make(),
                             Divider(),
                             for (var e in controller.rpcSpenderDay) ...[
                               '- ${e['date'].toString().reformatDate(from: yMd, to: 'dd MMM')} \t\t ${e['total'].toString().toInt()?.moneyFormat()}'
@@ -192,7 +197,7 @@ class HomeView extends GetView<HomeController> {
                         '💰 Budget'.text.size(12).make(),
                         ExProgressBar(
                           value: controller.countRemainingBudget.value,
-                          color1: (controller.countRemainingBudget.value).toInt() < 100 ? AppColor.greenDark : AppColor.redDark,
+                          color1: BibitHelper.getColorForPercentage((controller.countRemainingBudget.value).toInt()),
                           color2: Vx.neutral300,
                           height: 8,
                           radius: 4,
