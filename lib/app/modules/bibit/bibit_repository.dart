@@ -120,7 +120,7 @@ class BibitRepository {
   /// getSupportedCurrencies
   Future<List<PintuSupportedCurrenciesPayload>> getSupportedCurrencies() async {
     try {
-      final res = await api.get('https://api.pintu.co.id/v2/wallet/supportedCurrencies');
+      final res = await api.get('https://api.pintu.co.id/v2/wallet/supportedCurrencies', header: {});
       return PintuSupportedCurrencies.fromJson(res.body).payload!;
     } catch (e) {
       throw ApiException('$e');
@@ -130,7 +130,7 @@ class BibitRepository {
   /// getPriceChanges
   Future<List<PintuPriceChangesPayload>> getPriceChanges() async {
     try {
-      final res = await api.get('https://api.pintu.co.id/v2/trade/price-changes');
+      final res = await api.get('https://api.pintu.co.id/v2/trade/price-changes', header: {});
       return PintuPriceChanges.fromJson(res.body).payload!;
     } catch (e) {
       throw ApiException('$e');

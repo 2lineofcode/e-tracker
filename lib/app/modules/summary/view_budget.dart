@@ -24,20 +24,26 @@ class ViewBudget extends GetView<SummaryController> {
     return controller.obx(
       (state) => SwipeTo(
         onLeftSwipe: (details) async {
-          // +1
-          final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
-          if (currentMonth.month == 12) await controller.onYearNext();
+          if (controller.isShowAllYear.isFalse) {
+            final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
+            if (currentMonth.month == 12) await controller.onYearNext();
 
-          final add1Month = DateTime(currentMonth.year, currentMonth.month + 1, currentMonth.day);
-          await controller.onMonthChange(add1Month.toStringEx(format: 'MMMM'));
+            final add1Month = DateTime(currentMonth.year, currentMonth.month + 1, currentMonth.day);
+            await controller.onMonthChange(add1Month.toStringEx(format: 'MMMM'));
+          } else {
+            await controller.onYearNext();
+          }
         },
         onRightSwipe: (details) async {
-          // -1
-          final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
-          if (currentMonth.month == 1) await controller.onYearPrev();
+          if (controller.isShowAllYear.isFalse) {
+            final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
+            if (currentMonth.month == 1) await controller.onYearPrev();
 
-          final subtract1Month = DateTime(currentMonth.year, currentMonth.month - 1, currentMonth.day);
-          await controller.onMonthChange(subtract1Month.toStringEx(format: 'MMMM'));
+            final subtract1Month = DateTime(currentMonth.year, currentMonth.month - 1, currentMonth.day);
+            await controller.onMonthChange(subtract1Month.toStringEx(format: 'MMMM'));
+          } else {
+            await controller.onYearPrev();
+          }
         },
         child: VStack(
           [

@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 
 import '../../core/app_color.dart';
 import '../../core/const.dart';
-import '../../helpers/helper_money.dart';
+import '../../helpers/helpers.dart';
 import '../widgets/widgets.dart';
 import 'summary_controller.dart';
 import 'view_budget.dart';
@@ -16,14 +16,13 @@ class SummaryView extends GetView<SummaryController> {
   const SummaryView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: MyLayout(
-        appBarTitle: 'Summary'.text.size(11).bold.make(),
-        appBarAction: appBarAction(),
-        sideMenuContent: sideMenuContent(),
-        bodyContent: Obx(() => bodyContent()),
-        footerContent: footerContent(),
-      ),
+    return MyLayout(
+      drawerKey: drawerKeySummary,
+      appBarTitle: 'Summary'.text.size(11).bold.make(),
+      appBarAction: appBarAction(),
+      sideMenuContent: sideMenuContent(),
+      bodyContent: Obx(() => bodyContent()),
+      footerContent: footerContent(),
     );
   }
 

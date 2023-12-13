@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_color.dart';
+import '../../helpers/helpers.dart';
 import '../widgets/widgets.dart';
 import 'section_appconfig.dart';
 import 'section_autocomplete.dart';
@@ -16,13 +17,12 @@ class SettingsView extends GetView<SettingsController> {
   const SettingsView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: MyLayout(
-        appBarTitle: 'Settings'.text.size(11).bold.make(),
-        sideMenuContent: sideMenuContent(),
-        bodyContent: Obx(() => bodyContent().p8()),
-        footerContent: footerContent(),
-      ),
+    return MyLayout(
+      drawerKey: drawerKeySetting,
+      appBarTitle: 'Settings'.text.size(11).bold.make(),
+      sideMenuContent: sideMenuContent(),
+      bodyContent: Obx(() => bodyContent().p8()),
+      footerContent: footerContent(),
     );
   }
 

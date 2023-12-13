@@ -9,6 +9,7 @@ import '../../core/app_color.dart';
 class MyLayout extends StatelessWidget {
   const MyLayout({
     super.key,
+    this.drawerKey,
     required this.appBarTitle,
     this.appBarLeading,
     this.appBarAction,
@@ -21,6 +22,8 @@ class MyLayout extends StatelessWidget {
     this.floatingActionButton,
     this.isShowAppBarLeading = true,
   });
+
+  final GlobalKey<ScaffoldState>? drawerKey;
 
   // appBar
   final Widget? appBarTitle;
@@ -47,6 +50,8 @@ class MyLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: drawerKey,
+
       /// drawer -> Mobile
       drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
 

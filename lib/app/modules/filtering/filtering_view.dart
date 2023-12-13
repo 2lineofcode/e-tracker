@@ -26,13 +26,12 @@ class FilteringView extends GetView<FilteringController> {
   const FilteringView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: MyLayout(
-        appBarTitle: 'Advance Filter'.text.size(11).bold.make(),
-        sideMenuContent: sideMenuContent(),
-        bodyContent: bodyContent(),
-        footerContent: footerContent(),
-      ),
+    return MyLayout(
+      drawerKey: drawerKeyFiltering,
+      appBarTitle: 'Advance Filter'.text.size(11).bold.make(),
+      sideMenuContent: sideMenuContent(),
+      bodyContent: bodyContent(),
+      footerContent: footerContent(),
     );
   }
 

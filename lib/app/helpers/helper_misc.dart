@@ -88,8 +88,28 @@ extension IconDataToString on IconData {
 }
 
 // ------------------------------------------------------------------------
-// Mobile Only
+// Mobile Only: closeDrawer -> only close when drawer is open
 // ------------------------------------------------------------------------
+final drawerKeyHome = GlobalKey<ScaffoldState>();
+final drawerKeySummary = GlobalKey<ScaffoldState>();
+final drawerKeySetting = GlobalKey<ScaffoldState>();
+final drawerKeyFiltering = GlobalKey<ScaffoldState>();
+final drawerKeyBibit = GlobalKey<ScaffoldState>();
+final _gsk = <GlobalKey<ScaffoldState>>[
+  drawerKeyHome,
+  drawerKeySummary,
+  drawerKeySetting,
+  drawerKeyFiltering,
+  drawerKeyBibit,
+];
 void closeDrawer() {
-  if (Get.context!.isMobile) Get.back();
+  if (Get.context!.isMobile) {
+    for (var k in _gsk) {
+      if (k.currentState != null) {
+        if (k.currentState!.isDrawerOpen == true) {
+          k.currentState!.openEndDrawer();
+        }
+      }
+    }
+  }
 }

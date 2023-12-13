@@ -22,17 +22,16 @@ class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: MyLayout(
-        appBarTitle: appBarTitle(),
-        appBarLeading: appBarLeading().pOnly(right: 8),
-        appBarAction: appBarAction(),
-        sideMenuContent: sideMenuContent(),
-        sideMenuWidth: 258,
-        bodyContent: bodyContent(),
-        footerContent: footerContent(),
-        floatingActionButton: floatingActionButton(),
-      ),
+    return MyLayout(
+      drawerKey: drawerKeyHome,
+      appBarTitle: appBarTitle(),
+      appBarLeading: appBarLeading().pOnly(right: 8),
+      appBarAction: appBarAction(),
+      sideMenuContent: sideMenuContent(),
+      sideMenuWidth: 258,
+      bodyContent: bodyContent(),
+      footerContent: footerContent(),
+      floatingActionButton: floatingActionButton(),
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_color.dart';
+import '../../helpers/helpers.dart';
 import '../widgets/widgets.dart';
 import '_explore/section_bibit_explore_view.dart';
 import '_home/section_bibit_home_view.dart';
@@ -14,6 +15,7 @@ class BibitView extends GetView<BibitController> {
   @override
   Widget build(BuildContext context) {
     return MyLayout(
+      drawerKey: drawerKeyBibit,
       appBarTitle: appBarTitle(),
       appBarAction: appBarAction().pOnly(right: 4),
       sideMenuContent: sideMenuContent(),
