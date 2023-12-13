@@ -2,6 +2,7 @@ import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_month_picker/flutter_month_picker.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 
 import 'package:get/get.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
@@ -276,6 +277,24 @@ class FilteringView extends GetView<FilteringController> {
           decoration: BoxDecoration(color: AppColor.cardItemPrimary),
           child: HStack(
             [
+              // row 0
+              CustomPopup(
+                content: VStack(
+                  [
+                    '${item.categoryName}'.text.black.size(13).make(),
+                    item.detail.isNotEmptyAndNotNull ? '${item.detail}'.text.black.size(12).make() : 0.heightBox,
+                  ],
+                ),
+                child: Container(
+                  decoration: ExDecorator.box(),
+                  child: Icon(
+                    item.category?.icon?.getIconData() ?? Icons.circle,
+                    size: 16,
+                    color: item.category?.color?.fromHex,
+                  ).p8(),
+                ).pOnly(left: 8),
+              ),
+
               // row 1
               VStack([
                 '${item.note}'.text.size(13).make().pOnly(bottom: 4),

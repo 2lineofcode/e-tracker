@@ -34,7 +34,7 @@ class FilteringRepository {
       response = await db
           .from('expense')
           //
-          .select()
+          .select('*, category(*)')
           .filter('date', 'gte', startDate)
           .filter('date', 'lte', endDate)
           .order(orderBy ?? 'amount', ascending: false)
@@ -44,7 +44,7 @@ class FilteringRepository {
     } else {
       response = await db
           .from('expense')
-          .select()
+          .select('*, category(*)')
           .eq('category_name', categoryName)
           .filter('date', 'gte', startDate)
           .filter('date', 'lte', endDate)
