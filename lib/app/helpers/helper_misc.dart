@@ -15,15 +15,20 @@ extension TimeAgoToString on DateTime {
   /// String timeAgo = postTime.getTimeAgoFromNow();
   /// ```
   /// Output: '2 months ago'
+  ///
   String getTimeAgoFromNow() {
-    Duration difference = DateTime.now().difference(this);
+    final selDate = toStringEx(format: 'yyyy-MM-dd').toDateEx(format: 'yyyy-MM-dd');
+    final now = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    Duration difference = now.difference(selDate);
     int days = difference.inDays;
-    final diff = DateTime.now().subtract(Duration(days: days));
-
-    if (DateTime.now().isBefore(this)) {
-      return '~'; // don't allow future
+    log('days: $days');
+    final diff = now.subtract(Duration(days: days));
+    if (now.isBefore(selDate)) {
+      return '~';
     } else {
-      return diff.ago().replaceAll('Just now', 'Today');
+      var output = diff.ago();
+      if (days <= 0) output = 'Today';
+      return output;
     }
   }
 }
