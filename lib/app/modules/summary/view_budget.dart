@@ -4,6 +4,7 @@ import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
+import 'package:swipe_to/swipe_to.dart';
 
 import '../../core/app_color.dart';
 import '../../helpers/helper_misc.dart';
@@ -21,17 +22,35 @@ class ViewBudget extends GetView<SummaryController> {
   @override
   Widget build(BuildContext context) {
     return controller.obx(
-      (state) => VStack(
-        [
-          /// header ~
-          if (controller.isShowAllYear.isTrue) headerAllYear() else headerPerMonth(),
+      (state) => SwipeTo(
+        onLeftSwipe: (details) async {
+          // +1
+          final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
+          if (currentMonth.month == 12) await controller.onYearNext();
 
-          16.heightBox,
+          final add1Month = DateTime(currentMonth.year, currentMonth.month + 1, currentMonth.day);
+          await controller.onMonthChange(add1Month.toStringEx(format: 'MMMM'));
+        },
+        onRightSwipe: (details) async {
+          // -1
+          final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
+          if (currentMonth.month == 1) await controller.onYearPrev();
 
-          /// detail
-          if (controller.isShowAllYear.isTrue) detailAllYear().expand() else detailPerMonth().expand(),
-        ],
-      ).p12(),
+          final subtract1Month = DateTime(currentMonth.year, currentMonth.month - 1, currentMonth.day);
+          await controller.onMonthChange(subtract1Month.toStringEx(format: 'MMMM'));
+        },
+        child: VStack(
+          [
+            /// header ~
+            if (controller.isShowAllYear.isTrue) headerAllYear() else headerPerMonth(),
+
+            16.heightBox,
+
+            /// detail
+            if (controller.isShowAllYear.isTrue) detailAllYear().expand() else detailPerMonth().expand(),
+          ],
+        ).p12(),
+      ),
       onLoading: MyShimmerSummary(),
     );
   }
