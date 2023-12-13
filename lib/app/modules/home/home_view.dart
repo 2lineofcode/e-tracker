@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:lottie/lottie.dart';
+import 'package:swipe_to/swipe_to.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../core/app_color.dart';
@@ -78,8 +77,12 @@ class HomeView extends GetView<HomeController> {
         ],
 
         IconButton(
-          icon: SvgPicture.asset('assets/icons/ic_robo.svg', width: 22, color: Get.isDarkMode ? Colors.white70 : Colors.white),
           onPressed: () => controller.goBibit(),
+          icon: SvgPicture.asset(
+            'assets/icons/ic_robo.svg',
+            width: 22,
+            colorFilter: ColorFilter.mode(Get.isDarkMode ? Colors.white70 : Colors.white, BlendMode.srcIn),
+          ),
         ).pOnly(right: 4),
 
         IconButton(
@@ -265,12 +268,12 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget bodyContent() {
-    return ExSwipe(
-      onSwipeLeft: () async {
+    return SwipeTo(
+      onLeftSwipe: (detail) async {
         controller.focusedDay.value = controller.focusedDay.value.add(1.days);
         await controller.onCalenderDayChange(controller.focusedDay.value, controller.focusedDay.value);
       },
-      onSwipeRight: () async {
+      onRightSwipe: (detail) async {
         controller.focusedDay.value = controller.focusedDay.value.subtract(1.days);
         await controller.onCalenderDayChange(controller.focusedDay.value, controller.focusedDay.value);
       },
@@ -281,156 +284,19 @@ class HomeView extends GetView<HomeController> {
               /// header
               Obx(
                 () => controller.isSearchMode.isFalse
-
                     // normal view
-                    ? HStack(
-                        [
-                          Container(
-                            color: Colors.blue,
-                            height: 28,
-                            child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).makeCentered().pSymmetric(h: 4, v: 2),
-                          ).cornerRadius(4).pOnly(right: 10),
-                          VStack([
-                            '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
-                            '${controller.focusedDay.value.getTimeAgoFromNow()}'.text.size(11).minFontSize(11).make(),
-                          ]),
-                          Spacer(),
-                          CustomPopup(
-                            content: 'Your score of spend this day'.text.color(AppColor.textOnWhiteBackground).make(),
-                            child: Container(
-                              decoration: ExDecorator.box(
-                                borderRadius: 90,
-                                borderColor: controller.countOfDay.value.getFlagColorLight(),
-                              ),
-                              child: '${controller.countOfDay.value.getFlagText()} Day'
-                                  //
-                                  .text
-                                  .size(12)
-                                  .minFontSize(12)
-                                  .color(controller.countOfDay.value.getFlagColorLight())
-                                  .make()
-                                  .p4()
-                                  .pSymmetric(h: 4),
-                            ),
-                          ),
-                        ],
-                      ).pOnly(bottom: 12)
-
-                    // search mode
-                    : 'Search for: "${controller.tfSearchExpense.value.text}"'.text.bold.make().pOnly(bottom: 12),
+                    ? bodyHeaderBasicView()
+                    // search mode view
+                    : bodyHeaderSearchView(),
               ).pSymmetric(h: 12).pOnly(top: 12),
 
               /// item
               Obx(
                 () => controller.isSearchMode.isFalse
-
-                    /// normal view
-                    ? ListView.builder(
-                        itemCount: controller.expenseList.length,
-                        itemBuilder: (context, index) {
-                          final item = controller.expenseList[index];
-                          final isTypeNotes = item.categoryName?.contains('Notes') ?? false;
-
-                          return Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: isTypeNotes ? AppColor.noteColor : AppColor.cardItemSecondary,
-                              borderRadius: BorderRadius.all(Radius.circular(4)),
-                            ),
-                            child: Row(
-                              children: [
-                                VStack([
-                                  /// note
-                                  '${item.note}'.text.bold.make().pOnly(bottom: 8),
-
-                                  /// detail
-                                  item.detail.isNotEmptyAndNotNull
-                                      ? '${item.detail}'
-                                          //
-                                          .text
-                                          .size(12)
-                                          .color(isTypeNotes ? Vx.neutral300 : Vx.neutral500)
-                                          .make()
-                                          .pOnly(bottom: 8)
-                                      : 0.heightBox,
-
-                                  /// category
-                                  HStack([
-                                    Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, color: item.category?.color?.fromHex, size: 12).pOnly(right: 8),
-                                    '${item.category?.name}'
-                                        //
-                                        .text
-                                        .size(12)
-                                        .color(isTypeNotes ? Vx.white : AppColor.textReverse)
-                                        .make(),
-                                    Spacer(),
-                                    isTypeNotes ? '${item.createdAt?.reformatDate(to: 'HH:mm')}'.text.size(11).minFontSize(11).make() : 0.heightBox,
-                                  ]),
-                                ]).expand(),
-
-                                /// amount
-                                isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
-                              ],
-                            ).p12(),
-                          ).pSymmetric(h: 8, v: 4).onInkTap(() => DialogInputHelper.showDialogExpense(expense: item));
-                        },
-                      ).pSymmetric(v: 8).expand()
-
-                    /// search mode view
-                    : GroupedListView<ExpenseEntity, String>(
-                        elements: controller.expenseList,
-                        groupBy: (element) => element.date ?? '',
-                        useStickyGroupSeparators: true,
-                        floatingHeader: true,
-                        order: GroupedListOrder.DESC,
-                        groupHeaderBuilder: (item) => Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(color: AppColor.cardHeaderPrimary),
-                          child: HStack([
-                            '${item.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).bold.make(),
-                            Spacer(),
-                            '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'.text.minFontSize(10).size(10).make(),
-                          ]).p8(),
-                        ).onTap(() async => await controller.onCalenderGoDate(item.date!.toDateEx(format: yMd))),
-                        indexedItemBuilder: (context, item, index) {
-                          final isTypeNotes = item.categoryName?.contains('Notes') ?? false;
-                          return Container(
-                            color: isTypeNotes ? AppColor.noteColor : null,
-                            width: double.infinity,
-                            child: Row(
-                              children: [
-                                VStack([
-                                  /// note
-                                  '${item.note}'.text.bold.make().pOnly(bottom: 8),
-
-                                  /// detail
-                                  item.detail.isNotEmptyAndNotNull
-                                      ? '${item.detail}'
-                                          //
-                                          .text
-                                          .size(12)
-                                          .color(isTypeNotes ? Vx.neutral300 : Vx.neutral500)
-                                          .make()
-                                          .pOnly(bottom: 8)
-                                      : 0.heightBox,
-
-                                  /// category
-                                  HStack([
-                                    Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, size: 12, color: item.category?.color?.fromHex).pOnly(right: 8),
-                                    '${item.categoryName}'.text.size(12).make(),
-                                    12.widthBox,
-                                    isTypeNotes ? '(${item.createdAt?.reformatDate(to: 'HH:mm')})'.text.size(11).minFontSize(11).make() : 0.heightBox,
-                                  ]),
-                                ]),
-
-                                /// amount
-                                Spacer(),
-                                isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
-                              ],
-                            ).p12(),
-                          ).pSymmetric(h: 8, v: 4).onInkTap(() => DialogInputHelper.showDialogExpense(expense: item));
-                        },
-                      ).pSymmetric(v: 8).expand(),
+                    // normal view
+                    ? bodyItemBasicView()
+                    // search mode view
+                    : bodyItemSearchView(),
               ),
 
               /// sum
@@ -443,67 +309,11 @@ class HomeView extends GetView<HomeController> {
           ),
         ),
         onLoading: MyShimmerHome(),
-        onEmpty: VStack(
-          [
-            Obx(
-              () => HStack(
-                [
-                  Container(
-                    color: Colors.blue,
-                    height: 28,
-                    child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).makeCentered().pSymmetric(h: 4, v: 2),
-                  ).cornerRadius(4).pOnly(right: 10),
-                  VStack([
-                    '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
-                    '${controller.focusedDay.value.getTimeAgoFromNow()}'.text.size(11).minFontSize(11).make(),
-                  ]),
-                  Spacer(),
-                  Container(
-                    decoration: ExDecorator.box(borderRadius: 90, borderColor: AppColor.textReverse),
-                    child: 'No Record'.text.size(12).minFontSize(12).color(AppColor.textReverse).make().p4().pSymmetric(h: 4),
-                  ),
-                ],
-              ).pOnly(bottom: 12),
-            ),
-            Divider(),
-            ExUiErrorOrEmpty(
-              bgColor: Theme.of(Get.context!).scaffoldBackgroundColor,
-              illustration: Column(
-                children: [
-                  Get.context!.isMobile
-                      ? Image.asset(
-                          'assets/icons/app_icon.png',
-                          width: 56,
-                          height: 56,
-                        ).pOnly(bottom: 16)
-                      : Lottie.asset(
-                          'assets/lottie/empty-1.json',
-                          width: 150,
-                          reverse: true,
-                        ),
-                  'No Expense'.text.bold.align(TextAlign.center).make().pOnly(bottom: 8),
-                  Obx(
-                    () => '${controller.tfSearchExpense.value.text.isNotEmptyAndNotNull //-
-                            ? '"${controller.tfSearchExpense.value.text}" Not found' //-
-                            : ' in ${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'} '
-                        .text
-                        .neutral500
-                        .size(11)
-                        .align(TextAlign.center)
-                        .makeCentered(),
-                  ),
-                  16.heightBox,
-                  ExButtonOutline(
-                    label: 'Add Expense',
-                    labelSize: 12,
-                    labelColor: AppColor.textReverse,
-                    onPressed: () => DialogInputHelper.showDialogExpense(),
-                  ),
-                ],
-              ),
-            ).pOnly(bottom: Get.context!.isMobile ? 0 : 90).expand(),
-          ],
-        ).p12(),
+        onEmpty: VStack([
+          emptyHeaderView(),
+          Divider(),
+          emptyBodyView(),
+        ]).p12(),
         onError: (e) => ExUiErrorOrEmpty(
           illustration: Icon(CupertinoIcons.wifi_slash),
           title: 'Offline',
@@ -512,6 +322,209 @@ class HomeView extends GetView<HomeController> {
         ),
       ),
     );
+  }
+
+  Widget bodyHeaderBasicView() {
+    return HStack(
+      [
+        Container(
+          color: Colors.blue,
+          height: 28,
+          child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).makeCentered().pSymmetric(h: 4, v: 2),
+        ).cornerRadius(4).pOnly(right: 10),
+        VStack([
+          '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
+          '${controller.focusedDay.value.getTimeAgoFromNow()}'.text.size(11).minFontSize(11).make(),
+        ]),
+        Spacer(),
+        CustomPopup(
+          content: 'Your score of spend this day'.text.color(AppColor.textOnWhiteBackground).make(),
+          child: Container(
+            decoration: ExDecorator.box(
+              borderRadius: 90,
+              borderColor: controller.countOfDay.value.getFlagColorLight(),
+            ),
+            child: '${controller.countOfDay.value.getFlagText()} Day'
+                //
+                .text
+                .size(12)
+                .minFontSize(12)
+                .color(controller.countOfDay.value.getFlagColorLight())
+                .make()
+                .p4()
+                .pSymmetric(h: 4),
+          ),
+        ),
+      ],
+    ).pOnly(bottom: 12);
+  }
+
+  Widget bodyHeaderSearchView() {
+    return 'Search for: "${controller.tfSearchExpense.value.text}"'.text.bold.make().pOnly(bottom: 12);
+  }
+
+  Widget bodyItemBasicView() {
+    return ListView.builder(
+      itemCount: controller.expenseList.length,
+      itemBuilder: (context, index) {
+        final item = controller.expenseList[index];
+        final isTypeNotes = item.categoryName?.contains('Notes') ?? false;
+
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: isTypeNotes ? AppColor.noteColor : AppColor.cardItemSecondary,
+            borderRadius: BorderRadius.all(Radius.circular(4)),
+          ),
+          child: Row(
+            children: [
+              VStack([
+                /// note
+                '${item.note}'.text.bold.make().pOnly(bottom: 8),
+
+                /// detail
+                item.detail.isNotEmptyAndNotNull
+                    ? '${item.detail}'
+                        //
+                        .text
+                        .size(12)
+                        .color(isTypeNotes ? Vx.neutral300 : Vx.neutral500)
+                        .make()
+                        .pOnly(bottom: 8)
+                    : 0.heightBox,
+
+                /// category
+                HStack([
+                  Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, color: item.category?.color?.fromHex, size: 12).pOnly(right: 8),
+                  '${item.category?.name}'
+                      //
+                      .text
+                      .size(12)
+                      .color(isTypeNotes ? Vx.white : AppColor.textReverse)
+                      .make(),
+                  Spacer(),
+                  isTypeNotes ? '${item.createdAt?.reformatDate(to: 'HH:mm')}'.text.size(11).minFontSize(11).make() : 0.heightBox,
+                ]),
+              ]).expand(),
+
+              /// amount
+              isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
+            ],
+          ).p12(),
+        ).pSymmetric(h: 8, v: 4).onInkTap(() => DialogInputHelper.showDialogExpense(expense: item));
+      },
+    ).pSymmetric(v: 8).expand();
+  }
+
+  Widget bodyItemSearchView() {
+    return GroupedListView<ExpenseEntity, String>(
+      elements: controller.expenseList,
+      groupBy: (element) => element.date ?? '',
+      useStickyGroupSeparators: true,
+      floatingHeader: true,
+      order: GroupedListOrder.DESC,
+      groupHeaderBuilder: (item) => Container(
+        width: double.infinity,
+        decoration: BoxDecoration(color: AppColor.cardHeaderPrimary),
+        child: HStack([
+          '${item.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).bold.make(),
+          Spacer(),
+          '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'.text.minFontSize(10).size(10).make(),
+        ]).p8(),
+      ).onTap(() async => await controller.onCalenderGoDate(item.date!.toDateEx(format: yMd))),
+      indexedItemBuilder: (context, item, index) {
+        final isTypeNotes = item.categoryName?.contains('Notes') ?? false;
+        return Container(
+          color: isTypeNotes ? AppColor.noteColor : null,
+          width: double.infinity,
+          child: Row(
+            children: [
+              VStack([
+                /// note
+                '${item.note}'.text.bold.make().pOnly(bottom: 8),
+
+                /// detail
+                item.detail.isNotEmptyAndNotNull
+                    ? '${item.detail}'
+                        //
+                        .text
+                        .size(12)
+                        .color(isTypeNotes ? Vx.neutral300 : Vx.neutral500)
+                        .make()
+                        .pOnly(bottom: 8)
+                    : 0.heightBox,
+
+                /// category
+                HStack([
+                  Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, size: 12, color: item.category?.color?.fromHex).pOnly(right: 8),
+                  '${item.categoryName}'.text.size(12).make(),
+                  12.widthBox,
+                  isTypeNotes ? '(${item.createdAt?.reformatDate(to: 'HH:mm')})'.text.size(11).minFontSize(11).make() : 0.heightBox,
+                ]),
+              ]),
+
+              /// amount
+              Spacer(),
+              isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
+            ],
+          ).p12(),
+        ).pSymmetric(h: 8, v: 4).onInkTap(() => DialogInputHelper.showDialogExpense(expense: item));
+      },
+    ).pSymmetric(v: 8).expand();
+  }
+
+  Widget emptyHeaderView() {
+    return Obx(
+      () => HStack(
+        [
+          Container(
+            color: Colors.blue,
+            height: 28,
+            child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).makeCentered().pSymmetric(h: 4, v: 2),
+          ).cornerRadius(4).pOnly(right: 10),
+          VStack([
+            '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
+            '${controller.focusedDay.value.getTimeAgoFromNow()}'.text.size(11).minFontSize(11).make(),
+          ]),
+          Spacer(),
+          Container(
+            decoration: ExDecorator.box(borderRadius: 90, borderColor: AppColor.textReverse),
+            child: 'No Record'.text.size(12).minFontSize(12).color(AppColor.textReverse).make().p4().pSymmetric(h: 4),
+          ),
+        ],
+      ).pOnly(bottom: 12),
+    );
+  }
+
+  Widget emptyBodyView() {
+    return ExUiErrorOrEmpty(
+      bgColor: Theme.of(Get.context!).scaffoldBackgroundColor,
+      illustration: Column(
+        children: [
+          Get.context!.isMobile //
+              ? Image.asset('assets/icons/app_icon.png', width: 56, height: 56).pOnly(bottom: 16)
+              : Lottie.asset('assets/lottie/empty-1.json', width: 150, reverse: true),
+          'No Expense'.text.bold.align(TextAlign.center).make().pOnly(bottom: 8),
+          Obx(
+            () => '${controller.tfSearchExpense.value.text.isNotEmptyAndNotNull //
+                    ? '"${controller.tfSearchExpense.value.text}" Not found' //
+                    : ' in ${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'} '
+                .text
+                .neutral500
+                .size(11)
+                .align(TextAlign.center)
+                .makeCentered(),
+          ),
+          16.heightBox,
+          ExButtonOutline(
+            label: 'Add Expense',
+            labelSize: 12,
+            labelColor: AppColor.textReverse,
+            onPressed: () => DialogInputHelper.showDialogExpense(),
+          ),
+        ],
+      ),
+    ).pOnly(bottom: Get.context!.isMobile ? 0 : 90).expand();
   }
 
   Widget footerContent() {

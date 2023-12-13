@@ -78,6 +78,7 @@ Widget expenseTracker() {
       darkTheme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
       getPages: AppPages.routes,
+      defaultTransition: Transition.fadeIn,
       builder: (context, child) {
         if (kReleaseMode) return child!;
         return Scaffold(
