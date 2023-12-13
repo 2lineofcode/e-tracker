@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
@@ -31,7 +33,7 @@ class SettingsController extends GetxController with StateMixin {
   Future<void> onInit() async {
     /// Page: AutoComplete
     menuList.value = await repo.getMenuList();
-    await getAutoCompleteList();
+    unawaited(getAutoCompleteList());
 
     /// Page: App Config
     tfEco.text = pref.read<num>(kFlagEco)?.moneyFormat() ?? '';

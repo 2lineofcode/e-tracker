@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_popup/flutter_popup.dart';
+import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
@@ -42,7 +43,7 @@ class HomeView extends GetView<HomeController> {
       return TextField(
         controller: controller.tfSearchExpense.value,
         style: TextStyle(fontSize: 13),
-        decoration: MyDecoration.input(
+        decoration: DecorationHelper.input(
           prefixIcon: Icon(CupertinoIcons.search, size: 14, color: AppColor.textReverse).pOnly(top: 0),
           hint: 'Search...',
           suffix: Icon(CupertinoIcons.clear, size: 12, color: AppColor.textReverse).pOnly(top: 0).onInkTap(() async {
@@ -69,7 +70,7 @@ class HomeView extends GetView<HomeController> {
         if (Get.size.width >= 1024) ...[
           TextField(
             controller: controller.tfSearchExpense.value,
-            decoration: MyDecoration.input(hint: 'Search...'),
+            decoration: DecorationHelper.input(hint: 'Search...'),
             style: TextStyle(fontSize: 13),
             onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
           ).wh(150, 30).pSymmetric(h: 8),
@@ -255,7 +256,7 @@ class HomeView extends GetView<HomeController> {
               /// 4
               TextField(
                 controller: controller.tfCategory,
-                decoration: MyDecoration.input(hint: 'Add Category'),
+                decoration: DecorationHelper.input(hint: 'Add Category'),
                 style: TextStyle(fontSize: 13),
                 onSubmitted: (value) => controller.onAddCategory(value),
               ).h(33).p8(),
@@ -302,7 +303,22 @@ class HomeView extends GetView<HomeController> {
               HStack([
                 'Total:'.text.bold.color(AppColor.textOnBackground).make(),
                 Spacer(),
-                '${controller.countOfDay.value.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).make(),
+                '${controller.countOfDay.value.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).make().onTap(() {
+                  showModalBottomSheet(
+                    isScrollControlled: true,
+                    context: Get.context!,
+                    builder: (context) => FractionallySizedBox(
+                      heightFactor: 0.7,
+                      widthFactor: Get.context!.isMobile ? 1 : 0.5,
+                      child: SimpleCalculator(
+                        autofocus: true,
+                        hideSurroundingBorder: true,
+                        value: controller.countOfDay.value.toDouble(),
+                        onTappedDisplay: (p0, p1) => Get.back(),
+                      ),
+                    ),
+                  );
+                }),
               ]).p12().color(controller.countOfDay.value.getFlagColorDark()),
             ],
           ),

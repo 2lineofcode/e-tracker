@@ -81,7 +81,7 @@ class SectionAppConfig extends GetView<SettingsController> {
             'Max Flag Eco Day:'.text.make().w(200),
             TextField(
               controller: controller.tfEco,
-              decoration: MyDecoration.input(
+              decoration: DecorationHelper.input(
                 hint: '≤ 50.000',
                 prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
               ),
@@ -97,7 +97,7 @@ class SectionAppConfig extends GetView<SettingsController> {
             'Max Flag Average Day:'.text.make().w(200),
             TextField(
               controller: controller.tfAverage,
-              decoration: MyDecoration.input(
+              decoration: DecorationHelper.input(
                 hint: '≤ 100.000',
                 prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
               ),
@@ -115,7 +115,7 @@ class SectionAppConfig extends GetView<SettingsController> {
             TextField(
               enabled: false,
               controller: controller.tfSpender,
-              decoration: MyDecoration.input(
+              decoration: DecorationHelper.input(
                 hint: '> 100.000',
                 prefixIcon: '> '.text.make().pOnly(left: 12, top: 4),
               ),
@@ -159,7 +159,7 @@ class SectionAppConfig extends GetView<SettingsController> {
                   await pref.write(kFlagAverage, controller.tfAverage.text.moneyUnformat());
                   await pref.write(kFlagSpender, controller.tfSpender.text.moneyUnformat());
                   await pref.write(kCurrencySymbol, controller.tfCurrencySymbol.text);
-                  AppNotif.show('Config Saved', color: Vx.green600);
+                  OverlayHelper.notification('Config Saved', color: Vx.green600);
                   await Get.forceAppUpdate();
                 },
               ),

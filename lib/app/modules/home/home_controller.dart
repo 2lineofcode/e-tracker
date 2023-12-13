@@ -8,7 +8,7 @@ import 'package:uuid/v4.dart';
 
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
-import '../../helpers/helper_notif.dart';
+import '../../helpers/helper_overlayment.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
@@ -158,7 +158,7 @@ class HomeController extends GetxController with StateMixin {
     );
     await repo.addCategory(categoryEntity);
     await getCategory();
-    AppNotif.show('Category $categoryName Added', color: Vx.green600);
+    OverlayHelper.notification('Category $categoryName Added', color: Vx.green600);
     tfCategory.clear();
   }
 

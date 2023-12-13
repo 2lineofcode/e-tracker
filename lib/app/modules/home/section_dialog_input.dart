@@ -16,7 +16,7 @@ import '../../core/const.dart';
 import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
-import '../../helpers/helper_notif.dart';
+import '../../helpers/helper_overlayment.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
 import '../widgets/widget_autocomplete.dart';
@@ -200,7 +200,7 @@ mixin DialogInputHelper {
                       await _repo.deleteCategory(entity?.id ?? '');
                       await _controller.getCategory();
                       await callback?.call();
-                      AppNotif.show('Category ${entity?.name} Deleted', color: Vx.red600);
+                      OverlayHelper.notification('Category ${entity?.name} Deleted', color: Vx.red600);
                       Get.close(2);
                     } catch (e) {
                       Get.close(2);
@@ -327,7 +327,7 @@ mixin DialogInputHelper {
             () => DropdownButtonFormField(
               value: '${_tfCategory.value}',
               style: TextStyle(fontSize: 12, color: AppColor.textReverse),
-              decoration: MyDecoration.input(
+              decoration: DecorationHelper.input(
                 fillColor: Get.isDarkMode ? Vx.black : Vx.white,
                 border: OutlineInputBorder(
                   borderSide: BorderSide(
@@ -526,7 +526,7 @@ mixin DialogInputHelper {
             () => DropdownButtonFormField(
               value: '${_tfCategory.value}',
               style: TextStyle(fontSize: 12, color: AppColor.textReverse),
-              decoration: MyDecoration.input(
+              decoration: DecorationHelper.input(
                 fillColor: Get.isDarkMode ? Vx.black : Vx.white,
                 border: OutlineInputBorder(
                   borderSide: BorderSide(
@@ -639,7 +639,7 @@ mixin DialogInputHelper {
     _controller.rpcSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
     _controller.rpcSumByCategory.value = await _repo.rpcSumByCategory(_controller.focusedDay.value);
     await customCallback?.call();
-    AppNotif.show('Data ${expense.note} Deleted', color: Vx.red600);
+    OverlayHelper.notification('Data ${expense.note} Deleted', color: Vx.red600);
   }
 
   /// submit
@@ -677,10 +677,10 @@ mixin DialogInputHelper {
       _controller.rpcSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
       _controller.rpcSumByCategory.value = await _repo.rpcSumByCategory(_controller.focusedDay.value);
       await customCallback?.call();
-      AppNotif.show('Successfully ${expense != null ? 'Edit' : 'Added'} $tfNote', color: Vx.green600);
+      OverlayHelper.notification('Successfully ${expense != null ? 'Edit' : 'Added'} $tfNote', color: Vx.green600);
     } catch (e) {
       logE('e: $e');
-      AppNotif.show('$e', color: Vx.green600);
+      OverlayHelper.notification('$e', color: Vx.green600);
     }
     await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
   }

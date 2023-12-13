@@ -20,7 +20,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
           [
             TextField(
               controller: controller.tfSearchAutoComplete,
-              decoration: MyDecoration.input(
+              decoration: DecorationHelper.input(
                 hint: 'Search...',
                 suffix: Icon(Icons.clear, size: 10).pOnly(top: 4, right: 8).onInkTap(() async {
                   controller.tfSearchAutoComplete.clear();
@@ -93,7 +93,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
           [
             TextField(
               controller: controller.tfAddAutoComplete,
-              decoration: MyDecoration.input(
+              decoration: DecorationHelper.input(
                 hint: 'Create New',
                 suffix: Icon(Icons.check, size: 14),
                 // fillColor: Vx.neutral500,
