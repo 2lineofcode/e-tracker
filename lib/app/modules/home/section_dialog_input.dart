@@ -13,10 +13,7 @@ import 'package:uuid/v4.dart';
 
 import '../../core/app_color.dart';
 import '../../core/const.dart';
-import '../../helpers/helper_decoration.dart';
-import '../../helpers/helper_misc.dart';
-import '../../helpers/helper_money.dart';
-import '../../helpers/helper_overlayment.dart';
+import '../../helpers/helpers.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
 import '../widgets/widget_autocomplete.dart';
@@ -256,6 +253,7 @@ mixin DialogInputHelper {
     /// flag
     final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
     final isTypeNotes = expense != null && expense.categoryName == 'Notes' ? true.obs : false.obs;
+    final debouncer = DebounceSearch(duration: 300.milliseconds);
 
     ExBottomSheet.basic(
       title: '${expense != null ? 'Edit Expense' : 'Add Expense'}',
@@ -281,7 +279,9 @@ mixin DialogInputHelper {
             initialValue: _tfNote.value,
             asyncSuggestions: (s) async {
               if (s.text.isBlank!) return [];
-              return await _repo.findAutoCompleteStringNote(s.text);
+              return await debouncer.run(() async {
+                return await _repo.findAutoCompleteStringNote(s.text);
+              });
             },
             hint: 'Note: Nasi Padang',
             onChanged: (s) => _tfNote.text = s,
@@ -451,6 +451,7 @@ mixin DialogInputHelper {
     /// flag
     final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
     final isTypeNotes = expense != null && expense.categoryName == 'Notes' ? true.obs : false.obs;
+    final debouncer = DebounceSearch(duration: 300.milliseconds);
 
     ExAlert.adaptive(
       title: Text(
@@ -480,7 +481,9 @@ mixin DialogInputHelper {
             initialValue: _tfNote.value,
             asyncSuggestions: (s) async {
               if (s.text.isBlank!) return [];
-              return await _repo.findAutoCompleteStringNote(s.text);
+              return await debouncer.run(() async {
+                return await _repo.findAutoCompleteStringNote(s.text);
+              });
             },
             hint: 'Note: Nasi Padang',
             onChanged: (s) => _tfNote.text = s,

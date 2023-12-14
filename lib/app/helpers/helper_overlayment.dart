@@ -21,7 +21,7 @@ mixin OverlayHelper {
           name: 'notif',
           child: Text(msg, style: style ?? TextStyle(color: Colors.white)).p12(),
           alignment: alignment ?? Alignment.topRight,
-          color: color,
+          color: color ?? Vx.green600,
           duration: duration ?? 1.seconds,
         ),
       ),

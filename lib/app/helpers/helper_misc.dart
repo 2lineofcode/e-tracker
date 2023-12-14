@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:ex/ex.dart';
@@ -21,7 +22,6 @@ extension TimeAgoToString on DateTime {
     final now = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     Duration difference = now.difference(selDate);
     int days = difference.inDays;
-    log('days: $days');
     final diff = now.subtract(Duration(days: days));
     if (now.isBefore(selDate)) {
       return '~';
@@ -116,5 +116,26 @@ void closeDrawer() {
         }
       }
     }
+  }
+}
+
+/// ------------------------------------------------------------------------
+/// ! DEBOUNCE
+/// ------------------------------------------------------------------------
+class DebounceSearch {
+  final Duration duration;
+  Timer? _timer;
+
+  DebounceSearch({required this.duration});
+
+  Future<List<String>> run(FutureOr<List<String>> Function() action) async {
+    if (null != _timer) _timer?.cancel();
+
+    Completer<List<String>> completer = Completer();
+    _timer = Timer(duration, () async {
+      var result = await action();
+      completer.complete(result);
+    });
+    return completer.future;
   }
 }

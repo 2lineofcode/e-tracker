@@ -13,7 +13,7 @@ class HomeRepository {
   /// ------------------------------------------------------------------------
   Future<List<CategoryEntity>> getCategory() async {
     final response = await db.from('category').select().order('max_budget').withConverter<List<CategoryEntity>>((data) {
-      return (data as List).map((e) => CategoryEntity.fromJson(e)).toList();
+      return (data).map((e) => CategoryEntity.fromJson(e)).toList();
     });
     return response;
   }
@@ -44,7 +44,7 @@ class HomeRepository {
         .or('date.ilike.$period%')
         .order('date')
         .withConverter<List<ExpenseEntity>>((data) {
-      return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
+      return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
     return response;
   }
@@ -57,7 +57,7 @@ class HomeRepository {
         .eq('date', date)
         .order('amount')
         .withConverter<List<ExpenseEntity>>((data) {
-      return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
+      return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
     return response;
   }
@@ -70,7 +70,7 @@ class HomeRepository {
         .or('note.ilike.%$name%, category_name.ilike.%$name%')
         .order('date')
         .withConverter<List<ExpenseEntity>>((data) {
-      return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
+      return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
     return response;
   }
@@ -79,7 +79,7 @@ class HomeRepository {
   Future<int> getCount1Month(String date) async {
     final response = await db.from('expense').select('amount, date').like('date', '%$date%');
     num x = 0;
-    for (var element in (response as List)) {
+    for (var element in response) {
       x += element['amount'] ?? 0;
     }
     return x.toInt();
@@ -105,14 +105,14 @@ class HomeRepository {
   /// ------------------------------------------------------------------------
   Future<List<String>> findAutoCompleteStringNote(String note) async {
     final response = await db.from('autocomplete').select().ilike('note', '%$note%').withConverter<List<String>>((data) {
-      return (data as List).map((e) => e['note'].toString()).toList();
+      return (data).map((e) => e['note'].toString()).toList();
     });
     return response;
   }
 
   Future<List<AutoCompleteEntity>> findAutoCompleteFullObject(String note) async {
     final response = await db.from('autocomplete').select().eq('note', '$note').withConverter<List<AutoCompleteEntity>>((data) {
-      return (data as List).map((e) => AutoCompleteEntity.fromJson(e)).toList();
+      return (data).map((e) => AutoCompleteEntity.fromJson(e)).toList();
     });
     return response;
   }
