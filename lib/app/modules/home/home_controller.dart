@@ -50,7 +50,7 @@ class HomeController extends GetxController with StateMixin {
   @override
   Future<void> onInit() async {
     /// new user => seed dummy data
-    SeedHelper.generate();
+    await SeedHelper.generate();
 
     selectedDays.add(DateTime.now());
     await getCategory();
@@ -135,14 +135,19 @@ class HomeController extends GetxController with StateMixin {
 
   /// count total per month
   Future<void> getCount1Month(DateTime dateTime) async {
-    final month = dateTime.toStringEx(format: yM);
-    countOfMonth.value = await repo.getCount1Month(month) ?? 0;
+    try {
+      final month = dateTime.toStringEx(format: yM);
+      countOfMonth.value = await repo.getCount1Month(month) ?? 0;
 
-    // count percentage of remain budget
-    var sum = 0;
-    for (var e in categoryList) sum += e.maxBudget?.toInt() ?? 0;
-    countMaxBudget.value = sum;
-    countRemainingBudget.value = (countOfMonth.value / sum * 100).toInt();
+      // count percentage of remain budget
+      var sum = 0;
+      for (var e in categoryList) sum += e.maxBudget?.toInt() ?? 0;
+      countMaxBudget.value = sum;
+      countRemainingBudget.value = (countOfMonth.value / sum * 100).toInt();
+    } catch (e) {
+      countMaxBudget.value = 0;
+      countRemainingBudget.value = 0;
+    }
   }
 
   /// category

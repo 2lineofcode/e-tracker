@@ -168,14 +168,20 @@ class HomeRepository {
   /// ------------------------------------------------------------------------
   Future<List<dynamic>> rpcGetSpenderDay(DateTime focusedDay) async {
     final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
-    final result = await db.rpc('get_spender_day', params: {'periode': fixYM}).order('total', ascending: false);
+    final result = await db.rpc('get_spender_day', params: {
+      'userid': db.auth.currentUser?.id ?? '',
+      'periode': fixYM,
+    }).order('total', ascending: false);
     return result;
   }
 
   Future<List<RpcSumByCategoryEntity>> rpcSumByCategory(DateTime focusedDay) async {
     final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
-    final res = await db //
-        .rpc('sum_by_category', params: {'periode': fixYM})
+    final res = await db
+        .rpc('sum_by_category', params: {
+          'userid': db.auth.currentUser?.id ?? '',
+          'periode': fixYM,
+        })
         .order('use_percentage', ascending: false)
         .withConverter<List<RpcSumByCategoryEntity>>((data) {
           return (data as List).map((e) => RpcSumByCategoryEntity.fromJson(e)).toList();

@@ -15,9 +15,9 @@ import '../modules/home/home_controller.dart';
 
 mixin SeedHelper {
   /// generate
-  static void generate() async {
-    await genCategory();
-    await genExpense();
+  static Future<void> generate() async {
+    // await genCategory();
+    // await genExpense();
   }
 
   static Future<void> genCategory() async {
@@ -179,7 +179,7 @@ mixin SeedHelper {
       // log('jsonString: $jsonString');
 
       ExLoading.show();
-      await db.from('expense').upsert(jsonString);
+      await db.from('expense').insert(jsonString);
       await Get.find<HomeController>().getExpense();
       ExLoading.dismiss();
       ExSnackbar.success('Task Done');
