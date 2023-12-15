@@ -19,6 +19,11 @@ class SectionAppConfig extends GetView<SettingsController> {
       [
         settingCommon(),
         16.heightBox,
+        ExButtonElevated(
+          width: double.infinity,
+          label: 'Logout',
+          onPressed: () => controller.onLogout(),
+        ),
       ],
     ).scrollVertical();
   }

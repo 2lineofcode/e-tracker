@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:ex/ex.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_base.dart';
@@ -8,6 +9,7 @@ import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
 import '../../models/autocomplete_entity.dart';
+import '../../routes/app_pages.dart';
 import 'settings_repository.dart';
 
 class SettingsController extends GetxController with StateMixin {
@@ -82,5 +84,16 @@ class SettingsController extends GetxController with StateMixin {
     await repo.deleteAutoComplete(entity.note ?? '');
     autoCompleteList.value = await repo.getAutoComplete();
     change(0, status: RxStatus.success());
+  }
+
+  Future<void> onLogout() async {
+    ExLoading.show(
+      paddingSymmetric: Get.context!.isMobile ? 90 : 250,
+      child: CupertinoActivityIndicator(),
+    );
+    await pref.remove(kIsLogin);
+    await db.auth.signOut();
+    await Get.offAllNamed(Routes.LOGIN);
+    ExLoading.dismiss();
   }
 }

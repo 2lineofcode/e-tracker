@@ -1,5 +1,9 @@
 import 'package:get/get.dart';
 
+import '../core/app_base.dart';
+import '../core/const.dart';
+import '../modules/auth/login/login_binding.dart';
+import '../modules/auth/login/login_view.dart';
 import '../modules/bibit/bibit_binding.dart';
 import '../modules/bibit/bibit_view.dart';
 import '../modules/bibit/detail_crypto/detail_crypto_binding.dart';
@@ -19,12 +23,30 @@ import '../modules/summary/summary_view.dart';
 
 part 'app_routes.dart';
 
+final isLogin = pref.read<bool>(kIsLogin) ?? false;
+
 class AppPages {
   AppPages._();
 
-  static const INITIAL = Routes.HOME;
+  static const INITIAL = Routes.ROOT;
 
   static final routes = [
+    /// ------------------------------------------------------------------------
+    /// ! root
+    /// ------------------------------------------------------------------------
+    GetPage(
+      name: _Paths.ROOT,
+      page: () => isLogin ? HomeView() : LoginView(),
+      binding: isLogin ? HomeBinding() : LoginBinding(),
+    ),
+
+    /// ------------------------------------------------------------------------
+
+    GetPage(
+      name: _Paths.LOGIN,
+      page: () => const LoginView(),
+      binding: LoginBinding(),
+    ),
     GetPage(
       name: _Paths.HOME,
       page: () => const HomeView(),

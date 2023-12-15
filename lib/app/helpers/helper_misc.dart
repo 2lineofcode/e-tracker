@@ -95,12 +95,14 @@ extension IconDataToString on IconData {
 // ------------------------------------------------------------------------
 // Mobile Only: closeDrawer -> only close when drawer is open
 // ------------------------------------------------------------------------
+final drawerKeyLogin = GlobalKey<ScaffoldState>();
 final drawerKeyHome = GlobalKey<ScaffoldState>();
 final drawerKeySummary = GlobalKey<ScaffoldState>();
 final drawerKeySetting = GlobalKey<ScaffoldState>();
 final drawerKeyFiltering = GlobalKey<ScaffoldState>();
 final drawerKeyBibit = GlobalKey<ScaffoldState>();
 final _gsk = <GlobalKey<ScaffoldState>>[
+  drawerKeyLogin,
   drawerKeyHome,
   drawerKeySummary,
   drawerKeySetting,

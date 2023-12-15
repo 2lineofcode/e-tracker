@@ -13,3 +13,4 @@ const kIsDarkMode = 'isDarkMode';
 const kCurrentLanguage = 'kCurrentLanguage';
 const kBibitToken = 'kBibitToken';
 const kBibitRefreshToken = 'kBibitRefreshToken';
+const kIsLogin = 'kIsLogin';
