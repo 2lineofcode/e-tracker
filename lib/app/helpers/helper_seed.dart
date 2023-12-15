@@ -23,7 +23,7 @@ mixin SeedHelper {
   static Future<void> genCategory() async {
     /// check if category table is empty
     final check = await db.from('category').select().withConverter<List<CategoryEntity>>((data) {
-      return (data).map((e) => CategoryEntity.fromJson(e)).toList();
+      return (data as List).map((e) => CategoryEntity.fromJson(e)).toList();
     });
 
     /// if category table is empty just return~
@@ -60,7 +60,7 @@ mixin SeedHelper {
   static Future<void> genExpense() async {
     /// check if expense table is empty
     final check = await db.from('expense').select().withConverter<List<ExpenseEntity>>((data) {
-      return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
+      return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
 
     /// if category table is empty just return~
@@ -87,7 +87,7 @@ mixin SeedHelper {
 
       /// get data
       final ex = await db.from('expense').select('*').limit(100000).withConverter<List<ExpenseEntity>>((data) {
-        return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
+        return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
       });
 
       final jsonFilePath = '$path/output.json';
