@@ -51,13 +51,22 @@ class SettingsController extends GetxController with StateMixin {
   }
 
   Future<void> getAutoCompleteList({String? q}) async {
-    change(0, status: RxStatus.loading());
-    if (q != null) {
-      autoCompleteList.value = await repo.findAutoComplete(q);
-    } else {
-      autoCompleteList.value = await repo.getAutoComplete();
+    try {
+      change(0, status: RxStatus.loading());
+      if (q != null) {
+        autoCompleteList.value = await repo.findAutoComplete(q);
+      } else {
+        autoCompleteList.value = await repo.getAutoComplete();
+      }
+
+      if (autoCompleteList.isEmpty) {
+        change(0, status: RxStatus.empty());
+      } else {
+        change(200, status: RxStatus.success());
+      }
+    } catch (e) {
+      change(400, status: RxStatus.error('$e'));
     }
-    change(0, status: RxStatus.success());
   }
 
   Future<void> onAddAutoComplete(String note) async {

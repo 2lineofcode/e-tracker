@@ -400,7 +400,7 @@ class HomeView extends GetView<HomeController> {
             children: [
               VStack([
                 /// note
-                '${item.note}'.text.bold.make().pOnly(bottom: 8),
+                '${item.note}'.text.bold.color(isTypeNotes ? Vx.white : AppColor.textReverse).make().pOnly(bottom: 8),
 
                 /// detail
                 item.detail.isNotEmptyAndNotNull
@@ -423,7 +423,7 @@ class HomeView extends GetView<HomeController> {
                       .color(isTypeNotes ? Vx.white : AppColor.textReverse)
                       .make(),
                   Spacer(),
-                  isTypeNotes ? '${item.createdAt?.reformatDate(to: 'HH:mm')}'.text.size(11).minFontSize(11).make() : 0.heightBox,
+                  isTypeNotes ? '${item.createdAt?.reformatDate(to: 'HH:mm')}'.text.white.size(11).minFontSize(11).make() : 0.heightBox,
                 ]),
               ]).expand(),
 
@@ -461,7 +461,7 @@ class HomeView extends GetView<HomeController> {
             children: [
               VStack([
                 /// note
-                '${item.note}'.text.bold.make().pOnly(bottom: 8),
+                '${item.note}'.text.bold.color(isTypeNotes ? Vx.white : AppColor.textReverse).make().pOnly(bottom: 8),
 
                 /// detail
                 item.detail.isNotEmptyAndNotNull
@@ -477,9 +477,9 @@ class HomeView extends GetView<HomeController> {
                 /// category
                 HStack([
                   Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, size: 12, color: item.category?.color?.fromHex).pOnly(right: 8),
-                  '${item.categoryName}'.text.size(12).make(),
+                  '${item.categoryName}'.text.color(isTypeNotes ? Vx.white : AppColor.textReverse).size(12).make(),
                   12.widthBox,
-                  isTypeNotes ? '(${item.createdAt?.reformatDate(to: 'HH:mm')})'.text.size(11).minFontSize(11).make() : 0.heightBox,
+                  isTypeNotes ? '(${item.createdAt?.reformatDate(to: 'HH:mm')})'.text.white.size(11).minFontSize(11).make() : 0.heightBox,
                 ]),
               ]),
 

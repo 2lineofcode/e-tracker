@@ -5,11 +5,13 @@ import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:ex/ex.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:get/get.dart';
 import 'package:uuid/v4.dart';
 
 import '../core/app_base.dart';
 import '../models/category_entity.dart';
 import '../models/expense_entity.dart';
+import '../modules/home/home_controller.dart';
 
 mixin SeedHelper {
   /// generate
@@ -66,10 +68,10 @@ mixin SeedHelper {
 
     final _expense = ExpenseEntity(
       id: UuidV4().generate(),
-      note: 'Example Note',
       categoryName: 'Notes',
+      note: 'Hi, Welcome!',
+      detail: 'First day of starting the habit of recording expenses',
       amount: 0,
-      detail: 'here is detail of note',
       date: DateTime.now().toStringEx(format: 'yyyy-MM-dd'),
       createdAt: DateTime.now().toStringEx(),
     ).toJson();
@@ -133,6 +135,37 @@ mixin SeedHelper {
       /// export to csv
       File(csvFilePath).writeAsStringSync(ListToCsvConverter().convert(csvData));
       ExSnackbar.success(csvFilePath);
+    } catch (e) {
+      ExSnackbar.danger('$e');
+    }
+  }
+
+  static Future<void> importFromCSV() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(allowedExtensions: ['csv'], type: FileType.custom);
+      if (result == null) return;
+
+      String path = result.files.first.path ?? '';
+
+      final csvString = await File(path).readAsString();
+      List<List<dynamic>> csvTable = CsvToListConverter().convert(csvString);
+
+      List<Map<String, dynamic>> jsonList = [];
+      List<String> headers = csvTable[0].map((header) => header.toString()).toList();
+
+      for (int i = 1; i < csvTable.length; i++) {
+        Map<String, dynamic> jsonMap = Map.fromIterables(headers, csvTable[i]);
+        jsonList.add(jsonMap);
+      }
+
+      String jsonString = jsonEncode(jsonList);
+      // log('jsonString: $jsonString');
+
+      ExLoading.show();
+      await db.from('expense').upsert(jsonString);
+      await Get.find<HomeController>().getExpense();
+      ExLoading.dismiss();
+      ExSnackbar.success('Task Done');
     } catch (e) {
       ExSnackbar.danger('$e');
     }

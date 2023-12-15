@@ -2,6 +2,7 @@ import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../core/app_color.dart';
 import '../../helpers/helper_decoration.dart';
@@ -16,31 +17,6 @@ class SectionAutoComplete extends GetView<SettingsController> {
   Widget build(BuildContext context) {
     return VStack(
       [
-        HStack(
-          [
-            TextField(
-              controller: controller.tfSearchAutoComplete,
-              decoration: DecorationHelper.input(
-                hint: 'Search...',
-                suffix: Icon(Icons.clear, size: 10).pOnly(top: 4, right: 8).onInkTap(() async {
-                  controller.tfSearchAutoComplete.clear();
-                  await controller.getAutoCompleteList();
-                }),
-                contentPadding: EdgeInsets.only(left: 8, right: 8),
-              ),
-              style: TextStyle(fontSize: 13),
-              onSubmitted: (s) async {
-                if (s.isNotEmpty) {
-                  await controller.getAutoCompleteList(q: s);
-                } else {
-                  await controller.getAutoCompleteList();
-                }
-              },
-            ).h(38).expand(),
-            Obx(() => '${controller.autoCompleteList.length} Record'.text.bold.make().pOnly(left: 8)),
-          ],
-        ),
-        Divider().pSymmetric(v: 8),
         controller.obx(
           (state) => GroupedListView<AutoCompleteEntity, String>(
             elements: controller.autoCompleteList,
@@ -87,8 +63,16 @@ class SectionAutoComplete extends GetView<SettingsController> {
               ]);
             },
           ).expand(),
+          onLoading: ExUiLoading().expand(),
+          onEmpty: ExUiErrorOrEmpty(
+            illustration: Get.context!.isMobile //
+                ? Image.asset('assets/icons/app_icon.png', width: 56, height: 56).pOnly(bottom: 16)
+                : Lottie.asset('assets/lottie/empty-1.json', width: 150, reverse: true),
+            title: 'No Data',
+            message: 'You can add new Auto Complete by input in the field below',
+          ).expand(),
         ),
-        Divider(),
+        Divider(color: Colors.transparent),
         HStack(
           [
             TextField(

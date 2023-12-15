@@ -20,9 +20,40 @@ class SettingsView extends GetView<SettingsController> {
     return MyLayout(
       drawerKey: drawerKeySetting,
       appBarTitle: 'Settings'.text.size(11).bold.make(),
+      appBarAction: appBarAction(),
       sideMenuContent: sideMenuContent(),
       bodyContent: Obx(() => bodyContent().p8()),
       footerContent: footerContent(),
+    );
+  }
+
+  Widget appBarAction() {
+    return HStack(
+      [
+        Obx(
+          () => controller.menuSelected.value == AUTO_COMPLETE
+              ? TextField(
+                  controller: controller.tfSearchAutoComplete,
+                  style: TextStyle(fontSize: 13),
+                  decoration: DecorationHelper.input(
+                    hint: 'Search...',
+                    contentPadding: EdgeInsets.only(left: 8, right: 8),
+                    suffix: Icon(Icons.clear, size: 10).pOnly(top: 4, right: 8).onInkTap(() async {
+                      controller.tfSearchAutoComplete.clear();
+                      await controller.getAutoCompleteList();
+                    }),
+                  ),
+                  onSubmitted: (s) async {
+                    if (s.isNotEmpty) {
+                      await controller.getAutoCompleteList(q: s);
+                    } else {
+                      await controller.getAutoCompleteList();
+                    }
+                  },
+                ).wh(170, 28).pOnly(right: 12)
+              : 0.heightBox,
+        ),
+      ],
     );
   }
 
@@ -53,13 +84,13 @@ class SettingsView extends GetView<SettingsController> {
   Widget bodyContent() {
     switch (controller.menuSelected.value) {
       case APP_CONFIG:
-        return controller.obx((state) => SectionAppConfig());
+        return SectionAppConfig();
       case AUTO_COMPLETE:
-        return controller.obx((state) => SectionAutoComplete());
+        return SectionAutoComplete();
       case REPEAT_SETTING:
-        return controller.obx((state) => SectionRepeat());
+        return SectionRepeat();
       case IMPORT_EXPORT:
-        return controller.obx((state) => SectionIEmport());
+        return SectionIEmport();
       default:
         return Container();
     }
@@ -74,6 +105,9 @@ class SettingsView extends GetView<SettingsController> {
         ),
       ],
       Spacer(),
+      Obx(
+        () => controller.menuSelected.value == AUTO_COMPLETE ? '${controller.autoCompleteList.length} Record'.text.make() : 0.heightBox,
+      ),
     ]).p12();
   }
 }
