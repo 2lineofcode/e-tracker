@@ -249,10 +249,14 @@ class HomeView extends GetView<HomeController> {
                             ).cornerRadius(4).pOnly(top: 2),
                           ],
                           Spacer(),
-                          if (item.maxBudget == null) Icon(Icons.edit, size: 16, color: AppColor.red),
+                          if (item.maxBudget == null && item.name != 'Notes') Icon(Icons.edit, size: 16, color: AppColor.red),
                         ],
                       ),
-                      onTap: () => DialogInputHelper.showDialogCategory(entity: item),
+                      onTap: () {
+                        if (item.name != 'Notes') {
+                          DialogInputHelper.showDialogCategory(entity: item);
+                        }
+                      },
                     ).pSymmetric(h: 4);
                   },
                 ).expand(),
