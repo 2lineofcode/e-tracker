@@ -15,7 +15,7 @@ class FilteringRepository {
   /// ------------------------------------------------------------------------
   Future<List<CategoryEntity>> getCategory() async {
     final response = await db.from('category').select().order('max_budget').withConverter<List<CategoryEntity>>((data) {
-      return (data as List).map((e) => CategoryEntity.fromJson(e)).toList();
+      return (data).map((e) => CategoryEntity.fromJson(e)).toList();
     });
     return response;
   }
@@ -39,7 +39,7 @@ class FilteringRepository {
           .filter('date', 'lte', endDate)
           .order(orderBy ?? 'amount', ascending: false)
           .withConverter<List<ExpenseEntity>>((data) {
-        return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
+        return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
       });
     } else {
       response = await db
@@ -50,7 +50,7 @@ class FilteringRepository {
           .filter('date', 'lte', endDate)
           .order(orderBy ?? 'amount', ascending: false)
           .withConverter<List<ExpenseEntity>>((data) {
-        return (data as List).map((e) => ExpenseEntity.fromJson(e)).toList();
+        return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
       });
     }
     return response;
