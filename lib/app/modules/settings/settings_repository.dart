@@ -20,26 +20,43 @@ class SettingsRepository {
   /// ! autocomplete
   /// ------------------------------------------------------------------------
   Future<List<AutoCompleteEntity>> getAutoComplete() async {
-    final response = await db.from('autocomplete').select().order('note', ascending: true).withConverter<List<AutoCompleteEntity>>((data) {
+    final response = await db //
+        .from('autocomplete')
+        .select()
+        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .order('note', ascending: true)
+        .withConverter<List<AutoCompleteEntity>>((data) {
       return (data).map((e) => AutoCompleteEntity.fromJson(e)).toList();
     });
     return response;
   }
 
   Future<List<AutoCompleteEntity>> findAutoComplete(String q) async {
-    final response = await db.from('autocomplete').select().ilike('note', '%$q%').order('note', ascending: true).withConverter<List<AutoCompleteEntity>>((data) {
+    final response = await db //
+        .from('autocomplete')
+        .select()
+        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .ilike('note', '%$q%')
+        .order('note', ascending: true)
+        .withConverter<List<AutoCompleteEntity>>((data) {
       return (data).map((e) => AutoCompleteEntity.fromJson(e)).toList();
     });
     return response;
   }
 
   Future<void> addAutoComplete(String autocompleteNote) async {
-    final response = await db.from('autocomplete').upsert({'note': autocompleteNote});
+    final response = await db.from('autocomplete').upsert({
+      'note': autocompleteNote,
+      'user_id': db.auth.currentUser?.id ?? '',
+    });
     return response;
   }
 
   Future<void> deleteAutoComplete(String note) async {
-    final response = await db.from('autocomplete').delete().match({'note': note});
+    final response = await db.from('autocomplete').delete().match({
+      'note': note,
+      'user_id': db.auth.currentUser?.id ?? '',
+    });
     return response;
   }
 }

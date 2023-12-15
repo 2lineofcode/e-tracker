@@ -23,8 +23,6 @@ import '../modules/summary/summary_view.dart';
 
 part 'app_routes.dart';
 
-final isLogin = pref.read<bool>(kIsLogin) ?? false;
-
 class AppPages {
   AppPages._();
 
@@ -36,8 +34,8 @@ class AppPages {
     /// ------------------------------------------------------------------------
     GetPage(
       name: _Paths.ROOT,
-      page: () => isLogin ? HomeView() : LoginView(),
-      binding: isLogin ? HomeBinding() : LoginBinding(),
+      page: () => pref.read<bool>(kIsLogin) ?? false ? HomeView() : LoginView(),
+      binding: pref.read<bool>(kIsLogin) ?? false ? HomeBinding() : LoginBinding(),
     ),
 
     /// ------------------------------------------------------------------------
@@ -69,8 +67,8 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.BIBIT,
-      page: () => const BibitView(),
-      binding: BibitBinding(),
+      page: () => pref.read<bool>(kIsLogin) ?? false ? BibitView() : LoginView(),
+      binding: pref.read<bool>(kIsLogin) ?? false ? BibitBinding() : LoginBinding(),
     ),
     GetPage(
       name: _Paths.DETAIL_STOCK,

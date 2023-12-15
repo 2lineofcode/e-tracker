@@ -2,7 +2,7 @@ class CategoryEntity {
   String? id;
   String? createdAt;
   String? name;
-  int? userId;
+  String? userId;
   String? color;
   String? icon;
   int? maxBudget;

@@ -13,7 +13,6 @@ import 'package:window_manager/window_manager.dart';
 import 'app/core/app_setting.dart';
 import 'app/core/app_theme.dart';
 import 'app/helpers/helper_misc.dart';
-import 'app/helpers/helper_seed.dart';
 import 'app/routes/app_pages.dart';
 
 Future<void> main() async {
@@ -38,8 +37,6 @@ Future<void> initAppService() async {
 
   /// http
   Get.put(ExHttp(baseURL: dotenv.get('BIBIT_API_URL')), tag: 'bibit');
-
-  SeedHelper.generate();
 }
 
 Future<void> initForDesktop() async {

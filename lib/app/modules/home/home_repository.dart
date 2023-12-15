@@ -12,24 +12,35 @@ class HomeRepository {
   /// ! category
   /// ------------------------------------------------------------------------
   Future<List<CategoryEntity>> getCategory() async {
-    final response = await db.from('category').select().order('max_budget').withConverter<List<CategoryEntity>>((data) {
+    final response = await db //
+        .from('category')
+        .select()
+        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .order('max_budget')
+        .withConverter<List<CategoryEntity>>((data) {
       return (data).map((e) => CategoryEntity.fromJson(e)).toList();
     });
     return response;
   }
 
   Future<void> addCategory(CategoryEntity categoryEntity) async {
-    final response = await db.from('category').upsert(categoryEntity.toJson());
+    final response = await db.from('category').insert(categoryEntity.toJson());
     return response;
   }
 
   Future<void> editCategory(CategoryEntity categoryEntity) async {
-    final response = await db.from('category').update(categoryEntity.toJson()).match({'id': categoryEntity.id});
+    final response = await db.from('category').update(categoryEntity.toJson()).match({
+      'id': categoryEntity.id,
+      'user_id': db.auth.currentUser?.id ?? '',
+    });
     return response;
   }
 
   Future<void> deleteCategory(String id) async {
-    final response = await db.from('category').delete().match({'id': id});
+    final response = await db.from('category').delete().match({
+      'id': id,
+      'user_id': db.auth.currentUser?.id ?? '',
+    });
     return response;
   }
 
@@ -41,6 +52,7 @@ class HomeRepository {
     final response = await db //
         .from('expense')
         .select('date, amount')
+        .eq('user_id', db.auth.currentUser?.id ?? '')
         .or('date.ilike.$period%')
         .order('date')
         .withConverter<List<ExpenseEntity>>((data) {
@@ -54,6 +66,7 @@ class HomeRepository {
     final response = await db //
         .from('expense')
         .select('*, category(*)')
+        .eq('user_id', db.auth.currentUser?.id ?? '')
         .eq('date', date)
         .order('amount')
         .withConverter<List<ExpenseEntity>>((data) {
@@ -67,6 +80,7 @@ class HomeRepository {
     final response = await db //
         .from('expense')
         .select('*, category(color, icon)')
+        .eq('user_id', db.auth.currentUser?.id ?? '')
         .or('note.ilike.%$name%, category_name.ilike.%$name%')
         .order('date')
         .withConverter<List<ExpenseEntity>>((data) {
@@ -76,8 +90,12 @@ class HomeRepository {
   }
 
   // get sum by @date [1month]
-  Future<int> getCount1Month(String date) async {
-    final response = await db.from('expense').select('amount, date').like('date', '%$date%');
+  Future<int?> getCount1Month(String date) async {
+    final response = await db //
+        .from('expense')
+        .select('amount, date')
+        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .like('date', '%$date%');
     num x = 0;
     for (var element in response) {
       x += element['amount'] ?? 0;
@@ -86,17 +104,25 @@ class HomeRepository {
   }
 
   Future<void> addExpense(ExpenseEntity entity) async {
-    final response = await db.from('expense').insert(entity.toJson());
+    final response = await db //
+        .from('expense')
+        .insert(entity.toJson());
     return response;
   }
 
   Future<void> editExpense(ExpenseEntity entity) async {
-    final response = await db.from('expense').update(entity.toJson()).match({'id': entity.id});
+    final response = await db //
+        .from('expense')
+        .update(entity.toJson())
+        .match({'id': entity.id});
     return response;
   }
 
   Future<void> deleteExpense(String id) async {
-    final response = await db.from('expense').delete().match({'id': id});
+    final response = await db //
+        .from('expense')
+        .delete()
+        .match({'id': id, 'user_id': db.auth.currentUser?.id ?? ''});
     return response;
   }
 
@@ -104,14 +130,24 @@ class HomeRepository {
   /// ! autocomplete
   /// ------------------------------------------------------------------------
   Future<List<String>> findAutoCompleteStringNote(String note) async {
-    final response = await db.from('autocomplete').select().ilike('note', '%$note%').withConverter<List<String>>((data) {
+    final response = await db //
+        .from('autocomplete')
+        .select()
+        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .ilike('note', '%$note%')
+        .withConverter<List<String>>((data) {
       return (data).map((e) => e['note'].toString()).toList();
     });
     return response;
   }
 
   Future<List<AutoCompleteEntity>> findAutoCompleteFullObject(String note) async {
-    final response = await db.from('autocomplete').select().eq('note', '$note').withConverter<List<AutoCompleteEntity>>((data) {
+    final response = await db //
+        .from('autocomplete')
+        .select()
+        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('note', '$note')
+        .withConverter<List<AutoCompleteEntity>>((data) {
       return (data).map((e) => AutoCompleteEntity.fromJson(e)).toList();
     });
     return response;
@@ -122,6 +158,7 @@ class HomeRepository {
       'note': note,
       'category_name': categoryName,
       'amount': amount,
+      'user_id': db.auth.currentUser?.id,
     });
     return response;
   }

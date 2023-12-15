@@ -6,9 +6,9 @@ import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:uuid/v4.dart';
 
+import '../../core/app_base.dart';
 import '../../core/const.dart';
-import '../../helpers/helper_misc.dart';
-import '../../helpers/helper_overlayment.dart';
+import '../../helpers/helpers.dart';
 import '../../models/category_entity.dart';
 import '../../models/expense_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
@@ -49,6 +49,9 @@ class HomeController extends GetxController with StateMixin {
   /// init ~~
   @override
   Future<void> onInit() async {
+    /// new user => seed dummy data
+    SeedHelper.generate();
+
     selectedDays.add(DateTime.now());
     await getCategory();
     await getExpense();
@@ -133,11 +136,11 @@ class HomeController extends GetxController with StateMixin {
   /// count total per month
   Future<void> getCount1Month(DateTime dateTime) async {
     final month = dateTime.toStringEx(format: yM);
-    countOfMonth.value = await repo.getCount1Month(month);
+    countOfMonth.value = await repo.getCount1Month(month) ?? 0;
 
     // count percentage of remain budget
     var sum = 0;
-    for (var e in categoryList) sum += e.maxBudget ?? 0;
+    for (var e in categoryList) sum += e.maxBudget?.toInt() ?? 0;
     countMaxBudget.value = sum;
     countRemainingBudget.value = (countOfMonth.value / sum * 100).toInt();
   }
@@ -152,6 +155,7 @@ class HomeController extends GetxController with StateMixin {
 
     final categoryEntity = CategoryEntity(
       id: UuidV4().generate(),
+      userId: db.auth.currentUser?.id ?? '',
       createdAt: DateTime.now().toStringEx(),
       name: categoryName,
       color: Vx.randomColor.toHex(),

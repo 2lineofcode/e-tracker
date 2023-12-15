@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:hsv_color_pickers/hsv_color_pickers.dart';
 import 'package:uuid/v4.dart';
 
+import '../../core/app_base.dart';
 import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
@@ -211,6 +212,7 @@ mixin DialogInputHelper {
             onPressed: () async {
               final newEntity = CategoryEntity(
                 id: entity?.id,
+                userId: db.auth.currentUser?.id ?? '',
                 createdAt: DateTime.now().toStringEx(),
                 name: _tfCatName.text,
                 color: _tfCatColor.text,
@@ -662,6 +664,7 @@ mixin DialogInputHelper {
 
     final entity = ExpenseEntity(
       id: expense != null ? expense.id : UuidV4().generate(),
+      userId: db.auth.currentUser?.id ?? '',
       createdAt: DateTime.now().toStringEx(),
       date: tfDate.isNotEmptyAndNotNull ? tfDate : _controller.focusedDay.value.toStringEx(format: yMd),
       amount: tfAmount.moneyUnformat(),
