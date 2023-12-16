@@ -25,7 +25,7 @@ mixin SeedHelper {
     final check = await db //
         .from('category')
         .select()
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .withConverter<List<CategoryEntity>>((data) {
       return (data).map((e) => CategoryEntity.fromJson(e)).toList();
     });
@@ -38,7 +38,7 @@ mixin SeedHelper {
     /// category table is empty, seed data
     final _catFood = CategoryEntity(
       id: UuidV4().generate(),
-      userId: db.auth.currentUser?.id ?? '',
+      userId: db.auth.currentSession?.user.id ?? '',
       name: 'Food',
       icon: 'code=58566&family=FontAwesomeSolid&pack=font_awesome_flutter',
       color: '#ffb7bdb9',
@@ -47,7 +47,7 @@ mixin SeedHelper {
     ).toJson();
     final _catNotes = CategoryEntity(
       id: UuidV4().generate(),
-      userId: db.auth.currentUser?.id ?? '',
+      userId: db.auth.currentSession?.user.id ?? '',
       name: 'Notes',
       icon: 'code=63033&family=CupertinoIcons&pack=cupertino_icons',
       color: '#ffffffff',
@@ -55,7 +55,7 @@ mixin SeedHelper {
     ).toJson();
     final _catOthers = CategoryEntity(
       id: UuidV4().generate(),
-      userId: db.auth.currentUser?.id ?? '',
+      userId: db.auth.currentSession?.user.id ?? '',
       name: 'Others',
       color: Vx.purpleHex200,
       createdAt: DateTime.now().toStringEx(),
@@ -69,7 +69,7 @@ mixin SeedHelper {
     final check = await db //
         .from('expense')
         .select()
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .withConverter<List<ExpenseEntity>>((data) {
       return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
     });
@@ -79,7 +79,7 @@ mixin SeedHelper {
 
     final _expense = ExpenseEntity(
       id: UuidV4().generate(),
-      userId: db.auth.currentUser?.id ?? '',
+      userId: db.auth.currentSession?.user.id ?? '',
       categoryName: 'Notes',
       note: 'Hi, Welcome!',
       detail: 'First day of starting the habit of recording expenses',
@@ -101,7 +101,7 @@ mixin SeedHelper {
       final ex = await db //
           .from('expense')
           .select('*')
-          .eq('user_id', db.auth.currentUser?.id ?? '')
+          .eq('user_id', db.auth.currentSession?.user.id ?? '')
           .limit(100000)
           .withConverter<List<ExpenseEntity>>((data) {
         return (data).map((e) => ExpenseEntity.fromJson(e)).toList();

@@ -15,7 +15,7 @@ class HomeRepository {
     final response = await db //
         .from('category')
         .select()
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .order('max_budget')
         .withConverter<List<CategoryEntity>>((data) {
       return (data).map((e) => CategoryEntity.fromJson(e)).toList();
@@ -31,7 +31,7 @@ class HomeRepository {
   Future<void> editCategory(CategoryEntity categoryEntity) async {
     final response = await db.from('category').update(categoryEntity.toJson()).match({
       'id': categoryEntity.id,
-      'user_id': db.auth.currentUser?.id ?? '',
+      'user_id': db.auth.currentSession?.user.id ?? '',
     });
     return response;
   }
@@ -39,7 +39,7 @@ class HomeRepository {
   Future<void> deleteCategory(String id) async {
     final response = await db.from('category').delete().match({
       'id': id,
-      'user_id': db.auth.currentUser?.id ?? '',
+      'user_id': db.auth.currentSession?.user.id ?? '',
     });
     return response;
   }
@@ -52,7 +52,7 @@ class HomeRepository {
     final response = await db //
         .from('expense')
         .select('date, amount')
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .or('date.ilike.$period%')
         .order('date')
         .withConverter<List<ExpenseEntity>>((data) {
@@ -66,7 +66,7 @@ class HomeRepository {
     final response = await db //
         .from('expense')
         .select('*, category(*)')
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .eq('date', date)
         .order('amount')
         .withConverter<List<ExpenseEntity>>((data) {
@@ -80,7 +80,7 @@ class HomeRepository {
     final response = await db //
         .from('expense')
         .select('*, category(color, icon)')
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .or('note.ilike.%$name%, category_name.ilike.%$name%')
         .order('date')
         .withConverter<List<ExpenseEntity>>((data) {
@@ -94,7 +94,7 @@ class HomeRepository {
     final response = await db //
         .from('expense')
         .select('amount, date')
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .like('date', '%$date%');
     num x = 0;
     for (var element in response) {
@@ -122,7 +122,7 @@ class HomeRepository {
     final response = await db //
         .from('expense')
         .delete()
-        .match({'id': id, 'user_id': db.auth.currentUser?.id ?? ''});
+        .match({'id': id, 'user_id': db.auth.currentSession?.user.id ?? ''});
     return response;
   }
 
@@ -133,7 +133,7 @@ class HomeRepository {
     final response = await db //
         .from('autocomplete')
         .select()
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .ilike('note', '%$note%')
         .withConverter<List<String>>((data) {
       return (data).map((e) => e['note'].toString()).toList();
@@ -145,7 +145,7 @@ class HomeRepository {
     final response = await db //
         .from('autocomplete')
         .select()
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .eq('note', '$note')
         .withConverter<List<AutoCompleteEntity>>((data) {
       return (data).map((e) => AutoCompleteEntity.fromJson(e)).toList();
@@ -158,7 +158,7 @@ class HomeRepository {
       'note': note,
       'category_name': categoryName,
       'amount': amount,
-      'user_id': db.auth.currentUser?.id,
+      'user_id': db.auth.currentSession?.user.id,
     });
     return response;
   }
@@ -169,7 +169,7 @@ class HomeRepository {
   Future<List<dynamic>> rpcGetSpenderDay(DateTime focusedDay) async {
     final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
     final result = await db.rpc('get_spender_day', params: {
-      'userid': db.auth.currentUser?.id ?? '',
+      'userid': db.auth.currentSession?.user.id ?? '',
       'periode': fixYM,
     }).order('total', ascending: false);
     return result;
@@ -179,7 +179,7 @@ class HomeRepository {
     final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
     final res = await db
         .rpc('sum_by_category', params: {
-          'userid': db.auth.currentUser?.id ?? '',
+          'userid': db.auth.currentSession?.user.id ?? '',
           'periode': fixYM,
         })
         .order('use_percentage', ascending: false)

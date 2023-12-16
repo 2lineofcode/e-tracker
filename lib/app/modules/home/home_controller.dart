@@ -160,7 +160,7 @@ class HomeController extends GetxController with StateMixin {
 
     final categoryEntity = CategoryEntity(
       id: UuidV4().generate(),
-      userId: db.auth.currentUser?.id ?? '',
+      userId: db.auth.currentSession?.user.id ?? '',
       createdAt: DateTime.now().toStringEx(),
       name: categoryName,
       color: Vx.randomPrimaryColor.toHex(),

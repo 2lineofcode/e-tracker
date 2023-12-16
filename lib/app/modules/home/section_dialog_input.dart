@@ -214,7 +214,7 @@ mixin DialogInputHelper {
             onPressed: () async {
               final newEntity = CategoryEntity(
                 id: entity?.id,
-                userId: db.auth.currentUser?.id ?? '',
+                userId: db.auth.currentSession?.user.id ?? '',
                 createdAt: DateTime.now().toStringEx(),
                 name: _tfCatName.text,
                 color: _tfCatColor.text,
@@ -682,7 +682,7 @@ mixin DialogInputHelper {
 
     final entity = ExpenseEntity(
       id: expense != null ? expense.id : UuidV4().generate(),
-      userId: db.auth.currentUser?.id ?? '',
+      userId: db.auth.currentSession?.user.id ?? '',
       createdAt: DateTime.now().toStringEx(),
       date: tfDate.isNotEmptyAndNotNull ? tfDate : _controller.focusedDay.value.toStringEx(format: yMd),
       amount: tfAmount.moneyUnformat(),

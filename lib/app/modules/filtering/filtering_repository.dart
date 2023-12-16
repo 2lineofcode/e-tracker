@@ -17,7 +17,7 @@ class FilteringRepository {
     final response = await db //
         .from('category')
         .select()
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .order('max_budget')
         .withConverter<List<CategoryEntity>>((data) {
       return (data).map((e) => CategoryEntity.fromJson(e)).toList();
@@ -40,7 +40,7 @@ class FilteringRepository {
           .from('expense')
           //
           .select('*, category(*)')
-          .eq('user_id', db.auth.currentUser?.id ?? '')
+          .eq('user_id', db.auth.currentSession?.user.id ?? '')
           .filter('date', 'gte', startDate)
           .filter('date', 'lte', endDate)
           .order(orderBy ?? 'amount', ascending: false)
@@ -51,7 +51,7 @@ class FilteringRepository {
       response = await db
           .from('expense')
           .select('*, category(*)')
-          .eq('user_id', db.auth.currentUser?.id ?? '')
+          .eq('user_id', db.auth.currentSession?.user.id ?? '')
           .eq('category_name', categoryName)
           .filter('date', 'gte', startDate)
           .filter('date', 'lte', endDate)

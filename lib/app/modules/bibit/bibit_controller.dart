@@ -18,7 +18,7 @@ class BibitController extends GetxController with StateMixin {
   @override
   Future<void> onInit() async {
     /// additional security! check login status
-    if (db.auth.currentUser?.id == null || pref.read<bool>(kIsLogin) != true) {
+    if (db.auth.currentSession?.user.id == null || pref.read<bool>(kIsLogin) != true) {
       await 800.milliseconds.delay();
       await db.auth.signOut();
       await Get.offAllNamed(Routes.LOGIN);

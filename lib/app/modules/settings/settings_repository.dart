@@ -23,7 +23,7 @@ class SettingsRepository {
     final response = await db //
         .from('autocomplete')
         .select()
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .order('note', ascending: true)
         .withConverter<List<AutoCompleteEntity>>((data) {
       return (data).map((e) => AutoCompleteEntity.fromJson(e)).toList();
@@ -35,7 +35,7 @@ class SettingsRepository {
     final response = await db //
         .from('autocomplete')
         .select()
-        .eq('user_id', db.auth.currentUser?.id ?? '')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .ilike('note', '%$q%')
         .order('note', ascending: true)
         .withConverter<List<AutoCompleteEntity>>((data) {
@@ -47,7 +47,7 @@ class SettingsRepository {
   Future<void> addAutoComplete(String autocompleteNote) async {
     final response = await db.from('autocomplete').upsert({
       'note': autocompleteNote,
-      'user_id': db.auth.currentUser?.id ?? '',
+      'user_id': db.auth.currentSession?.user.id ?? '',
     });
     return response;
   }
@@ -55,7 +55,7 @@ class SettingsRepository {
   Future<void> deleteAutoComplete(String note) async {
     final response = await db.from('autocomplete').delete().match({
       'note': note,
-      'user_id': db.auth.currentUser?.id ?? '',
+      'user_id': db.auth.currentSession?.user.id ?? '',
     });
     return response;
   }
