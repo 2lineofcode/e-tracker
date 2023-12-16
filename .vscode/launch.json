@@ -3,16 +3,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "eTracker Prod",
+            "name": "eTracker",
             "request": "launch",
             "type": "dart",
-            "program": "lib/main_prod.dart"
+            "program": "lib/main.dart"
         },
-        {
-            "name": "eTracker Local",
-            "request": "launch",
-            "type": "dart",
-            "program": "lib/main_local.dart"
-        },
+        
     ]
 }

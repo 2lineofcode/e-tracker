@@ -17,18 +17,47 @@ class SectionAppConfig extends GetView<SettingsController> {
   Widget build(BuildContext context) {
     return VStack(
       [
-        settingCommon(),
+        boxCommonConfig(),
         16.heightBox,
-        ExButtonElevated(
-          width: double.infinity,
-          label: 'Logout',
-          onPressed: () => controller.onLogout(),
-        ),
+        boxAccount(),
       ],
     ).scrollVertical();
   }
 
-  Widget settingCommon() {
+  Widget boxAccount() {
+    return Container(
+      width: double.infinity,
+      decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+      child: VStack(
+        [
+          'Account'.text.bold.make().pOnly(bottom: 16),
+          Obx(
+            () => controller.userProfile.value.id == null
+                ? CircularProgressIndicator.adaptive().p16()
+                : HStack([
+                    ExAvatarView(
+                      source: controller.userProfile.value.avatarUrl ?? 'https://empty.com',
+                      name: controller.userProfile.value.fullName ?? '',
+                      size: 32,
+                      borderWidth: 0.5,
+                    ),
+                    VStack([
+                      '${controller.userProfile.value.fullName}'.text.make(),
+                      '${db.auth.currentSession?.user.email}'.text.size(12).make(),
+                    ]).pSymmetric(h: 12),
+                  ]).pOnly(bottom: 24),
+          ),
+          ExButtonElevated(
+            width: double.infinity,
+            label: 'Logout',
+            onPressed: () => controller.onLogout(),
+          ),
+        ],
+      ).p12(),
+    );
+  }
+
+  Widget boxCommonConfig() {
     return Container(
       width: double.infinity,
       decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),

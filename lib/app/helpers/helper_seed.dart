@@ -102,7 +102,7 @@ mixin SeedHelper {
           .from('expense')
           .select('*')
           .eq('user_id', db.auth.currentSession?.user.id ?? '')
-          .limit(100000)
+          .order('date', ascending: false)
           .withConverter<List<ExpenseEntity>>((data) {
         return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
       });
@@ -122,27 +122,27 @@ mixin SeedHelper {
 
       /// Header CSV
       csvData.add([
-        'id',
-        'created_at',
+        // 'id',
+        // 'created_at',
+        'date',
         'category_name',
         'note',
-        'amount',
-        'date',
-        'user_id',
         'detail',
+        'amount',
+        // 'user_id',
       ]);
 
       // Items CSV
       for (var data in jsonDataFromJsonFile) {
         csvData.add([
-          data['id'].toString(),
-          data['created_at'].toString(),
+          // data['id'].toString(),
+          // data['created_at'].toString(),
+          data['date'].toString(),
           data['category_name'].toString(),
           data['note'].toString(),
-          data['amount'].toString(),
-          data['date'].toString(),
-          data['user_id'].toString(),
           data['detail'].toString(),
+          // data['user_id'].toString(),
+          data['amount'].toString(),
         ]);
       }
 
@@ -157,6 +157,7 @@ mixin SeedHelper {
     }
   }
 
+  /// TODO: fix me
   static Future<void> importFromCSV() async {
     try {
       final result = await FilePicker.platform.pickFiles(allowedExtensions: ['csv'], type: FileType.custom);

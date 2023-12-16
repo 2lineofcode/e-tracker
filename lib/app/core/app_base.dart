@@ -10,7 +10,6 @@ import 'const.dart';
 
 /// handy call supabase
 final db = Supabase.instance.client;
-var currentUser = db.auth.currentSession?.user;
 
 /// handy call sharedpref
 final pref = GetStorage();

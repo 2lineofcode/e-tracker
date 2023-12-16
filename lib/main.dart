@@ -24,7 +24,7 @@ Future<void> main() async {
 
 Future<void> initAppService() async {
   /// env
-  await dotenv.load(fileName: '.env.local');
+  await dotenv.load(fileName: '.env');
 
   /// supabase
   await Supabase.initialize(url: dotenv.get('SUPABASE_URL'), anonKey: dotenv.get('SUPABASE_ANON_KEY'));
@@ -75,6 +75,7 @@ Widget expenseTracker() {
       darkTheme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
       getPages: AppPages.routes,
+      defaultTransition: Transition.fadeIn,
       builder: (context, child) {
         if (kReleaseMode) return child!;
         return Scaffold(
@@ -82,7 +83,9 @@ Widget expenseTracker() {
             child!,
             IconButton(
               icon: Icon(CupertinoIcons.square_stack_3d_down_right_fill),
-              onPressed: () => AppTheme.switchTheme(),
+              onPressed: () async {
+                await AppTheme.switchTheme();
+              },
             ).positioned(left: 72),
           ]),
         );

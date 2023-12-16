@@ -1,5 +1,6 @@
 import '../../core/app_base.dart';
 import '../../models/autocomplete_entity.dart';
+import '../../models/user_profile_entity.dart';
 
 const AUTO_COMPLETE = 'Auto Complete';
 const APP_CONFIG = 'App Config';
@@ -56,6 +57,21 @@ class SettingsRepository {
     final response = await db.from('autocomplete').delete().match({
       'note': note,
       'user_id': db.auth.currentSession?.user.id ?? '',
+    });
+    return response;
+  }
+
+  /// ------------------------------------------------------------------------
+  /// ! profile
+  /// ------------------------------------------------------------------------
+  ///
+  Future<List<UserProfileEntity>> getUserProfile() async {
+    final response = await db //
+        .from('profiles')
+        .select()
+        .eq('id', db.auth.currentSession?.user.id ?? '')
+        .withConverter<List<UserProfileEntity>>((data) {
+      return (data).map((e) => UserProfileEntity.fromJson(e)).toList();
     });
     return response;
   }

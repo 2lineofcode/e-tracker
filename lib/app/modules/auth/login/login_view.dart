@@ -47,6 +47,7 @@ class LoginView extends GetView<LoginController> {
           decoration: DecorationHelper.input(
             hint: 'Enter your email/username',
           ),
+          onSubmitted: (_) => controller.onLogin(),
         ).h(36).pOnly(bottom: 24),
         'Password'.text.make().pOnly(bottom: 8),
         Obx(

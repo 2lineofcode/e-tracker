@@ -9,6 +9,7 @@ import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
 import '../../models/autocomplete_entity.dart';
+import '../../models/user_profile_entity.dart';
 import '../../routes/app_pages.dart';
 import '../home/home_controller.dart';
 import 'settings_repository.dart';
@@ -31,12 +32,14 @@ class SettingsController extends GetxController with StateMixin {
   final tfAverage = TextEditingController();
   final tfSpender = TextEditingController();
   final tfCurrencySymbol = TextEditingController();
+  final userProfile = UserProfileEntity().obs;
 
   @override
   Future<void> onInit() async {
     /// Page: AutoComplete
     menuList.value = await repo.getMenuList();
     unawaited(getAutoCompleteList());
+    unawaited(getUserProfile());
 
     /// Page: App Config
     tfEco.text = pref.read<num>(kFlagEco)?.moneyFormat() ?? '';
@@ -51,6 +54,10 @@ class SettingsController extends GetxController with StateMixin {
   Future<void> onMenuChange(String menu) async {
     menuSelected.value = menu;
     closeDrawer();
+  }
+
+  Future<void> getUserProfile() async {
+    userProfile.value = await repo.getUserProfile().then((value) => value[0]);
   }
 
   Future<void> getAutoCompleteList({String? q}) async {
