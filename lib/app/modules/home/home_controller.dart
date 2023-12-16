@@ -163,7 +163,7 @@ class HomeController extends GetxController with StateMixin {
       userId: db.auth.currentUser?.id ?? '',
       createdAt: DateTime.now().toStringEx(),
       name: categoryName,
-      color: Vx.randomColor.toHex(),
+      color: Vx.randomPrimaryColor.toHex(),
     );
     await repo.addCategory(categoryEntity);
     await getCategory();

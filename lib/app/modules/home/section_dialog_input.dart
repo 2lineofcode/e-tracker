@@ -28,13 +28,14 @@ import 'home_repository.dart';
 /// It is designed to be shared and can be used in multiple pages.
 /// The class includes methods for handling dialog categories.
 mixin DialogInputHelper {
-  static final _controller = Get.find<HomeController>();
-  static final _repo = Get.find<HomeRepository>();
-
   // ------------------------------------------------------------------------
   // Dialog Category
   // ------------------------------------------------------------------------
   static Future<void> showDialogCategory({CategoryEntity? entity, Function? callback}) async {
+    // local inject
+    final _controller = Get.find<HomeController>();
+    final _repo = Get.find<HomeRepository>();
+
     final _tfCatName = TextEditingController(text: entity?.name ?? '');
     final _tfCatColor = TextEditingController(text: entity?.color ?? '');
     final _tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget!.moneyFormat() : '');
@@ -94,6 +95,7 @@ mixin DialogInputHelper {
                         constraints: BoxConstraints(maxWidth: 250, maxHeight: 250),
                       ).then((icon) {
                         if (icon != null) _iconSelected.value = icon;
+                        _controller.update();
                       });
                     });
                   },
@@ -241,6 +243,10 @@ mixin DialogInputHelper {
   }
 
   static Future<void> _dialogExpenseMobile({ExpenseEntity? expense, Function? customCallback}) async {
+    // local inject
+    final _controller = Get.find<HomeController>();
+    final _repo = Get.find<HomeRepository>();
+
     if (_controller.categoryList.isEmptyOrNull) {
       ExSnackbar.danger('add some category first:))');
       return;
@@ -439,6 +445,10 @@ mixin DialogInputHelper {
   }
 
   static Future<void> _dialogExpenseDesktop({ExpenseEntity? expense, Function? customCallback}) async {
+    // local inject
+    final _controller = Get.find<HomeController>();
+    final _repo = Get.find<HomeRepository>();
+
     if (_controller.categoryList.isEmptyOrNull) {
       ExSnackbar.danger('add some category first:))');
       return;
@@ -636,6 +646,10 @@ mixin DialogInputHelper {
 
   /// delete
   static Future<void> _deleteExpense({ExpenseEntity? expense, Function? customCallback}) async {
+    // local inject
+    final _controller = Get.find<HomeController>();
+    final _repo = Get.find<HomeRepository>();
+
     Get.back(); // close dialog first
     await _repo.deleteExpense(expense!.id!);
     await _controller.getExpense();
@@ -657,6 +671,10 @@ mixin DialogInputHelper {
     String? tfDate,
     Function? customCallback,
   }) async {
+    // local inject
+    final _controller = Get.find<HomeController>();
+    final _repo = Get.find<HomeRepository>();
+
     Get.back(); // close dialog first
     if (tfNote.isEmptyOrNull) return;
     if (tfCategory.isEmptyOrNull) return;

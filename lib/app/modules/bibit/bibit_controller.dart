@@ -1,6 +1,10 @@
+import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 
-import '../../helpers/helper_misc.dart';
+import '../../core/app_base.dart';
+import '../../core/const.dart';
+import '../../helpers/helpers.dart';
+import '../../routes/app_pages.dart';
 import '_explore/section_bibit_explore_controller.dart';
 import '_home/section_bibit_home_controller.dart';
 import '_portfolio/section_bibit_portfolio_controller.dart';
@@ -13,6 +17,12 @@ class BibitController extends GetxController with StateMixin {
 
   @override
   Future<void> onInit() async {
+    /// additional security! check login status
+    if (db.auth.currentUser?.id == null || pref.read<bool>(kIsLogin) != true) {
+      await 800.milliseconds.delay();
+      await db.auth.signOut();
+      await Get.offAllNamed(Routes.LOGIN);
+    }
     menuList.value = repo.menuList();
     change(200, status: RxStatus.success());
     super.onInit();

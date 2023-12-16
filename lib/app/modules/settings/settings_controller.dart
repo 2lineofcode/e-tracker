@@ -10,6 +10,7 @@ import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
 import '../../models/autocomplete_entity.dart';
 import '../../routes/app_pages.dart';
+import '../home/home_controller.dart';
 import 'settings_repository.dart';
 
 class SettingsController extends GetxController with StateMixin {
@@ -93,6 +94,7 @@ class SettingsController extends GetxController with StateMixin {
     );
     await pref.remove(kIsLogin);
     await db.auth.signOut();
+    await Get.delete<HomeController>();
     await Get.offAllNamed(Routes.LOGIN);
     ExLoading.dismiss();
   }

@@ -7,10 +7,10 @@ class RpcSumNoteTimesEntity {
   RpcSumNoteTimesEntity({this.period, this.note, this.times, this.total});
 
   RpcSumNoteTimesEntity.fromJson(Map<String, dynamic> json) {
-    period = json['period'];
-    note = json['note'];
-    times = json['times'];
-    total = json['total'];
+    period = json['period'] ?? '';
+    note = json['note'] ?? '';
+    times = json['times'] ?? 0;
+    total = json['total'] ?? 0;
   }
 
   Map<String, dynamic> toJson() {

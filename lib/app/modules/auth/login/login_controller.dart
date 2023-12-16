@@ -1,5 +1,6 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 import '../../../core/app_base.dart';
@@ -16,7 +17,10 @@ class LoginController extends GetxController {
 
   @override
   void onInit() {
-    //
+    if (kDebugMode) {
+      tfEmail.text = 'adit@gmail.com';
+      tfPassword.text = 'asdasdasd';
+    }
     super.onInit();
   }
 

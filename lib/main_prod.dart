@@ -10,8 +10,10 @@ import 'package:get_storage/get_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'app/core/app_base.dart';
 import 'app/core/app_setting.dart';
 import 'app/core/app_theme.dart';
+import 'app/core/const.dart';
 import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
 
@@ -83,7 +85,10 @@ Widget expenseTracker() {
             child!,
             IconButton(
               icon: Icon(CupertinoIcons.square_stack_3d_down_right_fill),
-              onPressed: () => AppTheme.switchTheme(),
+              onPressed: () {
+                pref.remove(kIsLogin);
+                AppTheme.switchTheme();
+              },
             ).positioned(left: 72),
           ]),
         );

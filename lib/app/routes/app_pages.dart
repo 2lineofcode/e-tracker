@@ -67,8 +67,8 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.BIBIT,
-      page: () => pref.read<bool>(kIsLogin) ?? false ? BibitView() : LoginView(),
-      binding: pref.read<bool>(kIsLogin) ?? false ? BibitBinding() : LoginBinding(),
+      page: () => const BibitView(),
+      binding: BibitBinding(),
     ),
     GetPage(
       name: _Paths.DETAIL_STOCK,
