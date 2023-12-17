@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:ex/ex.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../env.g.dart';
 import 'const.dart';
 
 /// handy call supabase
@@ -15,7 +15,7 @@ final db = Supabase.instance.client;
 final pref = GetStorage();
 
 /// handy call api
-final _bibitUrl = dotenv.get('BIBIT_API_URL');
+const _bibitUrl = Env.bibitApiUrl;
 final api = Get.find<ExHttp>(tag: 'bibit')
   ..httpClient.addAuthenticator<void>((request) async {
     logW('== REFRESH TOKEN ==');
@@ -23,8 +23,8 @@ final api = Get.find<ExHttp>(tag: 'bibit')
     final response = await ExHttp().post(
       '$_bibitUrl/auth/token',
       body: {
-        'refresh_id': dotenv.get('BIBIT_DEFAULT_REFRESH_ID'),
-        'refresh_token': dotenv.get('BIBIT_DEFAULT_REFRESH_TOKEN'),
+        'refresh_id': Env.bibitRefreshId,
+        'refresh_token': Env.bibitRefreshToken,
       },
     );
     final token = response.body['data']['token']['access_token'];

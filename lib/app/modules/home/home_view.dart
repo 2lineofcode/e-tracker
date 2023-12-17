@@ -1,7 +1,6 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -11,6 +10,7 @@ import 'package:lottie/lottie.dart';
 import 'package:swipe_to/swipe_to.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../../env.g.dart';
 import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
@@ -38,7 +38,7 @@ class HomeView extends GetView<HomeController> {
 
   Widget appBarTitle() {
     if (Get.size.width >= 1024) {
-      return '${dotenv.get('APP_NAME')}'.text.size(11).bold.make();
+      return '${Env.appName}'.text.size(11).bold.make();
     } else {
       return TextField(
         controller: controller.tfSearchExpense.value,

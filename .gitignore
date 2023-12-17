@@ -44,11 +44,15 @@ app.*.map.json
 /android/app/release
 
 .metadata
-*.lock
 .firebase/**
+*.lock
+*.sql
 supabase/**
 devtools_options.yaml
 macos/Flutter/GeneratedPluginRegistrant.swift
 linux/flutter/ephemeral/*
-.env*
 repository
+
+#### env ####
+# .env*
+*.g*

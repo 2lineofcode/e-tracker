@@ -2,7 +2,6 @@ import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_base.dart';
-import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../routes/app_pages.dart';
 import '_explore/section_bibit_explore_controller.dart';
@@ -18,7 +17,7 @@ class BibitController extends GetxController with StateMixin {
   @override
   Future<void> onInit() async {
     /// additional security! check login status
-    if (db.auth.currentSession?.user.id == null || pref.read<bool>(kIsLogin) != true) {
+    if (db.auth.currentSession?.user.id == null) {
       await 800.milliseconds.delay();
       await db.auth.signOut();
       await Get.offAllNamed(Routes.LOGIN);

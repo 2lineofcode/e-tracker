@@ -4,7 +4,6 @@ import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,6 +13,7 @@ import 'app/core/app_setting.dart';
 import 'app/core/app_theme.dart';
 import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
+import 'env.g.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,11 +23,11 @@ Future<void> main() async {
 }
 
 Future<void> initAppService() async {
-  /// env
-  await dotenv.load(fileName: '.env');
-
   /// supabase
-  await Supabase.initialize(url: dotenv.get('SUPABASE_URL'), anonKey: dotenv.get('SUPABASE_ANON_KEY'));
+  await Supabase.initialize(
+    url: Env.supabaseUrl,
+    anonKey: Env.supabaseAnonKey,
+  );
 
   /// local storage
   await GetStorage.init();
@@ -36,7 +36,7 @@ Future<void> initAppService() async {
   Get.put(AppSettingService());
 
   /// http
-  Get.put(ExHttp(baseURL: dotenv.get('BIBIT_API_URL')), tag: 'bibit');
+  Get.put(ExHttp(baseURL: Env.bibitApiUrl), tag: 'bibit');
 }
 
 Future<void> initForDesktop() async {
@@ -44,7 +44,7 @@ Future<void> initForDesktop() async {
     final idealSize = Size(690, 700);
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = WindowOptions(
-      title: dotenv.get('APP_NAME'),
+      title: Env.appName,
       size: idealSize,
       minimumSize: kReleaseMode ? idealSize : null,
       maximumSize: Platform.isWindows ? idealSize : null,
@@ -63,7 +63,7 @@ Future<void> initForDesktop() async {
 
 Widget expenseTracker() {
   return GetMaterialApp(
-    title: dotenv.get('APP_NAME'),
+    title: Env.appName,
     initialRoute: AppPages.INITIAL,
     theme: AppTheme.light,
     themeMode: AppTheme.currentTheme,

@@ -17,7 +17,9 @@
         "macos": true,
         "ios": true,
         "web": true,
-        "build": true
+        "build": true,
+        "pubspec.lock": true,
+        "supabase": true
     },
     "explorerExclude.backup": {},
 

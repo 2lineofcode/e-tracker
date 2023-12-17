@@ -2,7 +2,7 @@ include: package:flutter_lints/flutter.yaml
 
 analyzer:
   exclude:
-    # - lib/app/models/**
+    - lib/*.g.dart*
 
   errors:
     todo: ignore
