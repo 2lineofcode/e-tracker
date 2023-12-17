@@ -4,7 +4,11 @@ import 'package:ex/ex.dart';
 import '../core/app_color.dart';
 
 mixin BibitHelper {
-  /// isStockMarketOpen
+  /// #### isStockMarketOpen
+  /// - true:
+  ///     - mon-thu: 09.00 - 12.00 WIB, 13.30 - 15.49 WIB,
+  ///     - friday: 09.00 - 11.30 WIB, 14.00 - 15.49 WIB
+  /// - false: other day
   static bool get isStockMarketOpen {
     final now = DateTime.now();
     final dayOfWeek = now.weekday;
@@ -14,16 +18,16 @@ mixin BibitHelper {
     /// monday - thursday
     if (dayOfWeek >= 1 && dayOfWeek <= 4) {
       if ((currentHour == 9 && currentMinute >= 0) || (currentHour == 10) || (currentHour == 11 && currentMinute <= 59)) {
-        return true; // Sesi 1 (09.00 - 12.00 WIB)
+        return true;
       } else if ((currentHour == 13 && currentMinute >= 30) || (currentHour == 14 && currentMinute <= 49)) {
-        return true; // Sesi 2 (13.30 - 15.49 WIB)
+        return true;
       }
     } else if (dayOfWeek == 5) {
       // friday
       if ((currentHour == 9 && currentMinute >= 0) || (currentHour == 11 && currentMinute <= 30)) {
-        return true; // Sesi 1 (09.00 - 11.30 WIB)
+        return true;
       } else if ((currentHour == 14 && currentMinute >= 0) || (currentHour == 15 && currentMinute <= 49)) {
-        return true; // Sesi 2 (14.00 - 15.49 WIB)
+        return true;
       }
     }
 

@@ -109,6 +109,8 @@ final _gsk = <GlobalKey<ScaffoldState>>[
   drawerKeyFiltering,
   drawerKeyBibit,
 ];
+
+/// #### Mobile Only: closeDrawer -> only close when drawer is open
 void closeDrawer() {
   if (Get.context!.isMobile) {
     for (var k in _gsk) {

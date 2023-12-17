@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/app_color.dart';
 
 mixin DecorationHelper {
+  /// #### input
   static InputDecoration input({
     String? hint,
     Color? fillColor,

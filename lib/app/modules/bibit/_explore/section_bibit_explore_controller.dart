@@ -32,19 +32,27 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
     change(0, status: RxStatus.loading());
 
     /// pintu
-    _pintuSupportedCurrencies.value = await repo.getSupportedCurrencies();
-    _pintuPriceChanges.value = await repo.getPriceChanges();
-    fixPintu();
-    initPintuRealTimePriceChange();
+    await (pintu());
 
     /// stockbit
-    bibitStockTranding.value = await repo.getStockTranding();
-    bibitStockWatchlist.value = await repo.getStockWatchList();
-    initBibitRealTimePriceChange();
+    unawaited(stockbit());
 
     tabController = TabController(length: 2, vsync: this);
     change(200, status: RxStatus.success());
     super.onInit();
+  }
+
+  Future<void> pintu() async {
+    _pintuSupportedCurrencies.value = await repo.getSupportedCurrencies();
+    _pintuPriceChanges.value = await repo.getPriceChanges();
+    fixPintu();
+    initPintuRealTimePriceChange();
+  }
+
+  Future<void> stockbit() async {
+    bibitStockTranding.value = await repo.getStockTranding();
+    bibitStockWatchlist.value = await repo.getStockWatchList();
+    initBibitRealTimePriceChange();
   }
 
   void fixPintu() {

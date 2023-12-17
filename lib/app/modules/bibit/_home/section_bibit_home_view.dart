@@ -8,7 +8,6 @@ import '../../../core/app_color.dart';
 import '../../../helpers/helper_bibit.dart';
 import '../../../helpers/helper_misc.dart';
 import '../../../helpers/helper_money.dart';
-import '../../widgets/widgets.dart';
 import 'section_bibit_home_controller.dart';
 
 class SectionBibitHomeView extends GetView<SectionBibitHomeController> {
@@ -199,16 +198,17 @@ class SectionBibitHomeView extends GetView<SectionBibitHomeController> {
           [
             'Watchlist (${controller.watchList.length})'.text.bold.make().p16(),
             controller.watchList.isEmpty
-                ? LinearProgressIndicator().p32()
+                ? ExUiShimmerList().expand()
                 : ListView.builder(
                     padding: EdgeInsets.zero,
                     itemCount: controller.watchList.length,
                     itemBuilder: (context, index) {
                       final item = controller.watchList[index];
                       return ListTile(
-                        leading: MySvg(
-                          url: 'https://app.bibit.id/assets/logos/investment-manager/square/${item.investmentManager?.ojkCode}.svg',
-                          size: 24,
+                        leading: ExAvatarView(
+                          source: 'https://app.bibit.id/assets/logos/investment-manager/square/${item.investmentManager?.ojkCode}.svg',
+                          size: 28,
+                          borderColor: Colors.white,
                         ),
                         title: '${item.name}'.text.ellipsis.maxLines(1).size(13).bold.make(),
                         subtitle: '${item.type}'.text.size(11).minFontSize(11).make(),

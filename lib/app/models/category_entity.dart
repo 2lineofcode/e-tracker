@@ -6,6 +6,7 @@ class CategoryEntity {
   String? color;
   String? icon;
   int? maxBudget;
+  bool? isPublic;
 
   CategoryEntity({
     this.id,
@@ -15,6 +16,7 @@ class CategoryEntity {
     this.color,
     this.icon,
     this.maxBudget,
+    this.isPublic,
   });
 
   CategoryEntity.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class CategoryEntity {
     color = json['color'];
     icon = json['icon'];
     maxBudget = json['max_budget'];
+    isPublic = json['is_public'] ?? false;
   }
 
   Map<String, dynamic> toJson() {
@@ -36,6 +39,7 @@ class CategoryEntity {
     data['color'] = color;
     data['icon'] = icon;
     data['max_budget'] = maxBudget;
+    data['is_public'] = isPublic;
     return data;
   }
 }

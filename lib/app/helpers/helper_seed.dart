@@ -157,7 +157,6 @@ mixin SeedHelper {
     }
   }
 
-  /// TODO: fix me
   static Future<void> importFromCSV() async {
     try {
       final result = await FilePicker.platform.pickFiles(allowedExtensions: ['csv'], type: FileType.custom);

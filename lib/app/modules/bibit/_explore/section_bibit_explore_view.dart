@@ -1,6 +1,5 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 
 import '../../../core/app_color.dart';
@@ -52,9 +51,12 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
           final item = controller.pintuListCrypto[index];
           return HStack(
             [
-              SvgPicture.network(
-                item.logo ?? '',
-                colorFilter: item.color?.fromHex != null ? ColorFilter.mode(item.color?.fromHex ?? Vx.white, BlendMode.srcIn) : null,
+              ExAvatarView(
+                source: item.logo ?? '',
+                size: 32,
+                bgColor: item.color?.fromHex,
+                // borderColor: Colors.white,
+                // borderWidth: 0,
               ).pOnly(right: 12),
               VStack([
                 HStack([

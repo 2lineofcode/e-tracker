@@ -39,7 +39,6 @@ class SectionAppConfig extends GetView<SettingsController> {
                       source: controller.userProfile.value.avatarUrl ?? 'https://empty.com',
                       name: controller.userProfile.value.fullName ?? '',
                       size: 32,
-                      borderWidth: 0.5,
                     ),
                     VStack([
                       '${controller.userProfile.value.fullName}'.text.make(),
