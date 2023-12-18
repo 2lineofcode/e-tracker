@@ -15,7 +15,7 @@ final db = Supabase.instance.client;
 final pref = GetStorage();
 
 /// handy call api
-const _bibitUrl = Env.bibitApiUrl;
+final _bibitUrl = Env.bibitApiUrl;
 final api = Get.find<ExHttp>(tag: 'bibit')
   ..httpClient.addAuthenticator<void>((request) async {
     logW('== REFRESH TOKEN ==');

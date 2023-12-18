@@ -8,20 +8,31 @@
         "**/Thumbs.db": true,
         ".idea": true,
         ".dart_**": true,
-        "firebase**": true,
-        ".firebase**": true,
+        ".firebase": true,
         ".flutter-**": true,
         "linux": true,
         "android": true,
         "windows": true,
         "macos": true,
         "ios": true,
-        "web": true,
+        "web": false,
         "build": true,
-        "pubspec.lock": true,
-        "supabase": true
+        "supabase": false
     },
     "explorerExclude.backup": {},
 
     "dart.lineLength": 200,
+    "workbench.editor.enablePreview": true,
+
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+    },
+    "explorer.fileNesting.enabled": true,
+    "explorer.fileNesting.expand": false,
+    "explorer.fileNesting.patterns": {
+        "pubspec.yaml": "pubspec.lock,pubspec_overrides.yaml,.packages,.flutter-plugins,.flutter-plugins-dependencies,.metadata, analysis_options.yaml, flutter_launcher_icons.yaml",
+        "README.md":"README.md, supabase_local.md",
+        "*.dart": "${capture}.g.dart",
+        "firebase.json": "firebase.json, .firebaserc",
+    },
 }

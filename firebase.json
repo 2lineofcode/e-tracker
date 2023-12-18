@@ -2,13 +2,19 @@
   "hosting": {
     "public": "build/web",
     "ignore": [
-      "firebase.json",
+      "**/node_modules/**",
       ".dart_tool/**",
+      ".env*",
       ".firebase/**",
-      ".vscode/**",
-      ".flutter-plugins",
       ".flutter-plugins-dependencies",
-      "**/node_modules/**"
+      ".flutter-plugins",
+      ".vscode/**",
+      "android",
+      "firebase.json",
+      "ios",
+      "linux",
+      "macos",
+      "windows"
     ],
     "frameworksBackend": {
       "region": "us-central1"
