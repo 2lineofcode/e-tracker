@@ -117,6 +117,11 @@ class BibitRepository {
   /// ------------------------------------------------------------------------
   /// ! pintu
   /// ------------------------------------------------------------------------
+
+  Future<List<dynamic>> rpcPintu() async {
+    return await db.rpc('get_pintu');
+  }
+
   /// getSupportedCurrencies
   Future<List<PintuSupportedCurrenciesPayload>> getSupportedCurrencies() async {
     try {

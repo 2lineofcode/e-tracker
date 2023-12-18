@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
@@ -43,16 +44,21 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
   }
 
   Future<void> pintu() async {
-    _pintuSupportedCurrencies.value = await repo.getSupportedCurrencies();
-    _pintuPriceChanges.value = await repo.getPriceChanges();
+    // _pintuSupportedCurrencies.value = await repo.getSupportedCurrencies();
+    // _pintuPriceChanges.value = await repo.getPriceChanges();
+
+    await repo.rpcPintu().then((response) async {
+      final r0 = jsonDecode(response[0]['response']);
+      final supportedCurrencies = PintuSupportedCurrencies.fromJson(r0);
+      _pintuSupportedCurrencies.value = supportedCurrencies.payload!;
+
+      final r1 = jsonDecode(response[1]['response']);
+      final priceChanges = PintuPriceChanges.fromJson(r1);
+      _pintuPriceChanges.value = priceChanges.payload!;
+    });
+
     fixPintu();
     initPintuRealTimePriceChange();
-  }
-
-  Future<void> stockbit() async {
-    bibitStockTranding.value = await repo.getStockTranding();
-    bibitStockWatchlist.value = await repo.getStockWatchList();
-    initBibitRealTimePriceChange();
   }
 
   void fixPintu() {
@@ -87,7 +93,13 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
 
   void initPintuRealTimePriceChange() {
     timerPintuPriceChanges = Timer.periodic(1.seconds, (timer) async {
-      _pintuPriceChanges.value = await repo.getPriceChanges();
+      logI('=== pintu priceChanges ===');
+      // _pintuPriceChanges.value = await repo.getPriceChanges();
+      await repo.rpcPintu().then((response) {
+        final r1 = jsonDecode(response[1]['response']);
+        final priceChanges = PintuPriceChanges.fromJson(r1);
+        _pintuPriceChanges.value = priceChanges.payload!;
+      });
       pintuListCrypto.clear();
       for (var priceChanges in _pintuPriceChanges) {
         final pairSymbol = priceChanges.pair.allBefore('/').toUpperCase();
@@ -111,6 +123,13 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
       }
       pintuListCrypto.sort((a, b) => a.symbol!.compareTo(b.symbol!));
     });
+  }
+
+  ///
+  Future<void> stockbit() async {
+    bibitStockTranding.value = await repo.getStockTranding();
+    bibitStockWatchlist.value = await repo.getStockWatchList();
+    initBibitRealTimePriceChange();
   }
 
   void initBibitRealTimePriceChange() {
