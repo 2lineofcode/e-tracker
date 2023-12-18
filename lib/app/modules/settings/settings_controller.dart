@@ -99,7 +99,6 @@ class SettingsController extends GetxController with StateMixin {
       paddingSymmetric: Get.context!.isMobile ? 90 : 250,
       child: CupertinoActivityIndicator(),
     );
-    await pref.remove(kIsLogin);
     await db.auth.signOut();
     await Get.delete<HomeController>();
     await Get.offAllNamed(Routes.LOGIN);

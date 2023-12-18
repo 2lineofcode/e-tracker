@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 
 import '../core/app_base.dart';
-import '../core/const.dart';
 import '../modules/auth/login/login_binding.dart';
 import '../modules/auth/login/login_view.dart';
 import '../modules/bibit/bibit_binding.dart';
@@ -34,8 +33,8 @@ class AppPages {
     /// ------------------------------------------------------------------------
     GetPage(
       name: _Paths.ROOT,
-      page: () => pref.read<bool>(kIsLogin) ?? false ? HomeView() : LoginView(),
-      binding: pref.read<bool>(kIsLogin) ?? false ? HomeBinding() : LoginBinding(),
+      page: () => db.auth.currentSession?.user.id != null ? HomeView() : LoginView(),
+      binding: db.auth.currentSession?.user.id != null ? HomeBinding() : LoginBinding(),
     ),
 
     /// ------------------------------------------------------------------------
