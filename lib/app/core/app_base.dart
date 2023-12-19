@@ -20,20 +20,21 @@ final api = Get.find<ExHttp>(tag: 'bibit')
   ..httpClient.addAuthenticator<void>((request) async {
     logW('== REFRESH TOKEN ==');
     await pref.erase();
-    final response = await ExHttp().post(
+    await ExHttp().post(
       '$_bibitUrl/auth/token',
       body: {
         'refresh_id': Env.bibitRefreshId,
         'refresh_token': Env.bibitRefreshToken,
       },
-    );
-    final token = response.body['data']['token']['access_token'];
-    final rToken = response.body['data']['token']['refresh_token'];
-    await pref.write(kBibitToken, token);
-    await pref.write(kBibitRefreshToken, rToken);
+    ).then((response) async {
+      final token = response.body['data']['token']['access_token'];
+      final rToken = response.body['data']['token']['refresh_token'];
+      await pref.write(kBibitToken, token);
+      await pref.write(kBibitRefreshToken, rToken);
 
-    request.headers['authorization'] = 'Bearer $token';
-    logI('TOKEN REFRESHED!');
+      request.headers['authorization'] = 'Bearer $token';
+      logI('TOKEN REFRESHED!');
+    });
 
     return request;
   })

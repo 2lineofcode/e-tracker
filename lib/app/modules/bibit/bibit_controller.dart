@@ -34,9 +34,9 @@ class BibitController extends GetxController with StateMixin {
 
   @override
   void onClose() {
-    Get.delete<SectionBibitExploreController>();
-    Get.delete<SectionBibitPorfolioController>();
     Get.delete<SectionBibitHomeController>();
+    Get.delete<SectionBibitPorfolioController>();
+    Get.delete<SectionBibitExploreController>();
     super.onClose();
   }
 }

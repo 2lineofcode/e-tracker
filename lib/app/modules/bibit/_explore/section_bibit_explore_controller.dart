@@ -93,7 +93,7 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
 
   void initPintuRealTimePriceChange() {
     timerPintuPriceChanges = Timer.periodic(1.seconds, (timer) async {
-      logI('=== pintu priceChanges ===');
+      log('=== pintu priceChanges ===');
       // _pintuPriceChanges.value = await repo.getPriceChanges();
       await repo.rpcPintu().then((response) {
         final r1 = jsonDecode(response[1]['response']);
@@ -135,6 +135,7 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
   void initBibitRealTimePriceChange() {
     if (BibitHelper.isStockMarketOpen) {
       timerBibitPriceChanges = Timer.periodic(1.seconds, (timer) async {
+        log('=== stockbit priceChanges ===');
         bibitStockTranding.value = await repo.getStockTranding();
         bibitStockWatchlist.value = await repo.getStockWatchList();
       });

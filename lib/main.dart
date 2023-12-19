@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -7,27 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'app/core/app_setting.dart';
 import 'app/core/app_theme.dart';
-import 'app/helpers/helper_misc.dart';
 import 'app/routes/app_pages.dart';
 import 'env.g.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initAppService();
-  await initForDesktop();
-  runApp(expenseTracker());
-}
 
-Future<void> initAppService() async {
   /// supabase
-  await Supabase.initialize(
-    url: Env.supabaseUrl,
-    anonKey: Env.supabaseAnonKey,
-  );
+  await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
 
   /// local storage
   await GetStorage.init();
@@ -37,28 +25,8 @@ Future<void> initAppService() async {
 
   /// http
   Get.put(ExHttp(baseURL: Env.bibitApiUrl), tag: 'bibit');
-}
 
-Future<void> initForDesktop() async {
-  if (isDesktop) {
-    final idealSize = Size(690, 700);
-    await windowManager.ensureInitialized();
-    WindowOptions windowOptions = WindowOptions(
-      title: Env.appName,
-      size: idealSize,
-      minimumSize: kReleaseMode ? idealSize : null,
-      maximumSize: Platform.isWindows ? idealSize : null,
-      titleBarStyle: Platform.isMacOS ? TitleBarStyle.hidden : TitleBarStyle.normal,
-      alwaysOnTop: Platform.isWindows ? true : false,
-      center: true,
-      backgroundColor: Colors.transparent,
-      skipTaskbar: false,
-    );
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.show();
-      await windowManager.focus();
-    });
-  }
+  runApp(expenseTracker());
 }
 
 Widget expenseTracker() {

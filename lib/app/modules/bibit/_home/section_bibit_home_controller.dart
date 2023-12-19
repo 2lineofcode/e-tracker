@@ -38,7 +38,7 @@ class SectionBibitHomeController extends GetxController {
     /// refresh every second
     timerPriceChanges = Timer.periodic(1.seconds, (timer) async {
       if (BibitHelper.isStockMarketOpen) {
-        log('running timer: idx30 price changes');
+        log('=== idx30 price changes ===');
         ihsg.value = await repo.getIHSG();
         indexIndices.value = await repo.getIndexIndices();
       }
@@ -56,8 +56,8 @@ class SectionBibitHomeController extends GetxController {
   @override
   void onClose() {
     try {
-      ws?.close();
       timerPriceChanges?.cancel();
+      // ws?.close();
     } catch (_) {}
     super.onClose();
   }
