@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../helpers/helpers.dart';
 import '../../widgets/widgets.dart';
@@ -13,7 +14,7 @@ class LoginView extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
     return MyLayout(
-      drawerKey: drawerKeyLogin,
+      // drawerKey: drawerKeyLogin,
       appBarTitle: appBarTitle(),
       appBarLeading: appBarLeading(),
       sideMenuContent: sideMenuContent(),
@@ -31,7 +32,20 @@ class LoginView extends GetView<LoginController> {
   }
 
   Widget sideMenuContent() {
-    return Container();
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        LottieBuilder.asset(
+          'assets/lottie/expense.json',
+          width: 200,
+          height: 200,
+          reverse: true,
+        ).centered(),
+        Obx(() => '${controller.appInfo['appName']}'.text.size(12).bold.size(15).make()),
+        Obx(() => '${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'.text.size(12).make()),
+      ],
+    ).expand();
   }
 
   Widget bodyContent() {

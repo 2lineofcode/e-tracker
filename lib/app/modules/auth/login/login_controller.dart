@@ -2,6 +2,7 @@ import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../helpers/helpers.dart';
 import '../../../routes/app_pages.dart';
@@ -13,8 +14,15 @@ class LoginController extends GetxController {
   final tfEmail = TextEditingController();
   final tfPassword = TextEditingController();
 
+  /// appInfo
+  final appInfo = <String, dynamic>{}.obs;
+  late PackageInfo? packageInfo;
+
   @override
-  void onInit() {
+  Future<void> onInit() async {
+    packageInfo = await PackageInfo.fromPlatform();
+    appInfo.value = packageInfo?.data ?? {};
+    log('appInfo: ${appInfo.entries.toList()}');
     if (kDebugMode) {
       tfEmail.text = 'adit@gmail.com';
       tfPassword.text = 'asdasdasd';
