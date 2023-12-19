@@ -1,10 +1,12 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../../../env.g.dart';
 import '../../../helpers/helpers.dart';
 import '../../widgets/widgets.dart';
 import 'login_controller.dart';
@@ -42,8 +44,13 @@ class LoginView extends GetView<LoginController> {
           height: 200,
           reverse: true,
         ).centered(),
-        Obx(() => '${controller.appInfo['appName']}'.text.size(12).bold.size(15).make()),
-        Obx(() => '${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'.text.size(12).make()),
+        if (kIsWeb) ...[
+          '${Env.appName}'.text.bold.size(15).make(),
+          '1.0.0 (Private)'.text.size(12).make(),
+        ] else ...[
+          Obx(() => '${controller.appInfo['appName']}'.text.bold.size(15).make()),
+          Obx(() => '${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'.text.size(12).make()),
+        ],
       ],
     ).expand();
   }
