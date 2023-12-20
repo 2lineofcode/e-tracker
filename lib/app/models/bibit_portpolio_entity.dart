@@ -1,10 +1,10 @@
-class BibitPortpolioEntity {
+class BibitPortpolio {
   String? message;
   BibitPortpolioData? data;
 
-  BibitPortpolioEntity({this.message, this.data});
+  BibitPortpolio({this.message, this.data});
 
-  BibitPortpolioEntity.fromJson(Map<String, dynamic> json) {
+  BibitPortpolio.fromJson(Map<String, dynamic> json) {
     message = json['message'];
     data = json['data'] != null ? BibitPortpolioData.fromJson(json['data']) : null;
   }

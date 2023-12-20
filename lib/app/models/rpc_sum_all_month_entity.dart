@@ -1,10 +1,10 @@
-class RpcSumAllMonthEntity {
+class RpcSumAllMonth {
   String? period;
   int? total;
 
-  RpcSumAllMonthEntity({this.period, this.total});
+  RpcSumAllMonth({this.period, this.total});
 
-  RpcSumAllMonthEntity.fromJson(Map<String, dynamic> json) {
+  RpcSumAllMonth.fromJson(Map<String, dynamic> json) {
     period = json['period'] ?? '';
     total = json['total'] ?? 0;
   }

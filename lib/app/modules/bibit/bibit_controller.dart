@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_base.dart';
 import '../../helpers/helpers.dart';
+import '../../models/bibit_companies_info_entity.dart.dart';
 import '../../routes/app_pages.dart';
 import '_explore/section_bibit_explore_controller.dart';
 import '_home/section_bibit_home_controller.dart';
@@ -13,6 +16,9 @@ class BibitController extends GetxController with StateMixin {
   final repo = Get.find<BibitRepository>();
   final menuList = [].obs;
   final menuSelected = 'Home'.obs;
+  final getCompaniesInfo = BibitCompaniesInfoData().obs;
+
+  late Timer? timerMarketOpen;
 
   @override
   Future<void> onInit() async {
@@ -23,6 +29,7 @@ class BibitController extends GetxController with StateMixin {
       await Get.offAllNamed(Routes.LOGIN);
     }
     menuList.value = repo.menuList();
+    getCompaniesInfo.value = await repo.getCompaniesInfo();
     change(200, status: RxStatus.success());
     super.onInit();
   }

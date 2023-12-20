@@ -13,14 +13,14 @@ class FilteringRepository {
   /// ------------------------------------------------------------------------
   /// ! category
   /// ------------------------------------------------------------------------
-  Future<List<CategoryEntity>> getCategory() async {
+  Future<List<Category>> getCategory() async {
     final response = await db //
         .from('category')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .order('max_budget')
-        .withConverter<List<CategoryEntity>>((data) {
-      return (data).map((e) => CategoryEntity.fromJson(e)).toList();
+        .withConverter<List<Category>>((data) {
+      return (data).map((e) => Category.fromJson(e)).toList();
     });
     return response;
   }
@@ -28,13 +28,13 @@ class FilteringRepository {
   /// ------------------------------------------------------------------------
   /// ! expense
   /// ------------------------------------------------------------------------
-  Future<List<ExpenseEntity>> findExpense(
+  Future<List<Expense>> findExpense(
     String categoryName,
     String startDate,
     String endDate, {
     String? orderBy,
   }) async {
-    var response = <ExpenseEntity>[];
+    var response = <Expense>[];
     if (categoryName == '*' || categoryName == 'All') {
       response = await db
           .from('expense')
@@ -44,8 +44,8 @@ class FilteringRepository {
           .filter('date', 'gte', startDate)
           .filter('date', 'lte', endDate)
           .order(orderBy ?? 'amount', ascending: false)
-          .withConverter<List<ExpenseEntity>>((data) {
-        return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
+          .withConverter<List<Expense>>((data) {
+        return (data).map((e) => Expense.fromJson(e)).toList();
       });
     } else {
       response = await db
@@ -56,8 +56,8 @@ class FilteringRepository {
           .filter('date', 'gte', startDate)
           .filter('date', 'lte', endDate)
           .order(orderBy ?? 'amount', ascending: false)
-          .withConverter<List<ExpenseEntity>>((data) {
-        return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
+          .withConverter<List<Expense>>((data) {
+        return (data).map((e) => Expense.fromJson(e)).toList();
       });
     }
     return response;

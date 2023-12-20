@@ -1,5 +1,7 @@
 import 'package:ex/ex.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_color.dart';
@@ -7,6 +9,7 @@ import '../../helpers/helpers.dart';
 import '../widgets/widgets.dart';
 import '_explore/section_bibit_explore_view.dart';
 import '_home/section_bibit_home_view.dart';
+import '_performance/section_bibit_performance_view.dart';
 import '_portfolio/section_bibit_portfolio_view.dart';
 import 'bibit_controller.dart';
 
@@ -29,11 +32,31 @@ class BibitView extends GetView<BibitController> {
   }
 
   Widget appBarAction() {
-    // return IconButton(
-    //   icon: Icon(CupertinoIcons.refresh_bold, size: 22),
-    //   onPressed: () {},
-    // );
-    return Container();
+    return Obx(
+      () {
+        final isClose = controller.getCompaniesInfo.value.marketHours?.status == 'close';
+        return controller.menuSelected.value == 'Home'
+            ? CustomPopup(
+                content: VStack(
+                  [
+                    if (isClose) ...[
+                      'Market Sedang Tutup'.text.bold.black.make().pOnly(bottom: 8),
+                      'Market akan buka kembali dalam:'.text.black.size(12).make(),
+                      '${controller.getCompaniesInfo.value.marketHours?.formattedTimeLeft}'.text.size(12).black.make(),
+                    ] else ...[
+                      'Market Buka'.text.bold.black.make().pOnly(bottom: 8),
+                      'Market sedang buka'.text.black.size(12).make(),
+                    ],
+                  ],
+                ),
+                child: HStack([
+                  Icon(CupertinoIcons.circle_fill, size: 6, color: isClose ? AppColor.red : AppColor.green).pOnly(right: 8),
+                  Icon(isClose ? CupertinoIcons.moon_circle_fill : CupertinoIcons.timer_fill, size: 22),
+                ]),
+              ).p12()
+            : Container();
+      },
+    );
   }
 
   Widget sideMenuContent() {
@@ -69,6 +92,8 @@ class BibitView extends GetView<BibitController> {
         return controller.obx((state) => SectionBibitHomeView());
       case 'Portfolio':
         return controller.obx((state) => SectionBibitPorfolioView());
+      case 'Performance':
+        return controller.obx((state) => SectionBibitPerformanceView());
       case 'Explore':
         return controller.obx((state) => SectionBibitExploreView());
       default:

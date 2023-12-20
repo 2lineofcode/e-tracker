@@ -1,4 +1,4 @@
-class CategoryEntity {
+class Category {
   String? id;
   String? createdAt;
   String? name;
@@ -8,7 +8,7 @@ class CategoryEntity {
   int? maxBudget;
   bool? isPublic;
 
-  CategoryEntity({
+  Category({
     this.id,
     this.createdAt,
     this.name,
@@ -19,7 +19,7 @@ class CategoryEntity {
     this.isPublic,
   });
 
-  CategoryEntity.fromJson(Map<String, dynamic> json) {
+  Category.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     createdAt = json['created_at'];
     name = json['name'];

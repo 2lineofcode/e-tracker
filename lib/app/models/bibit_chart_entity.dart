@@ -1,10 +1,10 @@
-class BibitChartEntity {
+class BibitChart {
   String? message;
   BibitChartData? data;
 
-  BibitChartEntity({this.message, this.data});
+  BibitChart({this.message, this.data});
 
-  BibitChartEntity.fromJson(Map<String, dynamic> json) {
+  BibitChart.fromJson(Map<String, dynamic> json) {
     message = json['message'];
     data = json['data'] != null ? BibitChartData.fromJson(json['data']) : null;
   }

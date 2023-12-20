@@ -245,7 +245,7 @@ class FilteringView extends GetView<FilteringController> {
   }
 
   Widget uiModeList() {
-    return GroupedListView<ExpenseEntity, String>(
+    return GroupedListView<Expense, String>(
       elements: controller.expenseList,
       groupBy: (element) => element.date!,
       useStickyGroupSeparators: true,

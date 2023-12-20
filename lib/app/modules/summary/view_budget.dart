@@ -4,7 +4,6 @@ import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
-import 'package:swipe_to/swipe_to.dart';
 
 import '../../core/app_color.dart';
 import '../../helpers/helper_misc.dart';
@@ -22,7 +21,7 @@ class ViewBudget extends GetView<SummaryController> {
   @override
   Widget build(BuildContext context) {
     return controller.obx(
-      (state) => SwipeTo(
+      (state) => ExSwipe(
         onLeftSwipe: (details) async {
           if (controller.isShowAllYear.isFalse) {
             final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
@@ -254,7 +253,7 @@ class ViewBudget extends GetView<SummaryController> {
                             child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
                             onTap: () {
                               logI(jsonEncode(item));
-                              final entity = CategoryEntity(
+                              final entity = Category(
                                 id: item.categoryId,
                                 createdAt: DateTime.now().toStringEx(),
                                 name: item.categoryName,

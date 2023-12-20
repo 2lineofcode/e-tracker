@@ -11,24 +11,24 @@ class HomeRepository {
   /// ------------------------------------------------------------------------
   /// ! category
   /// ------------------------------------------------------------------------
-  Future<List<CategoryEntity>> getCategory() async {
+  Future<List<Category>> getCategory() async {
     final response = await db //
         .from('category')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .order('max_budget')
-        .withConverter<List<CategoryEntity>>((data) {
-      return (data).map((e) => CategoryEntity.fromJson(e)).toList();
+        .withConverter<List<Category>>((data) {
+      return (data).map((e) => Category.fromJson(e)).toList();
     });
     return response;
   }
 
-  Future<void> addCategory(CategoryEntity categoryEntity) async {
+  Future<void> addCategory(Category categoryEntity) async {
     final response = await db.from('category').insert(categoryEntity.toJson());
     return response;
   }
 
-  Future<void> editCategory(CategoryEntity categoryEntity) async {
+  Future<void> editCategory(Category categoryEntity) async {
     final response = await db.from('category').update(categoryEntity.toJson()).match({
       'id': categoryEntity.id,
       'user_id': db.auth.currentSession?.user.id ?? '',
@@ -48,43 +48,43 @@ class HomeRepository {
   /// ! expense
   /// ------------------------------------------------------------------------
   // get all list: for calendar painting
-  Future<List<ExpenseEntity>> getExpenseAll({String period = ''}) async {
+  Future<List<Expense>> getExpenseAll({String period = ''}) async {
     final response = await db //
         .from('expense')
         .select('date, amount')
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .or('date.ilike.$period%')
         .order('date')
-        .withConverter<List<ExpenseEntity>>((data) {
-      return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
+        .withConverter<List<Expense>>((data) {
+      return (data).map((e) => Expense.fromJson(e)).toList();
     });
     return response;
   }
 
   // get list by @date
-  Future<List<ExpenseEntity>> getExpense(String date) async {
+  Future<List<Expense>> getExpense(String date) async {
     final response = await db //
         .from('expense')
         .select('*, category(*)')
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .eq('date', date)
         .order('amount')
-        .withConverter<List<ExpenseEntity>>((data) {
-      return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
+        .withConverter<List<Expense>>((data) {
+      return (data).map((e) => Expense.fromJson(e)).toList();
     });
     return response;
   }
 
   // find list by @note or @category.name
-  Future<List<ExpenseEntity>> findExpense(String name) async {
+  Future<List<Expense>> findExpense(String name) async {
     final response = await db //
         .from('expense')
         .select('*, category(color, icon)')
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .or('note.ilike.%$name%, category_name.ilike.%$name%')
         .order('date')
-        .withConverter<List<ExpenseEntity>>((data) {
-      return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
+        .withConverter<List<Expense>>((data) {
+      return (data).map((e) => Expense.fromJson(e)).toList();
     });
     return response;
   }
@@ -103,14 +103,14 @@ class HomeRepository {
     return x.toInt();
   }
 
-  Future<void> addExpense(ExpenseEntity entity) async {
+  Future<void> addExpense(Expense entity) async {
     final response = await db //
         .from('expense')
         .insert(entity.toJson());
     return response;
   }
 
-  Future<void> editExpense(ExpenseEntity entity) async {
+  Future<void> editExpense(Expense entity) async {
     final response = await db //
         .from('expense')
         .update(entity.toJson())
@@ -141,14 +141,14 @@ class HomeRepository {
     return response;
   }
 
-  Future<List<AutoCompleteEntity>> findAutoCompleteFullObject(String note) async {
+  Future<List<AutoComplete>> findAutoCompleteFullObject(String note) async {
     final response = await db //
         .from('autocomplete')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .eq('note', '$note')
-        .withConverter<List<AutoCompleteEntity>>((data) {
-      return (data).map((e) => AutoCompleteEntity.fromJson(e)).toList();
+        .withConverter<List<AutoComplete>>((data) {
+      return (data).map((e) => AutoComplete.fromJson(e)).toList();
     });
     return response;
   }
@@ -175,7 +175,7 @@ class HomeRepository {
     return result;
   }
 
-  Future<List<RpcSumByCategoryEntity>> rpcSumByCategory(DateTime focusedDay) async {
+  Future<List<RpcSumByCategory>> rpcSumByCategory(DateTime focusedDay) async {
     final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
     final res = await db
         .rpc('sum_by_category', params: {
@@ -183,8 +183,8 @@ class HomeRepository {
           'periode': fixYM,
         })
         .order('use_percentage', ascending: false)
-        .withConverter<List<RpcSumByCategoryEntity>>((data) {
-          return (data as List).map((e) => RpcSumByCategoryEntity.fromJson(e)).toList();
+        .withConverter<List<RpcSumByCategory>>((data) {
+          return (data as List).map((e) => RpcSumByCategory.fromJson(e)).toList();
         });
     return res;
   }

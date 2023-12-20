@@ -12,32 +12,33 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
   @override
   Widget build(BuildContext context) {
     return controller.obx(
-      (s) => VStack(
-        [
-          TabBar(
-            physics: NeverScrollableScrollPhysics(),
-            controller: controller.tabController,
-            indicatorColor: AppColor.noteColor,
-            labelColor: AppColor.textReverse,
-            labelStyle: TextStyle(fontSize: 13),
-            unselectedLabelColor: Vx.neutral400,
-            unselectedLabelStyle: TextStyle(fontSize: 13),
-            tabs: [
-              Tab(text: 'Crypto'),
-              Tab(text: 'Stock'),
-            ],
-          ),
+      (s) => DefaultTabController(
+        length: 2,
+        child: VStack(
+          [
+            TabBar(
+              physics: NeverScrollableScrollPhysics(),
+              indicatorColor: AppColor.noteColor,
+              labelColor: AppColor.textReverse,
+              labelStyle: TextStyle(fontSize: 13),
+              unselectedLabelColor: Vx.neutral400,
+              unselectedLabelStyle: TextStyle(fontSize: 13),
+              tabs: [
+                Tab(text: 'Crypto'),
+                Tab(text: 'Stock'),
+              ],
+            ),
 
-          /// body
-          TabBarView(
-            physics: NeverScrollableScrollPhysics(),
-            controller: controller.tabController,
-            children: [
-              tabCrypto(),
-              tabStock(),
-            ],
-          ).expand(),
-        ],
+            /// body
+            TabBarView(
+              physics: NeverScrollableScrollPhysics(),
+              children: [
+                tabCrypto(),
+                tabStock(),
+              ],
+            ).expand(),
+          ],
+        ),
       ),
     );
   }

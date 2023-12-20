@@ -7,7 +7,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:lottie/lottie.dart';
-import 'package:swipe_to/swipe_to.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../env.g.dart';
@@ -277,7 +276,7 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget bodyContent() {
-    return SwipeTo(
+    return ExSwipe(
       onLeftSwipe: (detail) async {
         controller.focusedDay.value = controller.focusedDay.value.add(1.days);
         await controller.onCalenderDayChange(controller.focusedDay.value, controller.focusedDay.value);
@@ -441,7 +440,7 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget bodyItemSearchView() {
-    return GroupedListView<ExpenseEntity, String>(
+    return GroupedListView<Expense, String>(
       elements: controller.expenseList,
       groupBy: (element) => element.date ?? '',
       useStickyGroupSeparators: true,

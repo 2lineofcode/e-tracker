@@ -17,7 +17,7 @@ class FilteringController extends GetxController with StateMixin {
 
   /// category
   final tfCategory = TextEditingController();
-  final categoryList = <CategoryEntity>[].obs;
+  final categoryList = <Category>[].obs;
 
   /// argument
   final categorySelected = ''.obs;
@@ -29,12 +29,12 @@ class FilteringController extends GetxController with StateMixin {
   final sumByDate = <String, int>{}.obs;
 
   /// list
-  final expenseList = <ExpenseEntity>[].obs;
+  final expenseList = <Expense>[].obs;
   final orderByList = <String>[].obs;
 
   /// uiSelected
   final uiSelected = 'list'.obs;
-  late Map<String?, List<ExpenseEntity>>? grouppedByDate; // <- for tabel view [group date manually]
+  late Map<String?, List<Expense>>? grouppedByDate; // <- for tabel view [group date manually]
 
   /// init ~~
   @override
@@ -45,7 +45,7 @@ class FilteringController extends GetxController with StateMixin {
 
     orderByList.value = await repo.getOrderList();
     categoryList.value = await repo.getCategory();
-    categoryList.insert(0, CategoryEntity(name: 'All'));
+    categoryList.insert(0, Category(name: 'All'));
 
     await findExpense(categorySelected.value);
     super.onInit();
@@ -90,9 +90,9 @@ class FilteringController extends GetxController with StateMixin {
     /// for tabel view [group date manually]
     final _grouping = expenseList.groupBy((element) => element.date);
     final _sorting = _grouping.entries.toList()..sort((e1, e2) => e2.key!.compareTo(e1.key!));
-    grouppedByDate = <String?, List<ExpenseEntity>>{};
+    grouppedByDate = <String?, List<Expense>>{};
     for (var element in _sorting) {
-      grouppedByDate![element.key] = List<ExpenseEntity>.from(element.value);
+      grouppedByDate![element.key] = List<Expense>.from(element.value);
     }
   }
 }

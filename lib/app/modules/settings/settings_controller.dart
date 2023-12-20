@@ -25,14 +25,14 @@ class SettingsController extends GetxController with StateMixin {
   /// Page: AutoComplete
   final tfSearchAutoComplete = TextEditingController();
   final tfAddAutoComplete = TextEditingController();
-  final autoCompleteList = <AutoCompleteEntity>[].obs;
+  final autoCompleteList = <AutoComplete>[].obs;
 
   /// Page: App Config
   final tfEco = TextEditingController();
   final tfAverage = TextEditingController();
   final tfSpender = TextEditingController();
   final tfCurrencySymbol = TextEditingController();
-  final userProfile = UserProfileEntity().obs;
+  final userProfile = UserProfile().obs;
 
   @override
   Future<void> onInit() async {
@@ -88,7 +88,7 @@ class SettingsController extends GetxController with StateMixin {
     change(0, status: RxStatus.success());
   }
 
-  Future<void> onDeleteAutoComplete(AutoCompleteEntity entity) async {
+  Future<void> onDeleteAutoComplete(AutoComplete entity) async {
     await repo.deleteAutoComplete(entity.note ?? '');
     autoCompleteList.value = await repo.getAutoComplete();
     change(0, status: RxStatus.success());

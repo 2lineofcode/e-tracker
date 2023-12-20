@@ -1,11 +1,11 @@
-class BibitWatchlistEntity {
+class BibitWatchlist {
   String? message;
   List<BibitWatchlistData>? data;
   BibitWatchlistMeta? meta;
 
-  BibitWatchlistEntity({this.message, this.data, this.meta});
+  BibitWatchlist({this.message, this.data, this.meta});
 
-  BibitWatchlistEntity.fromJson(Map<String, dynamic> json) {
+  BibitWatchlist.fromJson(Map<String, dynamic> json) {
     message = json['message'];
     if (json['data'] != null) {
       data = <BibitWatchlistData>[];

@@ -20,27 +20,27 @@ class SettingsRepository {
   /// ------------------------------------------------------------------------
   /// ! autocomplete
   /// ------------------------------------------------------------------------
-  Future<List<AutoCompleteEntity>> getAutoComplete() async {
+  Future<List<AutoComplete>> getAutoComplete() async {
     final response = await db //
         .from('autocomplete')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .order('note', ascending: true)
-        .withConverter<List<AutoCompleteEntity>>((data) {
-      return (data).map((e) => AutoCompleteEntity.fromJson(e)).toList();
+        .withConverter<List<AutoComplete>>((data) {
+      return (data).map((e) => AutoComplete.fromJson(e)).toList();
     });
     return response;
   }
 
-  Future<List<AutoCompleteEntity>> findAutoComplete(String q) async {
+  Future<List<AutoComplete>> findAutoComplete(String q) async {
     final response = await db //
         .from('autocomplete')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .ilike('note', '%$q%')
         .order('note', ascending: true)
-        .withConverter<List<AutoCompleteEntity>>((data) {
-      return (data).map((e) => AutoCompleteEntity.fromJson(e)).toList();
+        .withConverter<List<AutoComplete>>((data) {
+      return (data).map((e) => AutoComplete.fromJson(e)).toList();
     });
     return response;
   }
@@ -65,13 +65,13 @@ class SettingsRepository {
   /// ! profile
   /// ------------------------------------------------------------------------
   ///
-  Future<List<UserProfileEntity>> getUserProfile() async {
+  Future<List<UserProfile>> getUserProfile() async {
     final response = await db //
         .from('profiles')
         .select()
         .eq('id', db.auth.currentSession?.user.id ?? '')
-        .withConverter<List<UserProfileEntity>>((data) {
-      return (data).map((e) => UserProfileEntity.fromJson(e)).toList();
+        .withConverter<List<UserProfile>>((data) {
+      return (data).map((e) => UserProfile.fromJson(e)).toList();
     });
     return response;
   }

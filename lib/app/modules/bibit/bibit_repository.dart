@@ -3,9 +3,12 @@ import 'package:flutter/cupertino.dart';
 import '../../core/app_base.dart';
 import '../../models/bibit_allocation_summary_entity.dart';
 import '../../models/bibit_chart_entity.dart';
+import '../../models/bibit_companies_info_entity.dart.dart';
 import '../../models/bibit_index_indices_entity.dart';
+import '../../models/bibit_performance_allocation_entity.dart';
+import '../../models/bibit_performance_chart_entity.dart';
+import '../../models/bibit_performance_entity.dart';
 import '../../models/bibit_portpolio_entity.dart';
-import '../../models/bibit_portpolio_performance_chart_entity.dart';
 import '../../models/bibit_stock_tranding_entity.dart';
 import '../../models/bibit_stock_watchlist_entity.dart';
 import '../../models/bibit_watchlist_entity.dart';
@@ -17,6 +20,7 @@ class BibitRepository {
     return [
       {'icon': CupertinoIcons.home, 'name': 'Home'},
       {'icon': CupertinoIcons.app_badge_fill, 'name': 'Portfolio'},
+      {'icon': CupertinoIcons.chart_bar_alt_fill, 'name': 'Performance'},
       {'icon': CupertinoIcons.flame_fill, 'name': 'Explore'},
     ];
   }
@@ -38,7 +42,7 @@ class BibitRepository {
   Future<BibitChartData> getIHSG() async {
     try {
       final res = await api.get('/stocks/companies/IHSG/charts?period=1d');
-      return BibitChartEntity.fromJson(res.body).data!;
+      return BibitChart.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
     }
@@ -48,17 +52,7 @@ class BibitRepository {
   Future<BibitPortpolioData> getPortpolio() async {
     try {
       final res = await api.get('/portfolio');
-      return BibitPortpolioEntity.fromJson(res.body).data!;
-    } catch (e) {
-      throw ApiException('$e');
-    }
-  }
-
-  /// getPotpolioPerformance => period = (1D, 1M, 3M, YTD, 1Y, 3Y, ALL)
-  Future<BibitPerformanceChartData> getPortpolioPerformance(String period) async {
-    try {
-      final res = await api.get('/portfolio/performances/charts?period=$period');
-      return BibitPerformanceChartEntity.fromJson(res.body).data!;
+      return BibitPortpolio.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
     }
@@ -68,7 +62,7 @@ class BibitRepository {
   Future<List<BibitWatchlistData>> getWatchList({int instrumentGroup = 0}) async {
     try {
       final res = await api.get('/watchlists?instrument_group=$instrumentGroup');
-      return BibitWatchlistEntity.fromJson(res.body).data!;
+      return BibitWatchlist.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
     }
@@ -114,9 +108,52 @@ class BibitRepository {
     }
   }
 
+  /// getCompaniesInfo
+  Future<BibitCompaniesInfoData> getCompaniesInfo({String code = 'IHSG'}) async {
+    try {
+      final res = await api.get('/stocks/companies/$code/info');
+      return BibitCompaniesInfo.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getPerformance
+  Future<BibitPerformanceData> getPerformance() async {
+    try {
+      final res = await api.get('/portfolio/performances');
+      return BibitPerformance.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getPotpolioPerformance => period = (1D, 1M, 3M, YTD, 1Y, 3Y, ALL)
+  Future<BibitPerformanceChartData> getPerformancePeriod(String period) async {
+    try {
+      final res = await api.get('/portfolio/performances/charts?period=$period');
+      return BibitPerformanceChart.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getAllocation
+  Future<List<BibitPerformanceAllocationData>> getAllocation() async {
+    try {
+      final res = await api.get('/portfolio/allocations');
+      return BibitPerformanceAllocation.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
   /// ------------------------------------------------------------------------
   /// ! pintu
   /// ------------------------------------------------------------------------
+  Future<List<dynamic>> rpcIHSG() async {
+    return await db.rpc('get_ihsg');
+  }
 
   Future<List<dynamic>> rpcPintu() async {
     return await db.rpc('get_pintu');

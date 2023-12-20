@@ -18,7 +18,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
     return VStack(
       [
         controller.obx(
-          (state) => GroupedListView<AutoCompleteEntity, String>(
+          (state) => GroupedListView<AutoComplete, String>(
             elements: controller.autoCompleteList,
             groupBy: (element) => element.note?.first()?.toUpperCase() ?? '?',
             floatingHeader: true,

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:ex/ex.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../helpers/helper_bibit.dart';
@@ -24,7 +23,6 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
   final _pintuPriceChanges = <PintuPriceChangesPayload>[].obs;
   final pintuListCrypto = <PintuListCrypto>[].obs;
 
-  late TabController? tabController;
   late Timer? timerPintuPriceChanges;
   late Timer? timerBibitPriceChanges;
 
@@ -38,7 +36,6 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
     /// stockbit
     unawaited(stockbit());
 
-    tabController = TabController(length: 2, vsync: this);
     change(200, status: RxStatus.success());
     super.onInit();
   }
@@ -134,7 +131,7 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
 
   void initBibitRealTimePriceChange() {
     if (BibitHelper.isStockMarketOpen) {
-      timerBibitPriceChanges = Timer.periodic(1.seconds, (timer) async {
+      timerBibitPriceChanges = Timer.periodic(5.seconds, (timer) async {
         log('=== stockbit priceChanges ===');
         bibitStockTranding.value = await repo.getStockTranding();
         bibitStockWatchlist.value = await repo.getStockWatchList();

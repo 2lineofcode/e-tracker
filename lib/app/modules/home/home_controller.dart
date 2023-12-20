@@ -27,11 +27,11 @@ class HomeController extends GetxController with StateMixin {
 
   /// category
   final tfCategory = TextEditingController();
-  final categoryList = <CategoryEntity>[].obs;
+  final categoryList = <Category>[].obs;
   final categorySelected = ''.obs;
 
   /// expense
-  final expenseList = <ExpenseEntity>[].obs;
+  final expenseList = <Expense>[].obs;
   final tfSearchExpense = TextEditingController().obs;
 
   /// count
@@ -40,7 +40,7 @@ class HomeController extends GetxController with StateMixin {
   final rpcSpenderDay = [].obs;
   final countMaxBudget = 0.obs;
   final countRemainingBudget = 0.obs;
-  final rpcSumByCategory = <RpcSumByCategoryEntity>[].obs;
+  final rpcSumByCategory = <RpcSumByCategory>[].obs;
 
   /// flag
   final isSearchMode = false.obs;
@@ -158,7 +158,7 @@ class HomeController extends GetxController with StateMixin {
   Future<void> onAddCategory(String categoryName) async {
     if (categoryName.isEmptyOrNull) return;
 
-    final categoryEntity = CategoryEntity(
+    final categoryEntity = Category(
       id: UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       createdAt: DateTime.now().toStringEx(),

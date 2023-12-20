@@ -26,8 +26,8 @@ mixin SeedHelper {
         .from('category')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
-        .withConverter<List<CategoryEntity>>((data) {
-      return (data).map((e) => CategoryEntity.fromJson(e)).toList();
+        .withConverter<List<Category>>((data) {
+      return (data).map((e) => Category.fromJson(e)).toList();
     });
 
     /// if category table is empty just return~
@@ -36,7 +36,7 @@ mixin SeedHelper {
     log('-- seed data category --');
 
     /// category table is empty, seed data
-    final _catFood = CategoryEntity(
+    final _catFood = Category(
       id: UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       name: 'Food',
@@ -45,7 +45,7 @@ mixin SeedHelper {
       maxBudget: 1000000,
       createdAt: DateTime.now().toStringEx(),
     ).toJson();
-    final _catNotes = CategoryEntity(
+    final _catNotes = Category(
       id: UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       name: 'Notes',
@@ -53,7 +53,7 @@ mixin SeedHelper {
       color: '#ffffffff',
       createdAt: DateTime.now().toStringEx(),
     ).toJson();
-    final _catOthers = CategoryEntity(
+    final _catOthers = Category(
       id: UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       name: 'Others',
@@ -70,14 +70,14 @@ mixin SeedHelper {
         .from('expense')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
-        .withConverter<List<ExpenseEntity>>((data) {
-      return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
+        .withConverter<List<Expense>>((data) {
+      return (data).map((e) => Expense.fromJson(e)).toList();
     });
 
     /// if category table is empty just return~
     if (check.isNotEmpty) return;
 
-    final _expense = ExpenseEntity(
+    final _expense = Expense(
       id: UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       categoryName: 'Notes',
@@ -103,8 +103,8 @@ mixin SeedHelper {
           .select('*')
           .eq('user_id', db.auth.currentSession?.user.id ?? '')
           .order('date', ascending: false)
-          .withConverter<List<ExpenseEntity>>((data) {
-        return (data).map((e) => ExpenseEntity.fromJson(e)).toList();
+          .withConverter<List<Expense>>((data) {
+        return (data).map((e) => Expense.fromJson(e)).toList();
       });
 
       final jsonFilePath = '$path/output.json';

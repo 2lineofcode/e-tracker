@@ -1,6 +1,6 @@
 import 'category_entity.dart';
 
-class ExpenseEntity {
+class Expense {
   String? id;
   String? createdAt;
   String? categoryName;
@@ -9,11 +9,11 @@ class ExpenseEntity {
   String? date;
   String? userId;
   String? detail;
-  CategoryEntity? category;
+  Category? category;
 
-  ExpenseEntity({this.id, this.createdAt, this.categoryName, this.note, this.amount, this.date, this.userId, this.detail, this.category});
+  Expense({this.id, this.createdAt, this.categoryName, this.note, this.amount, this.date, this.userId, this.detail, this.category});
 
-  ExpenseEntity.fromJson(Map<String, dynamic> json) {
+  Expense.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     createdAt = json['created_at'];
     categoryName = json['category_name'];
@@ -22,7 +22,7 @@ class ExpenseEntity {
     date = json['date'];
     userId = json['user_id'];
     detail = json['detail'];
-    category = json['category'] != null ? CategoryEntity.fromJson(json['category']) : null;
+    category = json['category'] != null ? Category.fromJson(json['category']) : null;
   }
 
   Map<String, dynamic> toJson() {

@@ -1,11 +1,11 @@
-class AutoCompleteEntity {
+class AutoComplete {
   String? createdAt;
   String? note;
   String? userId;
   String? categoryName;
   String? amount;
 
-  AutoCompleteEntity({
+  AutoComplete({
     this.createdAt,
     this.note,
     this.userId,
@@ -13,7 +13,7 @@ class AutoCompleteEntity {
     this.amount,
   });
 
-  AutoCompleteEntity.fromJson(Map<String, dynamic> json) {
+  AutoComplete.fromJson(Map<String, dynamic> json) {
     createdAt = json['created_at'];
     note = json['note'];
     userId = json['user_id'];

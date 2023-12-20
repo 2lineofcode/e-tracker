@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-/// * 
+/// *
 /// * JSON Source: [{"period":"2023","category_id":"69dffbb4-c1a7-43cc-9fdc-a82e9fce66cf","category_name":"Food","category_color":"#ffe0e7e2","category_icon":"code=58566&family=FontAwesomeSolid&pack=font_awesome_flutter","max_budget":"1000000","total":"5339000","use_percentage":534,"remaining_budget":"-4339000"}]
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
-/// * 
-class RpcSumByCategoryEntity {
+/// *
+class RpcSumByCategory {
   String? period;
   String? categoryId;
   String? categoryName;
@@ -15,9 +15,9 @@ class RpcSumByCategoryEntity {
   int? usePercentage;
   int? remainingBudget;
 
-  RpcSumByCategoryEntity({this.period, this.categoryId, this.categoryName, this.categoryColor, this.categoryIcon, this.maxBudget, this.total, this.usePercentage, this.remainingBudget});
+  RpcSumByCategory({this.period, this.categoryId, this.categoryName, this.categoryColor, this.categoryIcon, this.maxBudget, this.total, this.usePercentage, this.remainingBudget});
 
-  RpcSumByCategoryEntity.fromJson(Map<String, dynamic> json) {
+  RpcSumByCategory.fromJson(Map<String, dynamic> json) {
     period = json['period'] ?? '';
     categoryId = json['category_id'] ?? '';
     categoryName = json['category_name'] ?? '';

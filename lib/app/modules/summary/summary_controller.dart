@@ -18,9 +18,9 @@ class SummaryController extends GetxController with StateMixin {
   final monthSelected = DateTime.now().toStringEx(format: 'MMMM').obs;
 
   // data
-  final rpcSumAllMonth = <RpcSumAllMonthEntity>[].obs; // for sidemenu
-  final rpcSumByCategory = <RpcSumByCategoryEntity>[].obs; // for body
-  final rpcSumNoteTimes = <RpcSumNoteTimesEntity>[].obs; // for noteTimes perMonth
+  final rpcSumAllMonth = <RpcSumAllMonth>[].obs; // for sidemenu
+  final rpcSumByCategory = <RpcSumByCategory>[].obs; // for body
+  final rpcSumNoteTimes = <RpcSumNoteTimes>[].obs; // for noteTimes perMonth
 
   // count header
   final countBudget = 0.obs;
