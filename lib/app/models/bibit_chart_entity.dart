@@ -1,3 +1,9 @@
+import 'dart:convert';
+
+/// *
+/// * JSON Source: {"message":"Berhasil menampilkan data grafik harga Saham","data":{"cagr":null,"change":-10.05,"percentage":-0.14,"previous":7219.667,"latest":7209.619,"prices":[{"formatted_date":"","value":7219.667}],"xaxisopt":"intraday"}}
+/// * Code generated: https://2lineofcode.github.io/json_to_dart2023
+/// *
 class BibitChart {
   String? message;
   BibitChartData? data;
@@ -5,22 +11,27 @@ class BibitChart {
   BibitChart({this.message, this.data});
 
   BibitChart.fromJson(Map<String, dynamic> json) {
-    message = json['message'];
-    data = json['data'] != null ? BibitChartData.fromJson(json['data']) : null;
+    message = json['message'] ?? '';
+    data = (json['data'] != null) ? BibitChartData.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
     return data;
   }
+
+  @override
+  String toString() {
+    return jsonEncode(this);
+  }
 }
 
 class BibitChartData {
-  num? cagr;
+  dynamic cagr;
   num? change;
   num? percentage;
   num? previous;
@@ -31,62 +42,55 @@ class BibitChartData {
   BibitChartData({this.cagr, this.change, this.percentage, this.previous, this.latest, this.prices, this.xaxisopt});
 
   BibitChartData.fromJson(Map<String, dynamic> json) {
-    cagr = json['cagr'];
-    change = json['change'];
-    percentage = json['percentage'];
-    previous = json['previous'];
-    latest = json['latest'];
-    if (json['prices'] != null) {
-      prices = <BibitChartDataPrices>[];
-      json['prices'].forEach((v) {
-        prices!.add(BibitChartDataPrices.fromJson(v));
-      });
-    }
-    xaxisopt = json['xaxisopt'];
+    cagr = json['cagr'] ?? '';
+    change = json['change'] ?? 0.0;
+    percentage = json['percentage'] ?? 0.0;
+    previous = json['previous'] ?? 0.0;
+    latest = json['latest'] ?? 0.0;
+    prices = json['prices'] == null ? null : (json['prices'] as List).map((e) => BibitChartDataPrices.fromJson(e)).toList();
+    xaxisopt = json['xaxisopt'] ?? '';
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['cagr'] = cagr;
     data['change'] = change;
     data['percentage'] = percentage;
     data['previous'] = previous;
     data['latest'] = latest;
     if (prices != null) {
-      data['prices'] = prices!.map((v) => v.toJson()).toList();
+      data['prices'] = prices?.map((e) => e.toJson()).toList();
     }
     data['xaxisopt'] = xaxisopt;
     return data;
   }
+
+  @override
+  String toString() {
+    return jsonEncode(this);
+  }
 }
 
 class BibitChartDataPrices {
-  String? date;
   String? formattedDate;
-  String? xlabel;
-  String? value;
-  String? percentage;
-  num? change;
+  num? value;
 
-  BibitChartDataPrices({this.date, this.formattedDate, this.xlabel, this.value, this.percentage, this.change});
+  BibitChartDataPrices({this.formattedDate, this.value});
 
   BibitChartDataPrices.fromJson(Map<String, dynamic> json) {
-    date = json['date'];
-    formattedDate = json['formatted_date'];
-    xlabel = json['xlabel'];
-    value = json['value'];
-    percentage = json['percentage'];
-    change = json['change'];
+    formattedDate = json['formatted_date'] ?? '';
+    value = json['value'] ?? 0.0;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['date'] = date;
+    final data = <String, dynamic>{};
     data['formatted_date'] = formattedDate;
-    data['xlabel'] = xlabel;
     data['value'] = value;
-    data['percentage'] = percentage;
-    data['change'] = change;
     return data;
+  }
+
+  @override
+  String toString() {
+    return jsonEncode(this);
   }
 }

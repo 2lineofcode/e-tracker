@@ -1,11 +1,17 @@
+import 'dart:convert';
+
 import 'category_entity.dart';
 
+/// *
+/// * JSON Source: [{"id":"96e5666c-44c6-4211-9269-7f8d0635b534","created_at":"2023-11-09T16:40:57+00:00","category_name":"Jajan","note":"Kopi Ss","amount":14000,"date":"2023-11-09","user_id":"25aa9f27-18cb-407d-9141-ffab6a50cab8","detail":""}]
+/// * Code generated: https://2lineofcode.github.io/json_to_dart2023
+/// *
 class Expense {
   String? id;
   String? createdAt;
   String? categoryName;
   String? note;
-  int? amount;
+  num? amount;
   String? date;
   String? userId;
   String? detail;
@@ -26,7 +32,7 @@ class Expense {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['id'] = id;
     data['created_at'] = createdAt;
     data['category_name'] = categoryName;
@@ -39,5 +45,10 @@ class Expense {
       data['category'] = category!.toJson();
     }
     return data;
+  }
+
+  @override
+  String toString() {
+    return jsonEncode(this);
   }
 }

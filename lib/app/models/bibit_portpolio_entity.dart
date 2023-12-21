@@ -1,3 +1,9 @@
+import 'dart:convert';
+
+/// *
+/// * JSON Source: {"message":"Success retreive your portfolio","data":{"marketvalue":146155104.54999998,"mutual_fund_market_value":145854604.54999998,"sbn_market_value":0,"invested":144109632,"profitloss":2045478,"totalpending":0,"totalporto":146155104.54999998,"trading_balance":0,"percentage":0.0142,"result":[{"id":2133948,"name":"Dana Darurat","robo":0,"roboid":"0","is_goal":0,"is_default":1,"templateid":1,"is_shared":0,"pending":0,"totalporto":0,"is_partner_category":0,"created":"2020-08-12T16:20:04.000Z","marketvalue":0,"mutual_fund_market_value":0,"sbn_market_value":0,"invested":0,"profitloss":0,"percentage":0,"type":{"id":4,"name":"Bibit Tabungan"},"items":0}],"limit":{"max":12,"left":7}}}
+/// * Code generated: https://2lineofcode.github.io/json_to_dart2023
+/// *
 class BibitPortpolio {
   String? message;
   BibitPortpolioData? data;
@@ -5,17 +11,22 @@ class BibitPortpolio {
   BibitPortpolio({this.message, this.data});
 
   BibitPortpolio.fromJson(Map<String, dynamic> json) {
-    message = json['message'];
-    data = json['data'] != null ? BibitPortpolioData.fromJson(json['data']) : null;
+    message = json['message'] ?? '';
+    data = (json['data'] != null) ? BibitPortpolioData.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.toJson();
     }
     return data;
+  }
+
+  @override
+  String toString() {
+    return jsonEncode(this);
   }
 }
 
@@ -29,8 +40,8 @@ class BibitPortpolioData {
   num? totalporto;
   num? tradingBalance;
   num? percentage;
-  List<BibitPortpolioResult>? result;
-  BibitPortpolioLimit? limit;
+  List<BibitPortpolioDataResult>? result;
+  BibitPortpolioDataLimit? limit;
 
   BibitPortpolioData(
       {this.marketvalue,
@@ -46,26 +57,21 @@ class BibitPortpolioData {
       this.limit});
 
   BibitPortpolioData.fromJson(Map<String, dynamic> json) {
-    marketvalue = json['marketvalue'];
-    mutualFundMarketValue = json['mutual_fund_market_value'];
-    sbnMarketValue = json['sbn_market_value'];
-    invested = json['invested'];
-    profitloss = json['profitloss'];
-    totalpending = json['totalpending'];
-    totalporto = json['totalporto'];
-    tradingBalance = json['trading_balance'];
-    percentage = json['percentage'];
-    if (json['result'] != null) {
-      result = <BibitPortpolioResult>[];
-      json['result'].forEach((v) {
-        result!.add(BibitPortpolioResult.fromJson(v));
-      });
-    }
-    limit = json['limit'] != null ? BibitPortpolioLimit.fromJson(json['limit']) : null;
+    marketvalue = json['marketvalue'] ?? 0.0;
+    mutualFundMarketValue = json['mutual_fund_market_value'] ?? 0.0;
+    sbnMarketValue = json['sbn_market_value'] ?? 0;
+    invested = json['invested'] ?? 0;
+    profitloss = json['profitloss'] ?? 0;
+    totalpending = json['totalpending'] ?? 0;
+    totalporto = json['totalporto'] ?? 0.0;
+    tradingBalance = json['trading_balance'] ?? 0;
+    percentage = json['percentage'] ?? 0.0;
+    result = json['result'] == null ? null : (json['result'] as List).map((e) => BibitPortpolioDataResult.fromJson(e)).toList();
+    limit = (json['limit'] != null) ? BibitPortpolioDataLimit.fromJson(json['limit']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['marketvalue'] = marketvalue;
     data['mutual_fund_market_value'] = mutualFundMarketValue;
     data['sbn_market_value'] = sbnMarketValue;
@@ -76,16 +82,21 @@ class BibitPortpolioData {
     data['trading_balance'] = tradingBalance;
     data['percentage'] = percentage;
     if (result != null) {
-      data['result'] = result!.map((v) => v.toJson()).toList();
+      data['result'] = result?.map((e) => e.toJson()).toList();
     }
     if (limit != null) {
       data['limit'] = limit!.toJson();
     }
     return data;
   }
+
+  @override
+  String toString() {
+    return jsonEncode(this);
+  }
 }
 
-class BibitPortpolioResult {
+class BibitPortpolioDataResult {
   num? id;
   String? name;
   num? robo;
@@ -104,62 +115,57 @@ class BibitPortpolioResult {
   num? invested;
   num? profitloss;
   num? percentage;
-  BibitPortpolioType? type;
+  BibitPortpolioDataResultType? type;
   num? items;
-  BibitPortpolioGoalsetting? goalsetting;
-  num? tradingBalance;
 
-  BibitPortpolioResult(
-      {this.id,
-      this.name,
-      this.robo,
-      this.roboid,
-      this.isGoal,
-      this.isDefault,
-      this.templateid,
-      this.isShared,
-      this.pending,
-      this.totalporto,
-      this.isPartnerCategory,
-      this.created,
-      this.marketvalue,
-      this.mutualFundMarketValue,
-      this.sbnMarketValue,
-      this.invested,
-      this.profitloss,
-      this.percentage,
-      this.type,
-      this.items,
-      this.goalsetting,
-      this.tradingBalance});
+  BibitPortpolioDataResult({
+    this.id,
+    this.name,
+    this.robo,
+    this.roboid,
+    this.isGoal,
+    this.isDefault,
+    this.templateid,
+    this.isShared,
+    this.pending,
+    this.totalporto,
+    this.isPartnerCategory,
+    this.created,
+    this.marketvalue,
+    this.mutualFundMarketValue,
+    this.sbnMarketValue,
+    this.invested,
+    this.profitloss,
+    this.percentage,
+    this.type,
+    this.items,
+  });
 
-  BibitPortpolioResult.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
-    robo = json['robo'];
-    roboid = json['roboid'];
-    isGoal = json['is_goal'];
-    isDefault = json['is_default'];
-    templateid = json['templateid'];
-    isShared = json['is_shared'];
-    pending = json['pending'];
-    totalporto = json['totalporto'];
-    isPartnerCategory = json['is_partner_category'];
-    created = json['created'];
-    marketvalue = json['marketvalue'];
-    mutualFundMarketValue = json['mutual_fund_market_value'];
-    sbnMarketValue = json['sbn_market_value'];
-    invested = json['invested'];
-    profitloss = json['profitloss'];
-    percentage = json['percentage'];
-    type = json['type'] != null ? BibitPortpolioType.fromJson(json['type']) : null;
-    items = json['items'];
-    goalsetting = json['goalsetting'] != null ? BibitPortpolioGoalsetting.fromJson(json['goalsetting']) : null;
-    tradingBalance = json['trading_balance'];
+  BibitPortpolioDataResult.fromJson(Map<String, dynamic> json) {
+    id = json['id'] ?? 0;
+    name = json['name'] ?? '';
+    robo = json['robo'] ?? 0;
+    roboid = json['roboid'] ?? '';
+    isGoal = json['is_goal'] ?? 0;
+    isDefault = json['is_default'] ?? 0;
+    templateid = json['templateid'] ?? 0;
+    isShared = json['is_shared'] ?? 0;
+    pending = json['pending'] ?? 0;
+    totalporto = json['totalporto'] ?? 0;
+    isPartnerCategory = json['is_partner_category'] ?? 0;
+    created = json['created'] ?? '';
+    marketvalue = json['marketvalue'] ?? 0;
+    mutualFundMarketValue = json['mutual_fund_market_value'] ?? 0;
+    sbnMarketValue = json['sbn_market_value'] ?? 0;
+    invested = json['invested'] ?? 0;
+    profitloss = json['profitloss'] ?? 0;
+    percentage = json['percentage'] ?? 0;
+    type = (json['type'] != null) ? BibitPortpolioDataResultType.fromJson(json['type']) : null;
+    items = json['items'] ?? 0;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['id'] = id;
     data['name'] = name;
     data['robo'] = robo;
@@ -182,76 +188,59 @@ class BibitPortpolioResult {
       data['type'] = type!.toJson();
     }
     data['items'] = items;
-    if (goalsetting != null) {
-      data['goalsetting'] = goalsetting!.toJson();
-    }
-    data['trading_balance'] = tradingBalance;
     return data;
+  }
+
+  @override
+  String toString() {
+    return jsonEncode(this);
   }
 }
 
-class BibitPortpolioType {
+class BibitPortpolioDataResultType {
   num? id;
   String? name;
 
-  BibitPortpolioType({this.id, this.name});
+  BibitPortpolioDataResultType({this.id, this.name});
 
-  BibitPortpolioType.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    name = json['name'];
+  BibitPortpolioDataResultType.fromJson(Map<String, dynamic> json) {
+    id = json['id'] ?? 0;
+    name = json['name'] ?? '';
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['id'] = id;
     data['name'] = name;
     return data;
   }
-}
 
-class BibitPortpolioGoalsetting {
-  num? id;
-  String? targetdate;
-  num? targetamount;
-  num? recurringAmount;
-  num? ontrack;
-
-  BibitPortpolioGoalsetting({this.id, this.targetdate, this.targetamount, this.recurringAmount, this.ontrack});
-
-  BibitPortpolioGoalsetting.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    targetdate = json['targetdate'];
-    targetamount = json['targetamount'];
-    recurringAmount = json['recurring_amount'];
-    ontrack = json['ontrack'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['targetdate'] = targetdate;
-    data['targetamount'] = targetamount;
-    data['recurring_amount'] = recurringAmount;
-    data['ontrack'] = ontrack;
-    return data;
+  @override
+  String toString() {
+    return jsonEncode(this);
   }
 }
 
-class BibitPortpolioLimit {
+class BibitPortpolioDataLimit {
   num? max;
   num? left;
 
-  BibitPortpolioLimit({this.max, this.left});
+  BibitPortpolioDataLimit({this.max, this.left});
 
-  BibitPortpolioLimit.fromJson(Map<String, dynamic> json) {
-    max = json['max'];
-    left = json['left'];
+  BibitPortpolioDataLimit.fromJson(Map<String, dynamic> json) {
+    max = json['max'] ?? 0;
+    left = json['left'] ?? 0;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['max'] = max;
     data['left'] = left;
     return data;
+  }
+
+  @override
+  String toString() {
+    return jsonEncode(this);
   }
 }

@@ -9,7 +9,7 @@ import '../../../models/bibit_chart_entity.dart';
 import '../../../models/bibit_index_indices_entity.dart';
 import '../../../models/bibit_performance_chart_entity.dart';
 import '../../../models/bibit_portpolio_entity.dart';
-import '../../../models/bibit_watchlist_entity.dart';
+import '../../../models/bibit_watchlist_mutual_entity.dart';
 import '../bibit_repository.dart';
 
 class SectionBibitHomeController extends GetxController {
@@ -18,7 +18,7 @@ class SectionBibitHomeController extends GetxController {
   final portpolio = BibitPortpolioData().obs;
   final performance1D = BibitPerformanceChartData().obs;
   final performance1M = BibitPerformanceChartData().obs;
-  final watchList = <BibitWatchlistData>[].obs;
+  final watchList = <BibitWatchlistMutualData>[].obs;
   final indexIndices = <BibitIndexIndicesData>[].obs;
   final wsKey = ''.obs;
 

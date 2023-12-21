@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 
 import '../../../helpers/helper_bibit.dart';
 import '../../../models/bibit_stock_tranding_entity.dart';
-import '../../../models/bibit_stock_watchlist_entity.dart';
+import '../../../models/bibit_watchlist_stock_entity.dart';
 import '../../../models/pintu_list_crypto_entity.dart';
 import '../../../models/pintu_price_changes_entity.dart';
 import '../../../models/pintu_supported_currencies_entity.dart';
@@ -16,7 +16,7 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
   final repo = Get.find<BibitRepository>();
 
   final bibitStockTranding = <BibitStockTrandingData>[].obs;
-  final bibitStockWatchlist = <BibitStockWatchlistData>[].obs;
+  final bibitStockWatchlist = <BibitWatchlistStockData>[].obs;
 
   // pintu
   final _pintuSupportedCurrencies = <PintuSupportedCurrenciesPayload>[].obs;

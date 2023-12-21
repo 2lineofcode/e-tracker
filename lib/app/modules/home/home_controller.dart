@@ -35,7 +35,7 @@ class HomeController extends GetxController with StateMixin {
   final tfSearchExpense = TextEditingController().obs;
 
   /// count
-  final countOfDay = 0.obs;
+  final countOfDay = 0.0.obs;
   final countOfMonth = 0.obs;
   final rpcSpenderDay = [].obs;
   final countMaxBudget = 0.obs;

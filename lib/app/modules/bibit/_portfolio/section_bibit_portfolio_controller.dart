@@ -10,7 +10,7 @@ class SectionBibitPorfolioController extends GetxController with StateMixin<Bibi
   final _home = Get.find<SectionBibitHomeController>();
 
   final summary = BibitAllocationSummaryData().obs;
-  final portpolio = <BibitPortpolioResult>[].obs;
+  final portpolio = <BibitPortpolioDataResult>[].obs;
 
   @override
   Future<void> onInit() async {

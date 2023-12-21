@@ -10,7 +10,7 @@ class RpcSumAllMonth {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
+    final data = <String, dynamic>{};
     data['period'] = period;
     data['total'] = total;
     return data;

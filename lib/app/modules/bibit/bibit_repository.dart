@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
+
 import '../../core/app_base.dart';
 import '../../models/bibit_allocation_summary_entity.dart';
 import '../../models/bibit_chart_entity.dart';
@@ -10,8 +13,8 @@ import '../../models/bibit_performance_chart_entity.dart';
 import '../../models/bibit_performance_entity.dart';
 import '../../models/bibit_portpolio_entity.dart';
 import '../../models/bibit_stock_tranding_entity.dart';
-import '../../models/bibit_stock_watchlist_entity.dart';
-import '../../models/bibit_watchlist_entity.dart';
+import '../../models/bibit_watchlist_mutual_entity.dart';
+import '../../models/bibit_watchlist_stock_entity.dart';
 import '../../models/pintu_price_changes_entity.dart';
 import '../../models/pintu_supported_currencies_entity.dart';
 
@@ -59,10 +62,11 @@ class BibitRepository {
   }
 
   /// getWatchList
-  Future<List<BibitWatchlistData>> getWatchList({int instrumentGroup = 0}) async {
+  Future<List<BibitWatchlistMutualData>> getWatchList({int instrumentGroup = 0}) async {
     try {
       final res = await api.get('/watchlists?instrument_group=$instrumentGroup');
-      return BibitWatchlist.fromJson(res.body).data!;
+      log('res: ${jsonEncode(res.body)}');
+      return BibitWatchlistMutual.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
     }
@@ -99,10 +103,10 @@ class BibitRepository {
   }
 
   /// getStockWatchList
-  Future<List<BibitStockWatchlistData>> getStockWatchList() async {
+  Future<List<BibitWatchlistStockData>> getStockWatchList() async {
     try {
       final res = await api.get('/watchlists?instrument_group=2');
-      return BibitStockWatchlist.fromJson(res.body).data!;
+      return BibitWatchlistStock.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
     }
