@@ -213,6 +213,7 @@ class SectionBibitHomeView extends GetView<SectionBibitHomeController> {
                         title: '${item.name}'.text.ellipsis.maxLines(1).size(13).bold.make(),
                         subtitle: '${item.type}'.text.size(11).minFontSize(11).make(),
                         trailing: '${item.xReturn?.percentageFormat()}'.text.color(BibitHelper.getColor(item.xReturn)).make(),
+                        onTap: () => controller.onItemClick(item),
                       );
                     },
                   ).expand(),

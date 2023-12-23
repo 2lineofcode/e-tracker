@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -65,7 +63,6 @@ class BibitRepository {
   Future<List<BibitWatchlistMutualData>> getWatchList({int instrumentGroup = 0}) async {
     try {
       final res = await api.get('/watchlists?instrument_group=$instrumentGroup');
-      log('res: ${jsonEncode(res.body)}');
       return BibitWatchlistMutual.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');

@@ -37,7 +37,7 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget appBarTitle() {
-    if (kIsWeb) {
+    if (kIsWeb && Get.size.width >= 1024) {
       return '${Env.appName}'.text.size(11).bold.make();
     } else {
       return TextField(
@@ -67,7 +67,7 @@ class HomeView extends GetView<HomeController> {
     return HStack(
       [
         /// Web Only
-        if (kIsWeb) ...[
+        if (kIsWeb && Get.size.width >= 1024) ...[
           TextField(
             controller: controller.tfSearchExpense.value,
             decoration: DecorationHelper.input(hint: 'Search...'),

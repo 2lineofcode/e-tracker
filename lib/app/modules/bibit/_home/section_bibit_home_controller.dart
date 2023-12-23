@@ -10,6 +10,7 @@ import '../../../models/bibit_index_indices_entity.dart';
 import '../../../models/bibit_performance_chart_entity.dart';
 import '../../../models/bibit_portpolio_entity.dart';
 import '../../../models/bibit_watchlist_mutual_entity.dart';
+import '../../../routes/app_pages.dart';
 import '../bibit_repository.dart';
 
 class SectionBibitHomeController extends GetxController {
@@ -51,6 +52,10 @@ class SectionBibitHomeController extends GetxController {
     // ws?.send(['"primus::ping::${DateTime.now().millisecondsSinceEpoch}"']);
     // ws?.messages.listen((event) => print('event: ${event.toString()}'));
     super.onInit();
+  }
+
+  void onItemClick(BibitWatchlistMutualData item) {
+    Get.toNamed(Routes.DETAIL_MUTUAL, arguments: item);
   }
 
   @override

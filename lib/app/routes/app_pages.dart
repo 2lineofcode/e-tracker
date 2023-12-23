@@ -32,7 +32,7 @@ class AppPages {
     /// ! root
     /// ------------------------------------------------------------------------
     GetPage(
-      name: _Paths.ROOT,
+      name: Routes.ROOT,
       page: () => db.auth.currentSession?.user.id != null ? HomeView() : LoginView(),
       binding: db.auth.currentSession?.user.id != null ? HomeBinding() : LoginBinding(),
     ),
@@ -40,47 +40,47 @@ class AppPages {
     /// ------------------------------------------------------------------------
 
     GetPage(
-      name: _Paths.LOGIN,
+      name: Routes.LOGIN,
       page: () => const LoginView(),
       binding: LoginBinding(),
     ),
     GetPage(
-      name: _Paths.HOME,
+      name: Routes.HOME,
       page: () => const HomeView(),
       binding: HomeBinding(),
     ),
     GetPage(
-      name: _Paths.SUMMARY,
+      name: Routes.SUMMARY,
       page: () => const SummaryView(),
       binding: SummaryBinding(),
     ),
     GetPage(
-      name: _Paths.SETTINGS,
+      name: Routes.SETTINGS,
       page: () => const SettingsView(),
       binding: SettingsBinding(),
     ),
     GetPage(
-      name: _Paths.FILTERING,
+      name: Routes.FILTERING,
       page: () => const FilteringView(),
       binding: FilteringBinding(),
     ),
     GetPage(
-      name: _Paths.BIBIT,
+      name: Routes.BIBIT,
       page: () => const BibitView(),
       binding: BibitBinding(),
     ),
     GetPage(
-      name: _Paths.DETAIL_STOCK,
+      name: Routes.DETAIL_STOCK,
       page: () => const DetailStockView(),
       binding: DetailStockBinding(),
     ),
     GetPage(
-      name: _Paths.DETAIL_CRYPTO,
+      name: Routes.DETAIL_CRYPTO,
       page: () => const DetailCryptoView(),
       binding: DetailCryptoBinding(),
     ),
     GetPage(
-      name: _Paths.DETAIL_MUTUAL,
+      name: Routes.DETAIL_MUTUAL,
       page: () => const DetailMutualView(),
       binding: DetailMutualBinding(),
     ),
