@@ -1,5 +1,6 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
@@ -36,7 +37,7 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget appBarTitle() {
-    if (Get.size.width >= 1024) {
+    if (kIsWeb) {
       return '${Env.appName}'.text.size(11).bold.make();
     } else {
       return TextField(
@@ -66,7 +67,7 @@ class HomeView extends GetView<HomeController> {
     return HStack(
       [
         /// Web Only
-        if (Get.size.width >= 1024) ...[
+        if (kIsWeb) ...[
           TextField(
             controller: controller.tfSearchExpense.value,
             decoration: DecorationHelper.input(hint: 'Search...'),
