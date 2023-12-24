@@ -26,38 +26,43 @@ Future<void> main() async {
   /// http
   Get.put(ExHttp(baseURL: Env.bibitApiUrl), tag: 'bibit');
 
-  runApp(expenseTracker());
+  runApp(ExpenseTracker());
 }
 
-Widget expenseTracker() {
-  return GestureDetector(
-    onTap: () {
-      FocusScopeNode currentFocus = FocusScope.of(Get.context!);
-      if (!currentFocus.hasPrimaryFocus) currentFocus.unfocus();
-    },
-    child: GetMaterialApp(
-      title: Env.appName,
-      initialRoute: AppPages.INITIAL,
-      theme: AppTheme.light,
-      themeMode: AppTheme.currentTheme,
-      darkTheme: AppTheme.dark,
-      debugShowCheckedModeBanner: false,
-      getPages: AppPages.routes,
-      defaultTransition: Transition.fadeIn,
-      builder: (context, child) {
-        if (kReleaseMode) return child!;
-        return Scaffold(
-          body: Stack(
-            children: [
-              child!,
-              IconButton(
-                icon: Icon(CupertinoIcons.square_stack_3d_down_right_fill),
-                onPressed: () async => await AppTheme.switchTheme(),
-              ).positioned(left: 72),
-            ],
-          ),
-        );
+class ExpenseTracker extends StatelessWidget {
+  const ExpenseTracker({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(Get.context!);
+        if (!currentFocus.hasPrimaryFocus) currentFocus.unfocus();
       },
-    ),
-  );
+      child: GetMaterialApp(
+        title: Env.appName,
+        initialRoute: AppPages.INITIAL,
+        theme: AppTheme.light,
+        themeMode: AppTheme.currentTheme,
+        darkTheme: AppTheme.dark,
+        debugShowCheckedModeBanner: false,
+        getPages: AppPages.routes,
+        defaultTransition: Transition.fadeIn,
+        builder: (context, child) {
+          if (kReleaseMode) return child!;
+          return Scaffold(
+            body: Stack(
+              children: [
+                child!,
+                IconButton(
+                  icon: Icon(CupertinoIcons.square_stack_3d_down_right_fill),
+                  onPressed: () async => await AppTheme.switchTheme(),
+                ).positioned(left: 72),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 }

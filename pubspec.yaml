@@ -10,7 +10,7 @@ dependencies:
   # core
   get: ^4.6.6
   get_storage: ^2.1.1
-  supabase_flutter: ^2.0.1
+  supabase_flutter: ^2.0.2
   web_socket_client: ^0.1.0
 
   # ui
@@ -22,7 +22,7 @@ dependencies:
   custom_radio_grouped_button: ^2.2.1
   window_manager: ^0.3.7
   syncfusion_flutter_charts: ^24.1.41
-  fl_chart: ^0.64.0
+  fl_chart: ^0.65.0
 
   flutter_popup: ^3.1.8
   flutter_iconpicker_plus: ^3.2.3
