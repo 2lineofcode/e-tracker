@@ -55,7 +55,7 @@ class SectionBibitHomeController extends GetxController {
   }
 
   void onItemClick(BibitWatchlistMutualData item) {
-    Get.toNamed(Routes.DETAIL_MUTUAL, arguments: item);
+    Get.toNamed(Routes.DETAIL_MUTUAL, arguments: item.symbol);
   }
 
   @override

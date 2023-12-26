@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../core/app_base.dart';
+import '../core/app_api.dart';
 import '../modules/auth/login/login_binding.dart';
 import '../modules/auth/login/login_view.dart';
 import '../modules/bibit/bibit_binding.dart';

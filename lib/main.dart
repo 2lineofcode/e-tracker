@@ -25,6 +25,7 @@ Future<void> main() async {
 
   /// http
   Get.put(ExHttp(baseURL: Env.bibitApiUrl), tag: 'bibit');
+  Get.put(ExHttp(baseURL: Env.mdvkApiUrl), tag: 'mdvk');
 
   runApp(ExpenseTracker());
 }

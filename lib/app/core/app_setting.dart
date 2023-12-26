@@ -4,13 +4,17 @@ import 'package:ex/ex.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../env.g.dart';
 import '../helpers/helpers.dart';
 import '../routes/app_pages.dart';
-import 'app_base.dart';
+import 'app_api.dart';
 import 'const.dart';
+
+/// handy call sharedpref
+final pref = GetStorage();
 
 class AppSettingService extends GetxService {
   @override
@@ -51,7 +55,6 @@ class AppSettingService extends GetxService {
       return;
     }
   }
-
 
   /// ------------------------------------------------------------------------
   /// ! initForDesktop

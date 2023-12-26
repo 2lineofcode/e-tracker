@@ -1,4 +1,4 @@
-import '../../../core/app_base.dart';
+import '../../../core/app_api.dart';
 
 class LoginRepository {
   Future<void> login(String email, String password) async {

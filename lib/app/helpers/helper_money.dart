@@ -1,8 +1,8 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 
-import '../core/app_base.dart';
 import '../core/app_color.dart';
+import '../core/app_setting.dart';
 import '../core/const.dart';
 
 extension MoneyFormatExt on num {

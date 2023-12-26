@@ -1,7 +1,18 @@
 import 'package:get/get.dart';
 
-class DetailMutualController extends GetxController {
-  final count = 0.obs;
+import '../../../models/bibit_product_detail_mutual_entity.dart';
+import '../bibit_repository.dart';
 
-  void increment() => count.value++;
+class DetailMutualController extends GetxController {
+  final repo = Get.find<BibitRepository>();
+
+  final symbolSelected = ''.obs;
+  final productDetail = BibitProductDetailMutualData().obs;
+
+  @override
+  Future<void> onInit() async {
+    symbolSelected.value = Get.arguments as String;
+    productDetail.value = await repo.getProductDetailMutual(symbolSelected.value);
+    super.onInit();
+  }
 }

@@ -11,7 +11,7 @@ import 'package:get/get.dart';
 import 'package:hsv_color_pickers/hsv_color_pickers.dart';
 import 'package:uuid/v4.dart';
 
-import '../../core/app_base.dart';
+import '../../core/app_api.dart';
 import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';

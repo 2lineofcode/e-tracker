@@ -4,7 +4,8 @@ import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
-import '../../core/app_base.dart';
+import '../../core/app_api.dart';
+import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';

@@ -1,3 +1,4 @@
+import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
@@ -18,7 +19,7 @@ class DetailMutualView extends GetView<DetailMutualController> {
   }
 
   Widget appBarTitle() {
-    return Container();
+    return Obx(() => '${controller.productDetail.value.name ?? '...'}'.text.size(13).bold.make());
   }
 
   Widget sideMenuContent() {

@@ -2,7 +2,7 @@ import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'app_base.dart';
+import 'app_setting.dart';
 import 'const.dart';
 
 mixin AppTheme {

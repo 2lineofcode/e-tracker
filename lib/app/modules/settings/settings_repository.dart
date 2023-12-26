@@ -1,4 +1,4 @@
-import '../../core/app_base.dart';
+import '../../core/app_api.dart';
 import '../../models/autocomplete_entity.dart';
 import '../../models/user_profile_entity.dart';
 

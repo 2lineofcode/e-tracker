@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 
-import '../../core/app_base.dart';
+import '../../core/app_api.dart';
 import '../../helpers/helpers.dart';
 import '../../models/bibit_companies_info_entity.dart.dart';
 import '../../routes/app_pages.dart';

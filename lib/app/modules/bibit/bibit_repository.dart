@@ -1,7 +1,7 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../../core/app_base.dart';
+import '../../core/app_api.dart';
 import '../../models/bibit_allocation_summary_entity.dart';
 import '../../models/bibit_chart_entity.dart';
 import '../../models/bibit_companies_info_entity.dart.dart';
@@ -10,11 +10,10 @@ import '../../models/bibit_performance_allocation_entity.dart';
 import '../../models/bibit_performance_chart_entity.dart';
 import '../../models/bibit_performance_entity.dart';
 import '../../models/bibit_portpolio_entity.dart';
+import '../../models/bibit_product_detail_mutual_entity.dart';
 import '../../models/bibit_stock_tranding_entity.dart';
 import '../../models/bibit_watchlist_mutual_entity.dart';
 import '../../models/bibit_watchlist_stock_entity.dart';
-import '../../models/pintu_price_changes_entity.dart';
-import '../../models/pintu_supported_currencies_entity.dart';
 
 class BibitRepository {
   List<Map<String, Object>> menuList() {
@@ -32,7 +31,7 @@ class BibitRepository {
   /// ws
   Future<String> getWSKey() async {
     try {
-      final res = await api.get('/stocks/auth/wskey');
+      final res = await apiBibit.get('/stocks/auth/wskey');
       return res.body['data']['wskey'];
     } catch (e) {
       throw ApiException('$e');
@@ -42,7 +41,7 @@ class BibitRepository {
   ///ihsg
   Future<BibitChartData> getIHSG() async {
     try {
-      final res = await api.get('/stocks/companies/IHSG/charts?period=1d');
+      final res = await apiBibit.get('/stocks/companies/IHSG/charts?period=1d');
       return BibitChart.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -52,7 +51,7 @@ class BibitRepository {
   /// getPotpolio
   Future<BibitPortpolioData> getPortpolio() async {
     try {
-      final res = await api.get('/portfolio');
+      final res = await apiBibit.get('/portfolio');
       return BibitPortpolio.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -62,7 +61,7 @@ class BibitRepository {
   /// getWatchList
   Future<List<BibitWatchlistMutualData>> getWatchList({int instrumentGroup = 0}) async {
     try {
-      final res = await api.get('/watchlists?instrument_group=$instrumentGroup');
+      final res = await apiBibit.get('/watchlists?instrument_group=$instrumentGroup');
       return BibitWatchlistMutual.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -72,7 +71,7 @@ class BibitRepository {
   /// getIndeksIndices
   Future<List<BibitIndexIndicesData>> getIndexIndices() async {
     try {
-      final res = await api.get('/stocks/indices?type=main');
+      final res = await apiBibit.get('/stocks/indices?type=main');
       return BibitIndexIndices.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -82,7 +81,7 @@ class BibitRepository {
   /// getAllocationSummary
   Future<BibitAllocationSummaryData> getAllocationSummary() async {
     try {
-      final res = await api.get('/portfolio/allocations/summary');
+      final res = await apiBibit.get('/portfolio/allocations/summary');
       return BibitAllocationSummary.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -92,7 +91,7 @@ class BibitRepository {
   /// getStockTranding
   Future<List<BibitStockTrandingData>> getStockTranding() async {
     try {
-      final res = await api.get('/stocks/companies/trending');
+      final res = await apiBibit.get('/stocks/companies/trending');
       return BibitStockTranding.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -102,7 +101,7 @@ class BibitRepository {
   /// getStockWatchList
   Future<List<BibitWatchlistStockData>> getStockWatchList() async {
     try {
-      final res = await api.get('/watchlists?instrument_group=2');
+      final res = await apiBibit.get('/watchlists?instrument_group=2');
       return BibitWatchlistStock.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -112,7 +111,7 @@ class BibitRepository {
   /// getCompaniesInfo
   Future<BibitCompaniesInfoData> getCompaniesInfo({String code = 'IHSG'}) async {
     try {
-      final res = await api.get('/stocks/companies/$code/info');
+      final res = await apiBibit.get('/stocks/companies/$code/info');
       return BibitCompaniesInfo.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -122,7 +121,7 @@ class BibitRepository {
   /// getPerformance
   Future<BibitPerformanceData> getPerformance() async {
     try {
-      final res = await api.get('/portfolio/performances');
+      final res = await apiBibit.get('/portfolio/performances');
       return BibitPerformance.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -132,7 +131,7 @@ class BibitRepository {
   /// getPotpolioPerformance => period = (1D, 1M, 3M, YTD, 1Y, 3Y, ALL)
   Future<BibitPerformanceChartData> getPerformancePeriod(String period) async {
     try {
-      final res = await api.get('/portfolio/performances/charts?period=$period');
+      final res = await apiBibit.get('/portfolio/performances/charts?period=$period');
       return BibitPerformanceChart.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -142,8 +141,18 @@ class BibitRepository {
   /// getAllocation
   Future<List<BibitPerformanceAllocationData>> getAllocation() async {
     try {
-      final res = await api.get('/portfolio/allocations');
+      final res = await apiBibit.get('/portfolio/allocations');
       return BibitPerformanceAllocation.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getProductDetailMutual => symbol
+  Future<BibitProductDetailMutualData> getProductDetailMutual(String symbol) async {
+    try {
+      final res = await apiMdvk.get('/api/bibit/product?code=$symbol');
+      return BibitProductDetailMutual.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
     }
@@ -158,25 +167,5 @@ class BibitRepository {
 
   Future<List<dynamic>> rpcPintu() async {
     return await db.rpc('get_pintu');
-  }
-
-  /// getSupportedCurrencies
-  Future<List<PintuSupportedCurrenciesPayload>> getSupportedCurrencies() async {
-    try {
-      final res = await api.get('https://api.pintu.co.id/v2/wallet/supportedCurrencies', header: {});
-      return PintuSupportedCurrencies.fromJson(res.body).payload!;
-    } catch (e) {
-      throw ApiException('$e');
-    }
-  }
-
-  /// getPriceChanges
-  Future<List<PintuPriceChangesPayload>> getPriceChanges() async {
-    try {
-      final res = await api.get('https://api.pintu.co.id/v2/trade/price-changes', header: {});
-      return PintuPriceChanges.fromJson(res.body).payload!;
-    } catch (e) {
-      throw ApiException('$e');
-    }
   }
 }
