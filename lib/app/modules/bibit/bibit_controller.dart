@@ -18,6 +18,7 @@ class BibitController extends GetxController with StateMixin {
   final menuSelected = 'Home'.obs;
   final getCompaniesInfo = BibitCompaniesInfoData().obs;
 
+  final isMarketOpen = false.obs;
   late Timer? timerMarketOpen;
 
   @override
@@ -30,6 +31,7 @@ class BibitController extends GetxController with StateMixin {
     }
     menuList.value = repo.menuList();
     getCompaniesInfo.value = await repo.getCompaniesInfo();
+    isMarketOpen.value = getCompaniesInfo.value.marketHours?.status != 'close';
     change(200, status: RxStatus.success());
     super.onInit();
   }

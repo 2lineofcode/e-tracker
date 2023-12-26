@@ -1,3 +1,4 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import '../../../core/app_color.dart';
 import '../../../helpers/helper_bibit.dart';
 import '../../../helpers/helper_misc.dart';
 import '../../../helpers/helper_money.dart';
+import '../bibit_controller.dart';
 import 'section_bibit_home_controller.dart';
 
 class SectionBibitHomeView extends GetView<SectionBibitHomeController> {
@@ -169,7 +171,21 @@ class SectionBibitHomeView extends GetView<SectionBibitHomeController> {
                         [
                           VStack([
                             '${item.symbol}'.text.bold.make().pOnly(bottom: 4),
-                            '${item.percent?.toDoubleStringAsFixed(digit: 2)}%'.text.color(BibitHelper.getColor(item.percent)).make(),
+                            if (Get.find<BibitController>().isMarketOpen.isFalse) ...[
+                              '${item.percent?.toDoubleStringAsFixed(digit: 2)}%'.text.color(BibitHelper.getColor(item.percent)).make(),
+                            ] else ...[
+                              AnimatedTextKit(
+                                repeatForever: true,
+                                isRepeatingAnimation: true,
+                                animatedTexts: [
+                                  FadeAnimatedText(
+                                    '${BibitHelper.getSymbol(item.percent)} ${item.percent?.toDoubleStringAsFixed(digit: 2)}%',
+                                    textStyle: TextStyle(color: BibitHelper.getColor(item.percent)),
+                                    duration: 5.seconds,
+                                  ),
+                                ],
+                              ),
+                            ],
                           ]).p8(),
                           SvgPicture.network(
                             item.percent!.isNegative

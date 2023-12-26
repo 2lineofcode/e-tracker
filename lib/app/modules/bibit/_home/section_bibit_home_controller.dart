@@ -4,13 +4,13 @@ import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 import 'package:web_socket_client/web_socket_client.dart';
 
-import '../../../helpers/helper_bibit.dart';
 import '../../../models/bibit_chart_entity.dart';
 import '../../../models/bibit_index_indices_entity.dart';
 import '../../../models/bibit_performance_chart_entity.dart';
 import '../../../models/bibit_portpolio_entity.dart';
 import '../../../models/bibit_watchlist_mutual_entity.dart';
 import '../../../routes/app_pages.dart';
+import '../bibit_controller.dart';
 import '../bibit_repository.dart';
 
 class SectionBibitHomeController extends GetxController {
@@ -38,7 +38,7 @@ class SectionBibitHomeController extends GetxController {
 
     /// refresh every second
     timerPriceChanges = Timer.periodic(5.seconds, (timer) async {
-      if (BibitHelper.isStockMarketOpen) {
+      if (Get.find<BibitController>().isMarketOpen.isTrue) {
         log('=== idx30 price changes ===');
         ihsg.value = await repo.getIHSG();
         indexIndices.value = await repo.getIndexIndices();

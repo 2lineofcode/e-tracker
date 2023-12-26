@@ -12,6 +12,9 @@ new_version="$version_without_date+$yMd$git_rev"
 echo "Updating version to: $new_version"
 sed -i '' "s/version: $current_version/version: $new_version/" pubspec.yaml
 
+# make sure pubspec is up to date
+flutter pub get
+
 # build app
 if [ "$(uname)" == "Darwin" ]; then
     echo "=== macOS ==="

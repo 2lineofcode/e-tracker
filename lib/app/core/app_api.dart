@@ -50,6 +50,10 @@ final apiBibit = Get.find<ExHttp>(tag: 'bibit')
 final apiMdvk = Get.find<ExHttp>(tag: 'mdvk')
   ..httpClient.timeout = 15.seconds
   ..httpClient.addResponseModifier((request, response) {
-    logS('${request.method.toUpperCase()}: ${request.url} (${response.statusCode})', name: 'API');
+    if (response.statusCode == 200) {
+      logS('${request.method.toUpperCase()}: ${request.url} (${response.statusCode})', name: 'API');
+    } else {
+      logW('${request.method.toUpperCase()}: ${request.url} (${response.statusCode})', name: 'API');
+    }
     return response;
   });

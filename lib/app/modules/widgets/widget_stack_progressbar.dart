@@ -39,12 +39,16 @@ class StackProgressBar extends StatelessWidget {
 
 mixin StackProgressBarColorHelper {
   static final _colorSet = ['#52B599', '#8948C1', '#E03322'];
+  static final rdpu = ['uang', 'depo', 'likuiditas', 'kas'];
+  static final rdpt = ['obligasi'];
+  static final rds = ['saham'];
+
   static Color fromName(String name) {
-    if (name.toLowerCase().contains('saham')) {
+    if (rds.any((element) => name.toLowerCase().contains(element))) {
       return _colorSet[2].fromHex;
-    } else if (name.toLowerCase().contains('obligasi')) {
+    } else if (rdpt.any((element) => name.toLowerCase().contains(element))) {
       return _colorSet[1].fromHex;
-    } else if (name.toLowerCase().contains('uang') || name.toLowerCase().contains('depo')) {
+    } else if (rdpu.any((element) => name.toLowerCase().contains(element))) {
       return _colorSet[0].fromHex;
     } else {
       return AppColor.neutral;

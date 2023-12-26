@@ -9,7 +9,7 @@ mixin BibitHelper {
   ///     - mon-thu: 09.00 - 12.00 WIB, 13.30 - 15.49 WIB,
   ///     - friday: 09.00 - 11.30 WIB, 14.00 - 15.49 WIB
   /// - false: other day
-  static bool get isStockMarketOpen {
+  static bool get isStockMarketOpens {
     final now = DateTime.now();
     final dayOfWeek = now.weekday;
     final currentHour = now.hour;

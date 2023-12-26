@@ -34,12 +34,11 @@ class BibitView extends GetView<BibitController> {
   Widget appBarAction() {
     return Obx(
       () {
-        final isClose = controller.getCompaniesInfo.value.marketHours?.status == 'close';
         return controller.menuSelected.value == 'Home'
             ? CustomPopup(
                 content: VStack(
                   [
-                    if (isClose) ...[
+                    if (controller.isMarketOpen.isFalse) ...[
                       'Market Sedang Tutup'.text.bold.black.make().pOnly(bottom: 8),
                       'Market akan buka kembali dalam:'.text.black.size(12).make(),
                       '${controller.getCompaniesInfo.value.marketHours?.formattedTimeLeft}'.text.size(12).black.make(),
@@ -50,8 +49,15 @@ class BibitView extends GetView<BibitController> {
                   ],
                 ),
                 child: HStack([
-                  Icon(CupertinoIcons.circle_fill, size: 6, color: isClose ? AppColor.red : AppColor.green).pOnly(right: 8),
-                  Icon(isClose ? CupertinoIcons.moon_circle_fill : CupertinoIcons.timer_fill, size: 22),
+                  Icon(
+                    CupertinoIcons.circle_fill,
+                    size: 6,
+                    color: controller.isMarketOpen.isFalse ? AppColor.red : AppColor.green,
+                  ).pOnly(right: 8),
+                  Icon(
+                    controller.isMarketOpen.isFalse ? CupertinoIcons.moon_circle_fill : CupertinoIcons.timer_fill,
+                    size: 22,
+                  ),
                 ]),
               ).p12()
             : Container();

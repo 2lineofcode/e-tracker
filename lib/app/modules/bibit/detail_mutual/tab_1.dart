@@ -14,7 +14,7 @@ import '../../../helpers/helpers.dart';
 import '../../../models/bibit_product_detail_aum_entity.dart';
 import '../../../models/bibit_product_detail_chart_entity.dart';
 import '../../../models/bibit_product_detail_mutual_entity.dart';
-import '../../widgets/widget_stack_progressbar.dart';
+import '../../widgets/widgets.dart';
 import 'detail_mutual_controller.dart';
 
 class DetailMutualTab1 extends GetView<DetailMutualController> {

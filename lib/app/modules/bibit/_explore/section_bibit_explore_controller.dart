@@ -4,12 +4,12 @@ import 'dart:convert';
 import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 
-import '../../../helpers/helper_bibit.dart';
 import '../../../models/bibit_stock_tranding_entity.dart';
 import '../../../models/bibit_watchlist_stock_entity.dart';
 import '../../../models/pintu_list_crypto_entity.dart';
 import '../../../models/pintu_price_changes_entity.dart';
 import '../../../models/pintu_supported_currencies_entity.dart';
+import '../bibit_controller.dart';
 import '../bibit_repository.dart';
 
 class SectionBibitExploreController extends GetxController with StateMixin, GetSingleTickerProviderStateMixin {
@@ -130,7 +130,7 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
   }
 
   void initBibitRealTimePriceChange() {
-    if (BibitHelper.isStockMarketOpen) {
+    if (Get.find<BibitController>().isMarketOpen.isTrue) {
       timerBibitPriceChanges = Timer.periodic(5.seconds, (timer) async {
         log('=== stockbit priceChanges ===');
         bibitStockTranding.value = await repo.getStockTranding();
