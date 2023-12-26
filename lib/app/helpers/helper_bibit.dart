@@ -38,6 +38,7 @@ mixin BibitHelper {
   /// 💪 or 🖕
   static String getEmoji(dynamic number) {
     try {
+      if (number == 0) return '';
       if (number > 0) {
         return '💪';
       } else {
@@ -52,6 +53,7 @@ mixin BibitHelper {
   /// ↗ or ↘
   static String getSymbol(dynamic number) {
     try {
+      if (number == 0) return '';
       if (number > 0) {
         return '↗';
       } else {
@@ -66,6 +68,7 @@ mixin BibitHelper {
   /// ▲ or ▼
   static String getSymbol2(dynamic number) {
     try {
+      if (number == 0) return '';
       if (number > 0) {
         return '▲';
       } else {
@@ -77,8 +80,8 @@ mixin BibitHelper {
   }
 
   /// #### getColor
-  /// - if number > 0, return green, 
-  /// - else if < 0 return red, 
+  /// - if number > 0, return green,
+  /// - else if < 0 return red,
   /// - else return grey
   static Color getColor(dynamic number) {
     try {
@@ -97,8 +100,8 @@ mixin BibitHelper {
   }
 
   /// #### getColorForPercentage
-  /// - if number > 100 return red, 
-  /// - else if number > 80, return orange, 
+  /// - if number > 100 return red,
+  /// - else if number > 80, return orange,
   /// - else return green
   static Color getColorForPercentage(dynamic number) {
     try {

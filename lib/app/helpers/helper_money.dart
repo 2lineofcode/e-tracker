@@ -1,5 +1,7 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:money_formatter/money_formatter.dart';
 
 import '../core/app_color.dart';
 import '../core/app_setting.dart';
@@ -15,23 +17,42 @@ extension MoneyFormatExt on num {
   /// example: 1000 -> '1K'
   /// example: 1000000 -> '1M'
   String moneyFormatCompact() {
-    if (this < 1000) {
-      return toString();
-    } else if (this < 1000000) {
-      return '${(this / 1000).toStringAsFixed(0)}K';
-    } else if (this < 1000000000) {
-      return '${(this / 1000000).toStringAsFixed(0)}M';
-    } else if (this < 1000000000000) {
-      return '${(this / 1000000000).toStringAsFixed(0)}B';
-    } else {
-      return '${(this / 1000000000000).toStringAsFixed(0)}T';
+    try {
+      final fmf = MoneyFormatter(
+        amount: toDouble(),
+        settings: MoneyFormatterSettings(
+          symbol: 'IDR',
+          thousandSeparator: '.',
+          decimalSeparator: ' ,',
+          symbolAndNumberSeparator: ' ',
+          fractionDigits: 2,
+        ),
+      );
+      return fmf.output.compactNonSymbol;
+    } on Exception catch (_) {
+      return '-';
     }
   }
 
   /// example: 100 -> '100%'
-  String percentageFormat({String? symbol = '%'}) {
-    String formattedText = '${(this * 100).toStringAsFixed(2).replaceAll('.00', '')}$symbol';
-    return formattedText;
+  // String percentageFormat({String? symbol = '%'}) {
+  //   String formattedText = '${(this * 100).toStringAsFixed(2).replaceAll('.00', '')}$symbol';
+  //   return formattedText;
+  // }
+
+  String percentageFormat({int decimalDigits = 2}) {
+    var output = '';
+    try {
+      output = NumberFormat.decimalPercentPattern(decimalDigits: decimalDigits).format(this);
+    } catch (_) {
+      try {
+        final x = this;
+        output = '${x * 100}'.substring(0, 3).replaceAll('.', '');
+      } catch (_) {
+        output = '';
+      }
+    }
+    return '${output.replaceAll('.00', '')}';
   }
 }
 

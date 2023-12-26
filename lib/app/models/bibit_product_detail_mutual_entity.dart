@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 /// *
-/// * JSON Source: {"message":"Successfully retrieve data product detail","query":"RD337","data":{"id":337,"symbol":"RD337","name":"BNI-AM Indeks IDX30","type":"Saham","profile":"","tradeable":1,"notbuyable":0,"status":1,"dividend_date":null,"robocategory":"equity","bank_redeem":{"id":12,"name":"STANDARD CHARTERED","color":"#0072AA","icon_url":"https://assets.bibit.id/icons/banks/Standard_Chartered_05042023140038.svg"},"released_date":"2017-12-28","currency_exchange":{"exchange_rate":1,"currency":"IDR"},"is_has_dividend":true,"min_asset":10000,"minbuy":10000,"minsell":10000,"executive":{},"fee":{"subscription":{"value":0,"max_value":null,"type":"percent","currency":"IDR"},"redemption":{"value":0,"max_value":null,"type":"percent","currency":"IDR"},"transfer":{"value":0,"max_value":null,"type":"percent","currency":"IDR"},"switch":{"value":2,"max_value":null,"type":"percent","currency":"IDR"}},"asset":[{"name":"Kas & Deposito","percentage":1}],"holding":[{"symbol":"BBRI","name":"Bank Rakyat Indonesia (Persero) Tbk.","annualDividend":0,"date":"2023-11-30","clickable":1,"company_id":4327,"product_type":"Saham","serie_id":null}],"bank":[{"bank":"BCA","id":31,"account":"4585637549","name":"Reksa Dana Indeks BNI-AM Indeks IDX30"}],"exitload":[null],"investment_manager":{"name":"PT BNI Asset Management","ojkCode":"NI002","telepon":"+62 21 29969646","fax":"+62 21 29969647","email":"corsec@bni-am.co.id","url":"www.bni-am.co.id"},"custodian_bank":{"name":"STANDARD CHARTERED","ojkCode":"SCBJK"},"sharia":false,"etf":false,"index":true,"is_instant_redemption":false,"aum":{"value":1603614579115.38,"date":"2023-11-01"},"shareholders":[null],"expenseratio":{"percentage":0.0157},"avg_yield":{"date":null,"percentage":null},"cagr":{"1y":0.0000948125674058442,"3y":-0.007475074913743662,"5y":-0.02025716126619892,"10y":null,"all":-0.029363063304796988},"cagr_adjusted":{"1y":0.03402766647639632,"3y":0.010638643527889124,"5y":-0.007732803280355194,"10y":null,"all":-0.019045693616357773},"simplereturn":{"1d":0.002995257508944249,"1m":0.03991570749020279,"3m":-0.021679902614341162,"ytd":0.04106044142230236,"1y":0.03402766647639632,"3y":0.03225667688151357,"5y":-0.03807066001185955,"10y":null,"all":-0.10868759935696404},"changesvalue":{"1d":2.519999999999982,"1m":32.389999999999986,"3m":-18.699999999999932,"ytd":34.41152414278895,"1y":28.711524142789017,"3y":27.83944754935908,"5y":-35.587310859285935,"10y":null,"all":-109.647310859286},"nav":{"date":"2023-12-22","value":843.85},"riskprofile":"High","maxdrawdown":{"1y":-0.13031492124189914,"3y":-0.2228623649078194,"5y":-0.4505307898804197,"10y":-0.48795625971269374,"all":-0.48795625971269374},"maxdrawdown_adjusted":{"1y":-0.1008068222561956,"3y":-0.1957748129721058,"5y":-0.445422035770232,"10y":-0.4831954732762356,"all":-0.4831954732762356}}}
+/// * JSON Source: {"message":"Successfully retrieve data product detail","query":"RD13","data":{"id":13,"symbol":"RD13","name":"ABF Indonesia Bond Index Fund","type":"Obligasi","profile":"Mendapatkan tingkat pertumbuhan yang stabil dan optimal melalui investasi pada Efek bersifat utang.","tradeable":1,"notbuyable":0,"status":1,"dividend_date":null,"robocategory":"fixincome","bank_redeem":{"id":38,"name":"HSBC INDONESIA","color":"#f40c02","icon_url":"https://assets.bibit.id/icons/banks/HSBC_05042023141254.svg"},"released_date":"2005-05-25","currency_exchange":{"exchange_rate":1,"currency":"IDR"},"is_has_dividend":false,"min_asset":1000000,"minbuy":1000000,"minsell":1000000,"executive":{},"fee":{"subscription":{"value":0,"max_value":null,"type":"percent","currency":"IDR"},"redemption":{"value":0,"max_value":null,"type":"percent","currency":"IDR"},"transfer":{"value":0,"max_value":null,"type":"percent","currency":"IDR"},"switch":{"value":2,"max_value":null,"type":"percent","currency":"IDR"}},"asset":[{"name":"Saham","percentage":0}],"holding":[{"symbol":null,"name":"FR0056","annualDividend":0,"date":"2023-11-30","clickable":null,"company_id":null,"product_type":null,"serie_id":null}],"bank":[{"bank":"BCA","id":31,"account":"4587484098","name":"Reksa Dana Indeks ABF Indonesia Bond Index Fund"}],"exitload":[null],"investment_manager":{"name":"PT Bahana TCW Investment Management","ojkCode":"DX002","telepon":"+62 21 2505277","fax":"+62 21 2505279","email":"sinar@bahana.co.id","url":"www.sinar.bahanatcw.com"},"custodian_bank":{"name":"HSBC INDONESIA","ojkCode":"HSBC1"},"sharia":false,"etf":true,"index":true,"is_instant_redemption":false,"aum":{"value":6557977982226,"date":"2023-11-01"},"shareholders":[null],"expenseratio":{"percentage":0.0021},"avg_yield":{"date":"2023-11-30","percentage":0.0705},"cagr":{"1y":0.07575028447627297,"3y":0.048192539070105234,"5y":0.08179338991883034,"10y":0.0811037131623471,"all":0.08663906319216697},"cagr_adjusted":{"1y":0.07575028447627297,"3y":0.048192539070105234,"5y":0.08179338991883034,"10y":0.0811037131623471,"all":0.08670082165109783},"simplereturn":{"1d":0.0005205210099119562,"1m":0.012922986001938863,"3m":0.017701402010231515,"ytd":0.07390369868916857,"1y":0.07575028447627297,"3y":0.1516571078518434,"5y":0.48156809551584145,"10y":1.181090016172584,"all":2.7892335929021015},"changesvalue":{"1d":26.9916000000012,"1m":661.9159,"3m":902.4095000000016,"ytd":3570.402700000006,"1y":3653.3322000000044,"3y":6832.127200000003,"5y":16863.684,"10y":28094.789000000004,"all":38190.019},"nav":{"date":"2023-12-22","value":51881.959},"riskprofile":"Moderate","maxdrawdown":{"1y":-0.03495954104220478,"3y":-0.04352614386495168,"5y":-0.08500568958456078,"10y":-0.11795959199332329,"all":-0.2760120415115265},"maxdrawdown_adjusted":{"1y":-0.0349595410422049,"3y":-0.0435261438649516,"5y":-0.0850056895845608,"10y":-0.1179595919933234,"all":-0.2760120415115266}}}
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
 /// *
 class BibitProductDetailMutual {
@@ -511,13 +511,13 @@ class BibitProductDetailMutualDataAsset {
 }
 
 class BibitProductDetailMutualDataHolding {
-  String? symbol;
+  dynamic symbol;
   String? name;
   num? annualDividend;
   String? date;
-  num? clickable;
-  num? companyId;
-  String? productType;
+  dynamic clickable;
+  dynamic companyId;
+  dynamic productType;
   dynamic serieId;
 
   BibitProductDetailMutualDataHolding({this.symbol, this.name, this.annualDividend, this.date, this.clickable, this.companyId, this.productType, this.serieId});
@@ -527,8 +527,8 @@ class BibitProductDetailMutualDataHolding {
     name = json['name'] ?? '';
     annualDividend = json['annualDividend'] ?? 0;
     date = json['date'] ?? '';
-    clickable = json['clickable'] ?? 0;
-    companyId = json['company_id'] ?? 0;
+    clickable = json['clickable'] ?? '';
+    companyId = json['company_id'] ?? '';
     productType = json['product_type'] ?? '';
     serieId = json['serie_id'] ?? '';
   }
@@ -649,7 +649,7 @@ class BibitProductDetailMutualDataAum {
   BibitProductDetailMutualDataAum({this.value, this.date});
 
   BibitProductDetailMutualDataAum.fromJson(Map<String, dynamic> json) {
-    value = json['value'] ?? 0.0;
+    value = json['value'] ?? 0;
     date = json['date'] ?? '';
   }
 
@@ -688,14 +688,14 @@ class BibitProductDetailMutualDataExpenseratio {
 }
 
 class BibitProductDetailMutualDataAvgYield {
-  dynamic date;
-  dynamic percentage;
+  String? date;
+  num? percentage;
 
   BibitProductDetailMutualDataAvgYield({this.date, this.percentage});
 
   BibitProductDetailMutualDataAvgYield.fromJson(Map<String, dynamic> json) {
     date = json['date'] ?? '';
-    percentage = json['percentage'] ?? '';
+    percentage = json['percentage'] ?? 0.0;
   }
 
   Map<String, dynamic> toJson() {
@@ -715,7 +715,7 @@ class BibitProductDetailMutualDataCagr {
   num? x1y;
   num? x3y;
   num? x5y;
-  dynamic x10y;
+  num? x10y;
   num? all;
 
   BibitProductDetailMutualDataCagr({this.x1y, this.x3y, this.x5y, this.x10y, this.all});
@@ -724,7 +724,7 @@ class BibitProductDetailMutualDataCagr {
     x1y = json['1y'] ?? 0.0;
     x3y = json['3y'] ?? 0.0;
     x5y = json['5y'] ?? 0.0;
-    x10y = json['10y'] ?? '';
+    x10y = json['10y'] ?? 0.0;
     all = json['all'] ?? 0.0;
   }
 
@@ -748,7 +748,7 @@ class BibitProductDetailMutualDataCagrAdjusted {
   num? x1y;
   num? x3y;
   num? x5y;
-  dynamic x10y;
+  num? x10y;
   num? all;
 
   BibitProductDetailMutualDataCagrAdjusted({this.x1y, this.x3y, this.x5y, this.x10y, this.all});
@@ -757,7 +757,7 @@ class BibitProductDetailMutualDataCagrAdjusted {
     x1y = json['1y'] ?? 0.0;
     x3y = json['3y'] ?? 0.0;
     x5y = json['5y'] ?? 0.0;
-    x10y = json['10y'] ?? '';
+    x10y = json['10y'] ?? 0.0;
     all = json['all'] ?? 0.0;
   }
 
@@ -785,7 +785,7 @@ class BibitProductDetailMutualDataSimplereturn {
   num? x1y;
   num? x3y;
   num? x5y;
-  dynamic x10y;
+  num? x10y;
   num? all;
 
   BibitProductDetailMutualDataSimplereturn({this.x1d, this.x1m, this.x3m, this.ytd, this.x1y, this.x3y, this.x5y, this.x10y, this.all});
@@ -798,7 +798,7 @@ class BibitProductDetailMutualDataSimplereturn {
     x1y = json['1y'] ?? 0.0;
     x3y = json['3y'] ?? 0.0;
     x5y = json['5y'] ?? 0.0;
-    x10y = json['10y'] ?? '';
+    x10y = json['10y'] ?? 0.0;
     all = json['all'] ?? 0.0;
   }
 
@@ -830,7 +830,7 @@ class BibitProductDetailMutualDataChangesvalue {
   num? x1y;
   num? x3y;
   num? x5y;
-  dynamic x10y;
+  num? x10y;
   num? all;
 
   BibitProductDetailMutualDataChangesvalue({this.x1d, this.x1m, this.x3m, this.ytd, this.x1y, this.x3y, this.x5y, this.x10y, this.all});
@@ -843,7 +843,7 @@ class BibitProductDetailMutualDataChangesvalue {
     x1y = json['1y'] ?? 0.0;
     x3y = json['3y'] ?? 0.0;
     x5y = json['5y'] ?? 0.0;
-    x10y = json['10y'] ?? '';
+    x10y = json['10y'] ?? 0.0;
     all = json['all'] ?? 0.0;
   }
 

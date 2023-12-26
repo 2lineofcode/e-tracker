@@ -53,6 +53,11 @@ mixin AppColor {
   static Color get greenLight => Get.isDarkMode ? Vx.green200 : Vx.green600;
   static Color get greenDark => Get.isDarkMode ? Vx.green600 : Vx.green600;
 
+  /// bibit
+  static Color get bibit => Get.isDarkMode ? Color(0xff4CA870) : Color(0xff4CA870);
+  static Color get bibitLight => Get.isDarkMode ? Color(0xff57BF7F) : Color(0xff4CA870);
+  static Color get bibitDark => Get.isDarkMode ? Color(0xff1B2D25) : Color(0xffEDF8F3);
+
   /// orange
   static Color get orange => Get.isDarkMode ? Vx.orange300 : Vx.orange500;
   static Color get orangeLight => Get.isDarkMode ? Vx.orange200 : Vx.orange500;

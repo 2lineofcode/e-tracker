@@ -6,10 +6,10 @@ import '../../env.g.dart';
 import 'app_setting.dart';
 import 'const.dart';
 
-/// ! handy call api -> supabase
+/// * handy call api -> supabase
 final db = Supabase.instance.client;
 
-/// ! handy call api -> bibit
+/// * handy call api -> bibit
 final _bibitUrl = Env.bibitApiUrl;
 final apiBibit = Get.find<ExHttp>(tag: 'bibit')
   ..httpClient.timeout = 15.seconds
@@ -34,7 +34,7 @@ final apiBibit = Get.find<ExHttp>(tag: 'bibit')
     return request;
   })
   ..httpClient.addResponseModifier<void>((request, response) async {
-    logS('${request.method.toUpperCase()}: ${request.url} (${response.statusCode})', name: 'APIBibit');
+    logS('${request.method.toUpperCase()}: ${request.url} (${response.statusCode})', name: 'API');
     return response;
   })
   ..httpClient.addRequestModifier<void>(
@@ -46,9 +46,10 @@ final apiBibit = Get.find<ExHttp>(tag: 'bibit')
     },
   );
 
-/// ! handy call api -> mdvk
+/// * handy call api -> mdvk
 final apiMdvk = Get.find<ExHttp>(tag: 'mdvk')
   ..httpClient.timeout = 15.seconds
   ..httpClient.addResponseModifier((request, response) {
-    logS('${request.method.toUpperCase()}: ${request.url} (${response.statusCode})', name: 'APIMdvk');
+    logS('${request.method.toUpperCase()}: ${request.url} (${response.statusCode})', name: 'API');
+    return response;
   });
