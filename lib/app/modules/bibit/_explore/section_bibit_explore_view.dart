@@ -17,12 +17,8 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
         child: VStack(
           [
             TabBar(
-              physics: NeverScrollableScrollPhysics(),
-              indicatorColor: AppColor.noteColor,
               labelColor: AppColor.textReverse,
-              labelStyle: TextStyle(fontSize: 13),
-              unselectedLabelColor: Vx.neutral400,
-              unselectedLabelStyle: TextStyle(fontSize: 13),
+              physics: NeverScrollableScrollPhysics(),
               tabs: [
                 Tab(text: 'Crypto'),
                 Tab(text: 'Stock'),

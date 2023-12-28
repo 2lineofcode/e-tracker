@@ -46,7 +46,7 @@ class MyCalendarHeader extends StatelessWidget {
                 ),
               ]),
 
-              Divider(color: Vx.neutral300),
+              Divider(),
 
               /// month
               Obx(

@@ -137,6 +137,10 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
     }
   }
 
+  void goDetailStock(String symbol) {
+    Get.toNamed(Routes.DETAIL_STOCK, arguments: symbol);
+  }
+
   @override
   void onClose() {
     try {
@@ -144,9 +148,5 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
       timerBibitPriceChanges?.cancel();
     } catch (_) {}
     super.onClose();
-  }
-
-  void goDetailStock(String symbol) {
-    Get.toNamed(Routes.DETAIL_STOCK, arguments: symbol);
   }
 }

@@ -2,10 +2,12 @@ import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'app_color.dart';
 import 'app_setting.dart';
 import 'const.dart';
 
 mixin AppTheme {
+  /// * light
   static final light = ThemeData.light(useMaterial3: true).copyWith(
     appBarTheme: AppBarTheme(
       elevation: 0,
@@ -13,9 +15,27 @@ mixin AppTheme {
       iconTheme: IconThemeData(color: Colors.white),
       titleTextStyle: TextStyle(color: Colors.white),
     ),
+    tabBarTheme: TabBarTheme(
+      indicatorColor: AppColor.noteColor,
+      labelColor: AppColor.textReverse,
+      labelStyle: TextStyle(fontSize: 13),
+      unselectedLabelColor: Vx.neutral400,
+      unselectedLabelStyle: TextStyle(fontSize: 13),
+    ),
+    dividerColor: AppColor.neutral,
   );
 
-  static final dark = ThemeData.dark(useMaterial3: true).copyWith();
+  /// * dark
+  static final dark = ThemeData.dark(useMaterial3: true).copyWith(
+    tabBarTheme: TabBarTheme(
+      indicatorColor: AppColor.noteColor,
+      labelColor: AppColor.textReverse,
+      labelStyle: TextStyle(fontSize: 13),
+      unselectedLabelColor: Vx.neutral400,
+      unselectedLabelStyle: TextStyle(fontSize: 13),
+    ),
+    dividerColor: AppColor.neutral,
+  );
 
   /// load theme
   static bool _isDarkMode() => pref.read(kIsDarkMode) ?? true;

@@ -2,6 +2,10 @@ import 'package:ex/ex.dart';
 
 import '../core/app_api.dart';
 import '../models/bibit_allocation_summary_entity.dart';
+import '../models/bibit_cart_entity.dart';
+import '../models/bibit_history_mutual_entity.dart';
+import '../models/bibit_history_stock_entity.dart';
+import '../models/bibit_order_detail_entity.dart';
 import '../models/bibit_performance_allocation_entity.dart';
 import '../models/bibit_performance_chart_entity.dart';
 import '../models/bibit_performance_entity.dart';
@@ -29,7 +33,6 @@ class BibitRepository {
   Future<List<BibitPerformanceAllocationData>> getAllocation() async {
     try {
       final res = await apiBibit.get('/portfolio/allocations');
-      logJson(res.body);
       return BibitPerformanceAllocation.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -80,7 +83,6 @@ class BibitRepository {
   Future<BibitProductDetailData> getProductDetail(String code) async {
     try {
       final res = await apiMdvk.get('/api/bibit/product?code=$code');
-      logJson(res.body);
       return BibitProductDetail.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
@@ -163,6 +165,78 @@ class BibitRepository {
     try {
       final res = await apiBibit.get('/products/$code/dividends?limit=10&page=1');
       return BibitProductDetailDividend.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getBills
+  Future<int> getBills() async {
+    try {
+      final res = await apiBibit.get('/bills');
+      return res.body['data']['stamp_duty_fee'];
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getCart
+  Future<BibitCartData> getCart() async {
+    try {
+      final res = await apiBibit.get('/carts/items');
+      return BibitCart.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getHistoryMutual
+  Future<BibitHistoryMutual> getHistoryMutual({
+    String? portpolioId,
+    String? cursor,
+    int? limit = 20, // def 10, max 100
+    String? method = 'all', // buy, sell, all
+    String? period = 'all', // 1y, 6m, 3m, 1m, all
+    bool? isDividend = false,
+    bool? isStampDuty = false,
+  }) async {
+    try {
+      final q = {
+        'is_dividend': (isDividend == false ? 0 : 1).toString(),
+        'is_stamp_duty': (isStampDuty == false ? 0 : 1).toString(),
+        'limit': limit.toString(),
+        'method': method,
+        'period': period,
+        'status': 'done',
+      };
+      if (portpolioId.isNotEmptyAndNotNull) q['category_id'] = portpolioId;
+      if (cursor.isNotEmptyAndNotNull) q['cursor'] = cursor;
+
+      final res = await apiBibit.get('/mutual-fund/orders/histories', query: q);
+      return BibitHistoryMutual.fromJson(res.body);
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getHistoryStock
+  Future<BibitHistoryStock> getHistoryStock({String? cursor, int? limit = 20}) async {
+    try {
+      final q = {'limit': limit.toString()};
+      if (cursor.isNotEmptyAndNotNull) q['cursor'] = cursor ?? '';
+
+      final res = await apiBibit.get('/stocks/orders/histories', query: q);
+      return BibitHistoryStock.fromJson(res.body);
+    } catch (e) {
+      throw ApiException(',$e');
+    }
+  }
+
+  /// getOrderDetail
+  Future<BibitOrderDetailData> getOrderDetail(String orderId) async {
+    try {
+      final res = await apiBibit.get('/orders/$orderId');
+      return BibitOrderDetail.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
     }

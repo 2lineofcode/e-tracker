@@ -29,21 +29,35 @@ class SectionBibitPerformanceView extends GetView<SectionBibitPerformanceControl
                   ],
                 ),
                 Spacer(),
-                ''.richText.withTextSpanChildren([
-                  ' ${chart.change?.moneyFormat()}'.textSpan.color(BibitHelper.getColor(chart.percent)).make(),
-                  ' (${chart.percent?.percentageFormat()})'.textSpan.color(BibitHelper.getColor(chart.percent)).make(),
-                  ' ${BibitHelper.getSymbol(performance.percentage)}'.textSpan.color(BibitHelper.getColor(chart.percent)).make(),
-                ]).make(),
+                VStack(
+                  [
+                    ''
+                        .richText
+                        .withTextSpanChildren([
+                          'RoI dalam: '.textSpan.make(),
+                          '${BibitHelper.getPeriodText(controller.periodSelected.value)}'.textSpan.color(AppColor.orange).make(),
+                        ])
+                        .size(11)
+                        .make(),
+                    ''
+                        .richText
+                        .withTextSpanChildren([
+                          ' ${chart.change?.moneyFormat() ?? ''}'.textSpan.make(),
+                          ' (${chart.percent?.percentageFormat() ?? ''})'.textSpan.make(),
+                          ' ${BibitHelper.getSymbol(performance.percentage)}'.textSpan.make(),
+                        ])
+                        .color(BibitHelper.getColor(chart.percent))
+                        .make(),
+                  ],
+                  alignment: MainAxisAlignment.end,
+                  crossAlignment: CrossAxisAlignment.end,
+                ),
               ]);
             },
           ),
           TabBar(
             physics: NeverScrollableScrollPhysics(),
-            indicatorColor: AppColor.noteColor,
             labelColor: AppColor.textReverse,
-            labelStyle: TextStyle(fontSize: 13),
-            unselectedLabelColor: Vx.neutral400,
-            unselectedLabelStyle: TextStyle(fontSize: 13),
             tabs: [
               Tab(text: 'Chart'),
               Tab(text: 'Alokasi'),

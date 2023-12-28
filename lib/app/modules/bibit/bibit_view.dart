@@ -11,6 +11,7 @@ import '_explore/section_bibit_explore_view.dart';
 import '_home/section_bibit_home_view.dart';
 import '_performance/section_bibit_performance_view.dart';
 import '_portfolio/section_bibit_portfolio_view.dart';
+import '_transaction/section_bibit_transaction_view.dart';
 import 'bibit_controller.dart';
 
 class BibitView extends GetView<BibitController> {
@@ -71,6 +72,7 @@ class BibitView extends GetView<BibitController> {
       {'icon': CupertinoIcons.app_badge_fill, 'name': 'Portfolio'},
       {'icon': CupertinoIcons.chart_bar_alt_fill, 'name': 'Performance'},
       {'icon': CupertinoIcons.flame_fill, 'name': 'Explore'},
+      {'icon': CupertinoIcons.arrow_right_arrow_left, 'name': 'Transaction'},
     ];
     return ListView.builder(
       physics: NeverScrollableScrollPhysics(),
@@ -106,20 +108,26 @@ class BibitView extends GetView<BibitController> {
         return controller.obx((state) => SectionBibitPerformanceView());
       case 'Explore':
         return controller.obx((state) => SectionBibitExploreView());
+      case 'Transaction':
+        return controller.obx((state) => SectionBibitTransactionView());
       default:
         return Container();
     }
   }
 
   Widget footerContent() {
-    return HStack([
-      if (Get.context!.isMobile) ...[
-        IconButton(
-          onPressed: () => Get.back(),
-          icon: Icon(Icons.arrow_back),
-        ),
-      ],
-      Spacer(),
-    ]).p12();
+    if (Get.context!.isMobile) {
+      return HStack([
+        if (Get.context!.isMobile) ...[
+          IconButton(
+            onPressed: () => Get.back(),
+            icon: Icon(Icons.arrow_back),
+          ),
+        ],
+        Spacer(),
+      ]).p12();
+    } else {
+      return Container();
+    }
   }
 }

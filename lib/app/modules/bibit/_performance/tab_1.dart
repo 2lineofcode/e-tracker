@@ -36,7 +36,7 @@ class SectionBibitPerformanceTab1 extends GetView<SectionBibitPerformanceControl
       height: 33,
       width: 44,
       elevation: 0,
-      selectedColor: Vx.green300.withAlpha(150),
+      selectedColor: AppColor.green.withAlpha(100),
       unSelectedColor: Colors.transparent,
       unSelectedBorderColor: Colors.transparent,
       selectedBorderColor: Colors.transparent,

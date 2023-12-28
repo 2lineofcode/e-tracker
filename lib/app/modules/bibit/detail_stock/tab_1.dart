@@ -134,7 +134,7 @@ class DetailStockTab1 extends GetView<DetailStockController> {
       height: 33,
       width: 44,
       elevation: 0,
-      selectedColor: Vx.green300.withAlpha(150),
+      selectedColor: AppColor.green.withAlpha(100),
       unSelectedColor: Colors.transparent,
       unSelectedBorderColor: Colors.transparent,
       selectedBorderColor: Colors.transparent,
@@ -373,7 +373,7 @@ class DetailStockTab1 extends GetView<DetailStockController> {
             ]).expand(),
           ],
         ),
-        Divider(color: AppColor.neutral),
+        Divider(),
         'Target Harga Analis'.text.make().pOnly(bottom: 8),
         ''
             .richText
@@ -470,7 +470,9 @@ class DetailStockTab1 extends GetView<DetailStockController> {
                   '${data[index].symbol}'.text.size(12).make(),
                   '${data[index].percent?.toStringAsFixed(2)}%'.text.size(12).color(BibitHelper.getColor(data[index].percent)).make(),
                 ],
-              ).pOnly(right: 16);
+              ).pOnly(right: 16).onTap(() async {
+                await controller.onRefresh(data[index].symbol ?? '');
+              });
             },
           ).h(75),
         ],

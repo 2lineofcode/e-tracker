@@ -22,7 +22,6 @@ class LoginController extends GetxController {
   Future<void> onInit() async {
     packageInfo = await PackageInfo.fromPlatform();
     appInfo.value = packageInfo?.data ?? {};
-    log('appInfo: ${appInfo.entries.toList()}');
     if (kDebugMode) {
       tfEmail.text = 'adit@gmail.com';
       tfPassword.text = 'asdasdasd';

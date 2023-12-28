@@ -1,4 +1,5 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
+import 'package:custom_radio_grouped_button/custom_radio_grouped_button.dart';
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import '../../../core/app_color.dart';
 import '../../../helpers/helper_bibit.dart';
 import '../../../helpers/helper_misc.dart';
 import '../../../helpers/helper_money.dart';
+import '../../widgets/widgets.dart';
 import '../bibit_controller.dart';
 import 'section_bibit_home_controller.dart';
 
@@ -32,7 +34,7 @@ class SectionBibitHomeView extends GetView<SectionBibitHomeController> {
 
         promo(),
       ],
-    );
+    ).scrollVertical();
   }
 
   Widget porto() {
@@ -154,7 +156,7 @@ class SectionBibitHomeView extends GetView<SectionBibitHomeController> {
   Widget indexStock() {
     return Obx(
       () => controller.indexIndices.isEmpty
-          ? LinearProgressIndicator().p12()
+          ? MyShimmerBibitHStack(itemCount: ExRandom.between(4, 7)).pSymmetric(h: 4)
           : VStack(
               [
                 'Index Saham'.text.bold.make().pOnly(bottom: 8),
@@ -206,36 +208,87 @@ class SectionBibitHomeView extends GetView<SectionBibitHomeController> {
   }
 
   Widget watchlist() {
+    final selectedView = 'Mutual'.obs;
     return Obx(
       () => Container(
         width: double.infinity,
         decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.neutral),
         child: VStack(
           [
-            'Watchlist (${controller.watchList.length})'.text.bold.make().p16(),
-            controller.watchList.isEmpty
-                ? ExUiShimmerList().expand()
-                : ListView.builder(
-                    padding: EdgeInsets.zero,
-                    itemCount: controller.watchList.length,
-                    itemBuilder: (context, index) {
-                      final item = controller.watchList[index];
-                      return ListTile(
-                        leading: ExAvatarView(
-                          source: 'https://app.bibit.id/assets/logos/investment-manager/square/${item.investmentManager?.ojkCode}.svg',
-                          size: 28,
-                          borderColor: Colors.white,
-                        ),
-                        title: '${item.name}'.text.ellipsis.maxLines(1).size(13).bold.make(),
-                        subtitle: '${item.type}'.text.size(11).minFontSize(11).make(),
-                        trailing: '${item.xReturn?.percentageFormat()}'.text.color(BibitHelper.getColor(item.xReturn)).make(),
-                        onTap: () => controller.goDetailMutual(item),
-                      );
-                    },
-                  ).expand(),
+            HStack(
+              [
+                'Watchlist'.text.bold.make(),
+                Spacer(),
+                CustomRadioButton(
+                  height: 33,
+                  width: 66,
+                  elevation: 0,
+                  defaultSelected: selectedView.value,
+                  buttonLables: ['Mutual', 'Stock'],
+                  buttonValues: ['Mutual', 'Stock'],
+                  radioButtonValue: (s) => selectedView.value = s,
+                  selectedColor: AppColor.green.withAlpha(100),
+                  unSelectedColor: Colors.transparent,
+                  unSelectedBorderColor: Colors.transparent,
+                  selectedBorderColor: Colors.transparent,
+                  buttonTextStyle: ButtonTextStyle(
+                    selectedColor: Vx.black,
+                    unSelectedColor: AppColor.textReverse,
+                    textStyle: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
+            ).p16(),
+            controller.watchListMutual.isEmpty
+                ? MyShimmerBibitVStack()
+                : selectedView.value == 'Mutual'
+
+                    /// mutual list
+                    ? ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: controller.watchListMutual.length,
+                        itemBuilder: (context, index) {
+                          final item = controller.watchListMutual[index];
+                          return ListTile(
+                            leading: ExAvatarView(
+                              source: 'https://app.bibit.id/assets/logos/investment-manager/square/${item.investmentManager?.ojkCode}.svg',
+                              size: 28,
+                              borderColor: Colors.white,
+                            ),
+                            title: '${item.name}'.text.ellipsis.maxLines(1).size(13).bold.make(),
+                            subtitle: '${item.type}'.text.size(11).minFontSize(11).make(),
+                            trailing: '${item.xReturn?.percentageFormat()}'.text.color(BibitHelper.getColor(item.xReturn)).make(),
+                            onTap: () => controller.goDetailMutual(item),
+                          );
+                        },
+                      )
+
+                    /// stock list
+                    : ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: controller.watchListStock.length,
+                        itemBuilder: (context, index) {
+                          final item = controller.watchListStock[index];
+                          return ListTile(
+                            leading: ExAvatarView(
+                              source: item.iconUrl ?? '',
+                              size: 28,
+                              borderColor: Colors.white,
+                            ),
+                            title: '${item.name}'.text.ellipsis.maxLines(1).size(13).bold.make(),
+                            subtitle: '${item.symbol}'.text.size(11).minFontSize(11).make(),
+                            trailing: '${item.percent?.toStringAsFixed(2)}%'.text.color(BibitHelper.getColor(item.percent)).make(),
+                            onTap: () => controller.goDetailStock(item),
+                          );
+                        },
+                      ),
           ],
         ),
-      ).expand(),
+      ),
     );
   }
 

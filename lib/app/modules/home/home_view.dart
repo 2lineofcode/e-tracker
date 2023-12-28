@@ -207,7 +207,7 @@ class HomeView extends GetView<HomeController> {
                             'Budget: ${controller.focusedDay.value.toStringEx(format: 'MMMM')}'.text.size(13).black.make(),
                             'Max Budget: ${controller.countMaxBudget.value.moneyFormat()}'.text.size(11).neutral500.make(),
                             'Usage: ${controller.countOfMonth.value.moneyFormat()} (${controller.countRemainingBudget}%)'.text.size(11).neutral500.make(),
-                            Divider(color: Colors.black),
+                            Divider(),
                             'Remaining: ${(controller.countMaxBudget.value - controller.countOfMonth.value).moneyFormat()}'.text.size(11).black.make(),
                             HStack([
                               Spacer(),

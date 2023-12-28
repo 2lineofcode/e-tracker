@@ -34,7 +34,11 @@ final apiBibit = Get.find<ExHttp>(tag: 'bibit')
     return request;
   })
   ..httpClient.addResponseModifier<void>((request, response) async {
-    logS('${request.method.toUpperCase()}: ${request.url} (${response.statusCode})', name: 'API');
+    if (response.statusCode == 200) {
+      logS('${request.method.toUpperCase()}: ${request.url} (${response.statusCode})', name: 'API');
+    } else {
+      logW('${request.method.toUpperCase()}: ${request.url} (${response.statusCode})', name: 'API');
+    }
     return response;
   })
   ..httpClient.addRequestModifier<void>(

@@ -18,6 +18,8 @@ class DetailMutualTab3 extends GetView<DetailMutualController> {
         child: VStack(
           [
             TabBar(
+              physics: NeverScrollableScrollPhysics(),
+              labelColor: AppColor.textReverse,
               tabs: [
                 Tab(text: 'Factsheets'),
                 Tab(text: 'Prospectus'),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../helpers/helper_misc.dart';
+import '../../../models/bibit_product_detail_allocation_entity.dart';
 import '../../../models/stockbit_chart_entity.dart';
 import '../../../models/stockbit_news_entity.dart';
 import '../../../models/stockbit_portpolio_entity.dart';
@@ -10,6 +11,7 @@ import '../../../models/stockbit_product_detail_entity.dart';
 import '../../../models/stockbit_related_entity.dart';
 import '../../../repository/repo_bibit.dart';
 import '../../../repository/repo_stockbit.dart';
+import '../../../routes/app_pages.dart';
 
 class DetailStockController extends GetxController with StateMixin<StockbitProductDetailData> {
   final repoBibit = Get.find<BibitRepository>();
@@ -26,12 +28,13 @@ class DetailStockController extends GetxController with StateMixin<StockbitProdu
   final productDetail = StockbitProductDetailData().obs;
   final chart = StockbitChartData().obs;
   final portpolio = StockbitPortpolioData().obs;
-  // final allocation = BibitProductDetailAllocationData().obs;
+  final allocation = BibitProductDetailAllocationData().obs;
   final related = <StockbitRelatedData>[].obs;
   final news = <StockbitNewsData>[].obs;
 
   @override
   Future<void> onInit() async {
+    change(null, status: RxStatus.loading());
     symbolSelected.value = Get.arguments as String;
     isFavorite.value = await repoStockbit.getIsFavorite(symbolSelected.value);
     productDetail.value = await repoStockbit.getProductDetail(symbolSelected.value);
@@ -42,13 +45,31 @@ class DetailStockController extends GetxController with StateMixin<StockbitProdu
 
     try {
       portpolio.value = await repoStockbit.getPortpolio(symbolSelected.value);
-      // allocation.value = await repoBibit.getProductDetailAllocations(symbolSelected.value);
+      allocation.value = await repoBibit.getProductDetailAllocations(symbolSelected.value);
     } catch (_) {
       logW('Portofolio tidak dapat ditemukan');
     }
     change(productDetail.value, status: RxStatus.success());
 
     super.onInit();
+  }
+
+  Future<void> onRefresh(String symbol) async {
+    change(null, status: RxStatus.loading());
+    isFavorite.value = await repoStockbit.getIsFavorite(symbol);
+    productDetail.value = await repoStockbit.getProductDetail(symbol);
+    chart.value = await repoStockbit.getChart(symbol: symbol, period: periodSelected.value);
+    news.value = await repoStockbit.getNews(symbol);
+    related.value = await repoStockbit.getRelated(symbol);
+    change(productDetail.value, status: RxStatus.success());
+
+    try {
+      portpolio.value = await repoStockbit.getPortpolio(symbol);
+      allocation.value = await repoBibit.getProductDetailAllocations(symbol);
+    } catch (_) {
+      logW('Portofolio tidak dapat ditemukan');
+    }
+    change(productDetail.value, status: RxStatus.success());
   }
 
   void onMenuChange(String item) {
@@ -68,5 +89,9 @@ class DetailStockController extends GetxController with StateMixin<StockbitProdu
     periodSelected.value = period;
     chart.value = await repoStockbit.getChart(symbol: symbolSelected.value, period: period);
     update();
+  }
+
+  void goDetailStock(String symbol) {
+    Get.toNamed(Routes.DETAIL_STOCK, arguments: symbol, preventDuplicates: false);
   }
 }

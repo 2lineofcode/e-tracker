@@ -9,6 +9,7 @@ import '../../../models/bibit_portpolio_entity.dart';
 import '../../../models/bibit_watchlist_entity.dart';
 import '../../../models/stockbit_chart_entity.dart';
 import '../../../models/stockbit_index_indices_entity.dart';
+import '../../../models/stockbit_watchlist_entity.dart';
 import '../../../repository/repo_bibit.dart';
 import '../../../repository/repo_stockbit.dart';
 import '../../../routes/app_pages.dart';
@@ -22,7 +23,8 @@ class SectionBibitHomeController extends GetxController {
   final portpolio = BibitPortpolioData().obs;
   final performance1D = BibitPerformanceChartData().obs;
   final performance1M = BibitPerformanceChartData().obs;
-  final watchList = <BibitWatchlistData>[].obs;
+  final watchListMutual = <BibitWatchlistData>[].obs;
+  final watchListStock = <StockbitWatchlistData>[].obs;
   final indexIndices = <StockbitIndexIndicesData>[].obs;
   final wsKey = ''.obs;
 
@@ -34,7 +36,8 @@ class SectionBibitHomeController extends GetxController {
     portpolio.value = await repoBibit.getPortpolio();
     performance1D.value = await repoBibit.getPerformanceByPeriod('1D');
     performance1M.value = await repoBibit.getPerformanceByPeriod('1M');
-    watchList.value = await repoBibit.getWatchList();
+    watchListMutual.value = await repoBibit.getWatchList();
+    watchListStock.value = await repoStockbit.getWatchList();
     ihsg.value = await repoStockbit.getChart();
     indexIndices.value = await repoStockbit.getIndexIndices();
     wsKey.value = await repoStockbit.getWSKey();
@@ -58,6 +61,10 @@ class SectionBibitHomeController extends GetxController {
 
   void goDetailMutual(BibitWatchlistData item) {
     Get.toNamed(Routes.DETAIL_MUTUAL, arguments: item.symbol);
+  }
+
+  void goDetailStock(StockbitWatchlistData item) {
+    Get.toNamed(Routes.DETAIL_STOCK, arguments: item.symbol);
   }
 
   @override
