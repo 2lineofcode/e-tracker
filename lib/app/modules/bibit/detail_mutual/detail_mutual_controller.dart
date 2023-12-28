@@ -10,6 +10,7 @@ import '../../../models/bibit_product_detail_dividend_entity.dart';
 import '../../../models/bibit_product_detail_entity.dart';
 import '../../../models/bibit_product_detail_factsheets_entity.dart';
 import '../../../repository/repo_bibit.dart';
+import '../../../routes/app_pages.dart';
 
 class DetailMutualController extends GetxController with StateMixin<BibitProductDetailData> {
   final repo = Get.find<BibitRepository>();
@@ -62,6 +63,10 @@ class DetailMutualController extends GetxController with StateMixin<BibitProduct
   void onMenuChange(String item) {
     menuSelected.value = item;
     closeDrawer();
+  }
+
+  void goDetailStock(String symbol) {
+    Get.toNamed(Routes.DETAIL_STOCK, arguments: symbol);
   }
 
   Future<void> openFile(BibitProductDetailFactsheetsData item) async {

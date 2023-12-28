@@ -146,7 +146,7 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
     super.onClose();
   }
 
-  void goDetailStock(StockbitWatchlistData item) {
-    Get.toNamed(Routes.DETAIL_STOCK, arguments: item.symbol);
+  void goDetailStock(String symbol) {
+    Get.toNamed(Routes.DETAIL_STOCK, arguments: symbol);
   }
 }

@@ -109,7 +109,9 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
                 ],
                 alignment: MainAxisAlignment.center,
                 crossAlignment: CrossAxisAlignment.center,
-              ).pOnly(right: 16);
+              ).pOnly(right: 16).onTap(() {
+                controller.goDetailStock(item.symbol ?? '');
+              });
             },
           ).h(120),
 
@@ -129,7 +131,7 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
                 Spacer(),
                 '${item.percent?.toStringAsFixed(2)}% ${BibitHelper.getSymbol(item.percent)}'.text.color(BibitHelper.getColor(item.percent)).make(),
               ]).onInkTap(() {
-                controller.goDetailStock(item);
+                controller.goDetailStock(item.symbol ?? '');
               });
             },
           ).expand(),

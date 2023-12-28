@@ -404,7 +404,13 @@ class HomeView extends GetView<HomeController> {
             children: [
               VStack([
                 /// note
-                '${item.note}'.text.bold.color(isTypeNotes ? Vx.white : AppColor.textReverse).make().pOnly(bottom: 8),
+                HStack([
+                  '${item.note}'.text.bold.color(isTypeNotes ? Vx.white : AppColor.textReverse).make(),
+                  if (!isTypeNotes) ...[
+                    Icon(CupertinoIcons.time, size: 10).pOnly(left: 8, right: 2, top: 2),
+                    '(${item.createdAt?.reformatDate(to: 'HH:mm')})'.text.size(10).minFontSize(10).make(),
+                  ],
+                ]).pOnly(bottom: 8),
 
                 /// detail
                 item.detail.isNotEmptyAndNotNull

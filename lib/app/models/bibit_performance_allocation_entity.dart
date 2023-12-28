@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-/// * 
+/// *
 /// * JSON Source: {"message":"Berhasil menampilkan data Portfolio Allocation","data":[{"name":"Pasar Uang","items":2,"totalporto":7522475.640000001,"current":"0.05","profitloss":376978}]}
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
-/// * 
+/// *
 class BibitPerformanceAllocation {
   String? message;
   List<BibitPerformanceAllocationData>? data;
@@ -32,10 +32,10 @@ class BibitPerformanceAllocation {
 
 class BibitPerformanceAllocationData {
   String? name;
-  int? items;
-  double? totalporto;
+  num? items;
+  num? totalporto;
   String? current;
-  int? profitloss;
+  num? profitloss;
 
   BibitPerformanceAllocationData({this.name, this.items, this.totalporto, this.current, this.profitloss});
 

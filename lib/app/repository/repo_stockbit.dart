@@ -4,7 +4,10 @@ import '../core/app_api.dart';
 import '../models/stockbit_chart_entity.dart';
 import '../models/stockbit_companies_info_entity.dart';
 import '../models/stockbit_index_indices_entity.dart';
+import '../models/stockbit_news_entity.dart';
+import '../models/stockbit_portpolio_entity.dart';
 import '../models/stockbit_product_detail_entity.dart';
+import '../models/stockbit_related_entity.dart';
 import '../models/stockbit_stock_tranding_entity.dart';
 import '../models/stockbit_watchlist_entity.dart';
 
@@ -83,7 +86,37 @@ class StockbitRepository {
   Future<bool> getIsFavorite(String code) async {
     try {
       final res = await apiBibit.get('/stocks/companies/$code/stats');
-      return res.body['data']['is_favorited'] as bool;
+      return (res.body['data']['is_favorited'] == 1);
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getPortpolio
+  Future<StockbitPortpolioData> getPortpolio(String code) async {
+    try {
+      final res = await apiBibit.get('/stocks/portfolios/$code');
+      return StockbitPortpolio.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getRelated
+  Future<List<StockbitRelatedData>> getRelated(String code) async {
+    try {
+      final res = await apiBibit.get('/stocks/companies/$code/related');
+      return StockbitRelated.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getRelatedStock
+  Future<List<StockbitNewsData>> getNews(String code) async {
+    try {
+      final res = await apiBibit.get('/stocks/news?limit=10&symbol=$code');
+      return StockbitNews.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
     }

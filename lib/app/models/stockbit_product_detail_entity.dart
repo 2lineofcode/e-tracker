@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-/// * 
+/// *
 /// * JSON Source: {"message":"Berhasil menampilkan data detail Saham BBRI","data":{"id":4327,"symbol":"BBRI","name":"Bank Rakyat Indonesia (Persero) Tbk.","price":5625,"change":0,"percent":0,"price_updated_at":"2023-12-27T21:05:46.000Z","status":"active","type":"Saham","sub_sector":"Bank","is_acceleration":false,"is_buyable":true,"is_sellable":true,"is_stock_e_ipo":false,"is_sharia":0,"ipo_date":"2003-11-10","market_hours":{"status":"close","time_left":"2023-12-28T01:45:00.220Z","formatted_time_left":"0 jam 17 menit 39 detik"},"notations":[{"notation_code":"K","notation_desc":"Perusahaan Tercatat yang menerapkan Saham Dengan Hak Suara Multipel dan tercatat di Papan Ekonomi Baru","icon_url":{"light_mode":"https://assets.stockbit.com/logos/notations/light/K.png","dark_mode":"https://assets.stockbit.com/logos/notations/dark/K.png"}}],"corp_action":{"active":true,"type":"dividend","info":{"company_id":"59","company_symbol":"BBRI","dividend_created":"2023-12-19","dividend_cumdate":"2023-12-29","dividend_datahash":"7ca69c2c01c7e558401b086eb3380bd2","dividend_exdate":"2024-01-02","dividend_id":"114247","dividend_iqp_id":"","dividend_lastupdate":"2023-12-19","dividend_lock":0,"dividend_paydate":"2024-01-18","dividend_recdate":"2024-01-03","dividend_value":"84","lastprice":"","event_note":"","dividend_value_formatted":"Rp 84","lastprice_formatted":"","dividend_currency":"CURRENCY_IDR"}},"key_stats":{"open":5625,"high":5625,"low":5625,"pe_annualised":"14.53","pe_ttm":"15.22","dividend_ttm":"288.22","volume":"0","avg_volume":"137.15 M","market_cap":"852,503 B","pbv_ratio":"2.78","dividend_yield":"5.12%","net_profit_margin":"30.12%","debt_to_equity":"0.02","total_debt":"5,413 B","total_cash":"24,132 B"},"analyst_rating":{"price_target":{"best_target":6369,"best_low_target":5200,"best_high_target":7000,"current_price":5625},"recommendation":"Buy","total_buy":33,"total_sell":0,"total_hold":1,"total_analyst":34,"last_updated":"27 Dec 23"},"company_about":{"background":"PT Bank Rakyat Indonesia (Persero) Tbk. atau BBRI merupakan BUMN yang bergerak di bidang usaha perbankan, Bank terbesar di Segmen Usaha Mikro, Kecil dan Menengah (UMKM) dengan layanan micro banking terbesar di Indonesia maupun di dunia, Selain fokus pada segmen UMKM, BRI juga terus mengembangkan berbagai produk consumer banking dan layanan institusional bagi masyarakat perkotaan. Melalui layanan e-banking yang didukung oleh 24.684 unit ATM serta 284.426 unit EDC yang tersebar di seluruh pelosok Indonesia, BRI bertekad untuk terus mendukung peningkatan efisiensi kegiatan perekonomian nasional sekaligus meningkatkan kenyamanan dan kemudahan transaksi nasabah sesuai perkembangan kebutuhan jasa layanan perbankan seluruh lapisan masyarakat Indonesia. BRI mengoperasikan 8 jenjang kantor pelayanan, terdiri dari Kantor Pusat, 19 Kantor Wilayah, 468 Kantor Cabang (termasuk 3 Unit Kerja Luar Negeri), 610 Kantor Cabang Pembantu, 992 Kantor Kas, 5.381 BRI Unit, 2.069 Teras BRI, dan 638 Teras BRI Keliling. Entitas anak: PT Bank BRISyariah Tbk, PT Bank Agroniaga Tbk dan BRIngin Remittance Co. Ltd. entitas asosiasi PT BTMU-BRI Finance."},"icon_url":"https://assets.stockbit.com/logos/companies/BBRI.png"}}
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
-/// * 
+/// *
 class StockbitProductDetail {
   String? message;
   StockbitProductDetailData? data;
@@ -55,7 +55,31 @@ class StockbitProductDetailData {
   StockbitProductDetailDataCompanyAbout? companyAbout;
   String? iconUrl;
 
-  StockbitProductDetailData({this.id, this.symbol, this.name, this.price, this.change, this.percent, this.priceUpdatedAt, this.status, this.type, this.subSector, this.isAcceleration, this.isBuyable, this.isSellable, this.isStockEIpo, this.isSharia, this.ipoDate, this.marketHours, this.notations, this.corpAction, this.keyStats, this.analystRating, this.companyAbout, this.iconUrl, });
+  StockbitProductDetailData({
+    this.id,
+    this.symbol,
+    this.name,
+    this.price,
+    this.change,
+    this.percent,
+    this.priceUpdatedAt,
+    this.status,
+    this.type,
+    this.subSector,
+    this.isAcceleration,
+    this.isBuyable,
+    this.isSellable,
+    this.isStockEIpo,
+    this.isSharia,
+    this.ipoDate,
+    this.marketHours,
+    this.notations,
+    this.corpAction,
+    this.keyStats,
+    this.analystRating,
+    this.companyAbout,
+    this.iconUrl,
+  });
 
   StockbitProductDetailData.fromJson(Map<String, dynamic> json) {
     id = json['id'] ?? 0;
@@ -241,6 +265,9 @@ class StockbitProductDetailDataCorpAction {
 class StockbitProductDetailDataCorpActionInfo {
   String? companyId;
   String? companySymbol;
+  String? lastprice;
+  String? eventNote;
+
   String? dividendCreated;
   String? dividendCumdate;
   String? dividendDatahash;
@@ -252,13 +279,84 @@ class StockbitProductDetailDataCorpActionInfo {
   String? dividendPaydate;
   String? dividendRecdate;
   String? dividendValue;
-  String? lastprice;
-  String? eventNote;
   String? dividendValueFormatted;
   String? lastpriceFormatted;
   String? dividendCurrency;
+  String? rupsCreated;
+  String? rupsDatahash;
+  String? rupsDate;
+  String? rupsId;
+  String? rupsTime;
+  String? rupsIqpAgenda;
+  String? rupsIqpId;
+  String? rupsIqpRecDt;
+  String? rupsIqpRemark;
+  String? rupsIqpResult;
+  String? rupsIqpRevisedDate;
+  String? rupsIqpType;
+  String? rupsVenue;
+  String? stocksplitCreated;
+  String? stocksplitCumdate;
+  String? stocksplitExdate;
+  String? stocksplitFactor;
+  String? stocksplitId;
+  String? stocksplitIqpId;
+  String? stocksplitLastupdate;
+  num? stocksplitLock;
+  String? stocksplitNew;
+  num? stocksplitNewPrice;
+  num? stocksplitNewShare;
+  String? stocksplitOld;
+  String? stocksplitRatio;
+  String? stocksplitRecdate;
 
-  StockbitProductDetailDataCorpActionInfo({this.companyId, this.companySymbol, this.dividendCreated, this.dividendCumdate, this.dividendDatahash, this.dividendExdate, this.dividendId, this.dividendIqpId, this.dividendLastupdate, this.dividendLock, this.dividendPaydate, this.dividendRecdate, this.dividendValue, this.lastprice, this.eventNote, this.dividendValueFormatted, this.lastpriceFormatted, this.dividendCurrency, });
+  StockbitProductDetailDataCorpActionInfo({
+    this.companyId,
+    this.companySymbol,
+    this.dividendCreated,
+    this.dividendCumdate,
+    this.dividendDatahash,
+    this.dividendExdate,
+    this.dividendId,
+    this.dividendIqpId,
+    this.dividendLastupdate,
+    this.dividendLock,
+    this.dividendPaydate,
+    this.dividendRecdate,
+    this.dividendValue,
+    this.lastprice,
+    this.eventNote,
+    this.dividendValueFormatted,
+    this.lastpriceFormatted,
+    this.dividendCurrency,
+    this.rupsCreated,
+    this.rupsDatahash,
+    this.rupsDate,
+    this.rupsId,
+    this.rupsTime,
+    this.rupsIqpAgenda,
+    this.rupsIqpId,
+    this.rupsIqpRecDt,
+    this.rupsIqpRemark,
+    this.rupsIqpResult,
+    this.rupsIqpRevisedDate,
+    this.rupsIqpType,
+    this.rupsVenue,
+    this.stocksplitCreated,
+    this.stocksplitCumdate,
+    this.stocksplitExdate,
+    this.stocksplitFactor,
+    this.stocksplitId,
+    this.stocksplitIqpId,
+    this.stocksplitLastupdate,
+    this.stocksplitLock,
+    this.stocksplitNew,
+    this.stocksplitNewPrice,
+    this.stocksplitNewShare,
+    this.stocksplitOld,
+    this.stocksplitRatio,
+    this.stocksplitRecdate,
+  });
 
   StockbitProductDetailDataCorpActionInfo.fromJson(Map<String, dynamic> json) {
     companyId = json['company_id'] ?? '';
@@ -279,6 +377,33 @@ class StockbitProductDetailDataCorpActionInfo {
     dividendValueFormatted = json['dividend_value_formatted'] ?? '';
     lastpriceFormatted = json['lastprice_formatted'] ?? '';
     dividendCurrency = json['dividend_currency'] ?? '';
+    rupsCreated = json['rups_created'] ?? '';
+    rupsDatahash = json['rups_datahash'] ?? '';
+    rupsDate = json['rups_date'] ?? '';
+    rupsId = json['rups_id'] ?? '';
+    rupsTime = json['rups_time'] ?? '';
+    rupsIqpAgenda = json['rups_iqp_agenda'] ?? '';
+    rupsIqpId = json['rups_iqp_id'] ?? '';
+    rupsIqpRecDt = json['rups_iqp_rec_dt'] ?? '';
+    rupsIqpRemark = json['rups_iqp_remark'] ?? '';
+    rupsIqpResult = json['rups_iqp_result'] ?? '';
+    rupsIqpRevisedDate = json['rups_iqp_revised_date'] ?? '';
+    rupsIqpType = json['rups_iqp_type'] ?? '';
+    rupsVenue = json['rups_venue'] ?? '';
+    stocksplitCreated = json['stocksplit_created'] ?? '';
+    stocksplitCumdate = json['stocksplit_cumdate'] ?? '';
+    stocksplitExdate = json['stocksplit_exdate'] ?? '';
+    stocksplitFactor = json['stocksplit_factor'] ?? '';
+    stocksplitId = json['stocksplit_id'] ?? '';
+    stocksplitIqpId = json['stocksplit_iqp_id'] ?? '';
+    stocksplitLastupdate = json['stocksplit_lastupdate'] ?? '';
+    stocksplitLock = json['stocksplit_lock'] ?? 0;
+    stocksplitNew = json['stocksplit_new'] ?? '';
+    stocksplitNewPrice = json['stocksplit_new_price'] ?? 0;
+    stocksplitNewShare = json['stocksplit_new_share'] ?? 0;
+    stocksplitOld = json['stocksplit_old'] ?? '';
+    stocksplitRatio = json['stocksplit_ratio'] ?? '';
+    stocksplitRecdate = json['stocksplit_recdate'] ?? '';
   }
 
   Map<String, dynamic> toJson() {
@@ -301,6 +426,34 @@ class StockbitProductDetailDataCorpActionInfo {
     data['dividend_value_formatted'] = dividendValueFormatted;
     data['lastprice_formatted'] = lastpriceFormatted;
     data['dividend_currency'] = dividendCurrency;
+    data['rups_created'] = rupsCreated;
+    data['rups_datahash'] = rupsDatahash;
+    data['rups_date'] = rupsDate;
+    data['rups_id'] = rupsId;
+    data['rups_time'] = rupsTime;
+    data['rups_iqp_agenda'] = rupsIqpAgenda;
+    data['rups_iqp_id'] = rupsIqpId;
+    data['rups_iqp_rec_dt'] = rupsIqpRecDt;
+    data['rups_iqp_remark'] = rupsIqpRemark;
+    data['rups_iqp_result'] = rupsIqpResult;
+    data['rups_iqp_revised_date'] = rupsIqpRevisedDate;
+    data['rups_iqp_type'] = rupsIqpType;
+    data['rups_venue'] = rupsVenue;
+    data['stocksplit_created'] = stocksplitCreated;
+    data['stocksplit_cumdate'] = stocksplitCumdate;
+    data['stocksplit_exdate'] = stocksplitExdate;
+    data['stocksplit_factor'] = stocksplitFactor;
+    data['stocksplit_id'] = stocksplitId;
+    data['stocksplit_iqp_id'] = stocksplitIqpId;
+    data['stocksplit_lastupdate'] = stocksplitLastupdate;
+    data['stocksplit_lock'] = stocksplitLock;
+    data['stocksplit_new'] = stocksplitNew;
+    data['stocksplit_new_price'] = stocksplitNewPrice;
+    data['stocksplit_new_share'] = stocksplitNewShare;
+    data['stocksplit_old'] = stocksplitOld;
+    data['stocksplit_ratio'] = stocksplitRatio;
+    data['stocksplit_recdate'] = stocksplitRecdate;
+
     return data;
   }
 
@@ -327,7 +480,23 @@ class StockbitProductDetailDataKeyStats {
   String? totalDebt;
   String? totalCash;
 
-  StockbitProductDetailDataKeyStats({this.open, this.high, this.low, this.peAnnualised, this.peTtm, this.dividendTtm, this.volume, this.avgVolume, this.marketCap, this.pbvRatio, this.dividendYield, this.netProfitMargin, this.debtToEquity, this.totalDebt, this.totalCash});
+  StockbitProductDetailDataKeyStats({
+    this.open,
+    this.high,
+    this.low,
+    this.peAnnualised,
+    this.peTtm,
+    this.dividendTtm,
+    this.volume,
+    this.avgVolume,
+    this.marketCap,
+    this.pbvRatio,
+    this.dividendYield,
+    this.netProfitMargin,
+    this.debtToEquity,
+    this.totalDebt,
+    this.totalCash,
+  });
 
   StockbitProductDetailDataKeyStats.fromJson(Map<String, dynamic> json) {
     open = json['open'] ?? 0;

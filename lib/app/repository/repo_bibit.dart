@@ -29,6 +29,7 @@ class BibitRepository {
   Future<List<BibitPerformanceAllocationData>> getAllocation() async {
     try {
       final res = await apiBibit.get('/portfolio/allocations');
+      logJson(res.body);
       return BibitPerformanceAllocation.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');

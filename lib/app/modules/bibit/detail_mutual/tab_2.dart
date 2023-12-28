@@ -24,6 +24,7 @@ class DetailMutualTab2 extends GetView<DetailMutualController> {
             itemBuilder: (context, index) {
               final item = state?.holding?[index];
               return ListTile(
+                onTap: state?.type == 'Saham' ? () => controller.goDetailStock(item?.symbol ?? '') : null,
                 leading: ExAvatarView(
                   source: item!.name!.contains('Pemerintah') || item.name!.contains('Obligasi FR')
                       ? 'https://app.bibit.id/static/media/fr.85aa5d00b99e36c3c0a63d1822859f97.svg'

@@ -116,4 +116,36 @@ mixin BibitHelper {
       return AppColor.textReverse;
     }
   }
+
+  /// #### getPeriodText
+  /// - 1d: Hari Ini
+  /// - 1m: 1 Bulan Terakhir
+  /// - 3m: 3 Bulan Terakhir
+  /// - ytd: Tahun Ini
+  /// - 1y: 1 Tahun Terakhir
+  static String getPeriodText(String period) {
+    final prefix = period.toLowerCase();
+    switch (prefix) {
+      case '1d':
+        return 'Hari Ini';
+      case '1m':
+        return '1 Bulan Terakhir';
+      case '3m':
+        return '3 Bulan Terakhir';
+      case 'ytd':
+        return 'Tahun Ini';
+      case '1y':
+        return '1 Tahun Terakhir';
+      case '3y':
+        return '3 Tahun Terakhir';
+      case '5y':
+        return '5 Tahun Terakhir';
+      case '10y':
+        return '10 Tahun Terakhir';
+      case 'all':
+        return 'Semua';
+      default:
+        return '';
+    }
+  }
 }

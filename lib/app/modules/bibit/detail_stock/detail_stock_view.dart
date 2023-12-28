@@ -25,19 +25,24 @@ class DetailStockView extends GetView<DetailStockController> {
   }
 
   Widget appBarTitle() {
-    return VStack([
-      't'.text.size(13).minFontSize(13).bold.maxLines(1).ellipsis.make(),
-    ]);
+    return Obx(
+      () => VStack([
+        '${controller.productDetail.value.symbol ?? '...'}'.text.size(13).minFontSize(13).bold.maxLines(1).ellipsis.make(),
+        '${controller.productDetail.value.name ?? ''}'.text.size(11).minFontSize(11).maxLines(1).ellipsis.make(),
+      ]),
+    );
   }
 
   Widget appBarAction() {
     return HStack([
       IconButton(onPressed: () {}, icon: Icon(CupertinoIcons.purchased)),
-      IconButton(
-        onPressed: () {},
-        icon: SvgPicture.asset(
-          controller.isFavorite.isTrue ? 'assets/icons/ic_star_fill.svg' : 'assets/icons/ic_star_unfill.svg',
-          height: 20,
+      Obx(
+        () => IconButton(
+          onPressed: () {},
+          icon: SvgPicture.asset(
+            controller.isFavorite.isTrue ? 'assets/icons/ic_star_fill.svg' : 'assets/icons/ic_star_unfill.svg',
+            height: 20,
+          ),
         ),
       ),
     ]);

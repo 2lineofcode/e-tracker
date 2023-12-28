@@ -3,22 +3,51 @@ import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../../helpers/helper_misc.dart';
+import '../../../models/stockbit_chart_entity.dart';
+import '../../../models/stockbit_news_entity.dart';
+import '../../../models/stockbit_portpolio_entity.dart';
+import '../../../models/stockbit_product_detail_entity.dart';
+import '../../../models/stockbit_related_entity.dart';
 import '../../../repository/repo_bibit.dart';
+import '../../../repository/repo_stockbit.dart';
 
-class DetailStockController extends GetxController with StateMixin {
-  final repo = Get.find<BibitRepository>();
+class DetailStockController extends GetxController with StateMixin<StockbitProductDetailData> {
+  final repoBibit = Get.find<BibitRepository>();
+  final repoStockbit = Get.find<StockbitRepository>();
 
   final symbolSelected = ''.obs;
-  final periodSelected = '1Y'.obs;
+  final periodSelected = '1d'.obs;
   final menuSelected = 'Summaries'.obs;
   final uiModeSelected = 'CHART'.obs;
 
   final isFavorite = false.obs;
 
+  /// data
+  final productDetail = StockbitProductDetailData().obs;
+  final chart = StockbitChartData().obs;
+  final portpolio = StockbitPortpolioData().obs;
+  // final allocation = BibitProductDetailAllocationData().obs;
+  final related = <StockbitRelatedData>[].obs;
+  final news = <StockbitNewsData>[].obs;
+
   @override
-  void onInit() {
+  Future<void> onInit() async {
     symbolSelected.value = Get.arguments as String;
-    change(200, status: RxStatus.success());
+    isFavorite.value = await repoStockbit.getIsFavorite(symbolSelected.value);
+    productDetail.value = await repoStockbit.getProductDetail(symbolSelected.value);
+    chart.value = await repoStockbit.getChart(symbol: symbolSelected.value, period: periodSelected.value);
+    news.value = await repoStockbit.getNews(symbolSelected.value);
+    related.value = await repoStockbit.getRelated(symbolSelected.value);
+    change(productDetail.value, status: RxStatus.success());
+
+    try {
+      portpolio.value = await repoStockbit.getPortpolio(symbolSelected.value);
+      // allocation.value = await repoBibit.getProductDetailAllocations(symbolSelected.value);
+    } catch (_) {
+      logW('Portofolio tidak dapat ditemukan');
+    }
+    change(productDetail.value, status: RxStatus.success());
+
     super.onInit();
   }
 
@@ -33,5 +62,11 @@ class DetailStockController extends GetxController with StateMixin {
     } catch (e) {
       ExSnackbar.danger('doesnt support OS');
     }
+  }
+
+  Future<void> onPeriodChange(String period) async {
+    periodSelected.value = period;
+    chart.value = await repoStockbit.getChart(symbol: symbolSelected.value, period: period);
+    update();
   }
 }
