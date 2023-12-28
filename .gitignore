@@ -52,7 +52,6 @@ devtools_options.yaml
 macos/Flutter/GeneratedPluginRegistrant.swift
 
 linux/flutter/ephemeral/*
-repository
 
 #### env ####
 # .env*

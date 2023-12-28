@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/app_color.dart';
 import '../../helpers/helpers.dart';
-import '../../models/bibit_product_detail_mutual_entity.dart';
+import '../../models/bibit_product_detail_entity.dart';
 
 class StackProgressBar extends StatelessWidget {
   const StackProgressBar({
@@ -10,7 +10,7 @@ class StackProgressBar extends StatelessWidget {
     required this.data,
   });
 
-  final List<BibitProductDetailMutualDataAsset> data;
+  final List<BibitProductDetailDataAsset> data;
 
   @override
   Widget build(BuildContext context) {

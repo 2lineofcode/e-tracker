@@ -15,8 +15,8 @@ import '../../core/app_api.dart';
 import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
-import '../../models/category_entity.dart';
-import '../../models/expense_entity.dart';
+import '../../models/supa_category_entity.dart';
+import '../../models/supa_expense_entity.dart';
 import '../widgets/widget_autocomplete.dart';
 import 'home_controller.dart';
 import 'home_repository.dart';
@@ -31,7 +31,7 @@ mixin DialogInputHelper {
   // ------------------------------------------------------------------------
   // Dialog Category
   // ------------------------------------------------------------------------
-  static Future<void> showDialogCategory({Category? entity, Function? callback}) async {
+  static Future<void> showDialogCategory({SupaCategory? entity, Function? callback}) async {
     // local inject
     final _controller = Get.find<HomeController>();
     final _repo = Get.find<HomeRepository>();
@@ -212,7 +212,7 @@ mixin DialogInputHelper {
           CupertinoDialogAction(
             child: Text('Submit', style: TextStyle(fontSize: 13)),
             onPressed: () async {
-              final newEntity = Category(
+              final newEntity = SupaCategory(
                 id: entity?.id,
                 userId: db.auth.currentSession?.user.id ?? '',
                 createdAt: DateTime.now().toStringEx(),
@@ -234,7 +234,7 @@ mixin DialogInputHelper {
   // ------------------------------------------------------------------------
   // Dialog Expense
   // ------------------------------------------------------------------------
-  static Future<void> showDialogExpense({Expense? expense, Function? customCallback}) async {
+  static Future<void> showDialogExpense({SupaExpense? expense, Function? customCallback}) async {
     if (Get.context!.isMobile) {
       await _dialogExpenseMobile(expense: expense, customCallback: customCallback);
     } else {
@@ -242,7 +242,7 @@ mixin DialogInputHelper {
     }
   }
 
-  static Future<void> _dialogExpenseMobile({Expense? expense, Function? customCallback}) async {
+  static Future<void> _dialogExpenseMobile({SupaExpense? expense, Function? customCallback}) async {
     // local inject
     final _controller = Get.find<HomeController>();
     final _repo = Get.find<HomeRepository>();
@@ -444,7 +444,7 @@ mixin DialogInputHelper {
     );
   }
 
-  static Future<void> _dialogExpenseDesktop({Expense? expense, Function? customCallback}) async {
+  static Future<void> _dialogExpenseDesktop({SupaExpense? expense, Function? customCallback}) async {
     // local inject
     final _controller = Get.find<HomeController>();
     final _repo = Get.find<HomeRepository>();
@@ -645,7 +645,7 @@ mixin DialogInputHelper {
   }
 
   /// delete
-  static Future<void> _deleteExpense({Expense? expense, Function? customCallback}) async {
+  static Future<void> _deleteExpense({SupaExpense? expense, Function? customCallback}) async {
     // local inject
     final _controller = Get.find<HomeController>();
     final _repo = Get.find<HomeRepository>();
@@ -667,7 +667,7 @@ mixin DialogInputHelper {
     String? tfDescription,
     String tfCategory,
     String tfAmount, {
-    Expense? expense,
+    SupaExpense? expense,
     String? tfDate,
     Function? customCallback,
   }) async {
@@ -680,7 +680,7 @@ mixin DialogInputHelper {
     if (tfAmount.isEmptyOrNull) return;
     Get.back(); // close dialog first
 
-    final entity = Expense(
+    final entity = SupaExpense(
       id: expense != null ? expense.id : UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       createdAt: DateTime.now().toStringEx(),

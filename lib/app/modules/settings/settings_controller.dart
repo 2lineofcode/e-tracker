@@ -9,7 +9,7 @@ import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
-import '../../models/autocomplete_entity.dart';
+import '../../models/supa_autocomplete_entity.dart';
 import '../../models/user_profile_entity.dart';
 import '../../routes/app_pages.dart';
 import '../home/home_controller.dart';
@@ -26,7 +26,7 @@ class SettingsController extends GetxController with StateMixin {
   /// Page: AutoComplete
   final tfSearchAutoComplete = TextEditingController();
   final tfAddAutoComplete = TextEditingController();
-  final autoCompleteList = <AutoComplete>[].obs;
+  final autoCompleteList = <SupaAutoComplete>[].obs;
 
   /// Page: App Config
   final tfEco = TextEditingController();
@@ -89,7 +89,7 @@ class SettingsController extends GetxController with StateMixin {
     change(0, status: RxStatus.success());
   }
 
-  Future<void> onDeleteAutoComplete(AutoComplete entity) async {
+  Future<void> onDeleteAutoComplete(SupaAutoComplete entity) async {
     await repo.deleteAutoComplete(entity.note ?? '');
     autoCompleteList.value = await repo.getAutoComplete();
     change(0, status: RxStatus.success());

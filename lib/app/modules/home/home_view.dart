@@ -14,7 +14,7 @@ import '../../../env.g.dart';
 import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
-import '../../models/expense_entity.dart';
+import '../../models/supa_expense_entity.dart';
 import '../widgets/widgets.dart';
 import 'home_controller.dart';
 import 'section_dialog_input.dart';
@@ -441,7 +441,7 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget bodyItemSearchView() {
-    return GroupedListView<Expense, String>(
+    return GroupedListView<SupaExpense, String>(
       elements: controller.expenseList,
       groupBy: (element) => element.date ?? '',
       useStickyGroupSeparators: true,

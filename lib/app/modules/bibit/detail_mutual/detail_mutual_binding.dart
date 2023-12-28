@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 
-import '../bibit_repository.dart';
+import '../../../repository/repo_bibit.dart';
 import 'detail_mutual_controller.dart';
 
 class DetailMutualBinding extends Bindings {

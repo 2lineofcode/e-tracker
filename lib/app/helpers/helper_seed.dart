@@ -9,8 +9,8 @@ import 'package:get/get.dart';
 import 'package:uuid/v4.dart';
 
 import '../core/app_api.dart';
-import '../models/category_entity.dart';
-import '../models/expense_entity.dart';
+import '../models/supa_category_entity.dart';
+import '../models/supa_expense_entity.dart';
 import '../modules/home/home_controller.dart';
 
 mixin SeedHelper {
@@ -26,8 +26,8 @@ mixin SeedHelper {
         .from('category')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
-        .withConverter<List<Category>>((data) {
-      return (data).map((e) => Category.fromJson(e)).toList();
+        .withConverter<List<SupaCategory>>((data) {
+      return (data).map((e) => SupaCategory.fromJson(e)).toList();
     });
 
     /// if category table is empty just return~
@@ -36,7 +36,7 @@ mixin SeedHelper {
     log('-- seed data category --');
 
     /// category table is empty, seed data
-    final _catFood = Category(
+    final _catFood = SupaCategory(
       id: UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       name: 'Food',
@@ -45,7 +45,7 @@ mixin SeedHelper {
       maxBudget: 1000000,
       createdAt: DateTime.now().toStringEx(),
     ).toJson();
-    final _catNotes = Category(
+    final _catNotes = SupaCategory(
       id: UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       name: 'Notes',
@@ -53,7 +53,7 @@ mixin SeedHelper {
       color: '#ffffffff',
       createdAt: DateTime.now().toStringEx(),
     ).toJson();
-    final _catOthers = Category(
+    final _catOthers = SupaCategory(
       id: UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       name: 'Others',
@@ -70,14 +70,14 @@ mixin SeedHelper {
         .from('expense')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
-        .withConverter<List<Expense>>((data) {
-      return (data).map((e) => Expense.fromJson(e)).toList();
+        .withConverter<List<SupaExpense>>((data) {
+      return (data).map((e) => SupaExpense.fromJson(e)).toList();
     });
 
     /// if category table is empty just return~
     if (check.isNotEmpty) return;
 
-    final _expense = Expense(
+    final _expense = SupaExpense(
       id: UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       categoryName: 'Notes',
@@ -103,8 +103,8 @@ mixin SeedHelper {
           .select('*')
           .eq('user_id', db.auth.currentSession?.user.id ?? '')
           .order('date', ascending: false)
-          .withConverter<List<Expense>>((data) {
-        return (data).map((e) => Expense.fromJson(e)).toList();
+          .withConverter<List<SupaExpense>>((data) {
+        return (data).map((e) => SupaExpense.fromJson(e)).toList();
       });
 
       final jsonFilePath = '$path/output.json';

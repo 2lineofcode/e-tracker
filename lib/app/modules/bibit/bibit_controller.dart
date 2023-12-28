@@ -5,18 +5,20 @@ import 'package:get/get.dart';
 
 import '../../core/app_api.dart';
 import '../../helpers/helpers.dart';
-import '../../models/bibit_companies_info_entity.dart.dart';
+import '../../models/stockbit_companies_info_entity.dart';
+import '../../repository/repo_bibit.dart';
+import '../../repository/repo_stockbit.dart';
 import '../../routes/app_pages.dart';
 import '_explore/section_bibit_explore_controller.dart';
 import '_home/section_bibit_home_controller.dart';
 import '_portfolio/section_bibit_portfolio_controller.dart';
-import 'bibit_repository.dart';
 
 class BibitController extends GetxController with StateMixin {
-  final repo = Get.find<BibitRepository>();
-  final menuList = [].obs;
+  final repoBibit = Get.find<BibitRepository>();
+  final repoStockbit = Get.find<StockbitRepository>();
+
   final menuSelected = 'Home'.obs;
-  final getCompaniesInfo = BibitCompaniesInfoData().obs;
+  final getCompaniesInfo = StockbitCompaniesInfoData().obs;
 
   final isMarketOpen = false.obs;
   late Timer? timerMarketOpen;
@@ -29,8 +31,7 @@ class BibitController extends GetxController with StateMixin {
       await db.auth.signOut();
       await Get.offAllNamed(Routes.LOGIN);
     }
-    menuList.value = repo.menuList();
-    getCompaniesInfo.value = await repo.getCompaniesInfo();
+    getCompaniesInfo.value = await repoStockbit.getCompaniesInfo();
     isMarketOpen.value = getCompaniesInfo.value.marketHours?.status != 'close';
     change(200, status: RxStatus.success());
     super.onInit();

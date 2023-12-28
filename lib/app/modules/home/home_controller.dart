@@ -9,9 +9,9 @@ import 'package:uuid/v4.dart';
 import '../../core/app_api.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
-import '../../models/category_entity.dart';
-import '../../models/expense_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
+import '../../models/supa_category_entity.dart';
+import '../../models/supa_expense_entity.dart';
 import '../../routes/app_pages.dart';
 import 'home_repository.dart';
 
@@ -27,11 +27,11 @@ class HomeController extends GetxController with StateMixin {
 
   /// category
   final tfCategory = TextEditingController();
-  final categoryList = <Category>[].obs;
+  final categoryList = <SupaCategory>[].obs;
   final categorySelected = ''.obs;
 
   /// expense
-  final expenseList = <Expense>[].obs;
+  final expenseList = <SupaExpense>[].obs;
   final tfSearchExpense = TextEditingController().obs;
 
   /// count
@@ -158,7 +158,7 @@ class HomeController extends GetxController with StateMixin {
   Future<void> onAddCategory(String categoryName) async {
     if (categoryName.isEmptyOrNull) return;
 
-    final categoryEntity = Category(
+    final categoryEntity = SupaCategory(
       id: UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       createdAt: DateTime.now().toStringEx(),

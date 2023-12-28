@@ -7,11 +7,11 @@ import '../../../models/bibit_product_detail_allocation_entity.dart';
 import '../../../models/bibit_product_detail_aum_entity.dart';
 import '../../../models/bibit_product_detail_chart_entity.dart';
 import '../../../models/bibit_product_detail_dividend_entity.dart';
+import '../../../models/bibit_product_detail_entity.dart';
 import '../../../models/bibit_product_detail_factsheets_entity.dart';
-import '../../../models/bibit_product_detail_mutual_entity.dart';
-import '../bibit_repository.dart';
+import '../../../repository/repo_bibit.dart';
 
-class DetailMutualController extends GetxController with StateMixin<BibitProductDetailMutualData> {
+class DetailMutualController extends GetxController with StateMixin<BibitProductDetailData> {
   final repo = Get.find<BibitRepository>();
 
   final symbolSelected = ''.obs;
@@ -22,7 +22,7 @@ class DetailMutualController extends GetxController with StateMixin<BibitProduct
   final isFavorite = false.obs;
 
   /// data
-  final productDetail = BibitProductDetailMutualData().obs;
+  final productDetail = BibitProductDetailData().obs;
   final chart = BibitProductDetailChart().obs;
   final aum = BibitProductDetailAum().obs;
   final allocation = BibitProductDetailAllocationData().obs;
@@ -34,8 +34,8 @@ class DetailMutualController extends GetxController with StateMixin<BibitProduct
   @override
   Future<void> onInit() async {
     symbolSelected.value = Get.arguments as String;
-    isFavorite.value = await repo.getProductDetailStats(symbolSelected.value);
-    productDetail.value = await repo.getProductDetailMutual(symbolSelected.value);
+    isFavorite.value = await repo.getIsFavorite(symbolSelected.value);
+    productDetail.value = await repo.getProductDetail(symbolSelected.value);
     chart.value = await repo.getProductDetailChart(symbolSelected.value, periodSelected.value);
     aum.value = await repo.getProductDetailAum(symbolSelected.value, periodSelected.value);
     allocation.value = await repo.getProductDetailAllocations(symbolSelected.value);

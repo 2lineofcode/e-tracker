@@ -66,30 +66,34 @@ class BibitView extends GetView<BibitController> {
   }
 
   Widget sideMenuContent() {
-    return Obx(
-      () => ListView.builder(
-        physics: NeverScrollableScrollPhysics(),
-        itemCount: controller.menuList.length,
-        itemBuilder: (context, index) {
-          final item = controller.menuList[index];
-          return Obx(
-            () => InkWell(
-              onTap: () => controller.onMenuChange(item['name']),
-              child: Container(
-                decoration: ExDecorator.box(
-                  fillColor: item['name'] == controller.menuSelected.value ? AppColor.sideMenuSelected : Colors.transparent,
-                  borderColor: Colors.transparent,
-                ),
-                child: HStack([
-                  Icon(item['icon'], size: 18).pSymmetric(h: 8),
-                  '${item['name']}'.text.size(11).make().pOnly(left: 4),
-                ]).p8(),
-              ).pSymmetric(h: 10).pOnly(bottom: 8),
-            ),
-          );
-        },
-      ).pOnly(top: 16).expand(),
-    );
+    final menuList = <Map<String, dynamic>>[
+      {'icon': CupertinoIcons.home, 'name': 'Home'},
+      {'icon': CupertinoIcons.app_badge_fill, 'name': 'Portfolio'},
+      {'icon': CupertinoIcons.chart_bar_alt_fill, 'name': 'Performance'},
+      {'icon': CupertinoIcons.flame_fill, 'name': 'Explore'},
+    ];
+    return ListView.builder(
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: menuList.length,
+      itemBuilder: (context, index) {
+        final item = menuList[index];
+        return Obx(
+          () => InkWell(
+            onTap: () => controller.onMenuChange(item['name']),
+            child: Container(
+              decoration: ExDecorator.box(
+                fillColor: item['name'] == controller.menuSelected.value ? AppColor.sideMenuSelected : Colors.transparent,
+                borderColor: Colors.transparent,
+              ),
+              child: HStack([
+                Icon(item['icon'], size: 18).pSymmetric(h: 8),
+                '${item['name']}'.text.size(11).make().pOnly(left: 4),
+              ]).p8(),
+            ).pSymmetric(h: 10).pOnly(bottom: 8),
+          ),
+        );
+      },
+    ).pOnly(top: 16).expand();
   }
 
   Widget bodyContent() {

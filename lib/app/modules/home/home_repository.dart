@@ -2,33 +2,33 @@ import 'package:ex/ex.dart';
 
 import '../../core/app_api.dart';
 import '../../core/const.dart';
-import '../../models/autocomplete_entity.dart';
-import '../../models/category_entity.dart';
-import '../../models/expense_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
+import '../../models/supa_autocomplete_entity.dart';
+import '../../models/supa_category_entity.dart';
+import '../../models/supa_expense_entity.dart';
 
 class HomeRepository {
   /// ------------------------------------------------------------------------
   /// ! category
   /// ------------------------------------------------------------------------
-  Future<List<Category>> getCategory() async {
+  Future<List<SupaCategory>> getCategory() async {
     final response = await db //
         .from('category')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .order('max_budget')
-        .withConverter<List<Category>>((data) {
-      return (data).map((e) => Category.fromJson(e)).toList();
+        .withConverter<List<SupaCategory>>((data) {
+      return (data).map((e) => SupaCategory.fromJson(e)).toList();
     });
     return response;
   }
 
-  Future<void> addCategory(Category categoryEntity) async {
+  Future<void> addCategory(SupaCategory categoryEntity) async {
     final response = await db.from('category').insert(categoryEntity.toJson());
     return response;
   }
 
-  Future<void> editCategory(Category categoryEntity) async {
+  Future<void> editCategory(SupaCategory categoryEntity) async {
     final response = await db.from('category').update(categoryEntity.toJson()).match({
       'id': categoryEntity.id,
       'user_id': db.auth.currentSession?.user.id ?? '',
@@ -48,43 +48,43 @@ class HomeRepository {
   /// ! expense
   /// ------------------------------------------------------------------------
   // get all list: for calendar painting
-  Future<List<Expense>> getExpenseAll({String period = ''}) async {
+  Future<List<SupaExpense>> getExpenseAll({String period = ''}) async {
     final response = await db //
         .from('expense')
         .select('date, amount')
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .or('date.ilike.$period%')
         .order('date')
-        .withConverter<List<Expense>>((data) {
-      return (data).map((e) => Expense.fromJson(e)).toList();
+        .withConverter<List<SupaExpense>>((data) {
+      return (data).map((e) => SupaExpense.fromJson(e)).toList();
     });
     return response;
   }
 
   // get list by @date
-  Future<List<Expense>> getExpense(String date) async {
+  Future<List<SupaExpense>> getExpense(String date) async {
     final response = await db //
         .from('expense')
         .select('*, category(*)')
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .eq('date', date)
         .order('amount')
-        .withConverter<List<Expense>>((data) {
-      return (data).map((e) => Expense.fromJson(e)).toList();
+        .withConverter<List<SupaExpense>>((data) {
+      return (data).map((e) => SupaExpense.fromJson(e)).toList();
     });
     return response;
   }
 
   // find list by @note or @category.name
-  Future<List<Expense>> findExpense(String name) async {
+  Future<List<SupaExpense>> findExpense(String name) async {
     final response = await db //
         .from('expense')
         .select('*, category(color, icon)')
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .or('note.ilike.%$name%, category_name.ilike.%$name%')
         .order('date')
-        .withConverter<List<Expense>>((data) {
-      return (data).map((e) => Expense.fromJson(e)).toList();
+        .withConverter<List<SupaExpense>>((data) {
+      return (data).map((e) => SupaExpense.fromJson(e)).toList();
     });
     return response;
   }
@@ -103,14 +103,14 @@ class HomeRepository {
     return x.toInt();
   }
 
-  Future<void> addExpense(Expense entity) async {
+  Future<void> addExpense(SupaExpense entity) async {
     final response = await db //
         .from('expense')
         .insert(entity.toJson());
     return response;
   }
 
-  Future<void> editExpense(Expense entity) async {
+  Future<void> editExpense(SupaExpense entity) async {
     final response = await db //
         .from('expense')
         .update(entity.toJson())
@@ -141,14 +141,14 @@ class HomeRepository {
     return response;
   }
 
-  Future<List<AutoComplete>> findAutoCompleteFullObject(String note) async {
+  Future<List<SupaAutoComplete>> findAutoCompleteFullObject(String note) async {
     final response = await db //
         .from('autocomplete')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .eq('note', '$note')
-        .withConverter<List<AutoComplete>>((data) {
-      return (data).map((e) => AutoComplete.fromJson(e)).toList();
+        .withConverter<List<SupaAutoComplete>>((data) {
+      return (data).map((e) => SupaAutoComplete.fromJson(e)).toList();
     });
     return response;
   }

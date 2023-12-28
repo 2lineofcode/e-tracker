@@ -13,7 +13,7 @@ import '../../../core/const.dart';
 import '../../../helpers/helpers.dart';
 import '../../../models/bibit_product_detail_aum_entity.dart';
 import '../../../models/bibit_product_detail_chart_entity.dart';
-import '../../../models/bibit_product_detail_mutual_entity.dart';
+import '../../../models/bibit_product_detail_entity.dart';
 import '../../widgets/widgets.dart';
 import 'detail_mutual_controller.dart';
 
@@ -127,7 +127,7 @@ class DetailMutualTab1 extends GetView<DetailMutualController> {
     );
   }
 
-  Widget assetAllocation(BibitProductDetailMutualData? state) {
+  Widget assetAllocation(BibitProductDetailData? state) {
     return Container(
       decoration: ExDecorator.box(borderColor: AppColor.neutral),
       child: VStack([
@@ -188,7 +188,7 @@ class DetailMutualTab1 extends GetView<DetailMutualController> {
               TableCell(
                 child: VStack([
                   'CAGR $xSelected'.text.neutral400.size(12).makeCentered(),
-                  '${xCagrSelected.percentageFormat()}'.text.color(BibitHelper.getColor(xCagrSelected)).size(13).makeCentered(),
+                  '${xCagrSelected?.percentageFormat()}'.text.color(BibitHelper.getColor(xCagrSelected)).size(13).makeCentered(),
                 ]).p12(),
               ),
               TableCell(

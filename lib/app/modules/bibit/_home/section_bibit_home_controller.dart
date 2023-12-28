@@ -4,23 +4,26 @@ import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 import 'package:web_socket_client/web_socket_client.dart';
 
-import '../../../models/bibit_chart_entity.dart';
-import '../../../models/bibit_index_indices_entity.dart';
 import '../../../models/bibit_performance_chart_entity.dart';
 import '../../../models/bibit_portpolio_entity.dart';
-import '../../../models/bibit_watchlist_mutual_entity.dart';
+import '../../../models/bibit_watchlist_entity.dart';
+import '../../../models/stockbit_chart_entity.dart';
+import '../../../models/stockbit_index_indices_entity.dart';
+import '../../../repository/repo_bibit.dart';
+import '../../../repository/repo_stockbit.dart';
 import '../../../routes/app_pages.dart';
 import '../bibit_controller.dart';
-import '../bibit_repository.dart';
 
 class SectionBibitHomeController extends GetxController {
-  final repo = Get.find<BibitRepository>();
-  final ihsg = BibitChartData().obs;
+  final repoBibit = Get.find<BibitRepository>();
+  final repoStockbit = Get.find<StockbitRepository>();
+
+  final ihsg = StockbitChartData().obs;
   final portpolio = BibitPortpolioData().obs;
   final performance1D = BibitPerformanceChartData().obs;
   final performance1M = BibitPerformanceChartData().obs;
-  final watchList = <BibitWatchlistMutualData>[].obs;
-  final indexIndices = <BibitIndexIndicesData>[].obs;
+  final watchList = <BibitWatchlistData>[].obs;
+  final indexIndices = <StockbitIndexIndicesData>[].obs;
   final wsKey = ''.obs;
 
   late Timer? timerPriceChanges;
@@ -28,20 +31,19 @@ class SectionBibitHomeController extends GetxController {
 
   @override
   Future<void> onInit() async {
-    ihsg.value = await repo.getIHSG();
-    portpolio.value = await repo.getPortpolio();
-    performance1D.value = await repo.getPerformancePeriod('1D');
-    performance1M.value = await repo.getPerformancePeriod('1M');
-    watchList.value = await repo.getWatchList();
-    indexIndices.value = await repo.getIndexIndices();
-    wsKey.value = await repo.getWSKey();
+    portpolio.value = await repoBibit.getPortpolio();
+    performance1D.value = await repoBibit.getPerformanceByPeriod('1D');
+    performance1M.value = await repoBibit.getPerformanceByPeriod('1M');
+    watchList.value = await repoBibit.getWatchList();
+    ihsg.value = await repoStockbit.getChart();
+    indexIndices.value = await repoStockbit.getIndexIndices();
+    wsKey.value = await repoStockbit.getWSKey();
 
     /// refresh every second
     timerPriceChanges = Timer.periodic(5.seconds, (timer) async {
       if (Get.find<BibitController>().isMarketOpen.isTrue) {
-        log('=== idx30 price changes ===');
-        ihsg.value = await repo.getIHSG();
-        indexIndices.value = await repo.getIndexIndices();
+        ihsg.value = await repoStockbit.getChart();
+        indexIndices.value = await repoStockbit.getIndexIndices();
       }
     });
 
@@ -54,7 +56,7 @@ class SectionBibitHomeController extends GetxController {
     super.onInit();
   }
 
-  void onItemClick(BibitWatchlistMutualData item) {
+  void goDetailMutual(BibitWatchlistData item) {
     Get.toNamed(Routes.DETAIL_MUTUAL, arguments: item.symbol);
   }
 

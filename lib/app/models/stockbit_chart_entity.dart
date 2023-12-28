@@ -1,18 +1,18 @@
 import 'dart:convert';
 
 /// *
-/// * JSON Source: {"message":"Berhasil menampilkan data grafik harga Saham","data":{"cagr":null,"change":-10.05,"percentage":-0.14,"previous":7219.667,"latest":7209.619,"prices":[{"formatted_date":"","value":7219.667}],"xaxisopt":"intraday"}}
+/// * JSON Source: {"message":"Berhasil menampilkan data grafik harga Saham","data":{"cagr":null,"change":35.49,"percentage":0.49,"previous":7245.916,"latest":7281.409,"prices":[{"formatted_date":"","value":7245.916}],"xaxisopt":"intraday"}}
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
 /// *
-class BibitChart {
+class StockbitChart {
   String? message;
-  BibitChartData? data;
+  StockbitChartData? data;
 
-  BibitChart({this.message, this.data});
+  StockbitChart({this.message, this.data});
 
-  BibitChart.fromJson(Map<String, dynamic> json) {
+  StockbitChart.fromJson(Map<String, dynamic> json) {
     message = json['message'] ?? '';
-    data = (json['data'] != null) ? BibitChartData.fromJson(json['data']) : null;
+    data = (json['data'] != null) ? StockbitChartData.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -30,24 +30,24 @@ class BibitChart {
   }
 }
 
-class BibitChartData {
+class StockbitChartData {
   dynamic cagr;
   num? change;
   num? percentage;
   num? previous;
   num? latest;
-  List<BibitChartDataPrices>? prices;
+  List<StockbitChartDataPrices>? prices;
   String? xaxisopt;
 
-  BibitChartData({this.cagr, this.change, this.percentage, this.previous, this.latest, this.prices, this.xaxisopt});
+  StockbitChartData({this.cagr, this.change, this.percentage, this.previous, this.latest, this.prices, this.xaxisopt});
 
-  BibitChartData.fromJson(Map<String, dynamic> json) {
+  StockbitChartData.fromJson(Map<String, dynamic> json) {
     cagr = json['cagr'] ?? '';
     change = json['change'] ?? 0.0;
     percentage = json['percentage'] ?? 0.0;
     previous = json['previous'] ?? 0.0;
     latest = json['latest'] ?? 0.0;
-    prices = json['prices'] == null ? null : (json['prices'] as List).map((e) => BibitChartDataPrices.fromJson(e)).toList();
+    prices = json['prices'] == null ? null : (json['prices'] as List).map((e) => StockbitChartDataPrices.fromJson(e)).toList();
     xaxisopt = json['xaxisopt'] ?? '';
   }
 
@@ -71,13 +71,13 @@ class BibitChartData {
   }
 }
 
-class BibitChartDataPrices {
+class StockbitChartDataPrices {
   String? formattedDate;
   num? value;
 
-  BibitChartDataPrices({this.formattedDate, this.value});
+  StockbitChartDataPrices({this.formattedDate, this.value});
 
-  BibitChartDataPrices.fromJson(Map<String, dynamic> json) {
+  StockbitChartDataPrices.fromJson(Map<String, dynamic> json) {
     formattedDate = json['formatted_date'] ?? '';
     value = json['value'] ?? 0.0;
   }

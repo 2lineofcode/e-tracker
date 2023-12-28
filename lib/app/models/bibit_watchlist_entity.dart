@@ -1,20 +1,20 @@
 import 'dart:convert';
 
-/// * 
-/// * JSON Source: {"message":"Berhasil menampilkan data Watchlist Anda","data":[{"id":13,"name":"ABF Indonesia Bond Index Fund","symbol":"RD13","type":"Obligasi","instrument_group":0,"is_sharia":0,"investment_manager":{"ojk_code":"DX002"},"return":0.07556267830877217}],"meta":{"max_page":1}}
+/// *
+/// * JSON Source: {"message":"Berhasil menampilkan data Watchlist Anda","data":[{"id":13,"name":"ABF Indonesia Bond Index Fund","symbol":"RD13","type":"Obligasi","instrument_group":0,"is_sharia":0,"investment_manager":{"ojk_code":"DX002"},"return":0.07507561476165558}],"meta":{"max_page":1}}
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
-/// * 
-class BibitWatchlistMutual {
+/// *
+class BibitWatchlist {
   String? message;
-  List<BibitWatchlistMutualData>? data;
-  BibitWatchlistMutualMeta? meta;
+  List<BibitWatchlistData>? data;
+  BibitWatchlistMeta? meta;
 
-  BibitWatchlistMutual({this.message, this.data, this.meta});
+  BibitWatchlist({this.message, this.data, this.meta});
 
-  BibitWatchlistMutual.fromJson(Map<String, dynamic> json) {
+  BibitWatchlist.fromJson(Map<String, dynamic> json) {
     message = json['message'] ?? '';
-    data = json['data'] == null ? null : (json['data'] as List).map((e) => BibitWatchlistMutualData.fromJson(e)).toList();
-    meta = (json['meta'] != null) ? BibitWatchlistMutualMeta.fromJson(json['meta']) : null;
+    data = json['data'] == null ? null : (json['data'] as List).map((e) => BibitWatchlistData.fromJson(e)).toList();
+    meta = (json['meta'] != null) ? BibitWatchlistMeta.fromJson(json['meta']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -35,26 +35,26 @@ class BibitWatchlistMutual {
   }
 }
 
-class BibitWatchlistMutualData {
+class BibitWatchlistData {
   num? id;
   String? name;
   String? symbol;
   String? type;
   num? instrumentGroup;
   num? isSharia;
-  BibitWatchlistMutualDataInvestmentManager? investmentManager;
+  BibitWatchlistDataInvestmentManager? investmentManager;
   num? xReturn;
 
-  BibitWatchlistMutualData({this.id, this.name, this.symbol, this.type, this.instrumentGroup, this.isSharia, this.investmentManager, this.xReturn});
+  BibitWatchlistData({this.id, this.name, this.symbol, this.type, this.instrumentGroup, this.isSharia, this.investmentManager, this.xReturn});
 
-  BibitWatchlistMutualData.fromJson(Map<String, dynamic> json) {
+  BibitWatchlistData.fromJson(Map<String, dynamic> json) {
     id = json['id'] ?? 0;
     name = json['name'] ?? '';
     symbol = json['symbol'] ?? '';
     type = json['type'] ?? '';
     instrumentGroup = json['instrument_group'] ?? 0;
     isSharia = json['is_sharia'] ?? 0;
-    investmentManager = (json['investment_manager'] != null) ? BibitWatchlistMutualDataInvestmentManager.fromJson(json['investment_manager']) : null;
+    investmentManager = (json['investment_manager'] != null) ? BibitWatchlistDataInvestmentManager.fromJson(json['investment_manager']) : null;
     xReturn = json['return'] ?? 0.0;
   }
 
@@ -79,12 +79,12 @@ class BibitWatchlistMutualData {
   }
 }
 
-class BibitWatchlistMutualDataInvestmentManager {
+class BibitWatchlistDataInvestmentManager {
   String? ojkCode;
 
-  BibitWatchlistMutualDataInvestmentManager({this.ojkCode});
+  BibitWatchlistDataInvestmentManager({this.ojkCode});
 
-  BibitWatchlistMutualDataInvestmentManager.fromJson(Map<String, dynamic> json) {
+  BibitWatchlistDataInvestmentManager.fromJson(Map<String, dynamic> json) {
     ojkCode = json['ojk_code'] ?? '';
   }
 
@@ -100,12 +100,12 @@ class BibitWatchlistMutualDataInvestmentManager {
   }
 }
 
-class BibitWatchlistMutualMeta {
+class BibitWatchlistMeta {
   num? maxPage;
 
-  BibitWatchlistMutualMeta({this.maxPage});
+  BibitWatchlistMeta({this.maxPage});
 
-  BibitWatchlistMutualMeta.fromJson(Map<String, dynamic> json) {
+  BibitWatchlistMeta.fromJson(Map<String, dynamic> json) {
     maxPage = json['max_page'] ?? 0;
   }
 

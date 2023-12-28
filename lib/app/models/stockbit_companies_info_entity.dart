@@ -1,18 +1,18 @@
 import 'dart:convert';
 
 /// * 
-/// * JSON Source: {"message":"Berhasil menampilkan data info Saham","data":{"market_hours":{"status":"close","time_left":"2023-12-20T01:45:00.562Z","formatted_time_left":"1 jam 56 menit 4 detik"},"corp_action":{"active":false,"icon":"https://assets.stockbit.com/images/corp_action_event_icon.svg","text":"Perusahaan Memiliki Corporate Action"},"icon_url":""}}
+/// * JSON Source: {"message":"Berhasil menampilkan data info Saham","data":{"market_hours":{"status":"open","time_left":"2023-12-28T02:40:43.693Z","formatted_time_left":"0 jam 0 menit 0 detik"},"corp_action":{"active":false,"icon":"https://assets.stockbit.com/images/corp_action_event_icon.svg","text":"Perusahaan Memiliki Corporate Action"},"icon_url":""}}
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
 /// * 
-class BibitCompaniesInfo {
+class StockbitCompaniesInfo {
   String? message;
-  BibitCompaniesInfoData? data;
+  StockbitCompaniesInfoData? data;
 
-  BibitCompaniesInfo({this.message, this.data});
+  StockbitCompaniesInfo({this.message, this.data});
 
-  BibitCompaniesInfo.fromJson(Map<String, dynamic> json) {
+  StockbitCompaniesInfo.fromJson(Map<String, dynamic> json) {
     message = json['message'] ?? '';
-    data = (json['data'] != null) ? BibitCompaniesInfoData.fromJson(json['data']) : null;
+    data = (json['data'] != null) ? StockbitCompaniesInfoData.fromJson(json['data']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -30,16 +30,16 @@ class BibitCompaniesInfo {
   }
 }
 
-class BibitCompaniesInfoData {
-  BibitCompaniesInfoDataMarketHours? marketHours;
-  BibitCompaniesInfoDataCorpAction? corpAction;
+class StockbitCompaniesInfoData {
+  StockbitCompaniesInfoDataMarketHours? marketHours;
+  StockbitCompaniesInfoDataCorpAction? corpAction;
   String? iconUrl;
 
-  BibitCompaniesInfoData({this.marketHours, this.corpAction, this.iconUrl});
+  StockbitCompaniesInfoData({this.marketHours, this.corpAction, this.iconUrl});
 
-  BibitCompaniesInfoData.fromJson(Map<String, dynamic> json) {
-    marketHours = (json['market_hours'] != null) ? BibitCompaniesInfoDataMarketHours.fromJson(json['market_hours']) : null;
-    corpAction = (json['corp_action'] != null) ? BibitCompaniesInfoDataCorpAction.fromJson(json['corp_action']) : null;
+  StockbitCompaniesInfoData.fromJson(Map<String, dynamic> json) {
+    marketHours = (json['market_hours'] != null) ? StockbitCompaniesInfoDataMarketHours.fromJson(json['market_hours']) : null;
+    corpAction = (json['corp_action'] != null) ? StockbitCompaniesInfoDataCorpAction.fromJson(json['corp_action']) : null;
     iconUrl = json['icon_url'] ?? '';
   }
 
@@ -61,14 +61,14 @@ class BibitCompaniesInfoData {
   }
 }
 
-class BibitCompaniesInfoDataMarketHours {
+class StockbitCompaniesInfoDataMarketHours {
   String? status;
   String? timeLeft;
   String? formattedTimeLeft;
 
-  BibitCompaniesInfoDataMarketHours({this.status, this.timeLeft, this.formattedTimeLeft});
+  StockbitCompaniesInfoDataMarketHours({this.status, this.timeLeft, this.formattedTimeLeft});
 
-  BibitCompaniesInfoDataMarketHours.fromJson(Map<String, dynamic> json) {
+  StockbitCompaniesInfoDataMarketHours.fromJson(Map<String, dynamic> json) {
     status = json['status'] ?? '';
     timeLeft = json['time_left'] ?? '';
     formattedTimeLeft = json['formatted_time_left'] ?? '';
@@ -88,14 +88,14 @@ class BibitCompaniesInfoDataMarketHours {
   }
 }
 
-class BibitCompaniesInfoDataCorpAction {
+class StockbitCompaniesInfoDataCorpAction {
   bool? active;
   String? icon;
   String? text;
 
-  BibitCompaniesInfoDataCorpAction({this.active, this.icon, this.text});
+  StockbitCompaniesInfoDataCorpAction({this.active, this.icon, this.text});
 
-  BibitCompaniesInfoDataCorpAction.fromJson(Map<String, dynamic> json) {
+  StockbitCompaniesInfoDataCorpAction.fromJson(Map<String, dynamic> json) {
     active = json['active'] ?? false;
     icon = json['icon'] ?? '';
     text = json['text'] ?? '';

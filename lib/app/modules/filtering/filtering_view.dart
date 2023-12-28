@@ -13,7 +13,7 @@ import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
-import '../../models/expense_entity.dart';
+import '../../models/supa_expense_entity.dart';
 import '../home/section_dialog_input.dart';
 import '../widgets/widgets.dart';
 import 'filtering_controller.dart';
@@ -245,7 +245,7 @@ class FilteringView extends GetView<FilteringController> {
   }
 
   Widget uiModeList() {
-    return GroupedListView<Expense, String>(
+    return GroupedListView<SupaExpense, String>(
       elements: controller.expenseList,
       groupBy: (element) => element.date!,
       useStickyGroupSeparators: true,

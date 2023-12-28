@@ -4,19 +4,23 @@ import 'dart:convert';
 import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 
-import '../../../models/bibit_stock_tranding_entity.dart';
-import '../../../models/bibit_watchlist_stock_entity.dart';
+import '../../../core/app_api.dart';
 import '../../../models/pintu_list_crypto_entity.dart';
 import '../../../models/pintu_price_changes_entity.dart';
 import '../../../models/pintu_supported_currencies_entity.dart';
+import '../../../models/stockbit_stock_tranding_entity.dart';
+import '../../../models/stockbit_watchlist_entity.dart';
+import '../../../repository/repo_bibit.dart';
+import '../../../repository/repo_stockbit.dart';
+import '../../../routes/app_pages.dart';
 import '../bibit_controller.dart';
-import '../bibit_repository.dart';
 
 class SectionBibitExploreController extends GetxController with StateMixin, GetSingleTickerProviderStateMixin {
-  final repo = Get.find<BibitRepository>();
+  final repoBibit = Get.find<BibitRepository>();
+  final repoStockbit = Get.find<StockbitRepository>();
 
-  final bibitStockTranding = <BibitStockTrandingData>[].obs;
-  final bibitStockWatchlist = <BibitWatchlistStockData>[].obs;
+  final bibitStockTranding = <StockbitStockTrandingData>[].obs;
+  final bibitStockWatchlist = <StockbitWatchlistData>[].obs;
 
   // pintu
   final _pintuSupportedCurrencies = <PintuSupportedCurrenciesPayload>[].obs;
@@ -41,10 +45,7 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
   }
 
   Future<void> pintu() async {
-    // _pintuSupportedCurrencies.value = await repo.getSupportedCurrencies();
-    // _pintuPriceChanges.value = await repo.getPriceChanges();
-
-    await repo.rpcPintu().then((response) async {
+    await db.rpc('get_pintu').then((response) async {
       final r0 = jsonDecode(response[0]['response']);
       final supportedCurrencies = PintuSupportedCurrencies.fromJson(r0);
       _pintuSupportedCurrencies.value = supportedCurrencies.payload!;
@@ -90,9 +91,7 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
 
   void initPintuRealTimePriceChange() {
     timerPintuPriceChanges = Timer.periodic(1.seconds, (timer) async {
-      log('=== pintu priceChanges ===');
-      // _pintuPriceChanges.value = await repo.getPriceChanges();
-      await repo.rpcPintu().then((response) {
+      await db.rpc('get_pintu').then((response) {
         final r1 = jsonDecode(response[1]['response']);
         final priceChanges = PintuPriceChanges.fromJson(r1);
         _pintuPriceChanges.value = priceChanges.payload!;
@@ -124,17 +123,16 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
 
   ///
   Future<void> stockbit() async {
-    bibitStockTranding.value = await repo.getStockTranding();
-    bibitStockWatchlist.value = await repo.getStockWatchList();
+    bibitStockTranding.value = await repoStockbit.getStockTranding();
+    bibitStockWatchlist.value = await repoStockbit.getWatchList();
     initBibitRealTimePriceChange();
   }
 
   void initBibitRealTimePriceChange() {
     if (Get.find<BibitController>().isMarketOpen.isTrue) {
       timerBibitPriceChanges = Timer.periodic(5.seconds, (timer) async {
-        log('=== stockbit priceChanges ===');
-        bibitStockTranding.value = await repo.getStockTranding();
-        bibitStockWatchlist.value = await repo.getStockWatchList();
+        bibitStockTranding.value = await repoStockbit.getStockTranding();
+        bibitStockWatchlist.value = await repoStockbit.getWatchList();
       });
     }
   }
@@ -146,5 +144,9 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
       timerBibitPriceChanges?.cancel();
     } catch (_) {}
     super.onClose();
+  }
+
+  void goDetailStock(StockbitWatchlistData item) {
+    Get.toNamed(Routes.DETAIL_STOCK, arguments: item.symbol);
   }
 }

@@ -1,5 +1,5 @@
 import '../../core/app_api.dart';
-import '../../models/autocomplete_entity.dart';
+import '../../models/supa_autocomplete_entity.dart';
 import '../../models/user_profile_entity.dart';
 
 const AUTO_COMPLETE = 'Auto Complete';
@@ -20,27 +20,27 @@ class SettingsRepository {
   /// ------------------------------------------------------------------------
   /// ! autocomplete
   /// ------------------------------------------------------------------------
-  Future<List<AutoComplete>> getAutoComplete() async {
+  Future<List<SupaAutoComplete>> getAutoComplete() async {
     final response = await db //
         .from('autocomplete')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .order('note', ascending: true)
-        .withConverter<List<AutoComplete>>((data) {
-      return (data).map((e) => AutoComplete.fromJson(e)).toList();
+        .withConverter<List<SupaAutoComplete>>((data) {
+      return (data).map((e) => SupaAutoComplete.fromJson(e)).toList();
     });
     return response;
   }
 
-  Future<List<AutoComplete>> findAutoComplete(String q) async {
+  Future<List<SupaAutoComplete>> findAutoComplete(String q) async {
     final response = await db //
         .from('autocomplete')
         .select()
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .ilike('note', '%$q%')
         .order('note', ascending: true)
-        .withConverter<List<AutoComplete>>((data) {
-      return (data).map((e) => AutoComplete.fromJson(e)).toList();
+        .withConverter<List<SupaAutoComplete>>((data) {
+      return (data).map((e) => SupaAutoComplete.fromJson(e)).toList();
     });
     return response;
   }

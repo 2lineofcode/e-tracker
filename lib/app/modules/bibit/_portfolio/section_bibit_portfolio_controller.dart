@@ -2,8 +2,8 @@ import 'package:get/get.dart';
 
 import '../../../models/bibit_allocation_summary_entity.dart';
 import '../../../models/bibit_portpolio_entity.dart';
+import '../../../repository/repo_bibit.dart';
 import '../_home/section_bibit_home_controller.dart';
-import '../bibit_repository.dart';
 
 class SectionBibitPorfolioController extends GetxController with StateMixin<BibitAllocationSummaryData> {
   final repo = Get.find<BibitRepository>();

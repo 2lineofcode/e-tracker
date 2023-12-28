@@ -7,7 +7,7 @@ import 'package:lottie/lottie.dart';
 import '../../core/app_color.dart';
 import '../../helpers/helper_decoration.dart';
 import '../../helpers/helper_money.dart';
-import '../../models/autocomplete_entity.dart';
+import '../../models/supa_autocomplete_entity.dart';
 import 'settings_controller.dart';
 
 class SectionAutoComplete extends GetView<SettingsController> {
@@ -18,7 +18,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
     return VStack(
       [
         controller.obx(
-          (state) => GroupedListView<AutoComplete, String>(
+          (state) => GroupedListView<SupaAutoComplete, String>(
             elements: controller.autoCompleteList,
             groupBy: (element) => element.note?.first()?.toUpperCase() ?? '?',
             floatingHeader: true,

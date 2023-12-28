@@ -1,16 +1,18 @@
-/// * 
-/// * JSON Source: {"message":"Berhasil menampilkan data list Indeks Saham","data":[{"id":1,"symbol":"IDX30","name":"IDX30","percent":0.03179937262915768,"change":0.15500000000002956,"price":487.586,"is_sharia":0}]}
+import 'dart:convert';
+
+/// *
+/// * JSON Source: {"message":"Berhasil menampilkan data list Indeks Saham","data":[{"id":1,"symbol":"IDX30","name":"IDX30","percent":0.8187707462237594,"change":4.02800000000002,"price":495.985,"is_sharia":0}]}
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
-/// * 
-class BibitIndexIndices {
+/// *
+class StockbitIndexIndices {
   String? message;
-  List<BibitIndexIndicesData>? data;
+  List<StockbitIndexIndicesData>? data;
 
-  BibitIndexIndices({this.message, this.data});
+  StockbitIndexIndices({this.message, this.data});
 
-  BibitIndexIndices.fromJson(Map<String, dynamic> json) {
+  StockbitIndexIndices.fromJson(Map<String, dynamic> json) {
     message = json['message'] ?? '';
-    data = json['data'] == null ? null : (json['data'] as List).map((e) => BibitIndexIndicesData.fromJson(e)).toList();
+    data = json['data'] == null ? null : (json['data'] as List).map((e) => StockbitIndexIndicesData.fromJson(e)).toList();
   }
 
   Map<String, dynamic> toJson() {
@@ -21,9 +23,14 @@ class BibitIndexIndices {
     }
     return data;
   }
+
+  @override
+  String toString() {
+    return jsonEncode(this);
+  }
 }
 
-class BibitIndexIndicesData {
+class StockbitIndexIndicesData {
   num? id;
   String? symbol;
   String? name;
@@ -32,9 +39,9 @@ class BibitIndexIndicesData {
   num? price;
   num? isSharia;
 
-  BibitIndexIndicesData({this.id, this.symbol, this.name, this.percent, this.change, this.price, this.isSharia});
+  StockbitIndexIndicesData({this.id, this.symbol, this.name, this.percent, this.change, this.price, this.isSharia});
 
-  BibitIndexIndicesData.fromJson(Map<String, dynamic> json) {
+  StockbitIndexIndicesData.fromJson(Map<String, dynamic> json) {
     id = json['id'] ?? 0;
     symbol = json['symbol'] ?? '';
     name = json['name'] ?? '';
@@ -54,5 +61,10 @@ class BibitIndexIndicesData {
     data['price'] = price;
     data['is_sharia'] = isSharia;
     return data;
+  }
+
+  @override
+  String toString() {
+    return jsonEncode(this);
   }
 }

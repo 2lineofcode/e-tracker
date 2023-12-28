@@ -49,7 +49,7 @@ class SectionBibitPerformanceTab1 extends GetView<SectionBibitPerformanceControl
         textStyle: TextStyle(fontSize: 12),
       ),
       radioButtonValue: (s) async {
-        controller.performanceChart.value = await controller.repo.getPerformancePeriod(s);
+        controller.performanceChart.value = await controller.repo.getPerformanceByPeriod(s);
         controller.periodSelected.value = s;
         controller.update();
       },

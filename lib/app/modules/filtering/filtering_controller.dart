@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../helpers/helper_misc.dart';
-import '../../models/category_entity.dart';
-import '../../models/expense_entity.dart';
+import '../../models/supa_category_entity.dart';
+import '../../models/supa_expense_entity.dart';
 import '../home/home_controller.dart';
 import 'filtering_repository.dart';
 
@@ -17,7 +17,7 @@ class FilteringController extends GetxController with StateMixin {
 
   /// category
   final tfCategory = TextEditingController();
-  final categoryList = <Category>[].obs;
+  final categoryList = <SupaCategory>[].obs;
 
   /// argument
   final categorySelected = ''.obs;
@@ -29,12 +29,12 @@ class FilteringController extends GetxController with StateMixin {
   final sumByDate = <String, num>{}.obs;
 
   /// list
-  final expenseList = <Expense>[].obs;
+  final expenseList = <SupaExpense>[].obs;
   final orderByList = <String>[].obs;
 
   /// uiSelected
   final uiSelected = 'list'.obs;
-  late Map<String?, List<Expense>>? grouppedByDate; // <- for tabel view [group date manually]
+  late Map<String?, List<SupaExpense>>? grouppedByDate; // <- for tabel view [group date manually]
 
   /// init ~~
   @override
@@ -45,7 +45,7 @@ class FilteringController extends GetxController with StateMixin {
 
     orderByList.value = await repo.getOrderList();
     categoryList.value = await repo.getCategory();
-    categoryList.insert(0, Category(name: 'All'));
+    categoryList.insert(0, SupaCategory(name: 'All'));
 
     await findExpense(categorySelected.value);
     super.onInit();
@@ -92,9 +92,9 @@ class FilteringController extends GetxController with StateMixin {
     /// for tabel view [group date manually]
     final _grouping = expenseList.groupBy((element) => element.date);
     final _sorting = _grouping.entries.toList()..sort((e1, e2) => e2.key!.compareTo(e1.key!));
-    grouppedByDate = <String?, List<Expense>>{};
+    grouppedByDate = <String?, List<SupaExpense>>{};
     for (var element in _sorting) {
-      grouppedByDate![element.key] = List<Expense>.from(element.value);
+      grouppedByDate![element.key] = List<SupaExpense>.from(element.value);
     }
   }
 }

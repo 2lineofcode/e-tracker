@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'category_entity.dart';
+import 'supa_category_entity.dart';
 
 /// *
 /// * JSON Source: [{"id":"96e5666c-44c6-4211-9269-7f8d0635b534","created_at":"2023-11-09T16:40:57+00:00","category_name":"Jajan","note":"Kopi Ss","amount":14000,"date":"2023-11-09","user_id":"25aa9f27-18cb-407d-9141-ffab6a50cab8","detail":""}]
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
 /// *
-class Expense {
+class SupaExpense {
   String? id;
   String? createdAt;
   String? categoryName;
@@ -15,11 +15,11 @@ class Expense {
   String? date;
   String? userId;
   String? detail;
-  Category? category;
+  SupaCategory? category;
 
-  Expense({this.id, this.createdAt, this.categoryName, this.note, this.amount, this.date, this.userId, this.detail, this.category});
+  SupaExpense({this.id, this.createdAt, this.categoryName, this.note, this.amount, this.date, this.userId, this.detail, this.category});
 
-  Expense.fromJson(Map<String, dynamic> json) {
+  SupaExpense.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     createdAt = json['created_at'];
     categoryName = json['category_name'];
@@ -28,7 +28,7 @@ class Expense {
     date = json['date'];
     userId = json['user_id'];
     detail = json['detail'];
-    category = json['category'] != null ? Category.fromJson(json['category']) : null;
+    category = json['category'] != null ? SupaCategory.fromJson(json['category']) : null;
   }
 
   Map<String, dynamic> toJson() {

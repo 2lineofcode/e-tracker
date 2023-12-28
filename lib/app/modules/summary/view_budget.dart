@@ -8,7 +8,7 @@ import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 import '../../core/app_color.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
-import '../../models/category_entity.dart';
+import '../../models/supa_category_entity.dart';
 import '../home/home_controller.dart';
 import '../home/section_dialog_input.dart';
 import '../widgets/widget_percentagebar.dart';
@@ -253,7 +253,7 @@ class ViewBudget extends GetView<SummaryController> {
                             child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
                             onTap: () {
                               logI(jsonEncode(item));
-                              final entity = Category(
+                              final entity = SupaCategory(
                                 id: item.categoryId,
                                 createdAt: DateTime.now().toStringEx(),
                                 name: item.categoryName,

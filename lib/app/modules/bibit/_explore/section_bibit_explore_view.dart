@@ -93,6 +93,7 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
     return Obx(
       () => VStack(
         [
+          /// tranding list
           'Tranding'.text.bold.make(),
           ListView.builder(
             shrinkWrap: true,
@@ -111,6 +112,8 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
               ).pOnly(right: 16);
             },
           ).h(120),
+
+          /// watchlist
           'Watchlist'.text.bold.make().pOnly(bottom: 12),
           ListView.separated(
             itemCount: controller.bibitStockWatchlist.length,
@@ -125,7 +128,9 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
                 ]),
                 Spacer(),
                 '${item.percent?.toStringAsFixed(2)}% ${BibitHelper.getSymbol(item.percent)}'.text.color(BibitHelper.getColor(item.percent)).make(),
-              ]);
+              ]).onInkTap(() {
+                controller.goDetailStock(item);
+              });
             },
           ).expand(),
         ],
