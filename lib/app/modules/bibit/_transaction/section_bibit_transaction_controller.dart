@@ -75,5 +75,6 @@ class SectionBibitTransactionController extends GetxController with StateMixin {
         break;
       default:
     }
+    update();
   }
 }

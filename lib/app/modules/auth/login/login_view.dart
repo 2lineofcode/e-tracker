@@ -16,7 +16,6 @@ class LoginView extends GetView<LoginController> {
   @override
   Widget build(BuildContext context) {
     return MyLayout(
-      // drawerKey: drawerKeyLogin,
       appBarTitle: appBarTitle(),
       appBarLeading: appBarLeading(),
       sideMenuContent: sideMenuContent(),

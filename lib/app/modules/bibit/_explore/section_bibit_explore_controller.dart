@@ -141,6 +141,10 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
     Get.toNamed(Routes.DETAIL_STOCK, arguments: symbol);
   }
 
+  void goDetailCrypto(PintuListCrypto item) {
+    Get.toNamed(Routes.DETAIL_CRYPTO, arguments: item);
+  }
+
   @override
   void onClose() {
     try {

@@ -52,8 +52,6 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
                 source: item.logo ?? '',
                 size: 32,
                 bgColor: item.color?.fromHex,
-                // borderColor: Colors.white,
-                // borderWidth: 0,
               ).pOnly(right: 12),
               VStack([
                 HStack([
@@ -79,7 +77,9 @@ class SectionBibitExploreView extends GetView<SectionBibitExploreController> {
                 ],
               ),
             ],
-          ).p8();
+          ).p8().onTap(() {
+            controller.goDetailCrypto(item);
+          });
         },
       ).pOnly(top: 12),
     );
