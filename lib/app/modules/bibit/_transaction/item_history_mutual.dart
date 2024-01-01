@@ -28,7 +28,9 @@ class ItemHistoryMutual extends GetView<SectionBibitTransactionController> {
             title: 'ROBO - ${item.name}'.text.size(12).bold.make(),
             subtitle: VStack([
               for (var i in item.items!) ...[
-                '• ${i.product?.name}'.text.size(11).minFontSize(11).make(),
+                '• ${i.product?.name}'.text.size(11).minFontSize(11).make().onTap(() {
+                  controller.goDetailMutual(i.symbol ?? '');
+                }),
               ],
             ]),
             trailing: '${item.amount?.moneyFormat()}'.text.color(AppColor.bibit).make(),
@@ -49,6 +51,7 @@ class ItemHistoryMutual extends GetView<SectionBibitTransactionController> {
               '${getHistoryStatusText(item.type)} • ${item.name}'.text.size(11).minFontSize(11).make().pOnly(bottom: 8),
             ]),
             trailing: '${item.amount?.moneyFormat()}'.text.color(getHistoryStatusColorText(item.type)).make(),
+            onTap: item.product?.name == null ? null : () => controller.goDetailMutual(item.symbol ?? ''),
           );
         }
       },

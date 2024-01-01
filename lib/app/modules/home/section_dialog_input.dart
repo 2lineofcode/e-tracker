@@ -275,7 +275,8 @@ mixin DialogInputHelper {
               placeholderStyle: TextStyle(fontSize: 13),
               prefix: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse).pOnly(left: 8),
               style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-              onTap: () => ExDatePicker.adaptiveDatePicker(
+              onTap: () => ExDatePicker.materialDatePicker(
+                initialDate: expense.date?.toDateEx(format: yMd),
                 minDate: DateTime(2020),
                 callback: (c) => _tfDate.text = c.toStringEx(format: yMd),
               ),
@@ -482,7 +483,8 @@ mixin DialogInputHelper {
               placeholderStyle: TextStyle(fontSize: 13),
               prefix: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse).pOnly(left: 8),
               style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-              onTap: () => ExDatePicker.adaptiveDatePicker(
+              onTap: () => ExDatePicker.materialDatePicker(
+                initialDate: expense.date?.toDateEx(format: yMd),
                 minDate: DateTime(2020),
                 callback: (c) => _tfDate.text = c.toStringEx(format: yMd),
               ),

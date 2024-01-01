@@ -22,7 +22,8 @@ class HomeController extends GetxController with StateMixin {
   /// calendar
   late PageController calenderPageController;
   final focusedDay = DateTime.now().obs;
-  final selectedDays = LinkedHashSet<DateTime>(equals: isSameDay, hashCode: (key) => key.day * 1000000 + key.month * 10000 + key.year);
+  final selectedDays = LinkedHashSet<DateTime>(equals: isSameDay, hashCode: hashDate);
+
   final events = <DateTime, List<String>>{}.obs;
 
   /// category
@@ -103,11 +104,7 @@ class HomeController extends GetxController with StateMixin {
   }
 
   List<String> onCalenderLoadEvent(DateTime day) {
-    final kEvents = LinkedHashMap<DateTime, List<String>>(
-      equals: isSameDay,
-      hashCode: (key) => key.day * 1000000 + key.month * 10000 + key.year,
-    );
-
+    final kEvents = LinkedHashMap<DateTime, List<String>>(equals: isSameDay, hashCode: hashDate);
     kEvents.addAll(events);
     return kEvents[day] ?? [];
   }

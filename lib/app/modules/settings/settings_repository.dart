@@ -1,6 +1,6 @@
 import '../../core/app_api.dart';
 import '../../models/supa_autocomplete_entity.dart';
-import '../../models/user_profile_entity.dart';
+import '../../models/supa_user_profile_entity.dart';
 
 const AUTO_COMPLETE = 'Auto Complete';
 const APP_CONFIG = 'App Config';
@@ -65,13 +65,13 @@ class SettingsRepository {
   /// ! profile
   /// ------------------------------------------------------------------------
   ///
-  Future<List<UserProfile>> getUserProfile() async {
+  Future<List<SupaUserProfile>> getUserProfile() async {
     final response = await db //
         .from('profiles')
         .select()
         .eq('id', db.auth.currentSession?.user.id ?? '')
-        .withConverter<List<UserProfile>>((data) {
-      return (data).map((e) => UserProfile.fromJson(e)).toList();
+        .withConverter<List<SupaUserProfile>>((data) {
+      return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
     });
     return response;
   }

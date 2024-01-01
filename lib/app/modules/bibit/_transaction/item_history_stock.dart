@@ -32,6 +32,7 @@ class ItemHistoryStock extends GetView<SectionBibitTransactionController> {
             leading: ExAvatarView(source: '${item.details?.companyIconUrl}', size: 24, borderColor: Colors.transparent),
             title: '${item.details?.symbol} (${item.summary?.action.toTitleCase})'.text.size(12).bold.make(),
             subtitle: '${item.summary?.createdDate} • ${item.summary?.label?.toTitleCase}'.text.size(11).minFontSize(11).make(),
+            onTap: () => controller.goDetailStock(item.details?.symbol ?? ''),
             trailing: '${item.summary?.totalAmount?.moneyFormat()}'
                 .text
                 .color(

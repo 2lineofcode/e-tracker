@@ -3,13 +3,6 @@ import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
 
 class FilteringRepository {
-  Future<List<String>> getOrderList() async {
-    return <String>[
-      'amount',
-      'note',
-    ];
-  }
-
   /// ------------------------------------------------------------------------
   /// ! category
   /// ------------------------------------------------------------------------

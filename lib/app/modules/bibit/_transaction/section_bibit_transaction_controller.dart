@@ -5,6 +5,7 @@ import '../../../models/bibit_cart_entity.dart';
 import '../../../models/bibit_history_mutual_entity.dart';
 import '../../../models/bibit_history_stock_entity.dart';
 import '../../../repository/repo_bibit.dart';
+import '../../../routes/app_pages.dart';
 
 class SectionBibitTransactionController extends GetxController with StateMixin {
   final repo = Get.find<BibitRepository>();
@@ -76,5 +77,12 @@ class SectionBibitTransactionController extends GetxController with StateMixin {
       default:
     }
     update();
+  }
+
+  void goDetailMutual(String symbol) {
+    Get.toNamed(Routes.DETAIL_MUTUAL, arguments: symbol);
+  }
+   void goDetailStock(String symbol) {
+    Get.toNamed(Routes.DETAIL_STOCK, arguments: symbol);
   }
 }

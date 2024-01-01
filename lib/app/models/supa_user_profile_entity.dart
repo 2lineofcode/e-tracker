@@ -4,7 +4,7 @@ import 'dart:convert';
 /// * JSON Source: [{"id":"25aa9f27-18cb-407d-9141-ffab6a50cab8","updated_at":"null","username":"null","full_name":"Aditya Pratama","avatar_url":"null","website":"null"}]
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
 /// *
-class UserProfile {
+class SupaUserProfile {
   String? id;
   String? updatedAt;
   String? username;
@@ -12,9 +12,9 @@ class UserProfile {
   String? avatarUrl;
   String? website;
 
-  UserProfile({this.id, this.updatedAt, this.username, this.fullName, this.avatarUrl, this.website});
+  SupaUserProfile({this.id, this.updatedAt, this.username, this.fullName, this.avatarUrl, this.website});
 
-  UserProfile.fromJson(Map<String, dynamic> json) {
+  SupaUserProfile.fromJson(Map<String, dynamic> json) {
     id = json['id'] ?? '';
     updatedAt = json['updated_at'] ?? '';
     username = json['username'] ?? '';

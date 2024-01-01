@@ -30,7 +30,6 @@ class FilteringController extends GetxController with StateMixin {
 
   /// list
   final expenseList = <SupaExpense>[].obs;
-  final orderByList = <String>[].obs;
 
   /// uiSelected
   final uiSelected = 'list'.obs;
@@ -43,7 +42,6 @@ class FilteringController extends GetxController with StateMixin {
     startDate.value = Get.arguments[1];
     endDate.value = Get.arguments[2];
 
-    orderByList.value = await repo.getOrderList();
     categoryList.value = await repo.getCategory();
     categoryList.insert(0, SupaCategory(name: 'All'));
 

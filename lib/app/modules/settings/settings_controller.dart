@@ -10,7 +10,7 @@ import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
 import '../../models/supa_autocomplete_entity.dart';
-import '../../models/user_profile_entity.dart';
+import '../../models/supa_user_profile_entity.dart';
 import '../../routes/app_pages.dart';
 import '../home/home_controller.dart';
 import 'settings_repository.dart';
@@ -33,7 +33,7 @@ class SettingsController extends GetxController with StateMixin {
   final tfAverage = TextEditingController();
   final tfSpender = TextEditingController();
   final tfCurrencySymbol = TextEditingController();
-  final userProfile = UserProfile().obs;
+  final userProfile = SupaUserProfile().obs;
 
   @override
   Future<void> onInit() async {

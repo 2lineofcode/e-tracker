@@ -122,37 +122,6 @@ class FilteringView extends GetView<FilteringController> {
                 ),
               ]),
               8.heightBox,
-              HStack([
-                'Order By: '.text.size(12).make(),
-                Obx(
-                  () => '${controller.orderBy.value.toTitleCase}'.text.underline.size(12).make().onTap(() {
-                    ExAlert.adaptive(
-                      content: VStack(
-                        [
-                          Text(
-                            'Order By',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ).pOnly(bottom: 24),
-                          for (var i = 0; i < controller.orderByList.length; i++) ...[
-                            ListTile(
-                              title: HStack(
-                                [
-                                  Text('${controller.orderByList[i].toTitleCase}', style: TextStyle(fontSize: 11)),
-                                ],
-                              ),
-                              onTap: () async {
-                                controller.orderBy.value = controller.orderByList[i];
-                                await controller.findExpense(controller.categorySelected.value);
-                                Get.back();
-                              },
-                            ),
-                          ],
-                        ],
-                      ),
-                    );
-                  }),
-                ),
-              ]),
             ],
           ).p12(),
         ).p8(),
