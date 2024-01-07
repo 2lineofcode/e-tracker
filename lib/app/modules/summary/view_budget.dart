@@ -11,7 +11,6 @@ import '../../helpers/helper_money.dart';
 import '../../models/supa_category_entity.dart';
 import '../home/home_controller.dart';
 import '../home/section_dialog_input.dart';
-import '../widgets/widget_percentagebar.dart';
 import '../widgets/widget_shimmer_summary.dart';
 import 'summary_controller.dart';
 
@@ -170,10 +169,10 @@ class ViewBudget extends GetView<SummaryController> {
           ),
 
           /// col2
-          MyPercentageBar(
+          ExProgressBar(
             value: (controller.countPercentage.value).toInt(),
-            color1: (controller.countPercentage.value).toInt() < 100 ? AppColor.green : AppColor.red,
-            color2: Vx.neutral700,
+            color1: (controller.countPercentage.value).toInt() < 100 ? AppColor.bibit : AppColor.red,
+            color2: AppColor.neutral,
             radius: 8,
           ).pSymmetric(v: 12),
 
@@ -229,9 +228,9 @@ class ViewBudget extends GetView<SummaryController> {
                     /// 2
                     if (item.maxBudget != null && item.maxBudget! > 0) ...[
                       VStack([
-                        MyPercentageBar(
+                        ExProgressBar(
                           value: item.usePercentage ?? 0,
-                          color1: item.usePercentage! < 100 ? AppColor.green : AppColor.red,
+                          color1: item.usePercentage! < 100 ? AppColor.bibit : AppColor.red,
                           color2: Vx.neutral700,
                           radius: 8,
                         ).pOnly(bottom: 4),
@@ -245,7 +244,7 @@ class ViewBudget extends GetView<SummaryController> {
                       ]).expand(),
                     ] else ...[
                       VStack([
-                        MyPercentageBar(value: 0, color1: Colors.transparent, color2: Vx.neutral700, radius: 8).pOnly(bottom: 4),
+                        ExProgressBar(value: 0, color1: Colors.transparent, color2: Vx.neutral700, radius: 8).pOnly(bottom: 4),
                         HStack([
                           '${item.total?.moneyFormat()}'.text.bold.size(11).minFontSize(11).color(AppColor.blue).make(),
                           Spacer(),

@@ -9,6 +9,8 @@ import '../modules/bibit/detail_crypto/detail_crypto_binding.dart';
 import '../modules/bibit/detail_crypto/detail_crypto_view.dart';
 import '../modules/bibit/detail_mutual/detail_mutual_binding.dart';
 import '../modules/bibit/detail_mutual/detail_mutual_view.dart';
+import '../modules/bibit/detail_portfolio/detail_portfolio_binding.dart';
+import '../modules/bibit/detail_portfolio/detail_portfolio_view.dart';
 import '../modules/bibit/detail_stock/detail_stock_binding.dart';
 import '../modules/bibit/detail_stock/detail_stock_view.dart';
 import '../modules/filtering/filtering_binding.dart';
@@ -33,8 +35,11 @@ class AppPages {
     /// ------------------------------------------------------------------------
     GetPage(
       name: Routes.ROOT,
-      page: () => db.auth.currentSession?.user.id != null ? HomeView() : LoginView(),
-      binding: db.auth.currentSession?.user.id != null ? HomeBinding() : LoginBinding(),
+      page: () =>
+          db.auth.currentSession?.user.id != null ? HomeView() : LoginView(),
+      binding: db.auth.currentSession?.user.id != null
+          ? HomeBinding()
+          : LoginBinding(),
     ),
 
     /// ------------------------------------------------------------------------
@@ -83,6 +88,11 @@ class AppPages {
       name: Routes.DETAIL_MUTUAL,
       page: () => const DetailMutualView(),
       binding: DetailMutualBinding(),
+    ),
+    GetPage(
+      name: Routes.DETAIL_PORTFOLIO,
+      page: () => const DetailPortfolioView(),
+      binding: DetailPortfolioBinding(),
     ),
   ];
 }

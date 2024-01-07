@@ -9,7 +9,11 @@ import '../models/bibit_order_detail_entity.dart';
 import '../models/bibit_performance_allocation_entity.dart';
 import '../models/bibit_performance_chart_entity.dart';
 import '../models/bibit_performance_entity.dart';
+import '../models/bibit_portpolio_detail_entity.dart';
 import '../models/bibit_portpolio_entity.dart';
+import '../models/bibit_portpolio_goal_chart_entity.dart';
+import '../models/bibit_portpolio_goal_detail_entity.dart';
+import '../models/bibit_portpolio_goal_ontrack_entity.dart';
 import '../models/bibit_product_detail_allocation_entity.dart';
 import '../models/bibit_product_detail_aum_entity.dart';
 import '../models/bibit_product_detail_chart_entity.dart';
@@ -19,11 +23,51 @@ import '../models/bibit_product_detail_factsheets_entity.dart';
 import '../models/bibit_watchlist_entity.dart';
 
 class BibitRepository {
-  /// getPotpolio
+  /// getPortpolio
   Future<BibitPortpolioData> getPortpolio() async {
     try {
       final res = await apiBibit.get('/portfolio');
       return BibitPortpolio.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getPortpolioDetail
+  Future<BibitPortpolioDetailData> getPortpolioDetail(String portpolioId) async {
+    try {
+      final res = await apiBibit.get('/portfolio/category/$portpolioId');
+      return BibitPortpolioDetail.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getPortpolioGoalDetail
+  Future<BibitPortpolioGoalDetailData> getPortpolioGoalDetail(String portpolioId) async {
+    try {
+      final res = await apiBibit.get('/portfolio/goal/$portpolioId/detail');
+      return BibitPortpolioGoalDetail.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getPortpolioGoalChart
+  Future<BibitPortpolioGoalChartData> getPortpolioGoalChart(String portpolioId) async {
+    try {
+      final res = await apiBibit.get('/portfolio/goal/$portpolioId/chart');
+      return BibitPortpolioGoalChart.fromJson(res.body).data!;
+    } catch (e) {
+      throw ApiException('$e');
+    }
+  }
+
+  /// getPortpolioGoalOntrack
+  Future<BibitPortpolioGoalOntrackData> getPortpolioGoalOntrack(String portpolioId) async {
+    try {
+      final res = await apiBibit.get('/portfolio/goal/$portpolioId/ontrack');
+      return BibitPortpolioGoalOntrack.fromJson(res.body).data!;
     } catch (e) {
       throw ApiException('$e');
     }

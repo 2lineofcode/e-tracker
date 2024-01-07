@@ -31,6 +31,22 @@ extension TimeAgoToString on DateTime {
       return output;
     }
   }
+
+  String timeDiff() {
+    Duration difference = this.difference(DateTime.now());
+
+    int years = difference.inDays ~/ 365;
+    int months = (difference.inDays % 365) ~/ 30;
+    int days = difference.inDays % 30;
+
+    String result = '';
+
+    if (years > 0) result += '$years tahun, ';
+    if (months > 0) result += '$months bulan, ';
+    if (days > 0) result += '$days hari ';
+
+    return result.isEmpty ? 'Sekarang!' : '${result}lagi';
+  }
 }
 
 extension ConvertHexToString on String {

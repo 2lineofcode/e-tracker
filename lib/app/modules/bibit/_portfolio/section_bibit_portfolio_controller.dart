@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../models/bibit_allocation_summary_entity.dart';
 import '../../../models/bibit_portpolio_entity.dart';
 import '../../../repository/repo_bibit.dart';
+import '../../../routes/app_pages.dart';
 import '../_home/section_bibit_home_controller.dart';
 
 class SectionBibitPorfolioController extends GetxController with StateMixin<BibitAllocationSummaryData> {
@@ -20,9 +21,10 @@ class SectionBibitPorfolioController extends GetxController with StateMixin<Bibi
 
     change(summary.value, status: RxStatus.success());
 
-    portpolio.removeAt(0);
-    portpolio.removeLast();
-
     super.onInit();
+  }
+
+  void goDetailPortfolio(BibitPortpolioDataResult item) {
+    Get.toNamed(Routes.DETAIL_PORTFOLIO, arguments: item.id);
   }
 }

@@ -12,4 +12,5 @@ abstract class Routes {
   static const DETAIL_STOCK = '/detail-stock';
   static const DETAIL_CRYPTO = '/detail-crypto';
   static const DETAIL_MUTUAL = '/detail-mutual';
+  static const DETAIL_PORTFOLIO = '/detail-portfolio';
 }

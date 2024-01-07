@@ -112,7 +112,7 @@ class SectionBibitPorfolioView extends GetView<SectionBibitPorfolioController> {
                     ' ${BibitHelper.getSymbol2(item.percentage)}'.text.color(BibitHelper.getColor(item.percentage)).make(),
                   ],
                 ]).p8(),
-              );
+              ).onTap(() => controller.goDetailPortfolio(item));
             },
           ),
         ),

@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:ex/ex.dart';
 
 import '../core/app_color.dart';
+import 'helpers.dart';
 
 mixin BibitHelper {
   /// #### isStockMarketOpen
@@ -146,6 +147,27 @@ mixin BibitHelper {
         return 'Semua';
       default:
         return '';
+    }
+  }
+
+  static Color getColorByType(String typeReksaDana) {
+    final rdpu = '#4CA870'.fromHex;
+    final rdpt = '#4C96E1'.fromHex;
+    final rds = '#997CD5'.fromHex;
+
+    try {
+      switch (typeReksaDana) {
+        case 'Pasar Uang':
+          return rdpu;
+        case 'Obligasi':
+          return rdpt;
+        case 'Saham':
+          return rds;
+        default:
+          return AppColor.textReverse;
+      }
+    } catch (_) {
+      return AppColor.textReverse;
     }
   }
 }

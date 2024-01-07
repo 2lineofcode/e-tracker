@@ -14,6 +14,7 @@ import '../../../helpers/helpers.dart';
 import '../../../models/bibit_product_detail_aum_entity.dart';
 import '../../../models/bibit_product_detail_chart_entity.dart';
 import '../../../models/bibit_product_detail_entity.dart';
+import '../../../routes/app_pages.dart';
 import '../../widgets/widgets.dart';
 import 'detail_mutual_controller.dart';
 
@@ -68,13 +69,14 @@ class DetailMutualTab1 extends GetView<DetailMutualController> {
                 content: VStack([
                   'Total Modal Investasi: ${data.totalInvestedAmount?.moneyFormat()}'.text.black.size(12).make(),
                   'Total Nilai Sekarang: ${data.totalPortfolio?.moneyFormat()}'.text.black.size(12).make(),
-                  'Total Keuntungan: ${data.profitLossAmount?.moneyFormat()}'.text.color(BibitHelper.getColor(data.profitLossAmount)).size(12).make(),
-                  12.heightBox,
                   'Harga beli rata-rata: ${data.averagePrice?.moneyFormat()}'.text.black.size(12).make(),
+                  'Total Keuntungan: ${data.profitLossAmount?.moneyFormat()}'.text.color(data.profitLossAmount! > 0 ? Vx.green700 : Vx.red500).size(12).make(),
                   Divider().w(200),
                   'Bagian Dari Porto:'.text.black.size(12).make().pOnly(bottom: 4),
                   for (var el in data.portfolioPlacements!) ...[
-                    '- ${el.portfolioName}'.text.size(12).black.make(),
+                    '- ${el.portfolioName}'.text.size(12).black.make().onTap(() {
+                      Get.toNamed(Routes.DETAIL_PORTFOLIO, arguments: el.portfolioId);
+                    }),
                   ],
                 ]),
                 child: IconButton(
