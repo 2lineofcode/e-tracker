@@ -154,6 +154,8 @@ mixin BibitHelper {
     final rdpu = '#4CA870'.fromHex;
     final rdpt = '#4C96E1'.fromHex;
     final rds = '#997CD5'.fromHex;
+    final rdc = '#62A0BB'.fromHex;
+    final cash = '#C6A16C'.fromHex;
 
     try {
       switch (typeReksaDana) {
@@ -163,6 +165,10 @@ mixin BibitHelper {
           return rdpt;
         case 'Saham':
           return rds;
+        case 'Campuran':
+          return rdc;
+        case 'Cash':
+          return cash;
         default:
           return AppColor.textReverse;
       }

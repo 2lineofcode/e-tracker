@@ -27,6 +27,7 @@ class HomeView extends GetView<HomeController> {
       drawerKey: drawerKeyHome,
       appBarTitle: appBarTitle(),
       appBarLeading: appBarLeading().pOnly(right: 8),
+      isShowAppBarLeading: false,
       appBarAction: appBarAction(),
       sideMenuContent: sideMenuContent(),
       sideMenuWidth: 258,
@@ -100,7 +101,7 @@ class HomeView extends GetView<HomeController> {
   Widget sideMenuContent() {
     return VStack(
       [
-        /// calendar
+        /// calendar :header
         GetBuilder<HomeController>(
           init: HomeController(),
           initState: (_) {},
@@ -120,6 +121,7 @@ class HomeView extends GetView<HomeController> {
           },
         ),
 
+        /// calendar :body
         GetBuilder<HomeController>(
           init: HomeController(),
           initState: (_) {},
@@ -384,6 +386,31 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget bodyHeaderSearchView() {
+    final searchText = controller.tfSearchExpense.value.text;
+
+    /// date range
+    if (searchText.startsWith(RegExp(r'[0-9]'))) {
+      //
+      if (searchText.isNotEmpty && searchText.length <= 3) {
+        return VStack([
+          'Showing data:'.text.bold.make().pOnly(bottom: 12),
+          '🗓️ $searchText days from today'.text.make(),
+        ]);
+      } else {
+        try {
+          final dateA = searchText.substring(0, 10).reformatDate(from: yMd, to: 'd MMM y');
+          final dateB = searchText.substring(11).reformatDate(from: yMd, to: 'd MMM y');
+          return VStack([
+            'Showing for date range:'.text.bold.make().pOnly(bottom: 12),
+            '🗓️ $dateA → $dateB'.text.make(),
+          ]);
+        } catch (e) {
+          return '$searchText'.text.make();
+        }
+      }
+    }
+
+    /// text @note / @category
     return 'Search for: "${controller.tfSearchExpense.value.text}"'.text.bold.make().pOnly(bottom: 12);
   }
 
@@ -507,20 +534,24 @@ class HomeView extends GetView<HomeController> {
     return Obx(
       () => HStack(
         [
-          Container(
-            color: Colors.blue,
-            height: 28,
-            child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).makeCentered().pSymmetric(h: 4, v: 2),
-          ).cornerRadius(4).pOnly(right: 10),
-          VStack([
-            '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
-            '${controller.focusedDay.value.getTimeAgoFromNow()}'.text.size(11).minFontSize(11).make(),
-          ]),
-          Spacer(),
-          Container(
-            decoration: ExDecorator.box(borderRadius: 90, borderColor: AppColor.textReverse),
-            child: 'No Record'.text.size(12).minFontSize(12).color(AppColor.textReverse).make().p4().pSymmetric(h: 4),
-          ),
+          if (controller.tfSearchExpense.value.text.isNotBlank) ...[
+            'Search for: "${controller.tfSearchExpense.value.text}"'.text.make(),
+          ] else ...[
+            Container(
+              color: Colors.blue,
+              height: 28,
+              child: '${controller.focusedDay.value.toStringEx(format: 'E')}'.text.size(11).bold.color(AppColor.textOnBackground).makeCentered().pSymmetric(h: 4, v: 2),
+            ).cornerRadius(4).pOnly(right: 10),
+            VStack([
+              '${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'.text.size(12).bold.make(),
+              '${controller.focusedDay.value.getTimeAgoFromNow()}'.text.size(11).minFontSize(11).make(),
+            ]),
+            Spacer(),
+            Container(
+              decoration: ExDecorator.box(borderRadius: 90, borderColor: AppColor.textReverse),
+              child: 'No Record'.text.size(12).minFontSize(12).color(AppColor.textReverse).make().p4().pSymmetric(h: 4),
+            ),
+          ],
         ],
       ).pOnly(bottom: 12),
     );

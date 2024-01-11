@@ -32,6 +32,11 @@ extension TimeAgoToString on DateTime {
     }
   }
 
+  /// Example:
+  /// ```
+  /// DateTime postTime = DateTime(2023, 1, 1);
+  /// String timeDiff = postTime.timeDiff();
+  /// ```
   String timeDiff() {
     Duration difference = this.difference(DateTime.now());
 

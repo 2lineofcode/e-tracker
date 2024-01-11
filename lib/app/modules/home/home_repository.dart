@@ -89,6 +89,42 @@ class HomeRepository {
     return response;
   }
 
+  // find list by date
+  Future<List<SupaExpense>> findExpenseByDateRange(String date) async {
+    if (date.isNotEmpty && date.length <= 3) {
+      final dateA = DateTime.now().subtract(Duration(days: date.toInt()! - 1)).toStringEx(format: yMd);
+      final dateB = DateTime.now().toStringEx(format: yMd);
+      final response = await db //
+          .from('expense')
+          .select('*, category(color, icon)')
+          .eq('user_id', db.auth.currentSession?.user.id ?? '')
+          .gte('date', dateA)
+          .lte('date', dateB)
+          .order('date')
+          .withConverter<List<SupaExpense>>((data) {
+        return (data).map((e) => SupaExpense.fromJson(e)).toList();
+      });
+      return response;
+    }
+    if (date.length > 11) {
+      final dateA = date.substring(0, 10);
+      final dateB = date.substring(11);
+      final response = await db //
+          .from('expense')
+          .select('*, category(color, icon)')
+          .eq('user_id', db.auth.currentSession?.user.id ?? '')
+          .gte('date', dateA)
+          .lte('date', dateB)
+          .order('date')
+          .withConverter<List<SupaExpense>>((data) {
+        return (data).map((e) => SupaExpense.fromJson(e)).toList();
+      });
+      return response;
+    }
+
+    return findExpense(date);
+  }
+
   // get sum by @date [1month]
   Future<int?> getCount1Month(String date) async {
     final response = await db //

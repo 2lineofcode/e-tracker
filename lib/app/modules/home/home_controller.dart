@@ -177,7 +177,11 @@ class HomeController extends GetxController with StateMixin {
         expenseList.value = await repo.getExpense(date);
         isSearchMode.value = false;
       } else {
-        expenseList.value = await repo.findExpense(find);
+        if (find.startsWith(RegExp(r'[0-9]'))) {
+          expenseList.value = await repo.findExpenseByDateRange(find);
+        } else {
+          expenseList.value = await repo.findExpense(find);
+        }
         isSearchMode.value = true;
       }
     } catch (e) {

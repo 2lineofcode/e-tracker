@@ -261,7 +261,7 @@ mixin DialogInputHelper {
     /// flag
     final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
     final isTypeNotes = expense != null && expense.categoryName == 'Notes' ? true.obs : false.obs;
-    final debouncer = DebounceSearch(duration: 300.milliseconds);
+    final debouncer = DebounceSearch(duration: 200.milliseconds);
 
     ExBottomSheet.basic(
       title: '${expense != null ? 'Edit Expense' : 'Add Expense'}',
@@ -464,7 +464,7 @@ mixin DialogInputHelper {
     /// flag
     final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
     final isTypeNotes = expense != null && expense.categoryName == 'Notes' ? true.obs : false.obs;
-    final debouncer = DebounceSearch(duration: 300.milliseconds);
+    final debouncer = DebounceSearch(duration: 200.milliseconds);
 
     ExAlert.adaptive(
       title: Text(
