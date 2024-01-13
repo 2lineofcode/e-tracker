@@ -21,25 +21,30 @@ class ViewLineChart extends GetView<SummaryController> {
       (state) => VStack(
         [
           'Period: ${controller.monthSelected} ${controller.yearSelected}'.text.bold.make().pOnly(bottom: 16),
-          if (controller.rpcSumNoteTimes.isNotEmpty) ...[
-            _Chart(
-              dataExpense: controller.expenses,
-            ).wh(double.infinity, 200),
-            24.heightBox,
-            '🔥 High Spendings!'.text.make().pOnly(bottom: 12),
-            ListView.builder(
-              shrinkWrap: true,
-              itemCount: controller.highSpender.length,
-              itemBuilder: (context, index) {
-                final item = controller.highSpender[index];
-                return itemListHighSpender(item);
-              },
-            ).expand(),
-          ] else ...[
+          if (controller.expenses.length > 1) ...[
+            /// chart
+            _Chart(dataExpense: controller.expenses).wh(double.infinity, 200).pOnly(bottom: 24),
+
+            /// list high spendings
+            if (controller.highSpender.isNotEmpty) ...[
+              '🔥 High Spendings!'.text.make().pOnly(bottom: 12),
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: controller.highSpender.length,
+                itemBuilder: (context, index) {
+                  final item = controller.highSpender[index];
+                  return itemListHighSpender(item);
+                },
+              ).expand(),
+            ],
+          ]
+
+          /// empty view
+          else ...[
             ExUiErrorOrEmpty(
               bgColor: AppColor.emptyStatePrimary,
               title: 'No data to see',
-              message: 'You dont have any transaction on this period',
+              message: 'You dont have enough data transaction on this period',
             ).h(250),
           ],
         ],
