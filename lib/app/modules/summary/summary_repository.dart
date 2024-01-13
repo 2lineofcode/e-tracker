@@ -4,8 +4,23 @@ import '../../core/app_api.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
+import '../../models/supa_expense_entity.dart';
 
 class SummaryRepository {
+  Future<List<SupaExpense>> getExpenses({required String year, String? month}) async {
+    final fixYM = '$year${month != null ? '-${month.reformatDate(from: 'MMMM', to: 'MM')}' : ''}';
+    final response = await db //
+        .from('expense')
+        .select('date, amount')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .or('date.ilike.$fixYM%')
+        .order('date')
+        .withConverter<List<SupaExpense>>((data) {
+      return (data).map((e) => SupaExpense.fromJson(e)).toList();
+    });
+    return response;
+  }
+
   /// ------------------------------------------------------------------------
   /// ! rpc
   /// ------------------------------------------------------------------------

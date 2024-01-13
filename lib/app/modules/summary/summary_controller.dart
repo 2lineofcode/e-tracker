@@ -1,11 +1,13 @@
 import 'package:ex/ex.dart';
 import 'package:get/get.dart';
 
+import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
+import '../../models/supa_expense_entity.dart';
 import '../../routes/app_pages.dart';
 import 'summary_repository.dart';
 
@@ -21,6 +23,8 @@ class SummaryController extends GetxController with StateMixin {
   final rpcSumAllMonth = <RpcSumAllMonth>[].obs; // for sidemenu
   final rpcSumByCategory = <RpcSumByCategory>[].obs; // for body
   final rpcSumNoteTimes = <RpcSumNoteTimes>[].obs; // for noteTimes perMonth
+  final expenses = <SupaExpense>[].obs;
+  final highSpender = <SupaExpense>[].obs;
 
   // count header
   final countBudget = 0.obs;
@@ -38,11 +42,11 @@ class SummaryController extends GetxController with StateMixin {
     yearSelected.value = Get.parameters['period'].toString().reformatDate(from: yM, to: 'y');
     monthSelected.value = Get.parameters['period'].toString().reformatDate(from: yM, to: 'MMMM');
 
+    await getExpenses(year: yearSelected.value, month: monthSelected.value);
     await getSumAllMonth(year: yearSelected.value);
     await getSumByCategory(year: yearSelected.value, month: monthSelected.value);
     await getSumNoteTimes(year: yearSelected.value, month: monthSelected.value);
     await calculateBudgetStatForHeader();
-
     change(0, status: RxStatus.success());
     super.onInit();
   }
@@ -52,6 +56,8 @@ class SummaryController extends GetxController with StateMixin {
     change(0, status: RxStatus.loading());
     monthSelected.value = month;
     isShowAllYear.value = false;
+
+    await getExpenses(year: yearSelected.value, month: monthSelected.value);
     await getSumByCategory(year: yearSelected.value, month: monthSelected.value);
     await getSumNoteTimes(year: yearSelected.value, month: monthSelected.value);
     await calculateBudgetStatForHeader();
@@ -64,6 +70,8 @@ class SummaryController extends GetxController with StateMixin {
       closeDrawer();
       isShowAllYear.value = true;
       monthSelected.value = '';
+
+      await getExpenses(year: yearSelected.value);
       await getSumByCategory(year: yearSelected.value);
       await getSumNoteTimes(year: yearSelected.value);
     } else {
@@ -86,6 +94,7 @@ class SummaryController extends GetxController with StateMixin {
     if (isShowAllYear.isFalse) {
       await onMonthChange(monthSelected.value);
     } else {
+      await getExpenses(year: yearSelected.value);
       await getSumByCategory(year: yearSelected.value);
       await getSumNoteTimes(year: yearSelected.value);
     }
@@ -112,12 +121,49 @@ class SummaryController extends GetxController with StateMixin {
     if (isShowAllYear.isFalse) {
       await onMonthChange(monthSelected.value);
     } else {
+      await getExpenses(year: yearSelected.value);
       await getSumByCategory(year: yearSelected.value);
       await getSumNoteTimes(year: yearSelected.value);
     }
 
     await calculateBudgetStatForHeader();
     change(0, status: RxStatus.success());
+  }
+
+  Future<void> getExpenses({required String year, String? month}) async {
+    expenses.value = await repo.getExpenses(year: year, month: month);
+
+    /// grouping expenses by date
+    final _expensesByDate = <String, List<SupaExpense>>{};
+    for (var e in expenses) {
+      if (_expensesByDate.containsKey(e.date!)) {
+        _expensesByDate[e.date!]!.add(e);
+      } else {
+        _expensesByDate[e.date!] = [e];
+      }
+    }
+
+    /// apply group by date to expenses
+    expenses.clear();
+    _expensesByDate.forEach((key, value) {
+      final _total = value.map((e) => e.amount!).reduce((a, b) => a + b);
+      expenses.add(SupaExpense(date: key, amount: _total));
+    });
+
+    /// add data to expenseHigh by kFlagSpender from pref
+    final isHigh = pref.read<num>(kFlagSpender);
+    if (expenses.isNotEmpty) {
+      highSpender.clear();
+      for (var e in expenses) {
+        if (e.amount! > isHigh!) {
+          highSpender.add(SupaExpense(date: e.date, amount: e.amount));
+        }
+      }
+    }
+
+    /// sort expenseHigh by amount
+    final sortByAmount = highSpender.sortedBy((a, b) => b.amount!.compareTo(a.amount!));
+    highSpender.value = sortByAmount;
   }
 
   Future<void> getSumAllMonth({required String year}) async {

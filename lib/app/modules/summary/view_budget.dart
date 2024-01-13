@@ -20,41 +20,17 @@ class ViewBudget extends GetView<SummaryController> {
   @override
   Widget build(BuildContext context) {
     return controller.obx(
-      (state) => ExSwipe(
-        onLeftSwipe: (details) async {
-          if (controller.isShowAllYear.isFalse) {
-            final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
-            if (currentMonth.month == 12) await controller.onYearNext();
+      (state) => VStack(
+        [
+          /// header ~
+          if (controller.isShowAllYear.isTrue) headerAllYear() else headerPerMonth(),
 
-            final add1Month = DateTime(currentMonth.year, currentMonth.month + 1, currentMonth.day);
-            await controller.onMonthChange(add1Month.toStringEx(format: 'MMMM'));
-          } else {
-            await controller.onYearNext();
-          }
-        },
-        onRightSwipe: (details) async {
-          if (controller.isShowAllYear.isFalse) {
-            final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
-            if (currentMonth.month == 1) await controller.onYearPrev();
+          16.heightBox,
 
-            final subtract1Month = DateTime(currentMonth.year, currentMonth.month - 1, currentMonth.day);
-            await controller.onMonthChange(subtract1Month.toStringEx(format: 'MMMM'));
-          } else {
-            await controller.onYearPrev();
-          }
-        },
-        child: VStack(
-          [
-            /// header ~
-            if (controller.isShowAllYear.isTrue) headerAllYear() else headerPerMonth(),
-
-            16.heightBox,
-
-            /// detail
-            if (controller.isShowAllYear.isTrue) detailAllYear().expand() else detailPerMonth().expand(),
-          ],
-        ).p12(),
-      ),
+          /// detail
+          if (controller.isShowAllYear.isTrue) detailAllYear().expand() else detailPerMonth().expand(),
+        ],
+      ).p12(),
       onLoading: MyShimmerSummary(),
     );
   }

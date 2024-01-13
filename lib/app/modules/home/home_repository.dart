@@ -203,7 +203,7 @@ class HomeRepository {
   /// ! rpc
   /// ------------------------------------------------------------------------
   Future<List<dynamic>> rpcGetSpenderDay(DateTime focusedDay) async {
-    final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
+    final fixYM = focusedDay.toStringEx(format: yM);
     final result = await db.rpc('get_spender_day', params: {
       'userid': db.auth.currentSession?.user.id ?? '',
       'periode': fixYM,

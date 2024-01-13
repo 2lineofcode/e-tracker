@@ -9,6 +9,7 @@ import '../../helpers/helpers.dart';
 import '../widgets/widgets.dart';
 import 'summary_controller.dart';
 import 'view_budget.dart';
+import 'view_line_chart.dart';
 import 'view_note_times.dart';
 import 'view_pie_chart.dart';
 
@@ -21,26 +22,31 @@ class SummaryView extends GetView<SummaryController> {
       appBarTitle: 'Summary'.text.size(11).bold.make(),
       appBarAction: appBarAction(),
       sideMenuContent: sideMenuContent(),
-      bodyContent: Obx(() => bodyContent()),
+      bodyContent: bodyContent(),
       footerContent: footerContent(),
     );
   }
 
   Widget appBarAction() {
+    final menu = controller.menuSelected;
     return Obx(
       () => HStack(
         [
           IconButton(
-            icon: Icon(CupertinoIcons.archivebox_fill, size: 18, color: controller.menuSelected.value == 1 ? AppColor.menuSelected : AppColor.menuUnSelected),
-            onPressed: () => controller.menuSelected.value = 1,
+            icon: Icon(CupertinoIcons.archivebox_fill, size: 18, color: menu.value == 1 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            onPressed: () => menu.value = 1,
           ),
           IconButton(
-            icon: Icon(CupertinoIcons.chart_pie_fill, size: 18, color: controller.menuSelected.value == 2 ? AppColor.menuSelected : AppColor.menuUnSelected),
-            onPressed: () => controller.menuSelected.value = 2,
+            icon: Icon(CupertinoIcons.chart_bar_alt_fill, size: 18, color: menu.value == 2 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            onPressed: () => menu.value = 2,
           ),
           IconButton(
-            icon: Icon(CupertinoIcons.doc_chart_fill, size: 18, color: controller.menuSelected.value == 3 ? AppColor.menuSelected : AppColor.menuUnSelected),
-            onPressed: () => controller.menuSelected.value = 3,
+            icon: Icon(CupertinoIcons.chart_pie_fill, size: 18, color: menu.value == 3 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            onPressed: () => menu.value = 3,
+          ),
+          IconButton(
+            icon: Icon(CupertinoIcons.doc_chart_fill, size: 18, color: menu.value == 4 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            onPressed: () => menu.value = 4,
           ),
         ],
       ),
@@ -123,15 +129,47 @@ class SummaryView extends GetView<SummaryController> {
   }
 
   Widget bodyContent() {
+    return Obx(
+      () => ExSwipe(
+        onLeftSwipe: (details) async {
+          if (controller.isShowAllYear.isFalse) {
+            final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
+            if (currentMonth.month == 12) await controller.onYearNext();
+
+            final add1Month = DateTime(currentMonth.year, currentMonth.month + 1, currentMonth.day);
+            await controller.onMonthChange(add1Month.toStringEx(format: 'MMMM'));
+          } else {
+            await controller.onYearNext();
+          }
+        },
+        onRightSwipe: (details) async {
+          if (controller.isShowAllYear.isFalse) {
+            final currentMonth = controller.monthSelected.value.toDateEx(format: 'MMMM');
+            if (currentMonth.month == 1) await controller.onYearPrev();
+
+            final subtract1Month = DateTime(currentMonth.year, currentMonth.month - 1, currentMonth.day);
+            await controller.onMonthChange(subtract1Month.toStringEx(format: 'MMMM'));
+          } else {
+            await controller.onYearPrev();
+          }
+        },
+        child: buildUI(),
+      ),
+    );
+  }
+
+  Widget buildUI() {
     switch (controller.menuSelected.value) {
       case 1:
         return ViewBudget();
       case 2:
-        return ViewPieChart();
+        return ViewLineChart();
       case 3:
+        return ViewPieChart();
+      case 4:
         return ViewNoteTimes();
       default:
-        return ViewBudget();
+        return Container();
     }
   }
 

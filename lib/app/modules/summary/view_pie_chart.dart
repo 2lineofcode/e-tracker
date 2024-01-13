@@ -109,7 +109,7 @@ class ViewPieChart extends GetView<SummaryController> {
       shouldAlwaysShow: false,
       decimalPlaces: 2,
       builder: (data, point, series, pointIndex, seriesIndex) {
-        data as ChartSampleData;
+        data as PieChartDataModel;
         return Text(
           '${data.name}: ${data.total!.toInt().moneyFormat()}',
           style: TextStyle(fontSize: 11, color: Get.isDarkMode ? Colors.black : Colors.white),
@@ -119,12 +119,12 @@ class ViewPieChart extends GetView<SummaryController> {
   }
 
   /// Returns the pie series with smart data labels.
-  List<PieSeries<ChartSampleData, String>> setupChartDataSeries() {
-    var dataMap = <ChartSampleData>[];
+  List<PieSeries<PieChartDataModel, String>> setupChartDataSeries() {
+    var dataMap = <PieChartDataModel>[];
 
     dataMap.clear();
     controller.rpcSumByCategory.forEach((element) {
-      dataMap.add(ChartSampleData(
+      dataMap.add(PieChartDataModel(
         name: element.categoryName,
         total: element.total,
         color: element.categoryColor,
@@ -132,12 +132,12 @@ class ViewPieChart extends GetView<SummaryController> {
       ));
     });
 
-    return <PieSeries<ChartSampleData, String>>[
-      PieSeries<ChartSampleData, String>(
+    return <PieSeries<PieChartDataModel, String>>[
+      PieSeries<PieChartDataModel, String>(
         dataSource: dataMap,
-        xValueMapper: (ChartSampleData data, _) => data.name,
-        yValueMapper: (ChartSampleData data, _) => data.total,
-        dataLabelMapper: (ChartSampleData data, _) => data.name,
+        xValueMapper: (data, _) => data.name,
+        yValueMapper: (data, _) => data.total,
+        dataLabelMapper: (data, _) => data.name,
         radius: '55%',
         pointColorMapper: (datum, index) => datum.color?.fromHex,
         animationDuration: 500,
@@ -153,8 +153,8 @@ class ViewPieChart extends GetView<SummaryController> {
   }
 }
 
-class ChartSampleData {
-  ChartSampleData({
+class PieChartDataModel {
+  PieChartDataModel({
     this.name,
     this.total,
     this.usePercentage,
