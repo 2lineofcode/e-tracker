@@ -28,19 +28,30 @@ mixin OverlayHelper {
     );
   }
 
-  static void openCalculator(double initialValue) {
+  static void openCalculator({
+    double initialValue = 0,
+    double? height,
+    double width = 320,
+    Alignment alignment = Alignment.centerRight,
+    CalcController? controller,
+    dynamic Function(double?, TapDownDetails)? onTappedDisplay,
+    void Function(String?, double?, String?)? onChanged,
+  }) {
     Overlayment.dismissAll();
     unawaited(
       Overlayment.show(
         OverPanel(
           name: 'calc',
-          alignment: Alignment.bottomRight,
-          width: 300,
+          alignment: alignment,
+          height: height,
+          width: width,
           child: SimpleCalculator(
+            controller: controller,
             autofocus: true,
             hideSurroundingBorder: true,
             value: initialValue,
-            onTappedDisplay: (p0, p1) => Overlayment.dismissName('calc'),
+            onChanged: onChanged,
+            onTappedDisplay: onTappedDisplay,
           ),
         ),
         context: Get.context!,

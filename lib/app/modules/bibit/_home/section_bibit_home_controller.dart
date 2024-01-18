@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:ex/ex.dart';
 import 'package:get/get.dart';
-import 'package:web_socket_client/web_socket_client.dart';
 
 import '../../../models/bibit_performance_chart_entity.dart';
 import '../../../models/bibit_portpolio_entity.dart';
@@ -29,7 +28,6 @@ class SectionBibitHomeController extends GetxController {
   final wsKey = ''.obs;
 
   late Timer? timerPriceChanges;
-  late WebSocket? ws;
 
   @override
   Future<void> onInit() async {

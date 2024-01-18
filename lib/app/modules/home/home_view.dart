@@ -3,11 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
-import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:lottie/lottie.dart';
+import 'package:overlayment/overlayment.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../../env.g.dart';
@@ -314,20 +314,10 @@ class HomeView extends GetView<HomeController> {
               HStack([
                 'Total:'.text.bold.color(AppColor.textOnBackground).make(),
                 Spacer(),
-                '${controller.countOfDay.value.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).make().onTap(() {
-                  showModalBottomSheet(
-                    isScrollControlled: true,
-                    context: Get.context!,
-                    builder: (context) => FractionallySizedBox(
-                      heightFactor: 0.7,
-                      widthFactor: Get.context!.isMobile ? 1 : 0.5,
-                      child: SimpleCalculator(
-                        autofocus: true,
-                        hideSurroundingBorder: true,
-                        value: controller.countOfDay.value.toDouble(),
-                        onTappedDisplay: (p0, p1) => Get.back(),
-                      ),
-                    ),
+                '${controller.countOfDay.value.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).make().onInkTap(() {
+                  OverlayHelper.openCalculator(
+                    initialValue: controller.countOfDay.value.toDouble(),
+                    onTappedDisplay: (p0, p1) => Overlayment.dismissAll(),
                   );
                 }),
               ]).p12().color(controller.countOfDay.value.getFlagColorDark()),

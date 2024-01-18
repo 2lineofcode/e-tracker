@@ -150,6 +150,11 @@ mixin BibitHelper {
     }
   }
 
+  /// #### getColorByType
+  /// - typeReksaDana: 'Pasar Uang', 'Obligasi', 'Saham', 'Campuran', 'Cash'
+  /// - return color
+  /// - default: AppColor.textReverse
+  /// - example: '#4CA870'.fromHex
   static Color getColorByType(String typeReksaDana) {
     final rdpu = '#4CA870'.fromHex;
     final rdpt = '#4C96E1'.fromHex;

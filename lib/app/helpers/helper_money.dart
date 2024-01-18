@@ -35,11 +35,6 @@ extension MoneyFormatExt on num {
   }
 
   /// example: 100 -> '100%'
-  // String percentageFormat({String? symbol = '%'}) {
-  //   String formattedText = '${(this * 100).toStringAsFixed(2).replaceAll('.00', '')}$symbol';
-  //   return formattedText;
-  // }
-
   String percentageFormat({int decimalDigits = 2}) {
     var output = '';
     try {
@@ -62,6 +57,10 @@ extension MoneyUnformatExt on String {
 }
 
 extension ExpenseFlagColorExt on num {
+  /// example: 0 -> Vx.white
+  /// example: 50000 -> AppColor.green
+  /// example: 100000 -> AppColor.orange
+  /// example: 1000000 -> AppColor.red
   Color getFlagColor() {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
@@ -76,6 +75,10 @@ extension ExpenseFlagColorExt on num {
     }
   }
 
+  /// example: 0 -> Vx.white
+  /// example: 50000 -> AppColor.greenLight
+  /// example: 100000 -> AppColor.orangeLight
+  /// example: 1000000 -> AppColor.redLight
   Color getFlagColorLight() {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;

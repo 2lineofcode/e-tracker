@@ -5,10 +5,14 @@ dart run enven
 
 # update version by year month + git revision
 current_version=$(grep 'version:' pubspec.yaml | awk '{print $2}')
-yMd=$(date '+%Y%m%d')
+echo "current version: $current_version"
+
 git_rev=$(git rev-list --all|wc -l|xargs)
-version_without_date=$(echo $current_version | sed 's/+\([0-9]\{8\}\)//')
-new_version="$version_without_date+$yMd$git_rev"
+yMd=$(date '+%Y%m%d')
+
+new_version="${current_version%+*}+$git_rev.$yMd"
+echo "new_version: $new_version"
+
 echo "Updating version to: $new_version"
 sed -i '' "s/version: $current_version/version: $new_version/" pubspec.yaml
 
