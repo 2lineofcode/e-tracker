@@ -8,8 +8,8 @@ import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../widgets/widgets.dart';
 import 'summary_controller.dart';
+import 'view_bar_chart.dart';
 import 'view_budget.dart';
-import 'view_line_chart.dart';
 import 'view_note_times.dart';
 import 'view_pie_chart.dart';
 
@@ -163,7 +163,7 @@ class SummaryView extends GetView<SummaryController> {
       case 1:
         return ViewBudget();
       case 2:
-        return ViewLineChart();
+        return ViewBarChart();
       case 3:
         return ViewPieChart();
       case 4:

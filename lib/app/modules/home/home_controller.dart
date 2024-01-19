@@ -155,17 +155,21 @@ class HomeController extends GetxController with StateMixin {
   Future<void> onAddCategory(String categoryName) async {
     if (categoryName.isEmptyOrNull) return;
 
-    final categoryEntity = SupaCategory(
-      id: UuidV4().generate(),
-      userId: db.auth.currentSession?.user.id ?? '',
-      createdAt: DateTime.now().toStringEx(),
-      name: categoryName,
-      color: Vx.randomPrimaryColor.toHex(),
-    );
-    await repo.addCategory(categoryEntity);
-    await getCategory();
-    OverlayHelper.notification('Category $categoryName Added', color: Vx.green600);
-    tfCategory.clear();
+    try {
+      final categoryEntity = SupaCategory(
+        id: UuidV4().generate(),
+        userId: db.auth.currentSession?.user.id ?? '',
+        createdAt: DateTime.now().toStringEx(),
+        name: categoryName,
+        color: Vx.randomPrimaryColor.toHex(),
+      );
+      await repo.addCategory(categoryEntity);
+      await getCategory();
+      OverlayHelper.notification('Category $categoryName Added', color: Vx.green600);
+      tfCategory.clear();
+    } catch (e) {
+      ExSnackbar.dangerTop('$e');
+    }
   }
 
   /// expense

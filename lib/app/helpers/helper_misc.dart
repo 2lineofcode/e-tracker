@@ -146,6 +146,8 @@ void closeDrawer() {
 
 int hashDate(DateTime key) => key.day * 1000000 + key.month * 10000 + key.year;
 
+int dayInMonth(DateTime dt) => DateTime(dt.year, dt.month + 1, 0).day;
+
 /// ------------------------------------------------------------------------
 /// ! DEBOUNCE
 /// ------------------------------------------------------------------------

@@ -24,6 +24,10 @@ import 'home_repository.dart';
 /// [DialogInputHelper]
 /// - [showDialogCategory]
 /// - [showDialogExpense]
+///   - [_dialogExpenseMobile]
+///   - [_dialogExpenseDesktop]
+/// - [_deleteExpense]
+/// - [_submitExpense]
 /// This class provides helper methods for dialog input functionality.
 /// It is designed to be shared and can be used in multiple pages.
 /// The class includes methods for handling dialog categories.
@@ -324,8 +328,10 @@ mixin DialogInputHelper {
                 placeholder: 'Detail: Nama Toko/Waktu',
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-                minLines: 2,
-                maxLines: 2,
+                minLines: 5,
+                maxLines: 15,
+                textAlignVertical: TextAlignVertical.top,
+                textAlign: TextAlign.left,
                 clearButtonMode: OverlayVisibilityMode.editing,
               ).pOnly(bottom: 16),
             ),
@@ -531,8 +537,8 @@ mixin DialogInputHelper {
                 placeholder: 'Detail: Nama Toko/Waktu',
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-                minLines: 2,
-                maxLines: 2,
+                minLines: 3,
+                maxLines: 15,
                 clearButtonMode: OverlayVisibilityMode.editing,
               ).pOnly(bottom: 16),
             ),

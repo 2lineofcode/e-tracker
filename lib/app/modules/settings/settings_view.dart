@@ -106,7 +106,16 @@ class SettingsView extends GetView<SettingsController> {
       ],
       Spacer(),
       Obx(
-        () => controller.menuSelected.value == AUTO_COMPLETE ? '${controller.autoCompleteList.length} Record'.text.make() : 0.heightBox,
+        () {
+          switch (controller.menuSelected.value) {
+            case APP_CONFIG:
+              return 'Version: ${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'.text.make();
+            case AUTO_COMPLETE:
+              return '${controller.autoCompleteList.length} Record'.text.make();
+            default:
+              return Container();
+          }
+        },
       ),
     ]).p12();
   }

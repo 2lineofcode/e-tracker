@@ -46,7 +46,7 @@ class HomeView extends GetView<HomeController> {
         style: TextStyle(fontSize: 13),
         decoration: DecorationHelper.input(
           prefixIcon: Icon(CupertinoIcons.search, size: 14, color: AppColor.textReverse).pOnly(top: 0),
-          hint: 'Search...',
+          hint: 'Search: Note, Category, Days, Date Range...',
           suffix: Icon(CupertinoIcons.clear, size: 12, color: AppColor.textReverse).pOnly(top: 0).onInkTap(() async {
             controller.tfSearchExpense.value.clear();
             await controller.getExpense();
@@ -206,22 +206,61 @@ class HomeView extends GetView<HomeController> {
                         ).pSymmetric(h: 12).expand(),
                         CustomPopup(
                           content: VStack([
-                            'Budget: ${controller.focusedDay.value.toStringEx(format: 'MMMM')}'.text.size(13).black.make(),
-                            'Max Budget: ${controller.countMaxBudget.value.moneyFormat()}'.text.size(11).neutral500.make(),
-                            'Usage: ${controller.countOfMonth.value.moneyFormat()} (${controller.countRemainingBudget}%)'.text.size(11).neutral500.make(),
-                            Divider(),
-                            'Remaining: ${(controller.countMaxBudget.value - controller.countOfMonth.value).moneyFormat()}'.text.size(11).black.make(),
-                            HStack([
-                              Spacer(),
-                              ExButtonElevated(
-                                label: 'Detail',
-                                labelSize: 10,
-                                labelColor: Colors.white,
-                                height: 28,
-                                onPressed: () => {Get.back(), controller.goSummary()},
-                              )
-                            ]).pOnly(top: 8),
-                          ]).w(180),
+                            '${controller.countRemainingBudget.value <= 100 ? '✅ You are on budget' : '🔴 You are over budget'}'.text.black.size(12).makeCentered(),
+                            Table(
+                              border: TableBorder.all(borderRadius: BorderRadius.circular(8), color: AppColor.neutralLight),
+                              children: [
+                                // row 1
+                                TableRow(
+                                  children: [
+                                    TableCell(
+                                      child: VStack([
+                                        'Spent so far'.text.neutral500.size(12).makeCentered(),
+                                        '${controller.countOfMonth.value.moneyFormat()}'.text.size(13).black.makeCentered(),
+                                      ]).p12(),
+                                    ),
+                                    TableCell(
+                                      child: VStack([
+                                        'Budgeted'.text.neutral500.size(12).makeCentered(),
+                                        '${controller.countMaxBudget.value.moneyFormat()}'.text.size(13).black.makeCentered(),
+                                      ]).p12(),
+                                    ),
+                                  ],
+                                ),
+                                // row 2
+                                TableRow(
+                                  children: [
+                                    TableCell(
+                                      child: VStack([
+                                        'Remaining'.text.neutral500.size(12).makeCentered(),
+                                        '${(controller.countMaxBudget.value - controller.countOfMonth.value).moneyFormat()}'.text.size(13).black.makeCentered(),
+                                        '(${100 - controller.countRemainingBudget.value}%)'.text.blue500.size(12).makeCentered(),
+                                      ]).p12(),
+                                    ),
+                                    TableCell(
+                                      child: VStack([
+                                        'You can spent'.text.neutral500.size(12).makeCentered(),
+                                        '${(controller.countMaxBudget.value / dayInMonth(controller.focusedDay.value)).moneyFormat()}'.text.size(13).black.makeCentered(),
+                                        '(Per Day)'.text.blue500.size(12).makeCentered(),
+                                      ]).p12(),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ).pSymmetric(v: 8),
+                            if (controller.focusedDay.value.month == DateTime.now().month && controller.focusedDay.value.year == DateTime.now().year) ...[
+                              '${(dayInMonth(DateTime.now()) - DateTime.now().day + 1)} Remaining Days'.text.black.size(12).makeCentered(),
+                            ],
+                            ExButtonElevated(
+                              label: 'View Detail',
+                              labelSize: 10,
+                              labelColor: Colors.white,
+                              backgroundColor: Vx.blue500,
+                              height: 33,
+                              width: double.infinity,
+                              onPressed: () => {Get.back(), controller.goSummary()},
+                            ).pSymmetric(h: 24).pOnly(top: 8)
+                          ]).w(250),
                           child: Container(
                             decoration: ExDecorator.box(borderRadius: 90, borderColor: Colors.transparent, fillColor: AppColor.cardHeaderPrimary),
                             child: '${controller.countRemainingBudget}%'.text.size(11).minFontSize(11).makeCentered().pOnly(left: 8, right: 8, top: 2, bottom: 2),
@@ -267,7 +306,10 @@ class HomeView extends GetView<HomeController> {
               /// 4
               TextField(
                 controller: controller.tfCategory,
-                decoration: DecorationHelper.input(hint: 'Add Category'),
+                decoration: DecorationHelper.input(
+                  hint: 'Add Category',
+                  fillColor: Get.isDarkMode ? Vx.neutral800 : null,
+                ),
                 style: TextStyle(fontSize: 13),
                 onSubmitted: (value) => controller.onAddCategory(value),
               ).h(33).p8(),

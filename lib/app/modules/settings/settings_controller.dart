@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/app_api.dart';
 import '../../core/app_setting.dart';
@@ -35,6 +36,9 @@ class SettingsController extends GetxController with StateMixin {
   final tfCurrencySymbol = TextEditingController();
   final userProfile = SupaUserProfile().obs;
 
+  late PackageInfo? packageInfo;
+  final appInfo = <String, dynamic>{}.obs;
+
   @override
   Future<void> onInit() async {
     /// Page: AutoComplete
@@ -49,6 +53,10 @@ class SettingsController extends GetxController with StateMixin {
     tfCurrencySymbol.text = pref.read<String>(kCurrencySymbol) ?? '';
 
     menuSelected.value = Get.parameters['page'] ?? APP_CONFIG;
+
+    packageInfo = await PackageInfo.fromPlatform();
+    appInfo.value = packageInfo?.data ?? {};
+
     super.onInit();
   }
 
