@@ -74,7 +74,7 @@ class ViewBudget extends GetView<SummaryController> {
                 final item = controller.rpcSumByCategory[index];
                 return HStack(
                   [
-                    Icon(Icons.circle_outlined, size: 12, color: item.categoryColor?.fromHex).pOnly(right: 8),
+                    Icon(item.categoryIcon?.getIconData(), size: 12, color: item.categoryColor?.fromHex).pOnly(right: 8),
                     '${item.categoryName}'.text.ellipsis.maxLines(1).make().pOnly(bottom: 2).expand(),
                     '${item.total?.moneyFormat()}'.text.make(),
                   ],
@@ -148,7 +148,7 @@ class ViewBudget extends GetView<SummaryController> {
           ExProgressBar(
             value: (controller.countPercentage.value).toInt(),
             color1: (controller.countPercentage.value).toInt() < 100 ? AppColor.bibit : AppColor.red,
-            color2: AppColor.neutral,
+            color2: AppColor.neutralLight,
             radius: 8,
           ).pSymmetric(v: 12),
 
@@ -170,6 +170,12 @@ class ViewBudget extends GetView<SummaryController> {
               '${controller.countBudget.value.moneyFormat()}'.text.size(11).minFontSize(11).make(),
             ],
           ),
+
+          if (DateTime.now().month == controller.monthSelected.value.toDateEx(format: 'MMMM').month && DateTime.now().year == controller.yearSelected.value.toInt()) ...[
+            HStack([
+              '${dayInMonth(DateTime.now()) - DateTime.now().day + 1} Day Remaining'.text.color(AppColor.blue).size(12).makeCentered().pOnly(top: 8),
+            ]).centered(),
+          ],
         ],
       ).p8(),
     );
@@ -184,73 +190,83 @@ class ViewBudget extends GetView<SummaryController> {
           Obx(
             () => ListView.separated(
               itemCount: controller.rpcSumByCategory.length,
-              separatorBuilder: (context, index) => Divider(),
+              separatorBuilder: (context, index) => 8.heightBox,
               itemBuilder: (context, index) {
                 final item = controller.rpcSumByCategory[index];
-                return HStack(
-                  [
-                    Icon(Icons.circle, size: 6, color: item.categoryColor?.fromHex).pOnly(right: 8),
+                return Container(
+                  decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+                  child: HStack(
+                    [
+                      Icon(item.categoryIcon?.getIconData(), size: 16, color: item.categoryColor?.fromHex).pOnly(right: 12),
 
-                    /// 1
-                    VStack([
-                      '${item.categoryName}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
+                      /// 1
+                      VStack([
+                        '${item.categoryName}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
+                        if (item.maxBudget != null && item.maxBudget! > 0) ...[
+                          '${item.remainingBudget?.moneyFormat()}'.text.size(11).color(item.remainingBudget! < 0 ? AppColor.red : AppColor.textReverse).bold.make(),
+                        ] else ...[
+                          'No Budget'.text.size(11).bold.make(),
+                        ],
+                      ]).w(Get.context!.isMobile ? 100 : 130).pOnly(right: 12),
+
+                      /// 2
                       if (item.maxBudget != null && item.maxBudget! > 0) ...[
-                        '${item.remainingBudget?.moneyFormat()}'.text.size(11).color(item.remainingBudget! < 0 ? AppColor.red : AppColor.textReverse).bold.make(),
+                        VStack([
+                          ExProgressBar(
+                            value: item.usePercentage ?? 0,
+                            color1: item.usePercentage! < 100 ? AppColor.bibit : AppColor.red,
+                            color2: AppColor.neutralLight,
+                            radius: 2,
+                            height: 8,
+                          ).pOnly(bottom: 4),
+                          HStack([
+                            ' ${item.usePercentage}% '.text.size(11).minFontSize(11).make(),
+                            Spacer(),
+                            'Rp. ${item.total?.moneyFormatCompact()}'.text.size(11).minFontSize(11).bold.color(item.usePercentage! < 100 ? AppColor.green : AppColor.red).make(),
+                            ' / '.text.size(11).minFontSize(11).make(),
+                            'Rp. ${item.maxBudget?.moneyFormatCompact()}'.text.size(12).minFontSize(11).make(),
+                          ]),
+                        ]).pOnly(right: 12).expand(),
                       ] else ...[
-                        'No Budget'.text.size(11).bold.make(),
+                        VStack([
+                          ExProgressBar(
+                            value: 0,
+                            color1: Colors.transparent,
+                            color2: AppColor.neutralLight,
+                            radius: 2,
+                            height: 8,
+                          ).pOnly(bottom: 4),
+                          HStack([
+                            '${item.total?.moneyFormat()}'.text.bold.size(11).minFontSize(11).color(AppColor.blue).make(),
+                            Spacer(),
+                            InkWell(
+                              child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
+                              onTap: () {
+                                logI(jsonEncode(item));
+                                final entity = SupaCategory(
+                                  id: item.categoryId,
+                                  createdAt: DateTime.now().toStringEx(),
+                                  name: item.categoryName,
+                                  color: item.categoryColor,
+                                  icon: item.categoryIcon,
+                                  maxBudget: item.maxBudget,
+                                );
+
+                                DialogInputHelper.showDialogCategory(
+                                  entity: entity,
+                                  callback: () async {
+                                    await Get.find<HomeController>().getCategory();
+                                    await controller.onMonthChange(controller.monthSelected.value);
+                                  },
+                                );
+                              },
+                            ),
+                          ]),
+                        ]).pOnly(right: 12).expand(),
                       ],
-                    ]).w(100).pOnly(right: 12),
-
-                    /// 2
-                    if (item.maxBudget != null && item.maxBudget! > 0) ...[
-                      VStack([
-                        ExProgressBar(
-                          value: item.usePercentage ?? 0,
-                          color1: item.usePercentage! < 100 ? AppColor.bibit : AppColor.red,
-                          color2: Vx.neutral700,
-                          radius: 8,
-                        ).pOnly(bottom: 4),
-                        HStack([
-                          ' ${item.usePercentage}% '.text.size(11).minFontSize(11).make(),
-                          Spacer(),
-                          '${item.total?.moneyFormat()}'.text.size(11).minFontSize(11).bold.color(item.usePercentage! < 100 ? AppColor.green : AppColor.red).make(),
-                          ' / '.text.size(11).minFontSize(11).make(),
-                          '${item.maxBudget?.moneyFormat()}'.text.size(12).minFontSize(11).make(),
-                        ]),
-                      ]).expand(),
-                    ] else ...[
-                      VStack([
-                        ExProgressBar(value: 0, color1: Colors.transparent, color2: Vx.neutral700, radius: 8).pOnly(bottom: 4),
-                        HStack([
-                          '${item.total?.moneyFormat()}'.text.bold.size(11).minFontSize(11).color(AppColor.blue).make(),
-                          Spacer(),
-                          InkWell(
-                            child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
-                            onTap: () {
-                              logI(jsonEncode(item));
-                              final entity = SupaCategory(
-                                id: item.categoryId,
-                                createdAt: DateTime.now().toStringEx(),
-                                name: item.categoryName,
-                                color: item.categoryColor,
-                                icon: item.categoryIcon,
-                                maxBudget: item.maxBudget,
-                              );
-
-                              DialogInputHelper.showDialogCategory(
-                                entity: entity,
-                                callback: () async {
-                                  await Get.find<HomeController>().getCategory();
-                                  await controller.onMonthChange(controller.monthSelected.value);
-                                },
-                              );
-                            },
-                          ),
-                        ]),
-                      ]).expand(),
                     ],
-                  ],
-                ).onInkTap(() => controller.goAdvanceFilter(item.categoryName ?? '')).pOnly(bottom: 12);
+                  ).onInkTap(() => controller.goAdvanceFilter(item.categoryName ?? '')).p12(),
+                );
               },
             ).expand(),
           ),

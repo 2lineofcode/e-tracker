@@ -151,11 +151,11 @@ class SummaryController extends GetxController with StateMixin {
     });
 
     /// add data to expenseHigh by kFlagSpender from pref
-    final isHigh = pref.read<num>(kFlagSpender);
+    final isHigh = pref.read<num>(kFlagSpender) ?? 100000;
     if (expenses.isNotEmpty) {
       highSpender.clear();
       for (var e in expenses) {
-        if (e.amount! > isHigh!) {
+        if (e.amount! > isHigh) {
           highSpender.add(SupaExpense(date: e.date, amount: e.amount));
         }
       }

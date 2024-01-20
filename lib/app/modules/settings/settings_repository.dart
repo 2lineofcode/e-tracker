@@ -2,18 +2,20 @@ import '../../core/app_api.dart';
 import '../../models/supa_autocomplete_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 
-const AUTO_COMPLETE = 'Auto Complete';
-const APP_CONFIG = 'App Config';
-const REPEAT_SETTING = 'Repeat Setting';
-const IMPORT_EXPORT = 'Import/Export';
+mixin SectionMenu {
+  static const AUTO_COMPLETE = 'Auto Complete';
+  static const APP_CONFIG = 'App Config';
+  static const REPEAT_SETTING = 'Repeat Setting';
+  static const IMPORT_EXPORT = 'Import/Export';
+}
 
 class SettingsRepository {
   Future<List<String>> getMenuList() async {
     return [
-      APP_CONFIG,
-      AUTO_COMPLETE,
-      REPEAT_SETTING,
-      IMPORT_EXPORT,
+      SectionMenu.APP_CONFIG,
+      SectionMenu.AUTO_COMPLETE,
+      SectionMenu.REPEAT_SETTING,
+      SectionMenu.IMPORT_EXPORT,
     ];
   }
 

@@ -52,7 +52,7 @@ class SettingsController extends GetxController with StateMixin {
     tfSpender.text = pref.read<num>(kFlagSpender)?.moneyFormat() ?? '';
     tfCurrencySymbol.text = pref.read<String>(kCurrencySymbol) ?? '';
 
-    menuSelected.value = Get.parameters['page'] ?? APP_CONFIG;
+    menuSelected.value = Get.parameters['page'] ?? SectionMenu.APP_CONFIG;
 
     packageInfo = await PackageInfo.fromPlatform();
     appInfo.value = packageInfo?.data ?? {};

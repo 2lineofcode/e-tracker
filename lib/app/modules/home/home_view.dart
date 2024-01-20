@@ -1,16 +1,14 @@
+import 'package:animated_icon/animated_icon.dart';
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:lottie/lottie.dart';
 import 'package:overlayment/overlayment.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../../../env.g.dart';
 import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
@@ -38,23 +36,19 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget appBarTitle() {
-    if (kIsWeb && Get.size.width >= 1024) {
-      return '${Env.appName}'.text.size(11).bold.make();
-    } else {
-      return TextField(
-        controller: controller.tfSearchExpense.value,
-        style: TextStyle(fontSize: 13),
-        decoration: DecorationHelper.input(
-          prefixIcon: Icon(CupertinoIcons.search, size: 14, color: AppColor.textReverse).pOnly(top: 0),
-          hint: 'Search: Note, Category, Days, Date Range...',
-          suffix: Icon(CupertinoIcons.clear, size: 12, color: AppColor.textReverse).pOnly(top: 0).onInkTap(() async {
-            controller.tfSearchExpense.value.clear();
-            await controller.getExpense();
-          }),
-        ),
-        onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
-      ).wh(double.infinity, 30);
-    }
+    return TextField(
+      controller: controller.tfSearchExpense.value,
+      style: TextStyle(fontSize: 13),
+      decoration: DecorationHelper.input(
+        prefixIcon: Icon(CupertinoIcons.search, size: 14, color: AppColor.textReverse).pOnly(top: 0),
+        hint: 'Search: Note, Category, Days, Date Range...',
+        suffix: Icon(CupertinoIcons.clear, size: 12, color: AppColor.textReverse).pOnly(top: 0).onInkTap(() async {
+          controller.tfSearchExpense.value.clear();
+          await controller.getExpense();
+        }),
+      ),
+      onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
+    ).wh(double.infinity, 30);
   }
 
   Widget appBarLeading() {
@@ -67,32 +61,38 @@ class HomeView extends GetView<HomeController> {
   Widget appBarAction() {
     return HStack(
       [
-        /// Web Only
-        if (kIsWeb && Get.size.width >= 1024) ...[
-          TextField(
-            controller: controller.tfSearchExpense.value,
-            decoration: DecorationHelper.input(hint: 'Search...'),
-            style: TextStyle(fontSize: 13),
-            onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
-          ).wh(150, 30).pSymmetric(h: 8),
-        ],
-
         IconButton(
           onPressed: () => controller.goBibit(),
-          icon: SvgPicture.asset(
-            'assets/icons/ic_robo.svg',
+          icon: AnimateIcon(
+            onTap: () => controller.goBibit(),
+            iconType: IconType.animatedOnHover,
+            height: 22,
             width: 22,
-            colorFilter: ColorFilter.mode(Get.isDarkMode ? Colors.white70 : Colors.white, BlendMode.srcIn),
+            color: Get.isDarkMode ? Colors.white70 : Colors.white,
+            animateIcon: AnimateIcons.expensive,
           ),
         ).pOnly(right: 4),
-
         IconButton(
-          icon: Icon(CupertinoIcons.settings, size: 22),
           onPressed: () => controller.goSetting(),
+          icon: AnimateIcon(
+            onTap: () => controller.goSetting(),
+            iconType: IconType.animatedOnHover,
+            height: 20,
+            width: 20,
+            color: Get.isDarkMode ? Colors.white70 : Colors.white,
+            animateIcon: AnimateIcons.settings,
+          ),
         ),
         IconButton(
-          icon: Icon(CupertinoIcons.chart_bar_square_fill, size: 22),
           onPressed: () => controller.goSummary(),
+          icon: AnimateIcon(
+            onTap: () => controller.goSummary(),
+            iconType: IconType.continueAnimation,
+            height: 20,
+            width: 20,
+            color: Get.isDarkMode ? Colors.white70 : Colors.white,
+            animateIcon: AnimateIcons.activity,
+          ),
         ),
       ],
     );
@@ -164,7 +164,15 @@ class HomeView extends GetView<HomeController> {
                         Spacer(),
                         CustomPopup(
                           content: VStack([
-                            'You spend a lot on `${controller.rpcSumByCategory[0].categoryName}`.'.text.size(13).black.make(),
+                            Wrap(children: [
+                              'You spend a lot on '.text.size(13).black.make(),
+                              Icon(
+                                controller.rpcSumByCategory[0].categoryIcon?.getIconData(),
+                                color: Vx.black,
+                                size: 16,
+                              ).pOnly(bottom: 2, right: 6),
+                              '(${controller.rpcSumByCategory[0].categoryName})'.text.size(11).black.make(),
+                            ]),
                             'Total Usage: ${controller.rpcSumByCategory[0].total?.moneyFormat()} (${controller.rpcSumByCategory[0].usePercentage}%) '
                                 .text
                                 .size(11)
@@ -182,7 +190,7 @@ class HomeView extends GetView<HomeController> {
                                   .pOnly(top: 4)
                                   .onTap(() => controller.onCalenderGoDate(e['date'].toString().toDateEx(format: yMd))),
                             ],
-                          ]).w(200),
+                          ]).w(220).scrollVertical(),
                           child: Container(
                             decoration: ExDecorator.box(borderRadius: 90, borderColor: Colors.transparent, fillColor: AppColor.cardHeaderPrimary),
                             child: '${controller.rpcSpenderDay.length}'.text.size(11).minFontSize(11).makeCentered().pOnly(left: 8, right: 8, top: 2, bottom: 2),
@@ -206,6 +214,7 @@ class HomeView extends GetView<HomeController> {
                         ).pSymmetric(h: 12).expand(),
                         CustomPopup(
                           content: VStack([
+                            '== ${controller.focusedDay.value.toStringEx(format: 'MMMM y')} =='.text.size(13).black.makeCentered(),
                             '${controller.countRemainingBudget.value <= 100 ? '✅ You are on budget' : '🔴 You are over budget'}'.text.black.size(12).makeCentered(),
                             Table(
                               border: TableBorder.all(borderRadius: BorderRadius.circular(8), color: AppColor.neutralLight),
@@ -233,15 +242,29 @@ class HomeView extends GetView<HomeController> {
                                     TableCell(
                                       child: VStack([
                                         'Remaining'.text.neutral500.size(12).makeCentered(),
-                                        '${(controller.countMaxBudget.value - controller.countOfMonth.value).moneyFormat()}'.text.size(13).black.makeCentered(),
-                                        '(${100 - controller.countRemainingBudget.value}%)'.text.blue500.size(12).makeCentered(),
+                                        if (controller.countMaxBudget.value - controller.countOfMonth.value >= 0) ...[
+                                          '${(controller.countMaxBudget.value - controller.countOfMonth.value).moneyFormat()}'.text.size(13).black.makeCentered(),
+                                          '(${100 - controller.countRemainingBudget.value}%)'.text.blue500.size(12).blue500.makeCentered(),
+                                        ] else ...[
+                                          '${0.moneyFormat()}'.text.black.size(13).makeCentered(),
+                                          '(0%)'.text.blue500.size(12).blue500.makeCentered(),
+                                        ],
                                       ]).p12(),
                                     ),
                                     TableCell(
                                       child: VStack([
                                         'You can spent'.text.neutral500.size(12).makeCentered(),
-                                        '${(controller.countMaxBudget.value / dayInMonth(controller.focusedDay.value)).moneyFormat()}'.text.size(13).black.makeCentered(),
-                                        '(Per Day)'.text.blue500.size(12).makeCentered(),
+                                        if (controller.focusedDay.value.month == DateTime.now().month && controller.focusedDay.value.year == DateTime.now().year) ...[
+                                          '${((controller.countMaxBudget.value - controller.countOfMonth.value) / (dayInMonth(DateTime.now()) - DateTime.now().day + 1)).moneyFormat()}'
+                                              .text
+                                              .size(13)
+                                              .black
+                                              .makeCentered(),
+                                          '(Per Day)'.text.blue500.size(12).makeCentered(),
+                                        ] else ...[
+                                          '-'.text.blue500.size(13).makeCentered(),
+                                          '(Passed)'.text.green600.size(12).makeCentered(),
+                                        ],
                                       ]).p12(),
                                     ),
                                   ],
@@ -636,7 +659,7 @@ class HomeView extends GetView<HomeController> {
   Widget floatingActionButton() {
     return Obx(() => controller.expenseList.isNotEmpty
         ? FloatingActionButton(
-            backgroundColor: AppColor.fabPrimary,
+            backgroundColor: Colors.blue,
             child: Icon(CupertinoIcons.add, color: Colors.white),
             onPressed: () => DialogInputHelper.showDialogExpense(),
           ).pOnly(bottom: Get.context!.isMobile ? 90 : 68)

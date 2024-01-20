@@ -31,7 +31,7 @@ class SettingsView extends GetView<SettingsController> {
     return HStack(
       [
         Obx(
-          () => controller.menuSelected.value == AUTO_COMPLETE
+          () => controller.menuSelected.value == SectionMenu.AUTO_COMPLETE
               ? TextField(
                   controller: controller.tfSearchAutoComplete,
                   style: TextStyle(fontSize: 13),
@@ -83,13 +83,13 @@ class SettingsView extends GetView<SettingsController> {
 
   Widget bodyContent() {
     switch (controller.menuSelected.value) {
-      case APP_CONFIG:
+      case SectionMenu.APP_CONFIG:
         return SectionAppConfig();
-      case AUTO_COMPLETE:
+      case SectionMenu.AUTO_COMPLETE:
         return SectionAutoComplete();
-      case REPEAT_SETTING:
+      case SectionMenu.REPEAT_SETTING:
         return SectionRepeat();
-      case IMPORT_EXPORT:
+      case SectionMenu.IMPORT_EXPORT:
         return SectionIEmport();
       default:
         return Container();
@@ -108,9 +108,9 @@ class SettingsView extends GetView<SettingsController> {
       Obx(
         () {
           switch (controller.menuSelected.value) {
-            case APP_CONFIG:
+            case SectionMenu.APP_CONFIG:
               return 'Version: ${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'.text.make();
-            case AUTO_COMPLETE:
+            case SectionMenu.AUTO_COMPLETE:
               return '${controller.autoCompleteList.length} Record'.text.make();
             default:
               return Container();

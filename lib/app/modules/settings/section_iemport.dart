@@ -19,7 +19,7 @@ class SectionIEmport extends GetView<SettingsController> {
         onPressed: () async => await SeedHelper.importFromCSV(),
       ),
       Divider().pSymmetric(v: 16),
-      'Export From CSV'.text.make().pOnly(bottom: 8),
+      'Export To CSV'.text.make().pOnly(bottom: 8),
       ExButtonElevated(
         label: 'Export File',
         labelSize: 12,
