@@ -205,7 +205,28 @@ class ViewBudget extends GetView<SummaryController> {
                         if (item.maxBudget != null && item.maxBudget! > 0) ...[
                           '${item.remainingBudget?.moneyFormat()}'.text.size(11).color(item.remainingBudget! < 0 ? AppColor.red : AppColor.textReverse).bold.make(),
                         ] else ...[
-                          'No Budget'.text.size(11).bold.make(),
+                          InkWell(
+                            child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
+                            onTap: () {
+                              logI(jsonEncode(item));
+                              final entity = SupaCategory(
+                                id: item.categoryId,
+                                createdAt: DateTime.now().toStringEx(),
+                                name: item.categoryName,
+                                color: item.categoryColor,
+                                icon: item.categoryIcon,
+                                maxBudget: item.maxBudget,
+                              );
+
+                              DialogInputHelper.showDialogCategory(
+                                entity: entity,
+                                callback: () async {
+                                  await Get.find<HomeController>().getCategory();
+                                  await controller.onMonthChange(controller.monthSelected.value);
+                                },
+                              );
+                            },
+                          ),
                         ],
                       ]).w(Get.context!.isMobile ? 100 : 130).pOnly(right: 12),
 
@@ -229,38 +250,9 @@ class ViewBudget extends GetView<SummaryController> {
                         ]).pOnly(right: 12).expand(),
                       ] else ...[
                         VStack([
-                          ExProgressBar(
-                            value: 0,
-                            color1: Colors.transparent,
-                            color2: AppColor.neutralLight,
-                            radius: 2,
-                            height: 8,
-                          ).pOnly(bottom: 4),
                           HStack([
-                            '${item.total?.moneyFormat()}'.text.bold.size(11).minFontSize(11).color(AppColor.blue).make(),
                             Spacer(),
-                            InkWell(
-                              child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
-                              onTap: () {
-                                logI(jsonEncode(item));
-                                final entity = SupaCategory(
-                                  id: item.categoryId,
-                                  createdAt: DateTime.now().toStringEx(),
-                                  name: item.categoryName,
-                                  color: item.categoryColor,
-                                  icon: item.categoryIcon,
-                                  maxBudget: item.maxBudget,
-                                );
-
-                                DialogInputHelper.showDialogCategory(
-                                  entity: entity,
-                                  callback: () async {
-                                    await Get.find<HomeController>().getCategory();
-                                    await controller.onMonthChange(controller.monthSelected.value);
-                                  },
-                                );
-                              },
-                            ),
+                            '${item.total?.moneyFormat()}'.text.bold.size(12).make(),
                           ]),
                         ]).pOnly(right: 12).expand(),
                       ],

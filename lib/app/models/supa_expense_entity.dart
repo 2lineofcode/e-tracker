@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import '../core/app_api.dart';
 import 'supa_category_entity.dart';
 
 /// *
@@ -22,7 +23,8 @@ class SupaExpense {
   SupaExpense.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     createdAt = json['created_at'];
-    categoryName = json['category_name'];
+    // categoryName = json['category_name'];
+    categoryName = json['category_name'].toString().replaceAll('#${db.auth.currentUser!.email!}', '');
     note = json['note'];
     amount = json['amount'];
     date = json['date'];
@@ -35,7 +37,8 @@ class SupaExpense {
     final data = <String, dynamic>{};
     data['id'] = id;
     data['created_at'] = createdAt;
-    data['category_name'] = categoryName;
+    // data['category_name'] = categoryName;
+    data['category_name'] = '$categoryName#${db.auth.currentUser!.email}';
     data['note'] = note;
     data['amount'] = amount;
     data['date'] = date;

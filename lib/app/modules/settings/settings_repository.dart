@@ -47,11 +47,8 @@ class SettingsRepository {
     return response;
   }
 
-  Future<void> addAutoComplete(String autocompleteNote) async {
-    final response = await db.from('autocomplete').upsert({
-      'note': autocompleteNote,
-      'user_id': db.auth.currentSession?.user.id ?? '',
-    });
+  Future<void> addAutoComplete(SupaAutoComplete autocompleteEntity) async {
+    final response = await db.from('autocomplete').upsert(autocompleteEntity.toJson());
     return response;
   }
 
@@ -60,6 +57,24 @@ class SettingsRepository {
       'note': note,
       'user_id': db.auth.currentSession?.user.id ?? '',
     });
+    return response;
+  }
+
+  /// ------------------------------------------------------------------------
+  /// ! count data
+  /// ------------------------------------------------------------------------
+  Future<int> countExpense() async {
+    final response = await db.from('expense').count().eq('user_id', db.auth.currentSession?.user.id ?? '');
+    return response;
+  }
+
+  Future<int> countCategory() async {
+    final response = await db.from('category').count().eq('user_id', db.auth.currentSession?.user.id ?? '');
+    return response;
+  }
+
+  Future<int> countAutoComplete() async {
+    final response = await db.from('autocomplete').count().eq('user_id', db.auth.currentSession?.user.id ?? '');
     return response;
   }
 

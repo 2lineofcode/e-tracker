@@ -313,14 +313,18 @@ class HomeView extends GetView<HomeController> {
                             ).cornerRadius(4).pOnly(top: 2),
                           ],
                           Spacer(),
-                          if (item.maxBudget == null && item.name != 'Notes') Icon(Icons.edit, size: 16, color: AppColor.red),
+                          if (item.maxBudget == null && item.name != 'Notes') ...[
+                            // Icon(Icons.edit, size: 16, color: AppColor.red),
+                            AnimateIcon(
+                              onTap: () {},
+                              iconType: IconType.animatedOnHover,
+                              animateIcon: AnimateIcons.edit,
+                              color: Colors.white,
+                            ).wh(16, 16),
+                          ],
                         ],
                       ),
-                      onTap: () {
-                        if (item.name != 'Notes') {
-                          DialogInputHelper.showDialogCategory(entity: item);
-                        }
-                      },
+                      onTap: () => DialogInputHelper.showDialogCategory(entity: item),
                     ).pSymmetric(h: 4);
                   },
                 ).expand(),
@@ -447,17 +451,20 @@ class HomeView extends GetView<HomeController> {
     if (searchText.startsWith(RegExp(r'[0-9]'))) {
       //
       if (searchText.isNotEmpty && searchText.length <= 3) {
+        final startDate = DateTime.now().subtract(Duration(days: searchText.toInt()! - 1)).toStringEx(format: 'd MMM y');
+        final endDate = DateTime.now().toStringEx(format: 'd MMM y');
         return VStack([
           'Showing data:'.text.bold.make().pOnly(bottom: 12),
           '🗓️ $searchText days from today'.text.make(),
+          '($startDate → $endDate)'.text.size(11).minFontSize(11).make().pOnly(top: 4),
         ]);
       } else {
         try {
-          final dateA = searchText.substring(0, 10).reformatDate(from: yMd, to: 'd MMM y');
-          final dateB = searchText.substring(11).reformatDate(from: yMd, to: 'd MMM y');
+          final startDate = searchText.substring(0, 10).reformatDate(from: yMd, to: 'd MMM y');
+          final endDate = searchText.substring(11).reformatDate(from: yMd, to: 'd MMM y');
           return VStack([
             'Showing for date range:'.text.bold.make().pOnly(bottom: 12),
-            '🗓️ $dateA → $dateB'.text.make(),
+            '🗓️ $startDate → $endDate'.text.make(),
           ]);
         } catch (e) {
           return '$searchText'.text.make();
@@ -573,10 +580,9 @@ class HomeView extends GetView<HomeController> {
                   12.widthBox,
                   isTypeNotes ? '(${item.createdAt?.reformatDate(to: 'HH:mm')})'.text.white.size(11).minFontSize(11).make() : 0.heightBox,
                 ]),
-              ]),
+              ]).expand(),
 
               /// amount
-              Spacer(),
               isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
             ],
           ).p12(),

@@ -15,6 +15,7 @@ import '../../core/app_api.dart';
 import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
+import '../../models/supa_autocomplete_entity.dart';
 import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../widgets/widget_autocomplete.dart';
@@ -252,7 +253,7 @@ mixin DialogInputHelper {
     final _repo = Get.find<HomeRepository>();
 
     if (_controller.categoryList.isEmptyOrNull) {
-      ExSnackbar.danger('add some category first:))');
+      OverlayHelper.notification('Please Creete at least 1 category', color: Vx.red600, duration: 3.seconds);
       return;
     }
 
@@ -457,7 +458,7 @@ mixin DialogInputHelper {
     final _repo = Get.find<HomeRepository>();
 
     if (_controller.categoryList.isEmptyOrNull) {
-      ExSnackbar.danger('add some category first:))');
+      OverlayHelper.notification('Please Creete at least 1 category', color: Vx.red600, duration: 3.seconds);
       return;
     }
 
@@ -679,7 +680,6 @@ mixin DialogInputHelper {
     String? tfDate,
     Function? customCallback,
   }) async {
-    // local inject
     final _controller = Get.find<HomeController>();
     final _repo = Get.find<HomeRepository>();
 
@@ -688,7 +688,8 @@ mixin DialogInputHelper {
     if (tfAmount.isEmptyOrNull) return;
     Get.back(); // close dialog first
 
-    final entity = SupaExpense(
+    /// setup entity
+    final newExpense = SupaExpense(
       id: expense != null ? expense.id : UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       createdAt: DateTime.now().toStringEx(),
@@ -699,11 +700,24 @@ mixin DialogInputHelper {
       detail: tfDescription ?? '',
     );
 
-    if (entity.categoryName == 'Notes') entity.amount = 0;
+    final newAutoComplete = SupaAutoComplete(
+      id: UuidV4().generate(),
+      userId: db.auth.currentSession?.user.id ?? '',
+      createdAt: DateTime.now().toStringEx(),
+      note: '${tfNote.toTitleCase}',
+      categoryName: '${newExpense.categoryName}',
+      amount: '${newExpense.amount}',
+    );
 
+    if (newExpense.categoryName == 'Notes') newExpense.amount = 0;
+
+    /// process data
     try {
-      expense != null ? await _repo.editExpense(entity) : await _repo.addExpense(entity);
-      await _repo.addAutoComplete('${tfNote.toTitleCase}', categoryName: '${entity.categoryName}', amount: '${entity.amount}');
+      /// insert to db
+      expense != null ? await _repo.editExpense(newExpense) : await _repo.addExpense(newExpense);
+      await _repo.addAutoComplete(newAutoComplete);
+
+      /// refresh data after insert
       await _controller.getExpense(find: _controller.tfSearchExpense.value.text.isNotBlank ? _controller.tfSearchExpense.value.text : null);
       await _controller.getCount1Month(_controller.focusedDay.value);
       _controller.rpcSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
@@ -712,7 +726,7 @@ mixin DialogInputHelper {
       OverlayHelper.notification('Successfully ${expense != null ? 'Edit' : 'Added'} $tfNote', color: Vx.green600);
     } catch (e) {
       logE('e: $e');
-      OverlayHelper.notification('$e', color: Vx.green600);
+      OverlayHelper.notification('Failed to ${expense != null ? 'Edit' : 'Added'} Data', color: Vx.red600);
     }
     await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
   }

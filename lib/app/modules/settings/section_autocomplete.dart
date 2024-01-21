@@ -77,11 +77,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
           [
             TextField(
               controller: controller.tfAddAutoComplete,
-              decoration: DecorationHelper.input(
-                hint: 'Create New',
-                suffix: Icon(Icons.check, size: 14),
-                // fillColor: Vx.neutral500,
-              ),
+              decoration: DecorationHelper.input(hint: 'Create New', suffix: Icon(Icons.telegram, size: 14)),
               style: TextStyle(fontSize: 13),
               onSubmitted: (s) => controller.onAddAutoComplete(s),
             ).h(33).expand(),

@@ -189,13 +189,8 @@ class HomeRepository {
     return response;
   }
 
-  Future<void> addAutoComplete(String note, {String? categoryName, String? amount}) async {
-    final response = await db.from('autocomplete').upsert({
-      'note': note,
-      'category_name': categoryName,
-      'amount': amount,
-      'user_id': db.auth.currentSession?.user.id,
-    });
+  Future<void> addAutoComplete(SupaAutoComplete autocompleteEntity) async {
+    final response = await db.from('autocomplete').upsert(autocompleteEntity.toJson());
     return response;
   }
 

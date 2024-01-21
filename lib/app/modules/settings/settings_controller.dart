@@ -4,6 +4,7 @@ import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:uuid/v4.dart';
 
 import '../../core/app_api.dart';
 import '../../core/app_setting.dart';
@@ -39,6 +40,11 @@ class SettingsController extends GetxController with StateMixin {
   late PackageInfo? packageInfo;
   final appInfo = <String, dynamic>{}.obs;
 
+  /// counting
+  final countExpense = 0.obs;
+  final countCategory = 0.obs;
+  final countAutoComplete = 0.obs;
+
   @override
   Future<void> onInit() async {
     /// Page: AutoComplete
@@ -56,6 +62,10 @@ class SettingsController extends GetxController with StateMixin {
 
     packageInfo = await PackageInfo.fromPlatform();
     appInfo.value = packageInfo?.data ?? {};
+
+    countExpense.value = await repo.countExpense();
+    countCategory.value = await repo.countCategory();
+    countAutoComplete.value = await repo.countAutoComplete();
 
     super.onInit();
   }
@@ -89,9 +99,24 @@ class SettingsController extends GetxController with StateMixin {
   }
 
   Future<void> onAddAutoComplete(String note) async {
-    if (note.isEmpty) return;
-    if (note.isBlank!) return;
-    await repo.addAutoComplete(note);
+    if (note.isEmptyOrNull) return;
+    final home = Get.find<HomeController>();
+
+    // check is category have data with value `Others` if dont have, create data
+    if (home.categoryList.isEmptyOrNull || !home.categoryList.map((element) => element.name).contains('Others')) {
+      await home.onAddCategory('Others');
+    }
+
+    final newAutoComplete = SupaAutoComplete(
+      id: UuidV4().generate(),
+      userId: db.auth.currentSession?.user.id ?? '',
+      createdAt: DateTime.now().toStringEx(),
+      note: note,
+      amount: '0',
+      categoryName: 'Others',
+    );
+
+    await repo.addAutoComplete(newAutoComplete);
     tfAddAutoComplete.clear();
     autoCompleteList.value = await repo.getAutoComplete();
     change(0, status: RxStatus.success());

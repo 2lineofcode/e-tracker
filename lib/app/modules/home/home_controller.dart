@@ -50,9 +50,6 @@ class HomeController extends GetxController with StateMixin {
   /// init ~~
   @override
   Future<void> onInit() async {
-    /// new user => seed dummy data
-    await SeedHelper.generate();
-
     selectedDays.add(DateTime.now());
     await getCategory();
     await getExpense();
@@ -61,6 +58,13 @@ class HomeController extends GetxController with StateMixin {
     rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
     rpcSumByCategory.value = await repo.rpcSumByCategory(focusedDay.value);
     super.onInit();
+  }
+
+  @override
+  Future<void> onReady() async {
+    log('onReady: called');
+    await NewUserHelper.gettingStart();
+    super.onReady();
   }
 
   /// calendar
@@ -152,7 +156,11 @@ class HomeController extends GetxController with StateMixin {
     categoryList.value = await repo.getCategory();
   }
 
-  Future<void> onAddCategory(String categoryName) async {
+  Future<void> onAddCategory(
+    String categoryName, {
+    String icon = 'code=59513&family=LineAwesomeIcons&pack=flutter_iconpicker_plus',
+    String? iconColor,
+  }) async {
     if (categoryName.isEmptyOrNull) return;
 
     try {
@@ -161,14 +169,16 @@ class HomeController extends GetxController with StateMixin {
         userId: db.auth.currentSession?.user.id ?? '',
         createdAt: DateTime.now().toStringEx(),
         name: categoryName,
-        color: Vx.randomPrimaryColor.toHex(),
+        icon: icon,
+        color: iconColor ?? Vx.randomPrimaryColor.toHex(),
+        isProtect: false,
       );
       await repo.addCategory(categoryEntity);
       await getCategory();
       OverlayHelper.notification('Category $categoryName Added', color: Vx.green600);
       tfCategory.clear();
     } catch (e) {
-      ExSnackbar.dangerTop('$e');
+      OverlayHelper.notification('Failed, $categoryName already exists', color: Vx.red600, duration: 2.seconds);
     }
   }
 
