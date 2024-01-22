@@ -45,7 +45,7 @@ class FilteringRepository {
           .from('expense')
           .select('*, category(*)')
           .eq('user_id', db.auth.currentSession?.user.id ?? '')
-          .eq('category_name', categoryName)
+          .eq('category_name', '$categoryName#${db.auth.currentSession?.user.email}')
           .filter('date', 'gte', startDate)
           .filter('date', 'lte', endDate)
           .order(orderBy ?? 'amount', ascending: false)

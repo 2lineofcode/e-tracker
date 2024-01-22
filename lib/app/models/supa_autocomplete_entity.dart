@@ -32,9 +32,7 @@ class SupaAutoComplete {
     data['note'] = note;
     data['user_id'] = userId;
     // data['category_name'] = categoryName;
-    if (categoryName != null) {
-      data['category_name'] = '$categoryName#${db.auth.currentUser!.email}';
-    }
+    data['category_name'] = '$categoryName#${db.auth.currentUser!.email}';
     data['amount'] = amount;
     data['id'] = id;
     return data;

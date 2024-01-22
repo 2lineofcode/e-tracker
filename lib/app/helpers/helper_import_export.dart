@@ -38,8 +38,8 @@ mixin ImportExportHelper {
         return (data).map((e) => SupaExpense.fromJson(e)).toList();
       });
 
-      final jsonFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy.mm')}.json';
-      final csvFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy.mm')}.csv';
+      final jsonFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy.HHmm')}.json';
+      final csvFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy.HHmm')}.csv';
 
       /// Save Json Data in Json File
       File(jsonFilePath).writeAsStringSync(jsonEncode(ex));
