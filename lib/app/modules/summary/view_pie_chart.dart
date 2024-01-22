@@ -32,10 +32,7 @@ class ViewPieChart extends GetView<SummaryController> {
             Container(
               decoration: BoxDecoration(
                 color: AppColor.tableHeader,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
                 border: Border.all(color: Vx.neutral600),
               ),
               child: HStack([

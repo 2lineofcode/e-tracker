@@ -21,12 +21,18 @@ import 'helpers.dart';
 
 mixin ImportExportHelper {
   /// export to csv
-  static Future<void> exportToCSV() async {
+  static Future<void> exportToCSV({String? customPath, Function(File)? customCallback}) async {
     try {
-      /// select directory
-      String? abPath = await FilePicker.platform.getDirectoryPath(dialogTitle: 'Save to');
-      final path = abPath?.replaceAll('/Volumes/Macintosh HD', '');
-      if (path == null) return;
+      String? path;
+
+      /// get path
+      if (customPath == null) {
+        final abPath = await FilePicker.platform.getDirectoryPath(dialogTitle: 'Save to');
+        path = abPath?.replaceAll('/Volumes/Macintosh HD', '');
+        if (path == null) return;
+      } else {
+        path = customPath;
+      }
 
       /// get data
       final ex = await db //
@@ -77,24 +83,35 @@ mixin ImportExportHelper {
       File(jsonFilePath).deleteSync();
 
       /// export to csv
-      File(csvFilePath).writeAsStringSync(ListToCsvConverter().convert(csvData));
-      ExSnackbar.success(csvFilePath);
+      if (customCallback == null) {
+        File(csvFilePath).writeAsStringSync(ListToCsvConverter().convert(csvData));
+        ExSnackbar.success(csvFilePath);
+      } else {
+        File(csvFilePath).writeAsStringSync(ListToCsvConverter().convert(csvData));
+        customCallback.call(File(csvFilePath));
+      }
     } catch (e) {
       ExSnackbar.danger('$e');
     }
   }
 
   /// import from csv
-  static Future<void> importFromCSV() async {
+  static Future<void> importFromCSV({String? customPath, Function()? customCallback}) async {
     try {
-      /// select directory
-      final result = await FilePicker.platform.pickFiles(allowedExtensions: ['csv'], type: FileType.custom);
-      if (result == null) return;
+      String? path;
+
+      /// get path
+      if (customPath == null) {
+        final result = await FilePicker.platform.pickFiles(allowedExtensions: ['csv'], type: FileType.custom);
+        if (result == null) return;
+        path = result.files.first.path ?? '';
+      } else {
+        path = customPath;
+      }
 
       /// ----------------------------------------------------------------------------------
       /// # CVS TO JSON ####################################################################
       /// ----------------------------------------------------------------------------------
-      String path = result.files.first.path ?? '';
       final csvString = await File(path).readAsString();
       List<List<dynamic>> csvTable = CsvToListConverter().convert(csvString);
       List<Map<String, dynamic>> jsonList = [];
@@ -221,7 +238,12 @@ mixin ImportExportHelper {
       /// refresh all
       await __refresh__();
       ExLoading.dismiss();
-      OverlayHelper.notification('Import Done', duration: 4.seconds);
+
+      if (customCallback == null) {
+        OverlayHelper.notification('Import Done', duration: 4.seconds);
+      } else {
+        customCallback.call();
+      }
     } catch (e) {
       ExLoading.dismiss();
       ExAlert.error(title: 'Import Failed', message: '$e');
@@ -232,15 +254,9 @@ mixin ImportExportHelper {
   static Future<void> deleteAllData({bool withRefresh = true}) async {
     ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
     try {
-      await db.from('expense').delete().match({
-        'user_id': db.auth.currentSession?.user.id ?? '',
-      });
-      await db.from('autocomplete').delete().match({
-        'user_id': db.auth.currentSession?.user.id ?? '',
-      });
-      await db.from('category').delete().match({
-        'user_id': db.auth.currentSession?.user.id ?? '',
-      });
+      await db.from('expense').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
+      await db.from('autocomplete').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
+      await db.from('category').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
       if (withRefresh) await __refresh__();
 
       ExLoading.dismiss();
@@ -270,6 +286,5 @@ mixin ImportExportHelper {
   static Future<void> __refresh__() async {
     await Get.find<HomeController>().onInit();
     await Get.find<SettingsController>().onInit();
-    Get.find<SettingsController>().menuSelected.value = 'Import/Export';
   }
 }

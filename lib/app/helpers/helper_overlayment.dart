@@ -22,7 +22,7 @@ mixin OverlayHelper {
           child: Text(msg, style: style ?? TextStyle(color: Colors.white)).p12(),
           alignment: alignment ?? Alignment.topRight,
           color: color ?? Vx.green600,
-          duration: duration ?? 1.seconds,
+          duration: duration ?? 2.seconds,
         ),
       ),
     );

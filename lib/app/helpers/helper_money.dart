@@ -65,7 +65,7 @@ extension ExpenseFlagColorExt on num {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
 
-    if (this == 0) return Vx.white;
+    if (this == 0) return AppColor.textReverse;
     if (this <= eco) {
       return AppColor.green;
     } else if (this <= average) {
@@ -83,7 +83,7 @@ extension ExpenseFlagColorExt on num {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
 
-    if (this == 0) return Vx.white;
+    if (this == 0) return AppColor.textReverse;
     if (this <= eco) {
       return AppColor.greenLight;
     } else if (this <= average) {
@@ -97,7 +97,7 @@ extension ExpenseFlagColorExt on num {
     final eco = pref.read<num>(kFlagEco) ?? 50000;
     final average = pref.read<num>(kFlagAverage) ?? 100000;
 
-    if (this == 0) return Colors.white10;
+    if (this == 0) return AppColor.neutral;
     if (this <= eco) {
       return AppColor.greenDark;
     } else if (this <= average) {

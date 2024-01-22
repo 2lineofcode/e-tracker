@@ -113,6 +113,22 @@ extension IconDataToString on IconData {
   String? setIconData() => 'code=$codePoint&family=$fontFamily&pack=$fontPackage';
 }
 
+String formatFileSize(int bytes) {
+  const int kilobyte = 1024;
+  const int megabyte = kilobyte * 1024;
+  const int gigabyte = megabyte * 1024;
+
+  if (bytes >= gigabyte) {
+    return '${(bytes / gigabyte).toStringAsFixed(2)} GB';
+  } else if (bytes >= megabyte) {
+    return '${(bytes / megabyte).toStringAsFixed(2)} MB';
+  } else if (bytes >= kilobyte) {
+    return '${(bytes / kilobyte).toStringAsFixed(2)} KB';
+  } else {
+    return '$bytes bytes';
+  }
+}
+
 // ------------------------------------------------------------------------
 // Mobile Only: closeDrawer -> only close when drawer is open
 // ------------------------------------------------------------------------

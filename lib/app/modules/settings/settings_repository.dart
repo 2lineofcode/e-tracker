@@ -1,3 +1,5 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../core/app_api.dart';
 import '../../models/supa_autocomplete_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
@@ -75,6 +77,19 @@ class SettingsRepository {
 
   Future<int> countAutoComplete() async {
     final response = await db.from('autocomplete').count().eq('user_id', db.auth.currentSession?.user.id ?? '');
+    return response;
+  }
+
+  /// ------------------------------------------------------------------------
+  /// ! storage
+  /// ------------------------------------------------------------------------
+  Future<List<FileObject>> getBackupList() async {
+    final response = await db.storage.from('backup').list(
+          searchOptions: SearchOptions(
+            search: '%${db.auth.currentSession!.user.email}%',
+            sortBy: SortBy(column: 'name', order: 'desc'),
+          ),
+        );
     return response;
   }
 

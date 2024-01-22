@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:overlayment/overlayment.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/v4.dart';
 
@@ -29,7 +30,7 @@ class SettingsController extends GetxController with StateMixin {
 
   // menu
   final menuList = <String>[].obs;
-  final menuSelected = ''.obs;
+  final menuSelected = SectionMenu.APP_CONFIG.obs;
 
   /// Page: AutoComplete
   final tfSearchAutoComplete = TextEditingController();
@@ -51,8 +52,8 @@ class SettingsController extends GetxController with StateMixin {
   final countCategory = 0.obs;
   final countAutoComplete = 0.obs;
 
-  /// bak list
-  final baklist = <FileObject>[].obs;
+  /// backupList
+  final backupList = <FileObject>[].obs;
 
   @override
   Future<void> onInit() async {
@@ -67,8 +68,6 @@ class SettingsController extends GetxController with StateMixin {
     tfSpender.text = pref.read<num>(kFlagSpender)?.moneyFormat() ?? '';
     tfCurrencySymbol.text = pref.read<String>(kCurrencySymbol) ?? '';
 
-    menuSelected.value = Get.parameters['page'] ?? SectionMenu.APP_CONFIG;
-
     packageInfo = await PackageInfo.fromPlatform();
     appInfo.value = packageInfo?.data ?? {};
 
@@ -76,7 +75,7 @@ class SettingsController extends GetxController with StateMixin {
     countCategory.value = await repo.countCategory();
     countAutoComplete.value = await repo.countAutoComplete();
 
-    baklist.value = await db.storage.from('backup').list();
+    backupList.value = await repo.getBackupList();
     super.onInit();
   }
 
@@ -221,6 +220,69 @@ class SettingsController extends GetxController with StateMixin {
         ]).p16(),
       ),
     );
+  }
+
+  /// flow:
+  /// 1. collect data expense from database
+  /// 2. save to temp directory
+  /// 3. upload to supabase storage -> file temp directory
+  /// 4. delete temp directory
+  /// 5. refresh data backup list
+  /// 6. show notification
+  /// 7. handle error
+  Future<void> onUploadBackup() async {
+    final filePath = await getTemporaryDirectory();
+    final fileName = '${db.auth.currentSession?.user.email}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
+
+    // ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
+    try {
+      await ImportExportHelper.exportToCSV(
+        customPath: filePath.path,
+        customCallback: (file) async {
+          await db.storage.from('backup').upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1')).then((response) async {
+            file.deleteSync();
+            await onInit();
+            OverlayHelper.notification('Backup Done');
+          });
+        },
+      );
+    } catch (e) {
+      ExLoading.dismiss();
+      ExAlert.error(message: '$e');
+    }
+    ExLoading.dismiss();
+  }
+
+  /// flow:
+  /// 1. download file from supabase storage
+  /// 2. save file to temp directory
+  /// 3. delete all current data [expense]
+  /// 4. apply new data [expense] from supabase storage selected
+  /// 5. delete file temp directory
+  /// 6. show notification
+  /// 7. handle error
+  Future<void> onDownloadBackup(FileObject fileObj) async {
+    await db.storage.from('backup').download(fileObj.name).then((res) async {
+      final filePath = await getTemporaryDirectory();
+      final fileName = '${fileObj.name}';
+      final file = File('${filePath.path}/$fileName');
+
+      await file.writeAsBytes(res);
+
+      await db.from('expense').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
+
+      await ImportExportHelper.importFromCSV(
+        customPath: '${filePath.path}/$fileName',
+        customCallback: () async {
+          file.deleteSync();
+          await onInit();
+          OverlayHelper.notification('Apply Backup From "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}" Done');
+        },
+      );
+    }).catchError((e) {
+      log('e: $e');
+      ExAlert.error(message: '$e');
+    });
   }
 
   Future<void> onLogout() async {

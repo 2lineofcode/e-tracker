@@ -1,4 +1,5 @@
 import 'package:ex/ex.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -21,7 +22,7 @@ class SectionIEmport extends GetView<SettingsController> {
             '📈 Analytics'.text.bold.make().pOnly(bottom: 8),
             'Total Data Expense: ${controller.countExpense.value}'.text.size(11).make(),
             'Total Data Category: ${controller.countCategory.value}'.text.size(11).make(),
-            'Total Data AutoComplete: ${controller.countAutoComplete.value}'.text.size(11).make(),
+            'Total Data AutoComplete: ${controller.autoCompleteList.length}'.text.size(11).make(),
           ]).p12(),
         ),
       ),
@@ -80,26 +81,69 @@ class SectionIEmport extends GetView<SettingsController> {
           ],
         ).p12(),
       ),
-      // Divider().pSymmetric(v: 16),
-      // 'Data Sync'.text.make().pOnly(bottom: 12),
-      // ListView.separated(
-      //   itemCount: controller.baklist.length,
-      //   separatorBuilder: (c, i) => Divider(),
-      //   itemBuilder: (context, index) {
-      //     return ListTile(
-      //       title: '${controller.baklist[index].name}'.text.size(11).make(),
-      //       subtitle: '${controller.baklist[index].createdAt?.reformatDate(to: 'dMMMy HH:ss')}'.text.size(10).minFontSize(10).make(),
-      //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: AppColor.cardItemPrimary, width: 1)),
-      //       trailing: IconButton(
-      //         onPressed: () {
-      //           db.storage.from('backup').download(controller.baklist[index].name).then((res) {});
-      //         },
-      //         icon: Icon(Icons.download),
-      //       ),
-      //     );
-      //   },
-      // ).expand(),
-    ]).pSymmetric(h: 8);
+      Obx(
+        () => controller.backupList.isNotEmpty
+
+            /// has data
+            ? VStack([
+                Divider().pSymmetric(v: 16),
+                HStack([
+                  'Cloud Sync'.text.make().expand(),
+                  ExButtonLoading(
+                    height: 33,
+                    width: 80,
+                    type: ExButtonType.elevated,
+                    child: 'Sync Now'.text.size(11).minFontSize(11).make(),
+                    onTap: (startLoading, stopLoading, btnState) async {
+                      startLoading();
+                      await controller.onUploadBackup();
+                      stopLoading();
+                    },
+                  ),
+                ]).pOnly(bottom: 12),
+                ListView.separated(
+                  itemCount: controller.backupList.length,
+                  separatorBuilder: (c, i) => Divider(),
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final item = controller.backupList[index];
+                    final fileName = '${item.name.replaceAll('${db.auth.currentSession?.user.email}_', '')}';
+
+                    return ListTile(
+                      title: '$fileName'.text.size(11).make(),
+                      subtitle: '${item.updatedAt?.reformatDate(to: 'd MMM y HH:mm', addHours: 7)} • ${formatFileSize(item.metadata!['size'])}'.text.size(10).minFontSize(10).make(),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: AppColor.cardItemPrimary, width: 1)),
+                      trailing: IconButton(
+                        icon: Icon(CupertinoIcons.arrow_turn_up_left),
+                        onPressed: () => controller.onDownloadBackup(item),
+                      ),
+                    );
+                  },
+                ),
+              ])
+
+            /// empty
+            : VStack([
+                Divider().pSymmetric(v: 16),
+                'Cloud Sync'.text.make().pOnly(bottom: 12),
+                ExUiErrorOrEmpty(
+                  child: VStack(
+                    [
+                      'No Data Backup'.text.size(13).bold.makeCentered(),
+                      ''.text.size(11).minFontSize(11).makeCentered(),
+                      ExButtonElevated(
+                        label: 'Backup Now',
+                        labelSize: 11,
+                        height: 33,
+                        onPressed: () => controller.onUploadBackup(),
+                      ).centered().pOnly(top: 8)
+                    ],
+                  ),
+                ).h(150)
+              ]),
+      ),
+    ]).pSymmetric(h: 8).scrollVertical();
   }
 
   Widget buttonDelete({

@@ -319,7 +319,7 @@ class HomeView extends GetView<HomeController> {
                               onTap: () => DialogInputHelper.showDialogCategory(category: item),
                               iconType: IconType.animatedOnHover,
                               animateIcon: AnimateIcons.edit,
-                              color: Colors.white,
+                              color: AppColor.textReverse,
                             ).wh(16, 16),
                           ],
                         ],
