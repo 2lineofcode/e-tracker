@@ -10,6 +10,7 @@ import '../../core/app_setting.dart';
 import '../../core/app_theme.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
+import '../widgets/widget_image_no_cache_view.dart';
 import 'settings_controller.dart';
 
 class SectionAppConfig extends GetView<SettingsController> {
@@ -45,10 +46,11 @@ class SectionAppConfig extends GetView<SettingsController> {
             () => controller.userProfile.value.id == null
                 ? CircularProgressIndicator.adaptive().p16()
                 : HStack([
-                    ExAvatarView(
-                      source: controller.userProfile.value.avatarUrl ?? 'https://empty.com',
-                      name: controller.userProfile.value.fullName ?? '',
+                    ExImageNoCacheView(
+                      url: db.storage.from('avatars').getPublicUrl('${db.auth.currentSession?.user.id}.png'),
                       size: 32,
+                      radius: 90,
+                      errorBuilder: (p0, p1, p2) => ExAvatarView(source: '', name: controller.userProfile.value.fullName, size: 32),
                     ),
                     VStack([
                       if (controller.userProfile.value.fullName.isEmptyOrNull) ...[

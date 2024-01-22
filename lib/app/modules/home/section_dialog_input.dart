@@ -33,22 +33,20 @@ import 'home_repository.dart';
 /// It is designed to be shared and can be used in multiple pages.
 /// The class includes methods for handling dialog categories.
 mixin DialogInputHelper {
-  // ------------------------------------------------------------------------
-  // Dialog Category
-  // ------------------------------------------------------------------------
-  static Future<void> showDialogCategory({SupaCategory? entity, Function? callback}) async {
-    // local inject
+  /// ------------------------------------------------------------------------
+  /// Dialog Category
+  /// ------------------------------------------------------------------------
+  static Future<void> showDialogCategory({SupaCategory? category, Function? callback}) async {
     final _controller = Get.find<HomeController>();
-    final _repo = Get.find<HomeRepository>();
 
-    final _tfCatName = TextEditingController(text: entity?.name ?? '');
-    final _tfCatColor = TextEditingController(text: entity?.color ?? '');
-    final _tfMaxBudget = TextEditingController(text: entity?.maxBudget != null ? entity?.maxBudget!.moneyFormat() : '');
+    final _tfCatName = TextEditingController(text: category?.name ?? '');
+    final _tfCatColor = TextEditingController(text: category?.color ?? '');
+    final _tfMaxBudget = TextEditingController(text: category?.maxBudget != null ? category?.maxBudget!.moneyFormat() : '');
     final _hueController = HueController(HSVColor.fromColor(_tfCatColor.text.fromHex)).obs;
-    final _iconSelected = (entity?.icon?.getIconData() ?? Icons.circle_outlined).obs;
+    final _iconSelected = (category?.icon?.getIconData() ?? Icons.circle_outlined).obs;
 
-    final isProtect = entity!.name!.contains('Others') == false && entity.name!.contains('Notes') == false;
-    final isNotes = entity.name!.contains('Notes');
+    final isProtect = category!.name!.contains('Others') == false && category.name!.contains('Notes') == false;
+    final isNotes = category.name!.contains('Notes');
 
     ExAlert.adaptive(
         content: VStack(
@@ -78,6 +76,16 @@ mixin DialogInputHelper {
                   LengthLimitingTextInputFormatter(13),
                 ],
                 keyboardType: TextInputType.number,
+                onSubmitted: (__) async {
+                  await _submitCategory(
+                    category: category,
+                    name: _tfCatName.text,
+                    color: _tfCatColor.text,
+                    icon: _iconSelected.value.setIconData() ?? '',
+                    maxBudget: _tfMaxBudget.text,
+                    callback: callback,
+                  );
+                },
               ).pOnly(bottom: 8),
             ),
             HStack(
@@ -163,7 +171,7 @@ mixin DialogInputHelper {
                           initState: (_) {},
                           builder: (_) {
                             return Icon(
-                              entity.icon?.getIconData() ?? Icons.circle_outlined,
+                              category.icon?.getIconData() ?? Icons.circle_outlined,
                               color: _hueController.value.value.toColor(),
                               size: 20,
                             );
@@ -202,52 +210,28 @@ mixin DialogInputHelper {
           if (isProtect) ...[
             CupertinoDialogAction(
               child: Text('Delete', style: TextStyle(fontSize: 13, color: Vx.red500)),
-              onPressed: () {
-                ExAlert.confirm(
-                    title: 'Are you sure?',
-                    message: "you can't rollback this action",
-                    titleStyle: TextStyle(fontWeight: FontWeight.bold),
-                    messageStyle: TextStyle(fontSize: 13),
-                    onYes: () async {
-                      try {
-                        await _repo.deleteCategory(entity.id ?? '');
-                        await _controller.getCategory();
-                        await callback?.call();
-                        OverlayHelper.notification('Category ${entity.name} Deleted', color: Vx.red600);
-                        Get.close(2);
-                      } catch (e) {
-                        Get.close(2);
-                        ExSnackbar.danger(e);
-                      }
-                    });
-              },
+              onPressed: () async => await _deleteCategory(category: category, callback: callback),
             ),
           ],
           CupertinoDialogAction(
             child: Text('Submit', style: TextStyle(fontSize: 13)),
             onPressed: () async {
-              final newEntity = SupaCategory(
-                id: entity.id,
-                userId: db.auth.currentSession?.user.id ?? '',
-                createdAt: DateTime.now().toStringEx(),
+              await _submitCategory(
+                category: category,
                 name: _tfCatName.text,
                 color: _tfCatColor.text,
-                icon: _iconSelected.value.setIconData(),
-                maxBudget: _tfMaxBudget.text.moneyUnformat(),
+                icon: _iconSelected.value.setIconData() ?? '',
+                maxBudget: _tfMaxBudget.text,
+                callback: callback,
               );
-              await _repo.editCategory(newEntity);
-              await _controller.getCategory();
-              await _controller.getExpense();
-              await callback?.call();
-              Get.back();
             },
           ),
         ]);
   }
 
-  // ------------------------------------------------------------------------
-  // Dialog Expense
-  // ------------------------------------------------------------------------
+  /// ------------------------------------------------------------------------
+  /// Dialog Expense
+  /// ------------------------------------------------------------------------
   static Future<void> showDialogExpense({SupaExpense? expense, Function? customCallback}) async {
     if (Get.context!.isMobile) {
       await _dialogExpenseMobile(expense: expense, customCallback: customCallback);
@@ -257,7 +241,6 @@ mixin DialogInputHelper {
   }
 
   static Future<void> _dialogExpenseMobile({SupaExpense? expense, Function? customCallback}) async {
-    // local inject
     final _controller = Get.find<HomeController>();
     final _repo = Get.find<HomeRepository>();
 
@@ -445,7 +428,7 @@ mixin DialogInputHelper {
               if (expense != null) ...[
                 ExButtonElevated(
                   child: Text('Delete', style: TextStyle(color: Vx.red500, fontSize: 13)),
-                  onPressed: () async => await _deleteExpense(expense: expense, customCallback: customCallback),
+                  onPressed: () async => await _deleteExpense(expense: expense, callback: customCallback),
                 ).pOnly(right: 12).expand(),
               ],
               ExButtonElevated(
@@ -649,7 +632,7 @@ mixin DialogInputHelper {
         if (expense != null) ...[
           CupertinoDialogAction(
             child: Text('Delete', style: TextStyle(color: Vx.red500, fontSize: 13)),
-            onPressed: () async => await _deleteExpense(expense: expense, customCallback: customCallback),
+            onPressed: () async => await _deleteExpense(expense: expense, callback: customCallback),
           ),
         ],
         CupertinoDialogAction(
@@ -662,24 +645,50 @@ mixin DialogInputHelper {
     );
   }
 
+  // ------------------------------------------------------------------------
   /// delete
-  static Future<void> _deleteExpense({SupaExpense? expense, Function? customCallback}) async {
-    // local inject
+  // ------------------------------------------------------------------------
+  static Future<void> _deleteExpense({required SupaExpense expense, Function? callback}) async {
     final _controller = Get.find<HomeController>();
     final _repo = Get.find<HomeRepository>();
 
     Get.back(); // close dialog first
-    await _repo.deleteExpense(expense!.id!);
+    await _repo.deleteExpense(expense.id!);
     await _controller.getExpense();
     await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
     await _controller.getCount1Month(_controller.focusedDay.value);
     _controller.rpcSpenderDay.value = await _repo.rpcGetSpenderDay(_controller.focusedDay.value);
     _controller.rpcSumByCategory.value = await _repo.rpcSumByCategory(_controller.focusedDay.value);
-    await customCallback?.call();
+    await callback?.call();
     OverlayHelper.notification('Data ${expense.note} Deleted', color: Vx.red600);
   }
 
+  static Future<void> _deleteCategory({required SupaCategory category, Function? callback}) async {
+    final _controller = Get.find<HomeController>();
+    final _repo = Get.find<HomeRepository>();
+    ExAlert.confirm(
+      title: 'Are you sure?',
+      message: "you can't rollback this action",
+      titleStyle: TextStyle(fontWeight: FontWeight.bold),
+      messageStyle: TextStyle(fontSize: 13),
+      onYes: () async {
+        try {
+          await _repo.deleteCategory(category.id ?? '');
+          await _controller.getCategory();
+          await callback?.call();
+          OverlayHelper.notification('Category ${category.name} Deleted', color: Vx.red600);
+          Get.close(2);
+        } catch (e) {
+          Get.close(2);
+          ExSnackbar.danger(e);
+        }
+      },
+    );
+  }
+
+  /// ------------------------------------------------------------------------
   /// submit
+  /// ------------------------------------------------------------------------
   static Future<void> _submitExpense(
     String tfNote,
     String? tfDescription,
@@ -738,5 +747,32 @@ mixin DialogInputHelper {
       OverlayHelper.notification('Failed to ${expense != null ? 'Edit' : 'Added'} Data', color: Vx.red600);
     }
     await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
+  }
+
+  static Future<void> _submitCategory({
+    required SupaCategory category,
+    Function? callback,
+    required String name,
+    required String color,
+    required String icon,
+    required String maxBudget,
+  }) async {
+    final _controller = Get.find<HomeController>();
+    final _repo = Get.find<HomeRepository>();
+
+    final newEntity = SupaCategory(
+      id: category.id,
+      userId: db.auth.currentSession?.user.id ?? '',
+      createdAt: DateTime.now().toStringEx(),
+      name: name,
+      color: color,
+      icon: icon,
+      maxBudget: maxBudget.moneyUnformat(),
+    );
+    await _repo.editCategory(newEntity);
+    await _controller.getCategory();
+    await _controller.getExpense();
+    await callback?.call();
+    Get.back();
   }
 }

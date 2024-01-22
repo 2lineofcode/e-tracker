@@ -1,23 +1,26 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:ex/ex.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:overlayment/overlayment.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/v4.dart';
 
 import '../../core/app_api.dart';
 import '../../core/app_setting.dart';
 import '../../core/const.dart';
-import '../../helpers/helper_misc.dart';
-import '../../helpers/helper_money.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_autocomplete_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 import '../../routes/app_pages.dart';
 import '../home/home_controller.dart';
+import '../widgets/widgets.dart';
 import 'settings_repository.dart';
 
 class SettingsController extends GetxController with StateMixin {
@@ -48,6 +51,9 @@ class SettingsController extends GetxController with StateMixin {
   final countCategory = 0.obs;
   final countAutoComplete = 0.obs;
 
+  /// bak list
+  final baklist = <FileObject>[].obs;
+
   @override
   Future<void> onInit() async {
     /// Page: AutoComplete
@@ -70,6 +76,7 @@ class SettingsController extends GetxController with StateMixin {
     countCategory.value = await repo.countCategory();
     countAutoComplete.value = await repo.countAutoComplete();
 
+    baklist.value = await db.storage.from('backup').list();
     super.onInit();
   }
 
@@ -136,6 +143,9 @@ class SettingsController extends GetxController with StateMixin {
     final tfAge = TextEditingController(text: userProfile.value.age);
     final tfAvatar = userProfile.value.avatarUrl.obs;
 
+    final isReplacePhoto = false.obs;
+    final imgReplace = Uint8List(0).obs;
+
     Overlayment.show(
       context: Get.context!,
       OverPanel(
@@ -143,13 +153,39 @@ class SettingsController extends GetxController with StateMixin {
         width: 300,
         child: VStack([
           'Edit Profile'.text.bold.makeCentered().pOnly(bottom: 24),
-          ExAvatarView(
-            source: '',
-            name: userProfile.value.fullName ?? '',
-            size: 64,
-          ).centered().pOnly(bottom: 16),
+          Obx(() {
+            if (isReplacePhoto.isTrue) {
+              return Container(
+                decoration: ExDecorator.box(borderRadius: 90),
+                child: Image.memory(imgReplace.value).wh(64, 64).cornerRadius(90),
+              ).centered().pOnly(bottom: 16);
+            } else {
+              return ExImageNoCacheView(
+                url: db.storage.from('avatars').getPublicUrl('${db.auth.currentSession?.user.id}.png'),
+                size: 64,
+                radius: 90,
+                errorBuilder: (p0, p1, p2) => ExAvatarView(source: '', name: tfFullName.text, size: 64),
+              ).centered().pOnly(bottom: 16);
+            }
+          }),
           ExButtonElevated(
-            onPressed: () {},
+            onPressed: () async {
+              // filepicker select file and upload to supabase storage
+              await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false).then((img) async {
+                if (img != null) {
+                  isReplacePhoto.value = true;
+
+                  final file = File(img.paths.first ?? '');
+                  final fileName = '${db.auth.currentSession?.user.id}.png';
+                  imgReplace.value = file.readAsBytesSync();
+
+                  await db.storage.from('avatars').upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1')).then((response) async {
+                    tfAvatar.value = db.storage.from('avatars').getPublicUrl(fileName);
+                    log('tfAvatar: $tfAvatar');
+                  });
+                }
+              });
+            },
             height: 33,
             child: 'Change Photo'.text.size(11).minFontSize(11).make(),
           ).centered().pOnly(bottom: 16),

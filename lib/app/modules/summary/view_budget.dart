@@ -219,7 +219,7 @@ class ViewBudget extends GetView<SummaryController> {
                               );
 
                               DialogInputHelper.showDialogCategory(
-                                entity: entity,
+                                category: entity,
                                 callback: () async {
                                   await Get.find<HomeController>().getCategory();
                                   await controller.onMonthChange(controller.monthSelected.value);

@@ -80,7 +80,25 @@ class SectionIEmport extends GetView<SettingsController> {
           ],
         ).p12(),
       ),
-      Divider().pSymmetric(v: 16),
+      // Divider().pSymmetric(v: 16),
+      // 'Data Sync'.text.make().pOnly(bottom: 12),
+      // ListView.separated(
+      //   itemCount: controller.baklist.length,
+      //   separatorBuilder: (c, i) => Divider(),
+      //   itemBuilder: (context, index) {
+      //     return ListTile(
+      //       title: '${controller.baklist[index].name}'.text.size(11).make(),
+      //       subtitle: '${controller.baklist[index].createdAt?.reformatDate(to: 'dMMMy HH:ss')}'.text.size(10).minFontSize(10).make(),
+      //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: AppColor.cardItemPrimary, width: 1)),
+      //       trailing: IconButton(
+      //         onPressed: () {
+      //           db.storage.from('backup').download(controller.baklist[index].name).then((res) {});
+      //         },
+      //         icon: Icon(Icons.download),
+      //       ),
+      //     );
+      //   },
+      // ).expand(),
     ]).pSymmetric(h: 8);
   }
 

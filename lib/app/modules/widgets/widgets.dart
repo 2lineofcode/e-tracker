@@ -2,6 +2,7 @@ export 'widget_autocomplete.dart';
 export 'widget_base_layout.dart';
 export 'widget_calender_body.dart';
 export 'widget_calender_header.dart';
+export 'widget_image_no_cache_view.dart';
 export 'widget_shimmer_bibit_hstack.dart';
 export 'widget_shimmer_bibit_vstack.dart';
 export 'widget_shimmer_home.dart';

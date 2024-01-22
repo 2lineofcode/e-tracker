@@ -38,8 +38,8 @@ mixin ImportExportHelper {
         return (data).map((e) => SupaExpense.fromJson(e)).toList();
       });
 
-      final jsonFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy.HHmm')}.json';
-      final csvFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy.HHmm')}.csv';
+      final jsonFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.json';
+      final csvFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
 
       /// Save Json Data in Json File
       File(jsonFilePath).writeAsStringSync(jsonEncode(ex));
@@ -58,6 +58,7 @@ mixin ImportExportHelper {
         'note',
         'detail',
         'amount',
+        'created_at',
       ]);
 
       // Items CSV
@@ -68,6 +69,7 @@ mixin ImportExportHelper {
           data['note'].toString(),
           data['detail'].toString(),
           data['amount'].toString(),
+          data['created_at'].toString(),
         ]);
       }
 
@@ -112,7 +114,7 @@ mixin ImportExportHelper {
           SupaExpense(
             id: UuidV4().generate(),
             userId: db.auth.currentSession?.user.id ?? '',
-            createdAt: DateTime.now().toStringEx(),
+            createdAt: e['created_at'].toString(),
             date: e['date'].toString(),
             categoryName: e['category_name'].toString(),
             note: e['note'].toString(),
@@ -148,14 +150,11 @@ mixin ImportExportHelper {
       final oldCategory = Get.find<HomeController>().categoryList;
       final newCategory = <SupaCategory>[];
       for (var e in supaCategory) {
-        log('e: ${e.name}');
         if (!oldCategory.any((element) => element.name == e.name)) {
           newCategory.add(e);
         }
       }
       log('total category: ${newCategory.length}');
-
-      // return;
 
       /// ----------------------------------------------------------------------------------
       /// # AUTOCOMPLETE ###################################################################
@@ -185,7 +184,16 @@ mixin ImportExportHelper {
       }
 
       final uniqueAutoComplete = removeDuplicates(supaAutoComplete);
-      log('total autocomplete: ${uniqueAutoComplete.length}');
+
+      /// add new autocomplete, but do not edit existing data.
+      final oldAutoComplete = Get.find<SettingsController>().autoCompleteList;
+      final newAutoComplete = <SupaAutoComplete>[];
+      for (var e in uniqueAutoComplete) {
+        if (!oldAutoComplete.any((element) => element.note == e.note)) {
+          newAutoComplete.add(e);
+        }
+      }
+      log('total autocomplete: ${newAutoComplete.length}');
 
       /// ----------------------------------------------------------------------------------
       /// # INSERT INTO DB #################################################################
@@ -197,7 +205,7 @@ mixin ImportExportHelper {
           'Importing...'.text.size(11).minFontSize(11).makeCentered().pSymmetric(v: 8),
           '${supaExpense.length} expense data'.text.size(11).minFontSize(11).makeCentered(),
           '${newCategory.length} new category'.text.size(11).minFontSize(11).makeCentered(),
-          '${supaAutoComplete.length} autocomplete data'.text.size(11).minFontSize(11).makeCentered(),
+          '${newAutoComplete.length} autocomplete data'.text.size(11).minFontSize(11).makeCentered(),
         ]),
       );
 
@@ -208,7 +216,7 @@ mixin ImportExportHelper {
       await db.from('expense').insert(supaExpense.map((e) => e.toJson()).toList());
 
       /// -> autocomplete
-      await db.from('autocomplete').upsert(uniqueAutoComplete.map((e) => e.toJson()).toList());
+      await db.from('autocomplete').upsert(newAutoComplete.map((e) => e.toJson()).toList());
 
       /// refresh all
       await __refresh__();
@@ -260,7 +268,6 @@ mixin ImportExportHelper {
 
   // ignore: non_constant_identifier_names
   static Future<void> __refresh__() async {
-    await Get.forceAppUpdate();
     await Get.find<HomeController>().onInit();
     await Get.find<SettingsController>().onInit();
     Get.find<SettingsController>().menuSelected.value = 'Import/Export';
