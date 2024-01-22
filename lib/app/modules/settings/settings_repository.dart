@@ -92,4 +92,13 @@ class SettingsRepository {
     });
     return response;
   }
+
+  // editProfile
+  Future<void> editProfile(SupaUserProfile entity) async {
+    final response = await db //
+        .from('profiles')
+        .update(entity.toJson())
+        .eq('id', db.auth.currentSession?.user.id ?? '');
+    return response;
+  }
 }

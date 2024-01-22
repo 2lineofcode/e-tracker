@@ -11,8 +11,9 @@ class SupaUserProfile {
   String? fullName;
   String? avatarUrl;
   String? website;
+  String? age;
 
-  SupaUserProfile({this.id, this.updatedAt, this.username, this.fullName, this.avatarUrl, this.website});
+  SupaUserProfile({this.id, this.updatedAt, this.username, this.fullName, this.avatarUrl, this.website, this.age});
 
   SupaUserProfile.fromJson(Map<String, dynamic> json) {
     id = json['id'] ?? '';
@@ -21,6 +22,7 @@ class SupaUserProfile {
     fullName = json['full_name'] ?? '';
     avatarUrl = json['avatar_url'];
     website = json['website'] ?? '';
+    age = json['age'] ?? '';
   }
 
   Map<String, dynamic> toJson() {
@@ -31,6 +33,7 @@ class SupaUserProfile {
     data['full_name'] = fullName;
     data['avatar_url'] = avatarUrl;
     data['website'] = website;
+    data['age'] = age;
     return data;
   }
 

@@ -103,7 +103,7 @@ class SectionIEmport extends GetView<SettingsController> {
           backgroundColor: btnColor ?? Vx.red700,
           radius: 8,
           onPressed: () async {
-            final tf = TextEditingController(text: db.auth.currentSession?.user.email);
+            final tf = TextEditingController();
             final isValid = false.obs;
 
             ExAlert.custom(

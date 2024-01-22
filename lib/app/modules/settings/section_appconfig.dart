@@ -1,5 +1,6 @@
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex/ex.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -31,7 +32,15 @@ class SectionAppConfig extends GetView<SettingsController> {
       decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
       child: VStack(
         [
-          'Account'.text.bold.make().pOnly(bottom: 16),
+          HStack(
+            [
+              'Account'.text.bold.make().expand(),
+              IconButton(
+                onPressed: () => controller.onEditProfile(),
+                icon: Icon(CupertinoIcons.pen),
+              ),
+            ],
+          ),
           Obx(
             () => controller.userProfile.value.id == null
                 ? CircularProgressIndicator.adaptive().p16()
@@ -42,7 +51,11 @@ class SectionAppConfig extends GetView<SettingsController> {
                       size: 32,
                     ),
                     VStack([
-                      '${controller.userProfile.value.fullName}'.text.make(),
+                      if (controller.userProfile.value.fullName.isEmptyOrNull) ...[
+                        'No Name'.text.neutral400.make(),
+                      ] else ...[
+                        '${controller.userProfile.value.fullName}'.text.make(),
+                      ],
                       '${db.auth.currentSession?.user.email}'.text.size(12).make(),
                     ]).pSymmetric(h: 12),
                   ]).pOnly(bottom: 24),

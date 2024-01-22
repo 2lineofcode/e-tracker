@@ -47,6 +47,9 @@ mixin DialogInputHelper {
     final _hueController = HueController(HSVColor.fromColor(_tfCatColor.text.fromHex)).obs;
     final _iconSelected = (entity?.icon?.getIconData() ?? Icons.circle_outlined).obs;
 
+    final isProtect = entity!.name!.contains('Others') == false && entity.name!.contains('Notes') == false;
+    final isNotes = entity.name!.contains('Notes');
+
     ExAlert.adaptive(
         content: VStack(
           [
@@ -60,19 +63,23 @@ mixin DialogInputHelper {
               placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
               prefix: Icon(CupertinoIcons.number, size: 16, color: AppColor.textReverse).pOnly(left: 8),
               style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+              enabled: isProtect,
             ).pOnly(bottom: 12),
-            CupertinoTextField(
-              controller: _tfMaxBudget,
-              placeholder: 'Max Budget (Monthtly)',
-              placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-              prefix: Icon(CupertinoIcons.bag_fill, size: 16, color: AppColor.textReverse).pOnly(left: 8),
-              style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-              inputFormatters: [
-                CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
-                LengthLimitingTextInputFormatter(13),
-              ],
-              keyboardType: TextInputType.number,
-            ).pOnly(bottom: 8),
+            Visibility(
+              visible: isNotes == false,
+              child: CupertinoTextField(
+                controller: _tfMaxBudget,
+                placeholder: 'Max Budget (Monthtly)',
+                placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+                prefix: Icon(CupertinoIcons.bag_fill, size: 16, color: AppColor.textReverse).pOnly(left: 8),
+                style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+                inputFormatters: [
+                  CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
+                  LengthLimitingTextInputFormatter(13),
+                ],
+                keyboardType: TextInputType.number,
+              ).pOnly(bottom: 8),
+            ),
             HStack(
               [
                 /// icon preview
@@ -156,7 +163,7 @@ mixin DialogInputHelper {
                           initState: (_) {},
                           builder: (_) {
                             return Icon(
-                              entity?.icon?.getIconData() ?? Icons.circle_outlined,
+                              entity.icon?.getIconData() ?? Icons.circle_outlined,
                               color: _hueController.value.value.toColor(),
                               size: 20,
                             );
@@ -192,33 +199,35 @@ mixin DialogInputHelper {
           ],
         ),
         actions: [
-          CupertinoDialogAction(
-            child: Text('Delete', style: TextStyle(fontSize: 13, color: Vx.red500)),
-            onPressed: () {
-              ExAlert.confirm(
-                  title: 'Are you sure?',
-                  message: "you can't rollback this action",
-                  titleStyle: TextStyle(fontWeight: FontWeight.bold),
-                  messageStyle: TextStyle(fontSize: 13),
-                  onYes: () async {
-                    try {
-                      await _repo.deleteCategory(entity?.id ?? '');
-                      await _controller.getCategory();
-                      await callback?.call();
-                      OverlayHelper.notification('Category ${entity?.name} Deleted', color: Vx.red600);
-                      Get.close(2);
-                    } catch (e) {
-                      Get.close(2);
-                      ExSnackbar.danger(e);
-                    }
-                  });
-            },
-          ),
+          if (isProtect) ...[
+            CupertinoDialogAction(
+              child: Text('Delete', style: TextStyle(fontSize: 13, color: Vx.red500)),
+              onPressed: () {
+                ExAlert.confirm(
+                    title: 'Are you sure?',
+                    message: "you can't rollback this action",
+                    titleStyle: TextStyle(fontWeight: FontWeight.bold),
+                    messageStyle: TextStyle(fontSize: 13),
+                    onYes: () async {
+                      try {
+                        await _repo.deleteCategory(entity.id ?? '');
+                        await _controller.getCategory();
+                        await callback?.call();
+                        OverlayHelper.notification('Category ${entity.name} Deleted', color: Vx.red600);
+                        Get.close(2);
+                      } catch (e) {
+                        Get.close(2);
+                        ExSnackbar.danger(e);
+                      }
+                    });
+              },
+            ),
+          ],
           CupertinoDialogAction(
             child: Text('Submit', style: TextStyle(fontSize: 13)),
             onPressed: () async {
               final newEntity = SupaCategory(
-                id: entity?.id,
+                id: entity.id,
                 userId: db.auth.currentSession?.user.id ?? '',
                 createdAt: DateTime.now().toStringEx(),
                 name: _tfCatName.text,

@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:overlayment/overlayment.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:uuid/v4.dart';
 
@@ -11,6 +13,7 @@ import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
+import '../../helpers/helpers.dart';
 import '../../models/supa_autocomplete_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 import '../../routes/app_pages.dart';
@@ -126,6 +129,62 @@ class SettingsController extends GetxController with StateMixin {
     await repo.deleteAutoComplete(entity.note ?? '');
     autoCompleteList.value = await repo.getAutoComplete();
     change(0, status: RxStatus.success());
+  }
+
+  void onEditProfile() {
+    final tfFullName = TextEditingController(text: userProfile.value.fullName);
+    final tfAge = TextEditingController(text: userProfile.value.age);
+    final tfAvatar = userProfile.value.avatarUrl.obs;
+
+    Overlayment.show(
+      context: Get.context!,
+      OverPanel(
+        alignment: Alignment.centerRight,
+        width: 300,
+        child: VStack([
+          'Edit Profile'.text.bold.makeCentered().pOnly(bottom: 24),
+          ExAvatarView(
+            source: '',
+            name: userProfile.value.fullName ?? '',
+            size: 64,
+          ).centered().pOnly(bottom: 16),
+          ExButtonElevated(
+            onPressed: () {},
+            height: 33,
+            child: 'Change Photo'.text.size(11).minFontSize(11).make(),
+          ).centered().pOnly(bottom: 16),
+          TextField(
+            controller: tfFullName,
+            decoration: DecorationHelper.input(hint: 'Full Name'),
+            style: TextStyle(fontSize: 13),
+          ).h(33).pOnly(bottom: 12),
+          TextField(
+            controller: tfAge,
+            decoration: DecorationHelper.input(hint: 'Age'),
+            style: TextStyle(fontSize: 13),
+          ).h(33),
+          Divider().pSymmetric(v: 16),
+          ExButtonElevated(
+            width: double.infinity,
+            label: 'Save',
+            onPressed: () async {
+              final editProfile = SupaUserProfile(
+                id: userProfile.value.id,
+                fullName: tfFullName.text,
+                age: tfAge.text,
+                avatarUrl: tfAvatar.value,
+                updatedAt: DateTime.now().toStringEx(),
+              );
+              await Overlayment.dismissAll();
+              ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
+              await repo.editProfile(editProfile);
+              await onInit();
+              ExLoading.dismiss();
+            },
+          ).centered()
+        ]).p16(),
+      ),
+    );
   }
 
   Future<void> onLogout() async {

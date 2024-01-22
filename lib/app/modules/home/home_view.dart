@@ -316,7 +316,7 @@ class HomeView extends GetView<HomeController> {
                           if (item.maxBudget == null && item.name != 'Notes') ...[
                             // Icon(Icons.edit, size: 16, color: AppColor.red),
                             AnimateIcon(
-                              onTap: () {},
+                              onTap: () => DialogInputHelper.showDialogCategory(entity: item),
                               iconType: IconType.animatedOnHover,
                               animateIcon: AnimateIcons.edit,
                               color: Colors.white,
