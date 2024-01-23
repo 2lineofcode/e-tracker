@@ -55,4 +55,4 @@ linux/flutter/ephemeral/*
 
 #### env ####
 # .env*
-*.g*
+env.g.dart

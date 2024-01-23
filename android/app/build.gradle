@@ -22,6 +22,9 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+def fVersionCode = flutterVersionCode.substring(0, 7)
+
+
 android {
     namespace "com.aditp.etracker"
     compileSdkVersion flutter.compileSdkVersion
@@ -41,11 +44,13 @@ android {
     }
 
     defaultConfig {
+        multiDexEnabled true
         applicationId "com.aditp.etracker"
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
-        versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+        versionCode fVersionCode.toInteger()
+
     }
 
     buildTypes {
