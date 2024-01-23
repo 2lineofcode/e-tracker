@@ -11,7 +11,7 @@
         ".firebase": true,
         ".flutter-**": true,
         "linux": true,
-        "android": false,
+        "android": true,
         "windows": true,
         "macos": true,
         "ios": true,
@@ -37,4 +37,7 @@
         "firebase.json": "firebase.json, .firebaserc",
         ".env": ".env, .env.dev, .env.local, .env.staging, .env.prod, env.g.dart",
     },
+
+    "deno.enable": true,
+    "deno.lint": true,
 }

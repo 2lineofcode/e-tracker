@@ -40,7 +40,24 @@ class HomeView extends GetView<HomeController> {
       controller: controller.tfSearchExpense.value,
       style: TextStyle(fontSize: 13),
       decoration: DecorationHelper.input(
-        prefixIcon: Icon(CupertinoIcons.search, size: 14, color: AppColor.textReverse).pOnly(top: 0),
+        prefixIcon: CustomPopup(
+          content: VStack([
+            ''
+                .richText
+                .withTextSpanChildren([
+                  'Search Features:\n'.textSpan.size(13).bold.make(),
+                  '\n- by "Note", example: "Nasi Padang"'.textSpan.make(),
+                  '\n- by "Category", example: "Food"'.textSpan.make(),
+                  '\n- by "Days", example: "7"'.textSpan.make(),
+                  '\n- by "Date Range", example: "2023-01-01 2023-01-07"'.textSpan.make(),
+                ])
+                .black
+                .size(11)
+                .minFontSize(11)
+                .make(),
+          ]),
+          child: Icon(CupertinoIcons.search, size: 14, color: AppColor.textReverse).pOnly(top: 0),
+        ),
         hint: 'Search: Note, Category, Days, Date Range...',
         suffix: Icon(CupertinoIcons.clear, size: 12, color: AppColor.textReverse).pOnly(top: 0).onInkTap(() async {
           controller.tfSearchExpense.value.clear();
@@ -632,7 +649,7 @@ class HomeView extends GetView<HomeController> {
         children: [
           Get.context!.isMobile //
               ? Image.asset('assets/icons/app_icon.png', width: 56, height: 56).pOnly(bottom: 16)
-              : Lottie.asset('assets/lottie/empty-1.json', width: 150, reverse: true),
+              : Lottie.asset('assets/lottie/empty.json', width: 150, reverse: true),
           'No Expense'.text.bold.align(TextAlign.center).make().pOnly(bottom: 8),
           Obx(
             () => '${controller.tfSearchExpense.value.text.isNotEmptyAndNotNull //

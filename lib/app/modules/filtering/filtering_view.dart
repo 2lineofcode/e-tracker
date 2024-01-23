@@ -154,7 +154,7 @@ class FilteringView extends GetView<FilteringController> {
             () => controller.uiSelected.value == UiMode.table ? uiModeTable() : uiModeList(),
           ),
           onEmpty: ExUiErrorOrEmpty(
-            illustration: Lottie.asset('assets/lottie/empty-1.json', width: 150, reverse: true),
+            illustration: Lottie.asset('assets/lottie/empty.json', width: 150, reverse: true),
             title: 'No Data',
           ).expand(),
           onError: (e) => ExUiErrorOrEmpty(

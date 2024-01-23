@@ -67,7 +67,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
           onEmpty: ExUiErrorOrEmpty(
             illustration: Get.context!.isMobile //
                 ? Image.asset('assets/icons/app_icon.png', width: 56, height: 56).pOnly(bottom: 16)
-                : Lottie.asset('assets/lottie/empty-1.json', width: 150, reverse: true),
+                : Lottie.asset('assets/lottie/empty.json', width: 150, reverse: true),
             title: 'No Data',
             message: 'You can add new Auto Complete by input in the field below',
           ).expand(),

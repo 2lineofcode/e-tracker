@@ -3,6 +3,7 @@ supabase link --project-ref nytddmoffawejkpzggzr
 supabase db pull
 supabase migration up 
 supabase status
+supabase db reset
 ---
 
 # copy remote data db to local db

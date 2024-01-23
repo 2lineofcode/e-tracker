@@ -138,6 +138,7 @@ class SettingsController extends GetxController with StateMixin {
 
     final isReplacePhoto = false.obs;
     final imgReplace = Uint8List(0).obs;
+    final errorMsg = ''.obs;
 
     Overlayment.show(
       context: Get.context!,
@@ -150,7 +151,10 @@ class SettingsController extends GetxController with StateMixin {
             if (isReplacePhoto.isTrue) {
               return Container(
                 decoration: ExDecorator.box(borderRadius: 90),
-                child: Image.memory(imgReplace.value).wh(64, 64).cornerRadius(90),
+                child: Image.memory(
+                  imgReplace.value,
+                  fit: BoxFit.cover,
+                ).wh(64, 64).cornerRadius(90),
               ).centered().pOnly(bottom: 16);
             } else {
               return ExImageNoCacheView(
@@ -161,23 +165,33 @@ class SettingsController extends GetxController with StateMixin {
               ).centered().pOnly(bottom: 16);
             }
           }),
+          Obx(() => errorMsg.value.isNotEmpty ? '$errorMsg'.text.size(11).minFontSize(11).align(TextAlign.center).makeCentered().pSymmetric(v: 4) : 0.heightBox),
           ExButtonElevated(
             onPressed: () async {
               // filepicker select file and upload to supabase storage
-              await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false).then((img) async {
-                if (img != null) {
-                  isReplacePhoto.value = true;
+              try {
+                await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false).then((img) async {
+                  if (img != null) {
+                    isReplacePhoto.value = true;
 
-                  final file = File(img.paths.first ?? '');
-                  final fileName = '${db.auth.currentSession?.user.id}.png';
-                  imgReplace.value = file.readAsBytesSync();
+                    final file = File(img.paths.first ?? '');
+                    final fileName = '${db.auth.currentSession?.user.id}.png';
+                    imgReplace.value = file.readAsBytesSync();
 
-                  await db.storage.from('avatars').upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1')).then((response) async {
-                    tfAvatar.value = db.storage.from('avatars').getPublicUrl(fileName);
-                    log('tfAvatar: $tfAvatar');
-                  });
+                    await db.storage.from('avatars').upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1')).then((response) async {
+                      tfAvatar.value = db.storage.from('avatars').getPublicUrl(fileName);
+                      log('tfAvatar: $tfAvatar');
+                      errorMsg.value = '';
+                    });
+                  }
+                });
+              } catch (e) {
+                if (e is StorageException) {
+                  errorMsg.value = '${e.message}\nMax 5MB';
+                } else {
+                  errorMsg.value = '$e';
                 }
-              });
+              }
             },
             height: 33,
             child: 'Change Photo'.text.size(11).minFontSize(11).make(),
@@ -236,6 +250,8 @@ class SettingsController extends GetxController with StateMixin {
             file.deleteSync();
             await onInit();
             OverlayHelper.notification('Syncronization Done');
+          }).catchError((e) {
+            ExAlert.error(message: '${(e as StorageException).message}');
           });
         },
       );

@@ -14,6 +14,7 @@ import '../models/supa_expense_entity.dart';
 import '../models/supa_user_profile_entity.dart';
 import '../modules/home/home_controller.dart';
 import '../modules/widgets/widget_image_no_cache_view.dart';
+import '../routes/app_pages.dart';
 import 'helper_decoration.dart';
 
 mixin NewUserHelper {
@@ -46,6 +47,11 @@ mixin NewUserHelper {
     final userProfile = await db.from('profiles').select().eq('id', db.auth.currentSession?.user.id ?? '').withConverter<List<SupaUserProfile>>((data) {
       return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
     });
+
+    if (userProfile.isEmptyOrNull) {
+      await Get.offAllNamed(Routes.LOGIN);
+      return;
+    }
 
     final tfFullName = TextEditingController(text: userProfile[0].fullName);
     final name = '${userProfile[0].fullName ?? ''}'.obs;
