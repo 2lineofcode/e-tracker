@@ -109,12 +109,6 @@ class SettingsController extends GetxController with StateMixin {
 
   Future<void> onAddAutoComplete(String note) async {
     if (note.isEmptyOrNull) return;
-    final home = Get.find<HomeController>();
-
-    // check is category have data with value `Others` if dont have, create data
-    if (home.categoryList.isEmptyOrNull || !home.categoryList.map((element) => element.name).contains('Others')) {
-      await home.onAddCategory('Others');
-    }
 
     final newAutoComplete = SupaAutoComplete(
       id: UuidV4().generate(),
@@ -234,7 +228,6 @@ class SettingsController extends GetxController with StateMixin {
     final filePath = await getTemporaryDirectory();
     final fileName = '${db.auth.currentSession?.user.email}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
 
-    // ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
     try {
       await ImportExportHelper.exportToCSV(
         customPath: filePath.path,
@@ -242,15 +235,13 @@ class SettingsController extends GetxController with StateMixin {
           await db.storage.from('backup').upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1')).then((response) async {
             file.deleteSync();
             await onInit();
-            OverlayHelper.notification('Backup Done');
+            OverlayHelper.notification('Syncronization Done');
           });
         },
       );
     } catch (e) {
-      ExLoading.dismiss();
       ExAlert.error(message: '$e');
     }
-    ExLoading.dismiss();
   }
 
   /// flow:
@@ -262,27 +253,36 @@ class SettingsController extends GetxController with StateMixin {
   /// 6. show notification
   /// 7. handle error
   Future<void> onDownloadBackup(FileObject fileObj) async {
-    await db.storage.from('backup').download(fileObj.name).then((res) async {
-      final filePath = await getTemporaryDirectory();
-      final fileName = '${fileObj.name}';
-      final file = File('${filePath.path}/$fileName');
+    final filename = '${fileObj.name.replaceAll('${db.auth.currentSession?.user.email}_', '')}';
+    ExAlert.confirm(
+      title: 'Confirm Apply Migration',
+      message: 'Are you sure want to apply migration from\n"$filename"?',
+      onYes: () async {
+        Get.back();
+        await db.storage.from('backup').download(fileObj.name).then((res) async {
+          final filePath = await getTemporaryDirectory();
+          final fileName = '${fileObj.name}';
+          final file = File('${filePath.path}/$fileName');
 
-      await file.writeAsBytes(res);
-
-      await db.from('expense').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
-
-      await ImportExportHelper.importFromCSV(
-        customPath: '${filePath.path}/$fileName',
-        customCallback: () async {
-          file.deleteSync();
-          await onInit();
-          OverlayHelper.notification('Apply Backup From "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}" Done');
-        },
-      );
-    }).catchError((e) {
-      log('e: $e');
-      ExAlert.error(message: '$e');
-    });
+          await file.writeAsBytes(res);
+          await db.from('expense').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
+          await ImportExportHelper.importFromCSV(
+            customPath: '${filePath.path}/$fileName',
+            customCallback: () async {
+              file.deleteSync();
+              await onInit();
+              OverlayHelper.notification(
+                'Success Apply Migration "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}"',
+                duration: 4.seconds,
+              );
+            },
+          );
+        }).catchError((e) {
+          log('e: $e');
+          ExAlert.error(message: '$e');
+        });
+      },
+    );
   }
 
   Future<void> onLogout() async {

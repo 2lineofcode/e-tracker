@@ -62,7 +62,6 @@ class HomeController extends GetxController with StateMixin {
 
   @override
   Future<void> onReady() async {
-    log('onReady: called');
     await NewUserHelper.gettingStart();
     super.onReady();
   }
@@ -175,7 +174,10 @@ class HomeController extends GetxController with StateMixin {
       );
       await repo.addCategory(categoryEntity);
       await getCategory();
-      OverlayHelper.notification('Category $categoryName Added', color: Vx.green600);
+
+      if (iconColor == null) {
+        OverlayHelper.notification('Category $categoryName Added', color: Vx.green600);
+      }
       tfCategory.clear();
     } catch (e) {
       OverlayHelper.notification('Failed, $categoryName already exists', color: Vx.red600, duration: 2.seconds);

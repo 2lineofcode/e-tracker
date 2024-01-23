@@ -665,7 +665,7 @@ class HomeView extends GetView<HomeController> {
   Widget floatingActionButton() {
     return Obx(() => controller.expenseList.isNotEmpty
         ? FloatingActionButton(
-            backgroundColor: Colors.blue,
+            backgroundColor: Get.isDarkMode ? AppColor.neutral : AppColor.blue,
             child: Icon(CupertinoIcons.add, color: Colors.white),
             onPressed: () => DialogInputHelper.showDialogExpense(),
           ).pOnly(bottom: Get.context!.isMobile ? 90 : 68)

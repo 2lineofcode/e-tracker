@@ -273,6 +273,8 @@ mixin ImportExportHelper {
     ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
     try {
       await deleteAllData(withRefresh: false);
+
+      await db.storage.from('avatars').remove(['${db.auth.currentSession?.user.id}.png']);
       await dbAdmin.auth.admin.deleteUser(db.auth.currentSession?.user.id ?? '');
       await Get.find<SettingsController>().onLogout();
       ExLoading.dismiss();

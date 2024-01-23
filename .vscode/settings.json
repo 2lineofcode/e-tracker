@@ -15,10 +15,10 @@
         "windows": true,
         "macos": true,
         "ios": true,
-        "web": false,
+        "web": true,
         "build": true,
         "supabase": false,
-        "*.iml": true,
+        "*.iml": true
     },
     "explorerExclude.backup": {},
 
