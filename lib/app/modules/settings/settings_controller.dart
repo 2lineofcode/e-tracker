@@ -225,10 +225,10 @@ class SettingsController extends GetxController with StateMixin {
   /// 6. show notification
   /// 7. handle error
   Future<void> onUploadBackup() async {
-    final filePath = await getTemporaryDirectory();
-    final fileName = '${db.auth.currentSession?.user.email}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
-
     try {
+      final filePath = await getTemporaryDirectory();
+      final fileName = '${db.auth.currentSession?.user.email}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
+
       await ImportExportHelper.exportToCSV(
         customPath: filePath.path,
         customCallback: (file) async {
@@ -240,6 +240,7 @@ class SettingsController extends GetxController with StateMixin {
         },
       );
     } catch (e) {
+      log('e: $e');
       ExAlert.error(message: '$e');
     }
   }

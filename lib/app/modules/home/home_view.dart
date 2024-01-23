@@ -63,36 +63,42 @@ class HomeView extends GetView<HomeController> {
       [
         IconButton(
           onPressed: () => controller.goBibit(),
-          icon: AnimateIcon(
-            onTap: () => controller.goBibit(),
-            iconType: IconType.animatedOnHover,
-            height: 22,
-            width: 22,
-            color: Get.isDarkMode ? Colors.white70 : Colors.white,
-            animateIcon: AnimateIcons.expensive,
-          ),
+          icon: isMobileWeb
+              ? Image.asset('assets/icons/ic_robo.png', height: 24, width: 24, color: Get.isDarkMode ? Colors.white70 : Colors.white)
+              : AnimateIcon(
+                  onTap: () => controller.goBibit(),
+                  iconType: IconType.animatedOnHover,
+                  height: 22,
+                  width: 22,
+                  color: Get.isDarkMode ? Colors.white70 : Colors.white,
+                  animateIcon: AnimateIcons.expensive,
+                ),
         ).pOnly(right: 4),
         IconButton(
           onPressed: () => controller.goSetting(),
-          icon: AnimateIcon(
-            onTap: () => controller.goSetting(),
-            iconType: IconType.animatedOnHover,
-            height: 20,
-            width: 20,
-            color: Get.isDarkMode ? Colors.white70 : Colors.white,
-            animateIcon: AnimateIcons.settings,
-          ),
+          icon: isMobileWeb
+              ? Icon(CupertinoIcons.settings_solid, size: 20)
+              : AnimateIcon(
+                  onTap: () => controller.goSetting(),
+                  iconType: IconType.animatedOnHover,
+                  height: 20,
+                  width: 20,
+                  color: Get.isDarkMode ? Colors.white70 : Colors.white,
+                  animateIcon: AnimateIcons.settings,
+                ),
         ),
         IconButton(
           onPressed: () => controller.goSummary(),
-          icon: AnimateIcon(
-            onTap: () => controller.goSummary(),
-            iconType: IconType.continueAnimation,
-            height: 20,
-            width: 20,
-            color: Get.isDarkMode ? Colors.white70 : Colors.white,
-            animateIcon: AnimateIcons.activity,
-          ),
+          icon: isMobileWeb
+              ? Icon(CupertinoIcons.arrow_up_arrow_down, size: 18)
+              : AnimateIcon(
+                  onTap: () => controller.goSummary(),
+                  iconType: IconType.continueAnimation,
+                  height: 20,
+                  width: 20,
+                  color: Get.isDarkMode ? Colors.white70 : Colors.white,
+                  animateIcon: AnimateIcons.activity,
+                ),
         ),
       ],
     );
@@ -314,13 +320,14 @@ class HomeView extends GetView<HomeController> {
                           ],
                           Spacer(),
                           if (item.maxBudget == null && item.name != 'Notes') ...[
-                            // Icon(Icons.edit, size: 16, color: AppColor.red),
-                            AnimateIcon(
-                              onTap: () => DialogInputHelper.showDialogCategory(category: item),
-                              iconType: IconType.animatedOnHover,
-                              animateIcon: AnimateIcons.edit,
-                              color: AppColor.textReverse,
-                            ).wh(16, 16),
+                            !isMobileWeb
+                                ? Icon(Icons.edit, size: 16)
+                                : AnimateIcon(
+                                    onTap: () => DialogInputHelper.showDialogCategory(category: item),
+                                    iconType: IconType.animatedOnHover,
+                                    animateIcon: AnimateIcons.edit,
+                                    color: AppColor.textReverse,
+                                  ).wh(16, 16),
                           ],
                         ],
                       ),

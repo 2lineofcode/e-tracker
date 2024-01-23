@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 
 /// TOP LEVEL HELPER
 bool get isDesktop => !kIsWeb && (Platform.isLinux || Platform.isMacOS || Platform.isWindows);
+bool get isMobileWeb => kIsWeb && Get.context!.isMobile;
 
 extension TimeAgoToString on DateTime {
   /// Example:

@@ -71,12 +71,12 @@ class SectionBibitTransactionView extends GetView<SectionBibitTransactionControl
                     ),
                     ' ${h.portfolioName}'.text.bold.size(13).make().pOnly(left: 8, right: 8, bottom: 2),
                     if (h.portfolioRobo == 1) ...[
-                      SvgPicture.asset(
-                        'assets/icons/ic_robo.svg',
+                      Image.asset(
+                        'assets/icons/ic_robo.png',
                         height: 16,
                         width: 16,
-                        colorFilter: ColorFilter.mode(Get.isDarkMode ? Colors.white70 : Colors.white, BlendMode.srcIn),
-                      ),
+                        color: Get.isDarkMode ? Colors.white70 : Colors.white,
+                      ).pOnly(bottom: 2),
                     ],
                   ],
                 ).p8(),
