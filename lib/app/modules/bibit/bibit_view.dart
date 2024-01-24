@@ -118,12 +118,10 @@ class BibitView extends GetView<BibitController> {
   Widget footerContent() {
     if (Get.context!.isMobile) {
       return HStack([
-        if (Get.context!.isMobile) ...[
-          IconButton(
-            onPressed: () => Get.back(),
-            icon: Icon(Icons.arrow_back),
-          ),
-        ],
+        IconButton(
+          onPressed: () => Get.back(),
+          icon: Icon(Icons.arrow_back),
+        ),
         Spacer(),
       ]).p12();
     } else {

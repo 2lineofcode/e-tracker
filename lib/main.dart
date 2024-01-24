@@ -55,10 +55,17 @@ class ExpenseTracker extends StatelessWidget {
             body: Stack(
               children: [
                 child!,
-                IconButton(
-                  icon: Icon(CupertinoIcons.square_stack_3d_down_right_fill),
-                  onPressed: () async => await AppTheme.switchTheme(),
-                ).positioned(left: 72),
+                HStack([
+                  IconButton(
+                    icon: Icon(CupertinoIcons.circle_lefthalf_fill, size: 16),
+                    onPressed: () async => await AppTheme.switchTheme(),
+                  ),
+                  if (Env.supabaseUrl.contains('127')) ...[
+                    'Dev in: DB Local'.text.xs.make(),
+                  ] else ...[
+                    'Dev in: DB Prod'.text.xs.make(),
+                  ]
+                ]).positioned(left: 72),
               ],
             ),
           );

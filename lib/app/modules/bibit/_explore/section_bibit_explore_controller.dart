@@ -91,33 +91,37 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
 
   void initPintuRealTimePriceChange() {
     timerPintuPriceChanges = Timer.periodic(1.seconds, (timer) async {
-      await db.rpc('get_pintu').then((response) {
-        final r1 = jsonDecode(response[1]['response']);
-        final priceChanges = PintuPriceChanges.fromJson(r1);
-        _pintuPriceChanges.value = priceChanges.payload!;
-      });
-      pintuListCrypto.clear();
-      for (var priceChanges in _pintuPriceChanges) {
-        final pairSymbol = priceChanges.pair.allBefore('/').toUpperCase();
-        for (var supported in _pintuSupportedCurrencies) {
-          if (supported.currencySymbol == pairSymbol) {
-            pintuListCrypto.add(
-              PintuListCrypto(
-                name: supported.name,
-                symbol: supported.currencySymbol,
-                logo: supported.logo,
-                color: supported.color,
-                last: priceChanges.latestPrice,
-                day: priceChanges.day,
-                week: priceChanges.week,
-                month: priceChanges.month,
-                year: priceChanges.year,
-              ),
-            );
+      try {
+        await db.rpc('get_pintu').then((response) {
+          final r1 = jsonDecode(response[1]['response']);
+          final priceChanges = PintuPriceChanges.fromJson(r1);
+          _pintuPriceChanges.value = priceChanges.payload!;
+        });
+        pintuListCrypto.clear();
+        for (var priceChanges in _pintuPriceChanges) {
+          final pairSymbol = priceChanges.pair.allBefore('/').toUpperCase();
+          for (var supported in _pintuSupportedCurrencies) {
+            if (supported.currencySymbol == pairSymbol) {
+              pintuListCrypto.add(
+                PintuListCrypto(
+                  name: supported.name,
+                  symbol: supported.currencySymbol,
+                  logo: supported.logo,
+                  color: supported.color,
+                  last: priceChanges.latestPrice,
+                  day: priceChanges.day,
+                  week: priceChanges.week,
+                  month: priceChanges.month,
+                  year: priceChanges.year,
+                ),
+              );
+            }
           }
         }
+        pintuListCrypto.sort((a, b) => a.symbol!.compareTo(b.symbol!));
+      } catch (e) {
+        timerPintuPriceChanges?.cancel();
       }
-      pintuListCrypto.sort((a, b) => a.symbol!.compareTo(b.symbol!));
     });
   }
 
@@ -130,10 +134,14 @@ class SectionBibitExploreController extends GetxController with StateMixin, GetS
 
   void initBibitRealTimePriceChange() {
     if (Get.find<BibitController>().isMarketOpen.isTrue) {
-      timerBibitPriceChanges = Timer.periodic(5.seconds, (timer) async {
-        bibitStockTranding.value = await repoStockbit.getStockTranding();
-        bibitStockWatchlist.value = await repoStockbit.getWatchList();
-      });
+      try {
+        timerBibitPriceChanges = Timer.periodic(5.seconds, (timer) async {
+          bibitStockTranding.value = await repoStockbit.getStockTranding();
+          bibitStockWatchlist.value = await repoStockbit.getWatchList();
+        });
+      } catch (e) {
+        timerBibitPriceChanges?.cancel();
+      }
     }
   }
 

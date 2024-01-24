@@ -42,9 +42,13 @@ class SectionBibitHomeController extends GetxController {
 
     /// refresh every second
     timerPriceChanges = Timer.periodic(5.seconds, (timer) async {
-      if (Get.find<BibitController>().isMarketOpen.isTrue) {
-        ihsg.value = await repoStockbit.getChart();
-        indexIndices.value = await repoStockbit.getIndexIndices();
+      try {
+        if (Get.find<BibitController>().isMarketOpen.isTrue) {
+          ihsg.value = await repoStockbit.getChart();
+          indexIndices.value = await repoStockbit.getIndexIndices();
+        }
+      } catch (e) {
+        timerPriceChanges?.cancel();
       }
     });
 

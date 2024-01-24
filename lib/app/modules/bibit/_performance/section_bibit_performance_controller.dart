@@ -11,7 +11,7 @@ class SectionBibitPerformanceController extends GetxController with StateMixin<B
   final performance = BibitPerformanceData().obs;
   final performanceChart = BibitPerformanceChartData().obs;
   final allocation = <BibitPerformanceAllocationData>[].obs;
-  final periodSelected = '1M'.obs;
+  final periodSelected = '1Y'.obs;
 
   @override
   Future<void> onInit() async {

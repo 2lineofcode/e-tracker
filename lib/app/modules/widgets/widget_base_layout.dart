@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -141,7 +143,7 @@ class MyLayout extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(color: footerColor ?? AppColor.footerPrimary),
       child: Padding(
-        padding: Get.context!.isMobile ? EdgeInsets.only(bottom: 20, right: 8, left: 8) : EdgeInsets.all(0),
+        padding: Platform.isIOS ? EdgeInsets.only(bottom: 20, right: 8, left: 8) : EdgeInsets.all(0),
         child: footerContent,
       ),
     );

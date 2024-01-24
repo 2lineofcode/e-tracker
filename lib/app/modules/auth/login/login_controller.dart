@@ -39,11 +39,7 @@ class LoginController extends GetxController {
       Get.offAllNamed(Routes.HOME);
     }).catchError((e) {
       logE('$e');
-      OverlayHelper.notification(
-        'Invalid Credentials',
-        color: Vx.red600,
-        duration: 2.seconds,
-      );
+      OverlayHelper.notification('Invalid Credentials', color: Vx.red600, duration: 2.seconds);
       ExLoading.dismiss();
     });
   }

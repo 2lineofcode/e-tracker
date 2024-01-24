@@ -20,27 +20,32 @@ import 'helper_decoration.dart';
 mixin NewUserHelper {
   static Future<void> gettingStart() async {
     final _home = Get.find<HomeController>();
+
     if (_home.categoryList.isEmptyOrNull && _home.expenseList.isEmptyOrNull) {
       log('=== _createCategory ===');
       await _createRequireCategory();
 
-      log('=== Welcome ===');
+      log('=== sayWelcome ===');
       await sayWelcome();
       await _home.onInit();
     }
   }
 
-  /// create category
+  /// ------------------------------------------------------------------------
+  /// ! create category
+  /// ------------------------------------------------------------------------
   static Future<void> _createRequireCategory() async {
     final _home = Get.find<HomeController>();
     await _home.onAddCategory('Food', icon: 'code=58566&family=FontAwesomeSolid&pack=font_awesome_flutter', iconColor: '#ffbebcb6');
     await _home.onAddCategory('Bill', icon: 'code=62781&family=FontAwesomeSolid&pack=font_awesome_flutter', iconColor: '#ff9fe57d');
     await _home.onAddCategory('Shopping', icon: 'code=60561&family=MaterialIcons&pack=null', iconColor: '#ffff8800');
-    await _home.onAddCategory('Others', iconColor: '#fff');
+    await _home.onAddCategory('Others', iconColor: '#fff', icon: 'code=59402&family=LineAwesomeIcons&pack=flutter_iconpicker_plus');
     await _home.onAddCategory('Notes', icon: 'code=63033&family=CupertinoIcons&pack=cupertino_icons', iconColor: '#fffdf0b0');
   }
 
-  /// create welcome
+  /// ------------------------------------------------------------------------
+  /// ! sayWelcome
+  /// ------------------------------------------------------------------------
   static Future<void> sayWelcome() async {
     final opt1 = true.obs;
 

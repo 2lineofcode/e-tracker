@@ -13,8 +13,8 @@ class BibitBinding extends Bindings {
   @override
   void dependencies() {
     /// repo
-    Get.lazyPut<BibitRepository>(() => BibitRepository(), fenix: true);
-    Get.lazyPut<StockbitRepository>(() => StockbitRepository(), fenix: true);
+    Get.lazyPut<BibitRepository>(() => BibitRepository());
+    Get.lazyPut<StockbitRepository>(() => StockbitRepository());
 
     /// controller
     Get.lazyPut<SectionBibitHomeController>(() => SectionBibitHomeController());
@@ -22,6 +22,6 @@ class BibitBinding extends Bindings {
     Get.lazyPut<SectionBibitPerformanceController>(() => SectionBibitPerformanceController());
     Get.lazyPut<SectionBibitExploreController>(() => SectionBibitExploreController());
     Get.lazyPut<SectionBibitTransactionController>(() => SectionBibitTransactionController());
-    Get.lazyPut<BibitController>(() => BibitController(), fenix: true);
+    Get.lazyPut<BibitController>(() => BibitController());
   }
 }

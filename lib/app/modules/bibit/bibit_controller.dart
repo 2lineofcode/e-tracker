@@ -9,9 +9,6 @@ import '../../models/stockbit_companies_info_entity.dart';
 import '../../repository/repo_bibit.dart';
 import '../../repository/repo_stockbit.dart';
 import '../../routes/app_pages.dart';
-import '_explore/section_bibit_explore_controller.dart';
-import '_home/section_bibit_home_controller.dart';
-import '_portfolio/section_bibit_portfolio_controller.dart';
 
 class BibitController extends GetxController with StateMixin {
   final repoBibit = Get.find<BibitRepository>();
@@ -40,13 +37,5 @@ class BibitController extends GetxController with StateMixin {
   Future<void> onMenuChange(String menu) async {
     menuSelected.value = menu;
     closeDrawer();
-  }
-
-  @override
-  void onClose() {
-    Get.delete<SectionBibitHomeController>();
-    Get.delete<SectionBibitPorfolioController>();
-    Get.delete<SectionBibitExploreController>();
-    super.onClose();
   }
 }

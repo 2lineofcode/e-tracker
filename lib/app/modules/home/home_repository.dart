@@ -81,7 +81,7 @@ class HomeRepository {
         .from('expense')
         .select('*, category(color, icon)')
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
-        .or('note.ilike.%$name%, category_name.ilike.%$name%')
+        .or('note.ilike.%$name%, category_name.ilike.%$name%, detail.ilike.%$name%')
         .order('date')
         .withConverter<List<SupaExpense>>((data) {
       return (data).map((e) => SupaExpense.fromJson(e)).toList();
