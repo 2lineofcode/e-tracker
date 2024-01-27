@@ -1,8 +1,10 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../core/app_color.dart';
+import '../../helpers/helpers.dart';
 import 'settings_controller.dart';
 
 class SectionRepeat extends GetView<SettingsController> {
@@ -12,33 +14,70 @@ class SectionRepeat extends GetView<SettingsController> {
   Widget build(BuildContext context) {
     return VStack(
       [
-        HStack(
-          [
-            'Repeat Transaction'.text.bold.make(),
-            Spacer(),
-            IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.add),
-            ),
-          ],
-        ).pOnly(bottom: 16),
-        ListView.separated(
-          itemCount: 2,
-          separatorBuilder: (context, index) => 8.heightBox,
-          itemBuilder: (context, index) {
-            return ListTile(
-              leading: Icon(Icons.schedule, color: AppColor.bibit),
-              tileColor: AppColor.cardHeaderPrimary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: AppColor.cardItemPrimary),
-              ),
-              title: 'Tagihan Indihome'.text.size(13).bold.make(),
-              subtitle: 'Every 28th in a month'.text.size(12).make(),
-              trailing: 'Rp. 130.980'.text.bold.make(),
-            );
-          },
-        ).expand(),
+        HStack([
+          'Repeat Transaction'.text.bold.make(),
+          Spacer(),
+          IconButton(onPressed: () {}, icon: Icon(Icons.add)),
+        ]).pOnly(bottom: 16),
+        Obx(
+          () => controller.cronList.isNotEmpty
+              ? ListView.separated(
+                  itemCount: controller.cronList.length,
+                  separatorBuilder: (context, index) => 8.heightBox,
+                  itemBuilder: (context, index) {
+                    final item = controller.cronList[index];
+
+                    final jobName = item.command.allBetween("values ('", "', '");
+                    final dueDate = item.schedule.allBetween('0 0 ', ' * *');
+                    final amount = item.command.allBetween("', ", ', current_date').replaceAll(RegExp(r'[^0-9]'), '').toNum();
+                    // ignore: unused_local_variable
+                    final categoryName = item.command.allBetween("', ", ', current_date').replaceAll(RegExp('[0-9]'), '').replaceAll(RegExp(",|!|'"), '');
+
+                    final now = DateTime.now();
+                    final dateA = DateTime(now.year, now.month, now.day);
+                    final dateB = DateTime(now.year, now.month, int.parse(dueDate));
+                    final remainingDays = dateB.difference(dateA).inDays;
+
+                    return Container(
+                      decoration: ExDecorator.box(
+                        borderRadius: 4,
+                        fillColor: AppColor.cardHeaderPrimary,
+                        borderColor: AppColor.cardItemPrimary,
+                      ),
+                      child: HStack(
+                        [
+                          /// leading
+                          // Icon(Icons.abc, color: AppColor.bibit).pOnly(right: 8),
+
+                          /// body
+                          VStack([
+                            '🗓️ Every Date $dueDate'.text.size(12).make().pOnly(bottom: 8),
+                            '$jobName'.text.size(13).bold.make(),
+                            if (remainingDays.isNegative) ...[
+                              'Next month'.text.size(11).minFontSize(11).make(),
+                            ] else ...[
+                              'Remaining $remainingDays more days'.text.size(11).minFontSize(11).make(),
+                            ],
+                          ]).expand(),
+
+                          /// trailing
+                          '${amount?.moneyFormat()}'.text.bold.make(),
+                        ],
+                      ).p12(),
+                    ).onInkTap(() {
+                      ExAlert.success(
+                        title: item.schedule,
+                        message: item.command,
+                      );
+                    });
+                  },
+                ).expand()
+              : ExUiErrorOrEmpty(
+                  illustration: LottieBuilder.asset('assets/lottie/empty.json', width: 150, reverse: true),
+                  title: 'No Data',
+                  message: 'You can add new Repeat Transaction by tap `+`',
+                ).expand(),
+        ),
       ],
     );
   }

@@ -1,7 +1,9 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../env.g.dart';
 import '../../core/app_api.dart';
 import '../../models/supa_autocomplete_entity.dart';
+import '../../models/supa_cron_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 
 mixin SectionMenu {
@@ -115,5 +117,21 @@ class SettingsRepository {
         .update(entity.toJson())
         .eq('id', db.auth.currentSession?.user.id ?? '');
     return response;
+  }
+
+  /// ------------------------------------------------------------------------
+  /// ! admin
+  /// ------------------------------------------------------------------------
+  Future<List<SupaCron>> getCron() async {
+    final sb = SupabaseClient(Env.supabaseUrl, Env.supabaseServiceRole);
+    final res = await sb //
+        .schema('cron')
+        .from('job')
+        .select()
+        .or('command.ilike.%${db.auth.currentSession?.user.id}%')
+        .withConverter<List<SupaCron>>((data) {
+      return (data).map((e) => SupaCron.fromJson(e)).toList();
+    });
+    return res;
   }
 }

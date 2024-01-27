@@ -18,6 +18,7 @@ import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_autocomplete_entity.dart';
+import '../../models/supa_cron_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 import '../../routes/app_pages.dart';
 import '../home/home_controller.dart';
@@ -55,6 +56,9 @@ class SettingsController extends GetxController with StateMixin {
   /// backupList
   final backupList = <FileObject>[].obs;
 
+  /// cronList
+  final cronList = <SupaCron>[].obs;
+
   @override
   Future<void> onInit() async {
     /// Page: AutoComplete
@@ -76,6 +80,7 @@ class SettingsController extends GetxController with StateMixin {
     countAutoComplete.value = await repo.countAutoComplete();
 
     backupList.value = await repo.getBackupList();
+    cronList.value = await repo.getCron();
     super.onInit();
   }
 
