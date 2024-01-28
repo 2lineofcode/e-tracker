@@ -2,7 +2,7 @@ import 'package:ex/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../helpers/helper_misc.dart';
+import '../../helpers/helpers.dart';
 import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../home/home_controller.dart';
@@ -78,6 +78,7 @@ class FilteringController extends GetxController with StateMixin {
         }
       }
     } catch (e) {
+      await ErrorLogHelper.record(page: 'filter', action: 'findExpense', stack: e.toString());
       change(0, status: RxStatus.error('$e'));
     }
 

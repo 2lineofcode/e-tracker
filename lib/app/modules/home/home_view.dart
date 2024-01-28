@@ -491,6 +491,7 @@ class HomeView extends GetView<HomeController> {
             '🗓️ $startDate → $endDate'.text.make(),
           ]);
         } catch (e) {
+          ErrorLogHelper.record(page: 'homeView', action: 'bodyHeaderSearchView', stack: e.toString());
           return '$searchText'.text.make();
         }
       }

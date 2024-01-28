@@ -108,6 +108,7 @@ class SettingsController extends GetxController with StateMixin {
         change(200, status: RxStatus.success());
       }
     } catch (e) {
+      await ErrorLogHelper.record(page: 'settings', action: 'getAutoComplete', stack: e.toString());
       change(400, status: RxStatus.error('$e'));
     }
   }
@@ -194,6 +195,7 @@ class SettingsController extends GetxController with StateMixin {
                 if (e is StorageException) {
                   errorMsg.value = '${e.message}\nMax 5MB';
                 } else {
+                  await ErrorLogHelper.record(page: 'settings', action: 'onEditProfile', stack: e.toString());
                   errorMsg.value = '$e';
                 }
               }
@@ -256,12 +258,14 @@ class SettingsController extends GetxController with StateMixin {
             await onInit();
             OverlayHelper.notification('Syncronization Done');
           }).catchError((e) {
+            ErrorLogHelper.record(page: 'settings', action: 'onUploadBackup', stack: e.toString());
             ExAlert.error(message: '${(e as StorageException).message}');
           });
         },
       );
     } catch (e) {
       log('e: $e');
+      await ErrorLogHelper.record(page: 'settings', action: 'onUploadBackup', stack: e.toString());
       ExAlert.error(message: '$e');
     }
   }
@@ -301,6 +305,7 @@ class SettingsController extends GetxController with StateMixin {
           );
         }).catchError((e) {
           log('e: $e');
+          ErrorLogHelper.record(page: 'settings', action: 'onDownloadBackup', stack: e.toString());
           ExAlert.error(message: '$e');
         });
       },

@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../helpers/helpers.dart';
 import '../../../routes/app_pages.dart';
@@ -38,8 +39,12 @@ class LoginController extends GetxController {
       ExLoading.dismiss();
       Get.offAllNamed(Routes.HOME);
     }).catchError((e) {
-      logE('$e');
-      OverlayHelper.notification('$e', color: Vx.red600, duration: 5.seconds);
+      ErrorLogHelper.record(userEmail: tfEmail.text, page: 'login', action: 'onLogin', stack: e.toString());
+      if (e is AuthException && e.message.contains('credentials')) {
+        OverlayHelper.notification('${e.message}', color: Vx.red600, duration: 5.seconds);
+      } else {
+        ExAlert.error(title: 'Login Failed', message: '$e');
+      }
       ExLoading.dismiss();
     });
   }

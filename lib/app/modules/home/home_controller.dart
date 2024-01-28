@@ -145,8 +145,10 @@ class HomeController extends GetxController with StateMixin {
       countMaxBudget.value = sum;
       countRemainingBudget.value = (countOfMonth.value / sum * 100).toInt();
     } catch (e) {
+      await ErrorLogHelper.record(page: 'home', action: 'getCount1Month', stack: e.toString());
       countMaxBudget.value = 0;
       countRemainingBudget.value = 0;
+
     }
   }
 
@@ -180,6 +182,7 @@ class HomeController extends GetxController with StateMixin {
       }
       tfCategory.clear();
     } catch (e) {
+      await ErrorLogHelper.record(page: 'home', action: 'onAddCategory', stack: e.toString());
       OverlayHelper.notification('Failed, $categoryName already exists', color: Vx.red600, duration: 2.seconds);
     }
   }
@@ -201,6 +204,7 @@ class HomeController extends GetxController with StateMixin {
         isSearchMode.value = true;
       }
     } catch (e) {
+      await ErrorLogHelper.record(page: 'home', action: 'getExpense', stack: e.toString());
       change(0, status: RxStatus.error('$e'));
     }
 

@@ -679,6 +679,7 @@ mixin DialogInputHelper {
           OverlayHelper.notification('Category ${category.name} Deleted', color: Vx.red600);
           Get.close(2);
         } catch (e) {
+          await ErrorLogHelper.record(page: 'section_dialog_input', action: '_deleteCategory', stack: e.toString());
           Get.close(2);
           ExSnackbar.danger(e);
         }
@@ -744,6 +745,7 @@ mixin DialogInputHelper {
       OverlayHelper.notification('Successfully ${expense != null ? 'Edit' : 'Added'} $tfNote', color: Vx.green600);
     } catch (e) {
       logE('e: $e');
+      await ErrorLogHelper.record(page: 'section_dialog_input', action: '_submitExpense', stack: e.toString());
       OverlayHelper.notification('Failed to ${expense != null ? 'Edit' : 'Added'} Data', color: Vx.red600);
     }
     await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
