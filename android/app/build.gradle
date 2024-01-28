@@ -22,7 +22,7 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
-def fVersionCode = flutterVersionCode // .substring(0, 7)
+def fVersionCode = flutterVersionCode.substring(0, 7)
 
 
 android {
