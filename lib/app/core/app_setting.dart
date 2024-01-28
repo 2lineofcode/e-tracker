@@ -9,8 +9,6 @@ import 'package:window_manager/window_manager.dart';
 
 import '../../env.g.dart';
 import '../helpers/helpers.dart';
-import '../routes/app_pages.dart';
-import 'app_api.dart';
 import 'const.dart';
 
 /// handy call sharedpref
@@ -21,7 +19,6 @@ class AppSettingService extends GetxService {
   Future<void> onInit() async {
     await checkAndApplyDefaultAppConfig();
     await initForDesktop();
-    await isLogin();
     super.onInit();
   }
 
@@ -40,19 +37,6 @@ class AppSettingService extends GetxService {
       await pref.write(kCurrencySymbol, 'Rp. ');
       await pref.write(kIsDarkMode, true);
       logI('-- CONFIG CREATED --');
-    }
-  }
-
-  /// ------------------------------------------------------------------------
-  /// ! isLogined
-  /// ------------------------------------------------------------------------
-  bool get _isLogined => db.auth.currentSession?.user.id != null;
-  Future<void> isLogin() async {
-    if (!_isLogined) {
-      await 500.milliseconds.delay();
-      await Get.offAllNamed(Routes.LOGIN);
-      OverlayHelper.notification('Auth Issue, Please Login!');
-      return;
     }
   }
 

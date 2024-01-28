@@ -143,7 +143,7 @@ class MyLayout extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(color: footerColor ?? AppColor.footerPrimary),
       child: Padding(
-        padding: Platform.isIOS ? EdgeInsets.only(bottom: 20, right: 8, left: 8) : EdgeInsets.all(0),
+        padding: !kIsWeb && Platform.isIOS ? EdgeInsets.only(bottom: 20, right: 8, left: 8) : EdgeInsets.all(0),
         child: footerContent,
       ),
     );

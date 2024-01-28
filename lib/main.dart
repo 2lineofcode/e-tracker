@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/core/app_setting.dart';
 import 'app/core/app_theme.dart';
+import 'app/routes/app_middleware.dart';
 import 'app/routes/app_pages.dart';
 import 'env.g.dart';
 
@@ -48,6 +49,7 @@ class ExpenseTracker extends StatelessWidget {
         darkTheme: AppTheme.dark,
         debugShowCheckedModeBanner: false,
         getPages: AppPages.routes,
+        unknownRoute: GetPage(name: '/404', page: () => const NotFoundScreen()),
         defaultTransition: Transition.fadeIn,
         builder: (context, child) {
           if (kReleaseMode) return child!;
