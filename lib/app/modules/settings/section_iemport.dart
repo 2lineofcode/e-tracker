@@ -14,136 +14,89 @@ class SectionIEmport extends GetView<SettingsController> {
   @override
   Widget build(BuildContext context) {
     return VStack([
-      Obx(
-        () => Container(
-          width: double.infinity,
-          decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.cardItemPrimary, fillColor: AppColor.cardHeaderPrimary),
-          child: VStack([
-            '📈 Analytics'.text.bold.make().pOnly(bottom: 8),
-            'Total Data Expense: ${controller.countExpense.value}'.text.size(11).make(),
-            'Total Data Category: ${controller.countCategory.value}'.text.size(11).make(),
-            'Total Data AutoComplete: ${controller.autoCompleteList.length}'.text.size(11).make(),
-          ]).p12(),
-        ),
-      ),
+      /// analytics
+      analytics(),
+
       Divider().pSymmetric(v: 12),
-      Container(
+
+      /// import export
+      importExport(),
+
+      /// cloud backup
+      cloudBackup(),
+    ]).pSymmetric(h: 8).scrollVertical();
+  }
+
+  Widget analytics() {
+    return Obx(
+      () => Container(
         width: double.infinity,
         decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.cardItemPrimary, fillColor: AppColor.cardHeaderPrimary),
-        child: VStack(
-          [
-            // 1
-            HStack(
-              [
-                'Import From CSV'.text.make().expand(),
-                ExButtonElevated(
-                  height: 33,
-                  width: 75,
-                  label: 'Select File',
-                  labelSize: 12,
-                  radius: 8,
-                  onPressed: () async => await ImportExportHelper.importFromCSV(),
-                ),
-              ],
-            ),
+        child: VStack([
+          '📈 Analytics'.text.bold.make().pOnly(bottom: 8),
+          'Total Data Expense: ${controller.countExpense.value}'.text.size(11).make(),
+          'Total Data Category: ${controller.countCategory.value}'.text.size(11).make(),
+          'Total Data AutoComplete: ${controller.autoCompleteList.length}'.text.size(11).make(),
+        ]).p12(),
+      ),
+    );
+  }
 
-            Divider().pSymmetric(v: 4),
-
-            // 2
-            HStack([
-              'Export As CSV'.text.make().expand(),
-              IconButton(
-                onPressed: () async => await ImportExportHelper.exportToCSV(),
-                icon: Icon(Icons.arrow_forward_ios_rounded),
+  Widget importExport() {
+    return Container(
+      width: double.infinity,
+      decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.cardItemPrimary, fillColor: AppColor.cardHeaderPrimary),
+      child: VStack(
+        [
+          // 1
+          HStack(
+            [
+              'Import From CSV'.text.make().expand(),
+              ExButtonElevated(
+                height: 33,
+                width: 75,
+                label: 'Select File',
+                labelSize: 12,
+                radius: 8,
+                onPressed: () async => await ImportExportHelper.importFromCSV(),
               ),
-            ]),
+            ],
+          ),
 
-            Divider().pSymmetric(v: 4),
+          Divider().pSymmetric(v: 4),
 
-            // 3
-            buttonDelete(
-              title: 'Delete All Data',
-              subtitle: 'to confirm delete all data',
-              btnLabel: 'Delete Data',
-              action: () async => await ImportExportHelper.deleteAllData(),
+          // 2
+          HStack([
+            'Export As CSV'.text.make().expand(),
+            IconButton(
+              onPressed: () async => await ImportExportHelper.exportToCSV(),
+              icon: Icon(Icons.arrow_forward_ios_rounded),
             ),
+          ]),
 
-            Divider().pSymmetric(v: 4),
+          Divider().pSymmetric(v: 4),
 
-            // 4
-            buttonDelete(
-              title: 'Delete Account',
-              subtitle: 'to confirm delete account',
-              btnLabel: 'Delete Account',
-              btnColor: Vx.red900,
-              action: () async => await ImportExportHelper.deleteAccount(),
-            ),
-          ],
-        ).p12(),
-      ),
-      Obx(
-        () => controller.backupList.isNotEmpty
+          // 3
+          buttonDelete(
+            title: 'Delete All Data',
+            subtitle: 'to confirm delete all data',
+            btnLabel: 'Delete Data',
+            action: () async => await ImportExportHelper.deleteAllData(),
+          ),
 
-            /// has data
-            ? VStack([
-                Divider().pSymmetric(v: 16),
-                HStack([
-                  'Cloud Sync'.text.make().expand(),
-                  ExButtonLoading(
-                    height: 33,
-                    width: 80,
-                    type: ExButtonType.elevated,
-                    child: 'Sync Now'.text.size(11).minFontSize(11).make(),
-                    onTap: (startLoading, stopLoading, btnState) async {
-                      startLoading();
-                      await controller.onUploadBackup();
-                      stopLoading();
-                    },
-                  ),
-                ]).pOnly(bottom: 12),
-                ListView.separated(
-                  itemCount: controller.backupList.length,
-                  separatorBuilder: (c, i) => Divider(),
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final item = controller.backupList[index];
-                    final fileName = '${item.name.replaceAll('${db.auth.currentSession?.user.email}_', '')}';
+          Divider().pSymmetric(v: 4),
 
-                    return ListTile(
-                      title: '$fileName'.text.size(11).make(),
-                      subtitle: '${item.updatedAt?.reformatDate(to: 'd MMM y HH:mm', addHours: 7)} • ${formatFileSize(item.metadata!['size'])}'.text.size(10).minFontSize(10).make(),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: AppColor.cardItemPrimary, width: 1)),
-                      trailing: IconButton(
-                        icon: Icon(CupertinoIcons.arrow_turn_up_left),
-                        onPressed: () => controller.onDownloadBackup(item),
-                      ),
-                    );
-                  },
-                ),
-              ])
-
-            /// empty
-            : VStack([
-                Divider().pSymmetric(v: 16),
-                'Cloud Sync'.text.make().pOnly(bottom: 12),
-                ExUiErrorOrEmpty(
-                  child: VStack(
-                    [
-                      'No Data Backup'.text.size(13).bold.makeCentered(),
-                      ''.text.size(11).minFontSize(11).makeCentered(),
-                      ExButtonElevated(
-                        label: 'Backup Now',
-                        labelSize: 11,
-                        height: 33,
-                        onPressed: () => controller.onUploadBackup(),
-                      ).centered().pOnly(top: 8)
-                    ],
-                  ),
-                ).h(150)
-              ]),
-      ),
-    ]).pSymmetric(h: 8).scrollVertical();
+          // 4
+          buttonDelete(
+            title: 'Delete Account',
+            subtitle: 'to confirm delete account',
+            btnLabel: 'Delete Account',
+            btnColor: Vx.red900,
+            action: () async => await ImportExportHelper.deleteAccount(),
+          ),
+        ],
+      ).p12(),
+    );
   }
 
   Widget buttonDelete({
@@ -212,6 +165,80 @@ class SectionIEmport extends GetView<SettingsController> {
           },
         ),
       ],
+    );
+  }
+
+  Widget cloudBackup() {
+    return Obx(
+      () => controller.backupList.isNotEmpty
+
+          /// has data
+          ? VStack([
+              Divider().pSymmetric(v: 16),
+              HStack([
+                'Cloud Sync'.text.make().expand(),
+                ExButtonLoading(
+                  height: 33,
+                  width: 80,
+                  type: ExButtonType.elevated,
+                  child: 'Sync Now'.text.size(11).minFontSize(11).make(),
+                  onTap: (startLoading, stopLoading, btnState) async {
+                    startLoading();
+                    await controller.onUploadBackup();
+                    stopLoading();
+                  },
+                ),
+              ]).pOnly(bottom: 12),
+              ListView.separated(
+                itemCount: controller.backupList.length,
+                separatorBuilder: (c, i) => Divider(),
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final item = controller.backupList[index];
+                  final fileName = '${item.name.replaceAll('${db.auth.currentSession?.user.email}_', '')}';
+
+                  return ListTile(
+                    title: '$fileName'.text.size(11).make(),
+                    subtitle: '${item.updatedAt?.reformatDate(to: 'd MMM y HH:mm', addHours: 7)} • ${formatFileSize(item.metadata!['size'])}'.text.size(10).minFontSize(10).make(),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4), side: BorderSide(color: AppColor.cardItemPrimary, width: 1)),
+                    trailing: IconButton(
+                      icon: Icon(CupertinoIcons.arrow_turn_up_left),
+                      onPressed: () => controller.onDownloadBackup(item),
+                    ),
+                  );
+                },
+              ),
+
+              /// delete old data
+              if (controller.backupList.length > 1) ...[
+                ExButtonElevated(
+                  label: 'Delete Old Data',
+                  labelSize: 12,
+                  onPressed: () => controller.onDeleteOldCloudData(),
+                ).p12().centered(),
+              ],
+            ])
+
+          /// empty
+          : VStack([
+              Divider().pSymmetric(v: 16),
+              'Cloud Sync'.text.make().pOnly(bottom: 12),
+              ExUiErrorOrEmpty(
+                child: VStack(
+                  [
+                    'No Data Backup'.text.size(13).bold.makeCentered(),
+                    ''.text.size(11).minFontSize(11).makeCentered(),
+                    ExButtonElevated(
+                      label: 'Backup Now',
+                      labelSize: 11,
+                      height: 33,
+                      onPressed: () => controller.onUploadBackup(),
+                    ).centered().pOnly(top: 8)
+                  ],
+                ),
+              ).h(150)
+            ]),
     );
   }
 }

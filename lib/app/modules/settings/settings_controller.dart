@@ -312,6 +312,30 @@ class SettingsController extends GetxController with StateMixin {
     );
   }
 
+  Future<void> onDeleteOldCloudData() async {
+    final listToDelete = <String>[];
+    await repo.getBackupList()
+      ..removeAt(0)
+      ..forEach((element) {
+        listToDelete.add(element.name);
+      });
+
+    ExAlert.confirm(
+        title: 'Delete Old Data',
+        message: '''
+${listToDelete.length} data will be deleted
+${listToDelete.map((word) => '- $word').join('\n').replaceAll('${db.auth.currentSession?.user.email}_etracker_', '')}
+          '''
+            .trim(),
+        onYes: () async {
+          Get.back();
+          ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
+          await db.storage.from('backup').remove(listToDelete);
+          backupList.value = await repo.getBackupList();
+          ExLoading.dismiss();
+        });
+  }
+
   Future<void> onLogout() async {
     ExLoading.show(
       paddingSymmetric: Get.context!.isMobile ? 90 : 250,
