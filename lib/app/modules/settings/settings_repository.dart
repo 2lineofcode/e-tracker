@@ -89,7 +89,7 @@ class SettingsRepository {
     final response = await db.storage.from('backup').list(
           searchOptions: SearchOptions(
             search: '%${db.auth.currentSession!.user.email}%',
-            sortBy: SortBy(column: 'name', order: 'desc'),
+            sortBy: SortBy(column: 'created_at', order: 'desc'),
           ),
         );
     return response;

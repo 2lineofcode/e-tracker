@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../core/app_api.dart';
 import '../../core/app_color.dart';
 import '../../helpers/helpers.dart';
 import 'settings_controller.dart';
@@ -30,8 +31,12 @@ class SectionRepeat extends GetView<SettingsController> {
                     final jobName = item.command.allBetween("values ('", "', '");
                     final dueDate = item.schedule.allBetween('0 0 ', ' * *');
                     final amount = item.command.allBetween("', ", ', current_date').replaceAll(RegExp(r'[^0-9]'), '').toNum();
-                    // ignore: unused_local_variable
-                    final categoryName = item.command.allBetween("', ", ', current_date').replaceAll(RegExp('[0-9]'), '').replaceAll(RegExp(",|!|'"), '');
+                    final categoryName = item.command
+                        .allBetween("', ", ', current_date')
+                        .replaceAll(RegExp('[0-9]'), '')
+                        .replaceAll(RegExp(",|!|'"), '')
+                        .replaceAll('#${db.auth.currentSession?.user.email}', '')
+                        .trim();
 
                     final now = DateTime.now();
                     final dateA = DateTime(now.year, now.month, now.day);
@@ -52,7 +57,7 @@ class SectionRepeat extends GetView<SettingsController> {
                           /// body
                           VStack([
                             '🗓️ Every Date $dueDate'.text.size(12).make().pOnly(bottom: 8),
-                            '$jobName'.text.size(13).bold.make(),
+                            '$jobName ($categoryName)'.text.size(13).bold.make(),
                             if (remainingDays.isNegative) ...[
                               'Next month'.text.size(11).minFontSize(11).make(),
                             ] else ...[
