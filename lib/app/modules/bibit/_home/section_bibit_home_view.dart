@@ -7,8 +7,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 
 import '../../../core/app_color.dart';
+import '../../../core/const.dart';
 import '../../../helpers/helper_bibit.dart';
-import '../../../helpers/helper_misc.dart';
 import '../../../helpers/helper_money.dart';
 import '../../widgets/widgets.dart';
 import '../bibit_controller.dart';
@@ -91,19 +91,19 @@ class SectionBibitHomeView extends GetView<SectionBibitHomeController> {
                   HStack([
                     'Return of Investment'.text.bold.make(),
                     Spacer(),
-                    'Last Update: ${controller.performance1D.value.chart?.last.formatedDate?.toDateEx(format: 'yyyy-MM-dd').getTimeAgoFromNow() ?? '~'}'.text.size(10).minFontSize(10).make(),
+                    'Last Update: ${controller.performance1W.value.chart?.last.formatedDate?.reformatDate(from: yMd, to: 'dd MMM y') ?? '~'}'.text.size(10).minFontSize(10).make(),
                   ]).pOnly(bottom: 12),
 
                   /// Today
                   ''
                       .richText
                       .withTextSpanChildren([
-                        'Today: '.textSpan.color(AppColor.textReverse).make(),
-                        '${controller.performance1D.value.change?.moneyFormat() ?? '~'}'.textSpan.make(),
+                        'This Week: '.textSpan.color(AppColor.textReverse).make(),
+                        '${controller.performance1W.value.change?.moneyFormat() ?? '~'}'.textSpan.make(),
                         ' '.textSpan.make(),
-                        '(${controller.performance1D.value.percent?.percentageFormat() ?? '~'})'.textSpan.make(),
+                        '(${controller.performance1W.value.percent?.percentageFormat() ?? '~'})'.textSpan.make(),
                       ])
-                      .color(BibitHelper.getColor(controller.performance1D.value.percent))
+                      .color(BibitHelper.getColor(controller.performance1W.value.percent))
                       .size(12)
                       .make()
                       .pOnly(bottom: 8),
@@ -137,9 +137,9 @@ class SectionBibitHomeView extends GetView<SectionBibitHomeController> {
                 ]).expand(),
               ],
             ).p8(),
-            if (controller.performance1D.value.percent != null) ...[
+            if (controller.performance1W.value.percent != null) ...[
               SvgPicture.network(
-                controller.performance1D.value.percent!.isNegative
+                controller.performance1W.value.percent!.isNegative
                     ? 'https://app.bibit.id/static/media/bg-downtrend-dark.e2b751733811d9cddc85.svg'
                     : 'https://app.bibit.id/static/media/bg-uptrend-dark.8bdce522ca56b5d02eea.svg',
                 width: 100,

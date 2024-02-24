@@ -20,7 +20,7 @@ class SectionBibitHomeController extends GetxController {
 
   final ihsg = StockbitChartData().obs;
   final portpolio = BibitPortpolioData().obs;
-  final performance1D = BibitPerformanceChartData().obs;
+  final performance1W = BibitPerformanceChartData().obs;
   final performance1M = BibitPerformanceChartData().obs;
   final watchListMutual = <BibitWatchlistData>[].obs;
   final watchListStock = <StockbitWatchlistData>[].obs;
@@ -32,7 +32,7 @@ class SectionBibitHomeController extends GetxController {
   @override
   Future<void> onInit() async {
     portpolio.value = await repoBibit.getPortpolio();
-    performance1D.value = await repoBibit.getPerformanceByPeriod('1D');
+    performance1W.value = await repoBibit.getPerformanceByPeriod('1W');
     performance1M.value = await repoBibit.getPerformanceByPeriod('1M');
     watchListMutual.value = await repoBibit.getWatchList();
     watchListStock.value = await repoStockbit.getWatchList();

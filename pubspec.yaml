@@ -1,5 +1,5 @@
 name: expense_tracker
-version: 1.0.0+139.20240207
+version: 1.0.0+141.20240225
 publish_to: none
 description: The Expense Tracker app is a handy tool for managing your personal finances. It allows you to easily track your expenses, categorize them, and analyze your spending patterns. With a user-friendly interface, the app provides features such as adding and editing expenses, setting budget goals, generating reports, and visualizing data through charts and graphs. Stay in control of your finances with the Expense Tracker app.
 environment: 
@@ -10,18 +10,18 @@ dependencies:
   # core
   get: ^4.6.6
   get_storage: ^2.1.1
-  supabase_flutter: ^2.3.0
+  supabase_flutter: ^2.3.3
 
   # ui
   ex: ^0.5.12
   cupertino_icons: ^1.0.6
   flutter_svg: ^2.0.9
-  table_calendar: ^3.0.9
+  table_calendar: ^3.1.0
   grouped_list: ^5.1.2
   custom_radio_grouped_button: ^2.2.1
-  window_manager: ^0.3.7
-  syncfusion_flutter_charts: ^24.1.46
-  fl_chart: ^0.66.0
+  window_manager: ^0.3.8
+  syncfusion_flutter_charts: ^24.2.4+3
+  fl_chart: ^0.66.1
   animated_text_kit: ^4.2.2
   flutter_popup: ^3.1.8
   flutter_iconpicker_plus: ^3.2.3
@@ -33,7 +33,6 @@ dependencies:
   # picker
   hsv_color_pickers: ^0.3.0
   flutter_colorpicker: ^1.0.3
-  flutter_month_picker: ^0.0.2 
   file_picker: ^6.1.1
   
   # utils
@@ -45,13 +44,13 @@ dependencies:
   package_info_plus: ^5.0.1
   flutter_simple_calculator: ^2.2.4
   money_formatter: ^0.0.5
-  url_launcher: ^6.2.3
+  url_launcher: ^6.2.4
 
   flutter: 
     sdk: flutter
 
 dev_dependencies: 
-  enven: ^0.2.0
+  enven: ^0.3.0
   flutter_lints: ^3.0.1
   flutter_launcher_icons: "^0.13.1"
   flutter_test: 

@@ -41,8 +41,8 @@ class SectionBibitPerformanceTab1 extends GetView<SectionBibitPerformanceControl
       unSelectedBorderColor: Colors.transparent,
       selectedBorderColor: Colors.transparent,
       defaultSelected: controller.periodSelected.value,
-      buttonLables: ['1D', '1M', '3M', 'YTD', '1Y', 'ALL'],
-      buttonValues: ['1D', '1M', '3M', 'YTD', '1Y', 'ALL'],
+      buttonLables: ['1W', '1M', '3M', 'YTD', '1Y', 'ALL'],
+      buttonValues: ['1W', '1M', '3M', 'YTD', '1Y', 'ALL'],
       buttonTextStyle: ButtonTextStyle(
         selectedColor: Vx.black,
         unSelectedColor: AppColor.textReverse,

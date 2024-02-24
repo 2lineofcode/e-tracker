@@ -51,9 +51,6 @@ class SectionRepeat extends GetView<SettingsController> {
                       ),
                       child: HStack(
                         [
-                          /// leading
-                          // Icon(Icons.abc, color: AppColor.bibit).pOnly(right: 8),
-
                           /// body
                           VStack([
                             '🗓️ Every Date $dueDate'.text.size(12).make().pOnly(bottom: 8),

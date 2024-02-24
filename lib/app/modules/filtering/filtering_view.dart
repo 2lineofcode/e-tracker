@@ -1,7 +1,6 @@
 import 'package:ex/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_month_picker/flutter_month_picker.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 
 import 'package:get/get.dart';
@@ -101,9 +100,9 @@ class FilteringView extends GetView<FilteringController> {
                 Obx(
                   () => '${controller.startDate.value.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.underline.size(12).make().onInkTap(
                     () async {
-                      final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
-                      if (date != null) controller.startDate.value = '${date.toStringEx(format: yM)}-01';
-                      await controller.findExpense(controller.categorySelected.value);
+                      // final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
+                      // if (date != null) controller.startDate.value = '${date.toStringEx(format: yM)}-01';
+                      // await controller.findExpense(controller.categorySelected.value);
                     },
                   ),
                 ),
@@ -114,9 +113,9 @@ class FilteringView extends GetView<FilteringController> {
                 Obx(
                   () => '${controller.endDate.value.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.underline.size(12).make().onInkTap(
                     () async {
-                      final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
-                      if (date != null) controller.endDate.value = '${date.toStringEx(format: yM)}-31';
-                      await controller.findExpense(controller.categorySelected.value);
+                      // final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
+                      // if (date != null) controller.endDate.value = '${date.toStringEx(format: yM)}-31';
+                      // await controller.findExpense(controller.categorySelected.value);
                     },
                   ),
                 ),
