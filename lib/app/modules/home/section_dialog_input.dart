@@ -617,7 +617,7 @@ mixin DialogInputHelper {
                 ),
                 inputFormatters: [
                   CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
-                  LengthLimitingTextInputFormatter(13),
+                  LengthLimitingTextInputFormatter(15),
                 ],
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) async => {
