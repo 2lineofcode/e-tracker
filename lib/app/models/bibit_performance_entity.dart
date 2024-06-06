@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-/// * 
+/// *
 /// * JSON Source: {"message":"Berhasil menampilkan data Portfolio Performance","data":{"marketvalue":146146269.59,"mutual_fund_market_value":145841769.59,"sbn_market_value":0,"invested":144109632,"profitloss":2036644,"totalpending":0,"totalporto":146146269.59,"trading_balance":0,"percentage":0.0141,"limit":{"max":12,"left":7},"additional_parameters":{"invested":143436960,"total_deposit":212067500,"total_withdrawal":71000757.56,"profitloss_realized":2370217.03}}}
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
-/// * 
+/// *
 class BibitPerformance {
   String? message;
   BibitPerformanceData? data;
@@ -31,19 +31,30 @@ class BibitPerformance {
 }
 
 class BibitPerformanceData {
-  double? marketvalue;
-  double? mutualFundMarketValue;
-  int? sbnMarketValue;
-  int? invested;
-  int? profitloss;
-  int? totalpending;
-  double? totalporto;
-  int? tradingBalance;
-  double? percentage;
+  num? marketvalue;
+  num? mutualFundMarketValue;
+  num? sbnMarketValue;
+  num? invested;
+  num? profitloss;
+  num? totalpending;
+  num? totalporto;
+  num? tradingBalance;
+  num? percentage;
   BibitPerformanceDataLimit? limit;
   BibitPerformanceDataAdditionalParameters? additionalParameters;
 
-  BibitPerformanceData({this.marketvalue, this.mutualFundMarketValue, this.sbnMarketValue, this.invested, this.profitloss, this.totalpending, this.totalporto, this.tradingBalance, this.percentage, this.limit, this.additionalParameters});
+  BibitPerformanceData(
+      {this.marketvalue,
+      this.mutualFundMarketValue,
+      this.sbnMarketValue,
+      this.invested,
+      this.profitloss,
+      this.totalpending,
+      this.totalporto,
+      this.tradingBalance,
+      this.percentage,
+      this.limit,
+      this.additionalParameters});
 
   BibitPerformanceData.fromJson(Map<String, dynamic> json) {
     marketvalue = json['marketvalue'] ?? 0.0;
@@ -86,8 +97,8 @@ class BibitPerformanceData {
 }
 
 class BibitPerformanceDataLimit {
-  int? max;
-  int? left;
+  num? max;
+  num? left;
 
   BibitPerformanceDataLimit({this.max, this.left});
 
@@ -110,10 +121,10 @@ class BibitPerformanceDataLimit {
 }
 
 class BibitPerformanceDataAdditionalParameters {
-  int? invested;
-  int? totalDeposit;
-  double? totalWithdrawal;
-  double? profitlossRealized;
+  num? invested;
+  num? totalDeposit;
+  num? totalWithdrawal;
+  num? profitlossRealized;
 
   BibitPerformanceDataAdditionalParameters({this.invested, this.totalDeposit, this.totalWithdrawal, this.profitlossRealized});
 
