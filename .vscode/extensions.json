@@ -1,6 +1,5 @@
 {
   "recommendations": [
-    "denoland.vscode-deno",
     "peterschmalfeldt.explorer-exclude",
     "aaron-bond.better-comments"
   ]

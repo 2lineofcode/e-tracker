@@ -1,4 +1,4 @@
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 
 import '../../core/app_api.dart';
 import '../../core/const.dart';
@@ -30,7 +30,7 @@ class HomeRepository {
 
   Future<void> editCategory(SupaCategory categoryEntity) async {
     final response = await db.from('category').update(categoryEntity.toJson()).match({
-      'id': categoryEntity.id,
+      'id': categoryEntity.id ?? '',
       'user_id': db.auth.currentSession?.user.id ?? '',
     });
     return response;
@@ -150,7 +150,7 @@ class HomeRepository {
     final response = await db //
         .from('expense')
         .update(entity.toJson())
-        .match({'id': entity.id});
+        .match({'id': entity.id ?? ''});
     return response;
   }
 

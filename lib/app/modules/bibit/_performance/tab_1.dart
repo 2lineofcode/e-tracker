@@ -1,5 +1,5 @@
 import 'package:custom_radio_grouped_button/custom_radio_grouped_button.dart';
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

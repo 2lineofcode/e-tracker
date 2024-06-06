@@ -1,4 +1,4 @@
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 import 'package:get/get.dart';
 
 import '../../../models/pintu_chart_entity.dart';

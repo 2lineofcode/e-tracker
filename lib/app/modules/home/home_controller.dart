@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -148,7 +148,6 @@ class HomeController extends GetxController with StateMixin {
       await ErrorLogHelper.record(page: 'home', action: 'getCount1Month', stack: e.toString());
       countMaxBudget.value = 0;
       countRemainingBudget.value = 0;
-
     }
   }
 

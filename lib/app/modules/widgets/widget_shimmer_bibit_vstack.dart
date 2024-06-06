@@ -1,4 +1,4 @@
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/app_color.dart';

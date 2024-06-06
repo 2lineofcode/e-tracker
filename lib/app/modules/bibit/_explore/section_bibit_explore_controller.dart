@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 import 'package:get/get.dart';
 
 import '../../../core/app_api.dart';

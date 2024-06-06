@@ -2,7 +2,7 @@
 
 import 'dart:typed_data';
 
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 

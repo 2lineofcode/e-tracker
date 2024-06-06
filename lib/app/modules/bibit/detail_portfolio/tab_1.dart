@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_svg/svg.dart';

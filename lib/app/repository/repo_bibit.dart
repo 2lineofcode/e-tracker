@@ -1,4 +1,4 @@
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 
 import '../core/app_api.dart';
 import '../models/bibit_allocation_summary_entity.dart';

@@ -1,4 +1,4 @@
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 import 'package:get/get.dart';
 
 import '../../../models/bibit_cart_entity.dart';
@@ -82,7 +82,8 @@ class SectionBibitTransactionController extends GetxController with StateMixin {
   void goDetailMutual(String symbol) {
     Get.toNamed(Routes.DETAIL_MUTUAL, arguments: symbol);
   }
-   void goDetailStock(String symbol) {
+
+  void goDetailStock(String symbol) {
     Get.toNamed(Routes.DETAIL_STOCK, arguments: symbol);
   }
 }

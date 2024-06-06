@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ex/ex.dart';
+import 'package:ex_kit/ex.dart';
 import 'package:get/get.dart';
 
 import '../../../models/bibit_performance_chart_entity.dart';
