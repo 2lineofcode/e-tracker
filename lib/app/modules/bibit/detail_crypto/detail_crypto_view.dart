@@ -192,7 +192,6 @@ class _Chart extends GetView<DetailCryptoController> {
   LineTouchData lineTooltip(List<PintuChartPayloadChart> chart) {
     return LineTouchData(
       touchTooltipData: LineTouchTooltipData(
-        tooltipBgColor: Vx.white,
         fitInsideHorizontally: true,
         fitInsideVertically: true,
         getTooltipItems: (touchedSpots) {

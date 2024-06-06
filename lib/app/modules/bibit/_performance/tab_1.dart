@@ -143,7 +143,6 @@ class _LineChart extends GetView<SectionBibitPerformanceController> {
   LineTouchData lineTooltip(List<BibitPerformanceChartDataChart> chart) {
     return LineTouchData(
       touchTooltipData: LineTouchTooltipData(
-        tooltipBgColor: Vx.white,
         fitInsideHorizontally: true,
         fitInsideVertically: true,
         getTooltipItems: (touchedSpots) {

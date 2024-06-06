@@ -3,6 +3,7 @@ import 'package:ex_kit/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/app_api.dart';
 import '../../core/app_color.dart';
@@ -135,7 +136,7 @@ class SectionAppConfig extends GetView<SettingsController> {
                 prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
               ),
               style: TextStyle(fontSize: 13),
-              inputFormatters: [CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0)],
+              inputFormatters: [CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0))],
             ).h(28).expand(),
             Icon(Icons.circle, color: AppColor.green, size: 8).pOnly(left: 8),
           ]),
@@ -151,7 +152,7 @@ class SectionAppConfig extends GetView<SettingsController> {
                 prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
               ),
               style: TextStyle(fontSize: 13),
-              inputFormatters: [CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0)],
+              inputFormatters: [CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0))],
               onChanged: (s) => controller.tfSpender.text = s,
             ).h(28).expand(),
             Icon(Icons.circle, color: AppColor.orange, size: 8).pOnly(left: 8),
@@ -169,7 +170,11 @@ class SectionAppConfig extends GetView<SettingsController> {
                 prefixIcon: '> '.text.make().pOnly(left: 12, top: 4),
               ),
               style: TextStyle(fontSize: 13),
-              inputFormatters: [CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0)],
+              inputFormatters: [
+                CurrencyTextInputFormatter(
+                  NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0),
+                )
+              ],
             ).h(28).expand(),
             Icon(Icons.circle, color: AppColor.red, size: 8).pOnly(left: 8),
           ]),

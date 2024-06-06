@@ -115,7 +115,6 @@ class _Chart extends GetView<SummaryController> {
   BarTouchTooltipData lineTooltip(List<SupaExpense> chart) {
     final fixChart = chart.reversed.toList();
     return BarTouchTooltipData(
-      tooltipBgColor: Vx.white,
       fitInsideHorizontally: true,
       fitInsideVertically: true,
       tooltipHorizontalAlignment: FLHorizontalAlignment.center,

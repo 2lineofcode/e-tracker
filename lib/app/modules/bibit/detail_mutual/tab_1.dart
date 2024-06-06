@@ -398,7 +398,6 @@ class _Chart extends GetView<DetailMutualController> {
   LineTouchData lineTooltip(List<BibitProductDetailChartChart> chart) {
     return LineTouchData(
       touchTooltipData: LineTouchTooltipData(
-        tooltipBgColor: Vx.white,
         fitInsideHorizontally: true,
         fitInsideVertically: true,
         getTooltipItems: (touchedSpots) {
@@ -461,7 +460,6 @@ class _Aum extends GetView<DetailMutualController> {
   LineTouchData lineTooltip(List<BibitProductDetailAumChart> chart) {
     return LineTouchData(
       touchTooltipData: LineTouchTooltipData(
-        tooltipBgColor: Vx.white,
         fitInsideHorizontally: true,
         fitInsideVertically: true,
         getTooltipItems: (touchedSpots) {

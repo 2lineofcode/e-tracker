@@ -9,6 +9,7 @@ import 'package:flutter_iconpicker_plus/flutter_iconpicker.dart';
 import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:get/get.dart';
 import 'package:hsv_color_pickers/hsv_color_pickers.dart';
+import 'package:intl/intl.dart';
 import 'package:uuid/v4.dart';
 
 import '../../core/app_api.dart';
@@ -72,7 +73,7 @@ mixin DialogInputHelper {
                 prefix: Icon(CupertinoIcons.bag_fill, size: 16, color: AppColor.textReverse).pOnly(left: 8),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                 inputFormatters: [
-                  CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
+                  CurrencyTextInputFormatter(NumberFormat('', 'id'),),
                   LengthLimitingTextInputFormatter(13),
                 ],
                 keyboardType: TextInputType.number,
@@ -409,7 +410,7 @@ mixin DialogInputHelper {
                   },
                 ),
                 inputFormatters: [
-                  CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
+                  CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
                   LengthLimitingTextInputFormatter(13),
                 ],
                 keyboardType: TextInputType.number,
@@ -616,7 +617,7 @@ mixin DialogInputHelper {
                   },
                 ),
                 inputFormatters: [
-                  CurrencyTextInputFormatter(symbol: 'Rp. ', decimalDigits: 0),
+                  CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
                   LengthLimitingTextInputFormatter(15),
                 ],
                 keyboardType: TextInputType.number,

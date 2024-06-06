@@ -541,7 +541,6 @@ class _Chart extends GetView<DetailStockController> {
   LineTouchData lineTooltip(List<StockbitChartDataPrices> chart) {
     return LineTouchData(
       touchTooltipData: LineTouchTooltipData(
-        tooltipBgColor: Vx.white,
         fitInsideHorizontally: true,
         fitInsideVertically: true,
         getTooltipItems: (touchedSpots) {
