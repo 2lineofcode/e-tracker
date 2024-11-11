@@ -47,6 +47,10 @@ class HomeController extends GetxController with StateMixin {
   final isSearchMode = false.obs;
   final isFirstLoad = true.obs;
 
+  // advance search
+  final isAdvanceSearch = false.obs;
+  final advanceSearchText = ''.obs;
+
   /// init ~~
   @override
   Future<void> onInit() async {
@@ -187,7 +191,7 @@ class HomeController extends GetxController with StateMixin {
   }
 
   /// expense
-  Future<void> getExpense({String? find}) async {
+  Future<void> getExpense({String? find, String? startDate, String? endDate}) async {
     change(0, status: RxStatus.loading());
     final date = focusedDay.value.toStringEx(format: yMd);
     try {
@@ -198,7 +202,14 @@ class HomeController extends GetxController with StateMixin {
         if (find.startsWith(RegExp(r'[0-9]'))) {
           expenseList.value = await repo.findExpenseByDateRange(find);
         } else {
-          expenseList.value = await repo.findExpense(find);
+          if (startDate != null && endDate != null) {
+            isAdvanceSearch.value = true;
+            advanceSearchText.value = 'Showing data from "$startDate - $endDate"';
+          } else {
+            isAdvanceSearch.value = false;
+            advanceSearchText.value = '';
+          }
+          expenseList.value = await repo.findExpense(find, startDate: startDate, endDate: endDate);
         }
         isSearchMode.value = true;
       }

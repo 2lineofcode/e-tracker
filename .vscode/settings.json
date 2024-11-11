@@ -11,9 +11,9 @@
         ".firebase": true,
         ".flutter-**": true,
         "linux": true,
-        "android": false,
+        "android": true,
         "windows": true,
-        "macos": true,
+        "macos": false,
         "ios": true,
         "web": true,
         "build": true,
@@ -21,10 +21,8 @@
         "*.iml": true
     },
     "explorerExclude.backup": {},
-
     "dart.lineLength": 200,
     "workbench.editor.enablePreview": true,
-
     "editor.codeActionsOnSave": {
         "source.fixAll": "explicit"
     },
@@ -32,12 +30,11 @@
     "explorer.fileNesting.expand": false,
     "explorer.fileNesting.patterns": {
         "pubspec.yaml": "pubspec.lock,pubspec_overrides.yaml,.packages,.flutter-plugins,.flutter-plugins-dependencies,.metadata, analysis_options.yaml, flutter_launcher_icons.yaml",
-        "README.md":"README.md, supabase_local.md",
+        "README.md": "README.md, supabase_local.md",
         "*.dart": "${capture}.g.dart",
         "firebase.json": "firebase.json, .firebaserc",
         ".env": ".env, .env.dev, .env.local, .env.staging, .env.prod, env.g.dart",
     },
-
     "deno.enable": true,
     "deno.lint": true,
 }

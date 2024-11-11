@@ -498,7 +498,20 @@ class HomeView extends GetView<HomeController> {
     }
 
     /// text @note / @category
-    return 'Search for: "${controller.tfSearchExpense.value.text}"'.text.bold.make().pOnly(bottom: 12);
+    return VStack(
+      [
+        HStack(
+          [
+            'Search for: "${controller.tfSearchExpense.value.text}"'.text.bold.make(),
+            Spacer(),
+            'Filter'.text.size(8).underline.make().onInkTap(() {
+              DialogInputHelper.advenceFilterExpense(controller.tfSearchExpense.value.text);
+            }),
+          ],
+        ),
+        controller.isAdvanceSearch.isTrue ? '${controller.advanceSearchText}'.text.size(10).minFontSize(10).make() : 0.heightBox,
+      ],
+    ).pOnly(bottom: 12);
   }
 
   Widget bodyItemBasicView() {

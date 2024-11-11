@@ -73,7 +73,7 @@ mixin DialogInputHelper {
                 prefix: Icon(CupertinoIcons.bag_fill, size: 16, color: AppColor.textReverse).pOnly(left: 8),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                 inputFormatters: [
-                  CurrencyTextInputFormatter(NumberFormat('', 'id'),),
+                  CurrencyTextInputFormatter(NumberFormat('', 'id')),
                   LengthLimitingTextInputFormatter(13),
                 ],
                 keyboardType: TextInputType.number,
@@ -777,5 +777,66 @@ mixin DialogInputHelper {
     await _controller.getExpense();
     await callback?.call();
     Get.back();
+  }
+
+  /// ------------------------------------------------------------------------
+  /// ! home search filter
+  /// ------------------------------------------------------------------------
+  static Future<void> advenceFilterExpense(String s) async {
+    final _controller = Get.find<HomeController>();
+    final _tfStartDate = TextEditingController(text: '');
+    final _tfEndDate = TextEditingController(text: '');
+    ExAlert.adaptive(
+      title: Text(
+        'Advance Search for "$s"',
+        style: TextStyle(fontWeight: FontWeight.bold),
+        textAlign: TextAlign.left,
+      ).pOnly(bottom: 16),
+      content: VStack(
+        [
+          /// start date
+          CupertinoTextField(
+            controller: _tfStartDate,
+            readOnly: true,
+            placeholder: 'Start Date',
+            placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+            prefix: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse).pOnly(left: 8),
+            style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+            onTap: () => ExDatePicker.materialDatePicker(
+              // initialDate: expense.date?.toDateEx(format: yMd),
+              minDate: DateTime(2020),
+              callback: (c) => _tfStartDate.text = c.toStringEx(format: yMd),
+            ),
+          ).pOnly(bottom: 16),
+
+          /// end date
+          CupertinoTextField(
+            controller: _tfEndDate,
+            readOnly: true,
+            placeholder: 'End Date',
+            placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+            prefix: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse).pOnly(left: 8),
+            style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+            onTap: () => ExDatePicker.materialDatePicker(
+              minDate: DateTime(2020),
+              callback: (c) => _tfEndDate.text = c.toStringEx(format: yMd),
+            ),
+          ).pOnly(bottom: 16),
+        ],
+      ),
+      actions: [
+        CupertinoDialogAction(
+          child: Text('Submit', style: TextStyle(fontSize: 13)),
+          onPressed: () async {
+            if (_tfStartDate.text.isNotBlank && _tfEndDate.text.isNotBlank) {
+              await _controller.getExpense(find: s, startDate: _tfStartDate.text, endDate: _tfEndDate.text);
+              Get.back();
+            } else {
+              OverlayHelper.notification('Please select date range', color: Vx.red600);
+            }
+          },
+        ),
+      ],
+    );
   }
 }
