@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex_kit/ex.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:overlayment/overlayment.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -140,6 +142,7 @@ class SettingsController extends GetxController with StateMixin {
   void onEditProfile() {
     final tfFullName = TextEditingController(text: userProfile.value.fullName);
     final tfAge = TextEditingController(text: userProfile.value.age);
+    final tfIncome = TextEditingController(text: userProfile.value.income);
     final tfAvatar = userProfile.value.avatarUrl.obs;
 
     final isReplacePhoto = false.obs;
@@ -205,14 +208,33 @@ class SettingsController extends GetxController with StateMixin {
           ).centered().pOnly(bottom: 16),
           TextField(
             controller: tfFullName,
-            decoration: DecorationHelper.input(hint: 'Full Name'),
+            decoration: DecorationHelper.input(
+              hint: 'Jhon Doe',
+              prefixIcon: 'Full Name'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
+            ),
             style: TextStyle(fontSize: 13),
           ).h(33).pOnly(bottom: 12),
           TextField(
             controller: tfAge,
-            decoration: DecorationHelper.input(hint: 'Age'),
+            decoration: DecorationHelper.input(
+              hint: '29',
+              prefixIcon: 'Age'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
+            ),
             style: TextStyle(fontSize: 13),
-          ).h(33),
+          ).h(33).pOnly(bottom: 12),
+          TextField(
+            controller: tfIncome,
+            decoration: DecorationHelper.input(
+              hint: 'Rp.8.000.000',
+              prefixIcon: 'Income'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
+            ),
+            style: TextStyle(fontSize: 13),
+            inputFormatters: [
+              CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+              LengthLimitingTextInputFormatter(15),
+            ],
+            keyboardType: TextInputType.number,
+          ).h(33).pOnly(bottom: 12),
           Divider().pSymmetric(v: 16),
           ExButtonElevated(
             width: double.infinity,
@@ -223,6 +245,7 @@ class SettingsController extends GetxController with StateMixin {
                 fullName: tfFullName.text,
                 age: tfAge.text,
                 avatarUrl: tfAvatar.value,
+                income: tfIncome.text,
                 updatedAt: DateTime.now().toStringEx(),
               );
               await Overlayment.dismissAll();

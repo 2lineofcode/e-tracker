@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 /// *
-/// * JSON Source: [{"id":"25aa9f27-18cb-407d-9141-ffab6a50cab8","updated_at":"null","username":"null","full_name":"Aditya Pratama","avatar_url":"null","website":"null"}]
+/// * JSON Source: [{"id":"25aa9f27-18cb-407d-9141-ffab6a50cab8","updated_at":"null","username":"null","full_name":"Aditya Pratama","avatar_url":"null","income":"null"}]
 /// * Code generated: https://2lineofcode.github.io/json_to_dart2023
 /// *
 class SupaUserProfile {
@@ -10,10 +10,10 @@ class SupaUserProfile {
   String? username;
   String? fullName;
   String? avatarUrl;
-  String? website;
+  String? income;
   String? age;
 
-  SupaUserProfile({this.id, this.updatedAt, this.username, this.fullName, this.avatarUrl, this.website, this.age});
+  SupaUserProfile({this.id, this.updatedAt, this.username, this.fullName, this.avatarUrl, this.income, this.age});
 
   SupaUserProfile.fromJson(Map<String, dynamic> json) {
     id = json['id'] ?? '';
@@ -21,7 +21,7 @@ class SupaUserProfile {
     username = json['username'] ?? '';
     fullName = json['full_name'] ?? '';
     avatarUrl = json['avatar_url'];
-    website = json['website'] ?? '';
+    income = json['income'] ?? '';
     age = json['age'] ?? '';
   }
 
@@ -32,7 +32,7 @@ class SupaUserProfile {
     data['username'] = username;
     data['full_name'] = fullName;
     data['avatar_url'] = avatarUrl;
-    data['website'] = website;
+    data['income'] = income;
     data['age'] = age;
     return data;
   }

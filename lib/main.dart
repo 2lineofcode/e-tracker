@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/core/app_setting.dart';
@@ -51,6 +52,9 @@ class ExpenseTracker extends StatelessWidget {
         getPages: AppPages.routes,
         unknownRoute: GetPage(name: '/404', page: () => const NotFoundScreen()),
         defaultTransition: Transition.fadeIn,
+        localizationsDelegates: [
+          MonthYearPickerLocalizations.delegate,
+        ],
         builder: (context, child) {
           if (kReleaseMode) return child!;
           return Scaffold(

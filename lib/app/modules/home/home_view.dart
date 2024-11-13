@@ -79,19 +79,6 @@ class HomeView extends GetView<HomeController> {
     return HStack(
       [
         IconButton(
-          onPressed: () => controller.goBibit(),
-          icon: isMobileWeb
-              ? Image.asset('assets/icons/ic_robo.png', height: 24, width: 24, color: Get.isDarkMode ? Colors.white70 : Colors.white)
-              : AnimateIcon(
-                  onTap: () => controller.goBibit(),
-                  iconType: IconType.animatedOnHover,
-                  height: 22,
-                  width: 22,
-                  color: Get.isDarkMode ? Colors.white70 : Colors.white,
-                  animateIcon: AnimateIcons.expensive,
-                ),
-        ).pOnly(right: 4),
-        IconButton(
           onPressed: () => controller.goSetting(),
           icon: isMobileWeb
               ? Icon(CupertinoIcons.settings_solid, size: 20)
@@ -104,6 +91,19 @@ class HomeView extends GetView<HomeController> {
                   animateIcon: AnimateIcons.settings,
                 ),
         ),
+        IconButton(
+          onPressed: () => controller.goBibit(),
+          icon: isMobileWeb
+              ? Image.asset('assets/icons/ic_robo.png', height: 24, width: 24, color: Get.isDarkMode ? Colors.white70 : Colors.white)
+              : AnimateIcon(
+                  onTap: () => controller.goBibit(),
+                  iconType: IconType.animatedOnHover,
+                  height: 22,
+                  width: 22,
+                  color: Get.isDarkMode ? Colors.white70 : Colors.white,
+                  animateIcon: AnimateIcons.expensive,
+                ),
+        ).pOnly(right: 4),
         IconButton(
           onPressed: () => controller.goSummary(),
           icon: isMobileWeb
@@ -296,6 +296,8 @@ class HomeView extends GetView<HomeController> {
                             ).pSymmetric(v: 8),
                             if (controller.focusedDay.value.month == DateTime.now().month && controller.focusedDay.value.year == DateTime.now().year) ...[
                               '${(dayInMonth(DateTime.now()) - DateTime.now().day + 1)} Remaining Days'.text.black.size(12).makeCentered(),
+                            ] else ...[
+                              // 'Based your income, surplus Rp.2.122.112'.text.black.size(12).makeCentered(),
                             ],
                             ExButtonElevated(
                               label: 'View Detail',

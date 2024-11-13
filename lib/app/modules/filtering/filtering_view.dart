@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:lottie/lottie.dart';
+import 'package:month_year_picker/month_year_picker.dart';
 
 import '../../core/app_color.dart';
 import '../../core/const.dart';
@@ -100,9 +101,15 @@ class FilteringView extends GetView<FilteringController> {
                 Obx(
                   () => '${controller.startDate.value.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.underline.size(12).make().onInkTap(
                     () async {
-                      // final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
-                      // if (date != null) controller.startDate.value = '${date.toStringEx(format: yM)}-01';
-                      // await controller.findExpense(controller.categorySelected.value);
+                      final date = await showMonthYearPicker(
+                        context: Get.context!,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                      );
+
+                      if (date != null) controller.startDate.value = '${date.toStringEx(format: yM)}-01';
+                      await controller.findExpense(controller.categorySelected.value);
                     },
                   ),
                 ),
@@ -113,9 +120,17 @@ class FilteringView extends GetView<FilteringController> {
                 Obx(
                   () => '${controller.endDate.value.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.underline.size(12).make().onInkTap(
                     () async {
-                      // final date = await showMonthPicker(context: Get.context!, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2050));
-                      // if (date != null) controller.endDate.value = '${date.toStringEx(format: yM)}-31';
-                      // await controller.findExpense(controller.categorySelected.value);
+                      final date = await showMonthYearPicker(
+                        context: Get.context!,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                      );
+                      if (date != null) {
+                        final ldate = dayInMonth(date);
+                        controller.endDate.value = '${date.toStringEx(format: yM)}-$ldate';
+                      }
+                      await controller.findExpense(controller.categorySelected.value);
                     },
                   ),
                 ),

@@ -28,7 +28,8 @@ class SectionRepeat extends GetView<SettingsController> {
                   itemBuilder: (context, index) {
                     final item = controller.cronList[index];
 
-                    final jobName = item.command.allBetween("values ('", "', '");
+                    var jobName = item.command?.replaceAll('\n', '').allBetween('values', "', '");
+                    jobName = jobName?.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), '').trimAll;
                     final dueDate = item.schedule.allBetween('0 0 ', ' * *');
                     final amount = item.command.allBetween("', ", ', current_date').replaceAll(RegExp(r'[^0-9]'), '').toNum();
                     final categoryName = item.command
@@ -53,12 +54,12 @@ class SectionRepeat extends GetView<SettingsController> {
                         [
                           /// body
                           VStack([
-                            '🗓️ Every Date $dueDate'.text.size(12).make().pOnly(bottom: 8),
+                            '🗓️ Every day-of-month $dueDate'.text.size(12).make().pOnly(bottom: 8),
                             '$jobName ($categoryName)'.text.size(13).bold.make(),
                             if (remainingDays.isNegative) ...[
-                              'Next month'.text.size(11).minFontSize(11).make(),
+                              'Next month'.text.green300.size(11).minFontSize(11).make(),
                             ] else ...[
-                              'Remaining $remainingDays more days'.text.size(11).minFontSize(11).make(),
+                              'Remaining $remainingDays more days'.text.orange300.size(11).minFontSize(11).make(),
                             ],
                           ]).expand(),
 
@@ -67,10 +68,7 @@ class SectionRepeat extends GetView<SettingsController> {
                         ],
                       ).p12(),
                     ).onInkTap(() {
-                      ExAlert.success(
-                        title: item.schedule,
-                        message: item.command,
-                      );
+                      ExAlert.success(title: item.schedule, message: item.command);
                     });
                   },
                 ).expand()

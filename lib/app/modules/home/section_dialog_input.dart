@@ -789,7 +789,7 @@ mixin DialogInputHelper {
     ExAlert.adaptive(
       title: Text(
         'Advance Search for "$s"',
-        style: TextStyle(fontWeight: FontWeight.bold),
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         textAlign: TextAlign.left,
       ).pOnly(bottom: 16),
       content: VStack(
@@ -822,6 +822,37 @@ mixin DialogInputHelper {
               callback: (c) => _tfEndDate.text = c.toStringEx(format: yMd),
             ),
           ).pOnly(bottom: 16),
+
+          HStack(
+            [
+              Text(
+                'This Month',
+                style: TextStyle(decoration: TextDecoration.underline),
+                overflow: TextOverflow.ellipsis,
+              ).onInkTap(() {
+                _tfStartDate.text = DateTime.now().subtract(Duration(days: DateTime.now().day - 1)).toStringEx(format: yMd);
+                _tfEndDate.text = DateTime.now().add(Duration(days: dayInMonth(DateTime.now()) - DateTime.now().day)).toStringEx(format: yMd);
+              }),
+              Spacer(),
+              Text(
+                '7 days',
+                style: TextStyle(decoration: TextDecoration.underline),
+                overflow: TextOverflow.ellipsis,
+              ).onInkTap(() {
+                _tfStartDate.text = DateTime.now().subtract(Duration(days: 7)).toStringEx(format: yMd);
+                _tfEndDate.text = DateTime.now().toStringEx(format: yMd);
+              }),
+              Spacer(),
+              Text(
+                '30 days',
+                style: TextStyle(decoration: TextDecoration.underline),
+                overflow: TextOverflow.ellipsis,
+              ).onInkTap(() {
+                _tfStartDate.text = DateTime.now().subtract(Duration(days: 30)).toStringEx(format: yMd);
+                _tfEndDate.text = DateTime.now().toStringEx(format: yMd);
+              }),
+            ],
+          ),
         ],
       ),
       actions: [
