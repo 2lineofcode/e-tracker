@@ -173,8 +173,15 @@ class ViewBudget extends GetView<SummaryController> {
 
           if (DateTime.now().month == controller.monthSelected.value.toDateEx(format: 'MMMM').month && DateTime.now().year == controller.yearSelected.value.toInt()) ...[
             HStack([
-              '${dayInMonth(DateTime.now()) - DateTime.now().day + 1} Day Remaining'.text.color(AppColor.blue).size(12).makeCentered().pOnly(top: 8),
-            ]).centered(),
+              '${dayInMonth(DateTime.now()) - DateTime.now().day} Day Remaining'.text.color(AppColor.blue).size(12).makeCentered(),
+            ]).centered().pOnly(top: 8),
+          ] else ...[
+            HStack([
+              if (controller.countPercentage.value.toDouble() < 20) ...[
+                'Look Invalid! '.text.red500.size(12).make(),
+              ],
+              'Surplus ${controller.surplus.value.moneyFormat()}'.text.color(AppColor.blue).size(12).makeCentered(),
+            ]).centered().pOnly(top: 8),
           ],
         ],
       ).p8(),

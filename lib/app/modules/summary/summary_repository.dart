@@ -1,10 +1,12 @@
 import 'package:ex_kit/ex.dart';
 
 import '../../core/app_api.dart';
+import '../../helpers/helpers.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
 import '../../models/supa_expense_entity.dart';
+import '../../models/supa_user_profile_entity.dart';
 
 class SummaryRepository {
   Future<List<SupaExpense>> getExpenses({required String year, String? month}) async {
@@ -51,5 +53,18 @@ class SummaryRepository {
     }).withConverter<List<RpcSumNoteTimes>>((data) {
       return (data as List).map((e) => RpcSumNoteTimes.fromJson(e)).toList();
     });
+  }
+
+  Future<int> getIncome() async {
+    final response = await db //
+        .from('profiles')
+        .select()
+        .eq('id', db.auth.currentSession?.user.id ?? '')
+        .withConverter<List<SupaUserProfile>>((data) {
+      return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
+    });
+
+    int o = response[0].income?.moneyUnformat() ?? 0;
+    return o;
   }
 }

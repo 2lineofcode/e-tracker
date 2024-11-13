@@ -12,7 +12,7 @@ import '../helpers/helpers.dart';
 import 'const.dart';
 
 /// handy call sharedpref
-final pref = GetStorage();
+final pref = GetStorage(kStorageKey);
 
 class AppSettingService extends GetxService {
   @override
@@ -37,6 +37,7 @@ class AppSettingService extends GetxService {
       await pref.write(kCurrencySymbol, 'Rp. ');
       await pref.write(kIsDarkMode, true);
       logI('-- CONFIG CREATED --');
+      // await ErrorLogHelper.record(page: 'main', action: '-- CONFIG CREATED --', stack: '');
     }
   }
 

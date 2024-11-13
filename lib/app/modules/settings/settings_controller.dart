@@ -13,6 +13,7 @@ import 'package:overlayment/overlayment.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/v4.dart';
 
 import '../../core/app_api.dart';
@@ -173,6 +174,9 @@ class SettingsController extends GetxController with StateMixin {
                 errorBuilder: (p0, p1, p2) => ExAvatarView(source: '', name: tfFullName.text, size: 64),
               ).centered().pOnly(bottom: 16);
             }
+          }).onInkTap(() {
+            logW('clicked');
+            launchUrlString(db.storage.from('avatars').getPublicUrl('${db.auth.currentSession?.user.id}.png'));
           }),
           Obx(() => errorMsg.value.isNotEmpty ? '$errorMsg'.text.size(11).minFontSize(11).align(TextAlign.center).makeCentered().pSymmetric(v: 4) : 0.heightBox),
           ExButtonElevated(

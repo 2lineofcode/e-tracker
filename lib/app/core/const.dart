@@ -5,6 +5,7 @@ const yMd = 'yyyy-MM-dd';
 
 /// ------------------------------------------------------------------------
 /// storage key
+const kStorageKey = 'kStorageKey';
 const kFlagEco = 'kFlagEco';
 const kFlagAverage = 'kFlagAverage';
 const kFlagSpender = 'kFlagSpender';

@@ -37,6 +37,10 @@ class SummaryController extends GetxController with StateMixin {
   final isShowAllYear = false.obs;
   final menuSelected = 1.obs;
 
+  // !income
+  final income = 0.obs;
+  final surplus = 0.obs;
+
   @override
   Future<void> onInit() async {
     yearSelected.value = Get.parameters['period'].toString().reformatDate(from: yM, to: 'y');
@@ -47,6 +51,9 @@ class SummaryController extends GetxController with StateMixin {
     await getSumByCategory(year: yearSelected.value, month: monthSelected.value);
     await getSumNoteTimes(year: yearSelected.value, month: monthSelected.value);
     await calculateBudgetStatForHeader();
+    income.value = await repo.getIncome();
+    surplus.value = income.value - countOnly1Month.value;
+
     change(0, status: RxStatus.success());
     super.onInit();
   }
@@ -61,6 +68,7 @@ class SummaryController extends GetxController with StateMixin {
     await getSumByCategory(year: yearSelected.value, month: monthSelected.value);
     await getSumNoteTimes(year: yearSelected.value, month: monthSelected.value);
     await calculateBudgetStatForHeader();
+    surplus.value = income.value - countOnly1Month.value;
     change(0, status: RxStatus.success());
   }
 

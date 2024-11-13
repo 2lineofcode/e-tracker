@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app/core/app_setting.dart';
 import 'app/core/app_theme.dart';
+import 'app/core/const.dart';
 import 'app/routes/app_middleware.dart';
 import 'app/routes/app_pages.dart';
 import 'env.g.dart';
@@ -20,7 +21,7 @@ Future<void> main() async {
   await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
 
   /// local storage
-  await GetStorage.init();
+  await GetStorage.init(kStorageKey);
 
   /// app setting
   Get.put(AppSettingService());
