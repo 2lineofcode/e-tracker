@@ -12,8 +12,24 @@ class SupaUserProfile {
   String? avatarUrl;
   String? income;
   String? age;
+  String? balance;
+  num? ecoDay;
+  num? averageDay;
+  num? spenderDay;
 
-  SupaUserProfile({this.id, this.updatedAt, this.username, this.fullName, this.avatarUrl, this.income, this.age});
+  SupaUserProfile({
+    this.id,
+    this.updatedAt,
+    this.username,
+    this.fullName,
+    this.avatarUrl,
+    this.income,
+    this.age,
+    this.balance,
+    this.ecoDay,
+    this.averageDay,
+    this.spenderDay,
+  });
 
   SupaUserProfile.fromJson(Map<String, dynamic> json) {
     id = json['id'] ?? '';
@@ -23,6 +39,10 @@ class SupaUserProfile {
     avatarUrl = json['avatar_url'];
     income = json['income'] ?? '';
     age = json['age'] ?? '';
+    balance = json['balance'] ?? '';
+    ecoDay = json['eco_day'] ?? 0;
+    averageDay = json['average_day'] ?? 0;
+    spenderDay = json['spender_day'] ?? 0;
   }
 
   Map<String, dynamic> toJson() {
@@ -34,6 +54,10 @@ class SupaUserProfile {
     data['avatar_url'] = avatarUrl;
     data['income'] = income;
     data['age'] = age;
+    data['balance'] = balance;
+    data['eco_day'] = ecoDay;
+    data['average_day'] = averageDay;
+    data['spender_day'] = spenderDay;
     return data;
   }
 

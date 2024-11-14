@@ -144,6 +144,7 @@ class SettingsController extends GetxController with StateMixin {
     final tfFullName = TextEditingController(text: userProfile.value.fullName);
     final tfAge = TextEditingController(text: userProfile.value.age);
     final tfIncome = TextEditingController(text: userProfile.value.income);
+    final tfBalance = TextEditingController(text: userProfile.value.balance);
     final tfAvatar = userProfile.value.avatarUrl.obs;
 
     final isReplacePhoto = false.obs;
@@ -229,7 +230,7 @@ class SettingsController extends GetxController with StateMixin {
           TextField(
             controller: tfIncome,
             decoration: DecorationHelper.input(
-              hint: 'Rp.8.000.000',
+              hint: 'Rp.1.234.567',
               prefixIcon: 'Income'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
             ),
             style: TextStyle(fontSize: 13),
@@ -239,6 +240,23 @@ class SettingsController extends GetxController with StateMixin {
             ],
             keyboardType: TextInputType.number,
           ).h(33).pOnly(bottom: 12),
+          TextField(
+            controller: tfBalance,
+            decoration: DecorationHelper.input(
+              hint: 'Rp.1.234.567',
+              prefixIcon: 'Balance'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
+            ),
+            style: TextStyle(fontSize: 13),
+            inputFormatters: [
+              CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+              LengthLimitingTextInputFormatter(15),
+            ],
+            keyboardType: TextInputType.number,
+          ).h(33).pOnly(bottom: 12),
+          HStack([
+            Spacer(),
+            'Last Updated: ${userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y HH:mm')}'.text.size(12).neutral500.make(),
+          ]),
           Divider().pSymmetric(v: 16),
           ExButtonElevated(
             width: double.infinity,
@@ -250,6 +268,7 @@ class SettingsController extends GetxController with StateMixin {
                 age: tfAge.text,
                 avatarUrl: tfAvatar.value,
                 income: tfIncome.text,
+                balance: tfBalance.text,
                 updatedAt: DateTime.now().toStringEx(),
               );
               await Overlayment.dismissAll();
