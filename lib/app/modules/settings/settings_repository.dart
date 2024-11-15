@@ -4,6 +4,7 @@ import '../../../env.g.dart';
 import '../../core/app_api.dart';
 import '../../models/supa_autocomplete_entity.dart';
 import '../../models/supa_cron_entity.dart';
+import '../../models/supa_expense_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 
 mixin SectionMenu {
@@ -133,5 +134,19 @@ class SettingsRepository {
       return (data).map((e) => SupaCron.fromJson(e)).toList();
     });
     return res;
+  }
+
+  Future<num> sumAllExpense() async {
+    var totalExpense = 0 as num;
+    final response = await db //
+        .from('expense')
+        .select()
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .withConverter<List<SupaExpense>>((data) {
+      return (data).map((e) => SupaExpense.fromJson(e)).toList();
+    });
+
+    response.forEach((element) => totalExpense = totalExpense + element.amount!);
+    return totalExpense;
   }
 }

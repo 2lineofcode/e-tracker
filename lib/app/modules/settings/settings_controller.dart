@@ -51,10 +51,11 @@ class SettingsController extends GetxController with StateMixin {
   late PackageInfo? packageInfo;
   final appInfo = <String, dynamic>{}.obs;
 
-  /// counting
+  /// counting & sum
   final countExpense = 0.obs;
   final countCategory = 0.obs;
   final countAutoComplete = 0.obs;
+  final sumAllExpense = Rx<num>(0);
 
   /// backupList
   final backupList = <FileObject>[].obs;
@@ -81,6 +82,7 @@ class SettingsController extends GetxController with StateMixin {
     countExpense.value = await repo.countExpense();
     countCategory.value = await repo.countCategory();
     countAutoComplete.value = await repo.countAutoComplete();
+    sumAllExpense.value = await repo.sumAllExpense();
 
     backupList.value = await repo.getBackupList();
     cronList.value = await repo.getCron();

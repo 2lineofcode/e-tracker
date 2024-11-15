@@ -37,6 +37,7 @@ class SectionIEmport extends GetView<SettingsController> {
           'Total Data Expense: ${controller.countExpense.value}'.text.size(11).make(),
           'Total Data Category: ${controller.countCategory.value}'.text.size(11).make(),
           'Total Data AutoComplete: ${controller.autoCompleteList.length}'.text.size(11).make(),
+          'Total All Expense: ${controller.sumAllExpense.value.moneyFormat()}'.text.size(11).make(),
         ]).p12(),
       ),
     );
