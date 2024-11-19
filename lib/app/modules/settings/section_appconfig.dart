@@ -19,13 +19,16 @@ class SectionAppConfig extends GetView<SettingsController> {
 
   @override
   Widget build(BuildContext context) {
-    return VStack(
-      [
+    return controller.obx(
+      (state) => VStack([
         boxCommonConfig(),
         16.heightBox,
         boxAccount(),
-      ],
-    ).scrollVertical();
+      ]).scrollVertical(),
+      onLoading: ExUiLoading(
+        message: 'Getting your data...'.text.makeCentered(),
+      ),
+    );
   }
 
   Widget boxAccount() {
@@ -182,6 +185,7 @@ class SectionAppConfig extends GetView<SettingsController> {
           Divider().pSymmetric(v: 8),
           HStack(
             [
+              '📁'.text.make().onTap(() => controller.onGoAppPath()),
               Spacer(),
               ExButtonOutline(
                 label: 'Reset to default',
@@ -204,18 +208,7 @@ class SectionAppConfig extends GetView<SettingsController> {
                 borderColor: Vx.neutral500,
                 labelSize: 11,
                 height: 38,
-                onPressed: () async {
-                  if (controller.tfAverage.text.moneyUnformat()! < controller.tfEco.text.moneyUnformat()!) {
-                    ExSnackbar.danger('"average" must > "eco"');
-                    return;
-                  }
-                  await pref.write(kFlagEco, controller.tfEco.text.moneyUnformat());
-                  await pref.write(kFlagAverage, controller.tfAverage.text.moneyUnformat());
-                  await pref.write(kFlagSpender, controller.tfSpender.text.moneyUnformat());
-                  await pref.write(kCurrencySymbol, controller.tfCurrencySymbol.text);
-                  OverlayHelper.notification('Config Saved', color: Vx.green600);
-                  await Get.forceAppUpdate();
-                },
+                onPressed: () async => await controller.onSaveConfig(),
               ),
             ],
           ),

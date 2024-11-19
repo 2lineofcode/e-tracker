@@ -34,10 +34,9 @@ class SectionIEmport extends GetView<SettingsController> {
         decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.cardItemPrimary, fillColor: AppColor.cardHeaderPrimary),
         child: VStack([
           '📈 Analytics'.text.bold.make().pOnly(bottom: 8),
-          'Total Data Expense: ${controller.countExpense.value}'.text.size(11).make(),
+          'Total Data Expense: ${controller.countExpense.value} | ${controller.sumAllExpense.value.moneyFormat()}'.text.size(11).make(),
           'Total Data Category: ${controller.countCategory.value}'.text.size(11).make(),
           'Total Data AutoComplete: ${controller.autoCompleteList.length}'.text.size(11).make(),
-          'Total All Expense: ${controller.sumAllExpense.value.moneyFormat()}'.text.size(11).make(),
         ]).p12(),
       ),
     );

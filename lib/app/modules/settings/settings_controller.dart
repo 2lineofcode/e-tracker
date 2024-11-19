@@ -13,6 +13,7 @@ import 'package:overlayment/overlayment.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/v4.dart';
 
@@ -68,12 +69,15 @@ class SettingsController extends GetxController with StateMixin {
     /// Page: AutoComplete
     menuList.value = await repo.getMenuList();
     unawaited(getAutoCompleteList());
-    unawaited(getUserProfile());
+    userProfile.value = await repo.getUserProfile().then((value) => value[0]);
 
     /// Page: App Config
-    tfEco.text = pref.read<num>(kFlagEco)?.moneyFormat() ?? '';
-    tfAverage.text = pref.read<num>(kFlagAverage)?.moneyFormat() ?? '';
-    tfSpender.text = pref.read<num>(kFlagSpender)?.moneyFormat() ?? '';
+    // tfEco.text = pref.read<num>(kFlagEco)?.moneyFormat() ?? '';
+    // tfAverage.text = pref.read<num>(kFlagAverage)?.moneyFormat() ?? '';
+    // tfSpender.text = pref.read<num>(kFlagSpender)?.moneyFormat() ?? '';
+    tfEco.text = userProfile.value.ecoDay?.moneyFormat() ?? '';
+    tfAverage.text = userProfile.value.averageDay?.moneyFormat() ?? '';
+    tfSpender.text = userProfile.value.spenderDay?.moneyFormat() ?? '';
     tfCurrencySymbol.text = pref.read<String>(kCurrencySymbol) ?? '';
 
     packageInfo = await PackageInfo.fromPlatform();
@@ -92,10 +96,6 @@ class SettingsController extends GetxController with StateMixin {
   Future<void> onMenuChange(String menu) async {
     menuSelected.value = menu;
     closeDrawer();
-  }
-
-  Future<void> getUserProfile() async {
-    userProfile.value = await repo.getUserProfile().then((value) => value[0]);
   }
 
   Future<void> getAutoCompleteList({String? q}) async {
@@ -271,6 +271,9 @@ class SettingsController extends GetxController with StateMixin {
                 avatarUrl: tfAvatar.value,
                 income: tfIncome.text,
                 balance: tfBalance.text,
+                ecoDay: userProfile.value.ecoDay,
+                averageDay: userProfile.value.averageDay,
+                spenderDay: userProfile.value.spenderDay,
                 updatedAt: DateTime.now().toStringEx(),
               );
               await Overlayment.dismissAll();
@@ -382,6 +385,32 @@ ${listToDelete.map((word) => '- $word').join('\n').replaceAll('${db.auth.current
           backupList.value = await repo.getBackupList();
           ExLoading.dismiss();
         });
+  }
+
+  Future<void> onSaveConfig() async {
+    if (tfAverage.text.moneyUnformat()! < tfEco.text.moneyUnformat()!) {
+      ExSnackbar.danger('"average" must > "eco"');
+      return;
+    }
+
+    ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
+    final entity = userProfile.value;
+    entity.username = userProfile.value.fullName?.replaceAll(' ', '_').toLowerCase();
+    entity.ecoDay = tfEco.text.moneyUnformat();
+    entity.averageDay = tfAverage.text.moneyUnformat();
+    entity.spenderDay = tfSpender.text.moneyUnformat();
+    await repo.editProfile(entity);
+    await Get.find<AppSettingService>().checkAndApplyDefaultAppConfig();
+    await Get.forceAppUpdate();
+    ExLoading.dismiss();
+    OverlayHelper.notification('Config Saved', color: Vx.green600);
+  }
+
+  Future<void> onGoAppPath() async {
+    final appPath = await getApplicationDocumentsDirectory();
+    if (await canLaunchUrl(appPath.uri)) {
+      await launchUrl(appPath.uri);
+    }
   }
 
   Future<void> onLogout() async {

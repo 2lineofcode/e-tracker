@@ -12,6 +12,7 @@ import '../../helpers/helpers.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
 import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
+import '../../models/supa_user_profile_entity.dart';
 import '../../routes/app_pages.dart';
 import 'home_repository.dart';
 
@@ -32,6 +33,7 @@ class HomeController extends GetxController with StateMixin {
   final categorySelected = ''.obs;
 
   /// expense
+  final userProfile = SupaUserProfile().obs;
   final expenseList = <SupaExpense>[].obs;
   final tfSearchExpense = TextEditingController().obs;
 
@@ -61,6 +63,7 @@ class HomeController extends GetxController with StateMixin {
     await onCalenderRefreshEvent(period: focusedDay.value.toStringEx(format: yM));
     rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
     rpcSumByCategory.value = await repo.rpcSumByCategory(focusedDay.value);
+    userProfile.value = await repo.getUserProfile().then((value) => value[0]);
     super.onInit();
   }
 

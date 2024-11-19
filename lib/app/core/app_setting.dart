@@ -9,6 +9,8 @@ import 'package:window_manager/window_manager.dart';
 
 import '../../env.g.dart';
 import '../helpers/helpers.dart';
+import '../models/supa_user_profile_entity.dart';
+import 'app_api.dart';
 import 'const.dart';
 
 /// handy call sharedpref
@@ -26,19 +28,27 @@ class AppSettingService extends GetxService {
   /// ! setup default app config [for new user]
   /// ------------------------------------------------------------------------
   Future<void> checkAndApplyDefaultAppConfig() async {
+    final response = await db //
+        .from('profiles')
+        .select()
+        .eq('id', db.auth.currentSession?.user.id ?? '')
+        .withConverter<List<SupaUserProfile>>((data) {
+      return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
+    });
+
+    await pref.write(kFlagEco, response[0].ecoDay ?? 50000);
+    await pref.write(kFlagAverage, response[0].averageDay ?? 100000);
+    await pref.write(kFlagSpender, response[0].spenderDay ?? 100000);
+
     if (!pref.hasData(kFlagEco) || //
         !pref.hasData(kFlagAverage) ||
         !pref.hasData(kFlagSpender) ||
         !pref.hasData(kCurrencySymbol) ||
         !pref.hasData(kIsDarkMode)) {
-      await pref.write(kFlagEco, 50000);
-      await pref.write(kFlagAverage, 100000);
-      await pref.write(kFlagSpender, 100000);
       await pref.write(kCurrencySymbol, 'Rp. ');
       await pref.write(kIsDarkMode, true);
-      logI('-- CONFIG CREATED --');
-      // await ErrorLogHelper.record(page: 'main', action: '-- CONFIG CREATED --', stack: '');
     }
+    logI('-- CONFIG LOADED --');
   }
 
   /// ------------------------------------------------------------------------

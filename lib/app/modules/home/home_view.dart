@@ -691,11 +691,22 @@ class HomeView extends GetView<HomeController> {
 
   Widget footerContent() {
     return HStack([
+      Obx(
+        () => CustomPopup(
+          content: VStack([
+            '${controller.userProfile.value.fullName} (${controller.userProfile.value.age})'.text.size(12).black.bold.make(),
+            Divider().w(180),
+            'Balance   : ${controller.userProfile.value.balance}'.text.size(12).black.make(),
+            'Income    : ${controller.userProfile.value.income}'.text.size(12).black.make(),
+            'LastUpd. : ${controller.userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y, HH:mm')}'.text.size(12).black.make(),
+          ]), //.onTap(() => controller.goSetting()),
+          child: '◉'.text.make(),
+        ),
+      ),
       Spacer(),
       Obx(
-        () => '${controller.focusedDay.value.toStringEx(format: 'MMMM')}: ${controller.countOfMonth.value.moneyFormat()}' //
+        () => '${controller.focusedDay.value.toStringEx(format: 'MMM')}: ${controller.countOfMonth.value.moneyFormat()}' //
             .text
-            .bold
             .make()
             .onTap(() => controller.goSummary()),
       ),
