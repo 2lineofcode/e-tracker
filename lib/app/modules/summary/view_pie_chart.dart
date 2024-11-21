@@ -54,16 +54,14 @@ class ViewPieChart extends GetView<SummaryController> {
                           child: HStack(
                             [
                               CustomPopup(
-                                content: VStack(
-                                  [
-                                    if (item[i].maxBudget != null) ...[
-                                      'Usage ${item[i].usePercentage ?? '0'}%'.text.black.make(),
-                                      'Remaining ${item[i].remainingBudget?.moneyFormat() ?? 'Rp. 0'} / ${item[i].maxBudget?.moneyFormat() ?? 'Rp. 0'}'.text.black.make(),
-                                    ] else ...[
-                                      'No Budget'.text.black.make(),
-                                    ],
+                                content: VStack([
+                                  if (item[i].maxBudget != null) ...[
+                                    'Usage ${item[i].usePercentage ?? '0'}%'.text.black.make(),
+                                    'Remaining ${item[i].remainingBudget?.moneyFormat() ?? 'Rp. 0'} / ${item[i].maxBudget?.moneyFormat() ?? 'Rp. 0'}'.text.black.make(),
+                                  ] else ...[
+                                    'No Budget'.text.black.make(),
                                   ],
-                                ),
+                                ]),
                                 child: Icon(
                                   item[i].categoryIcon?.getIconData() ?? Icons.circle_outlined,
                                   size: 12,
@@ -73,6 +71,7 @@ class ViewPieChart extends GetView<SummaryController> {
                               '${item[i].categoryName}'.text.make().onTap(() {
                                 controller.goAdvanceFilter(item[i].categoryName ?? '');
                               }),
+                              ' (${item[i].usePercentage}%)'.text.size(9).minFontSize(9).make(),
                             ],
                           ).p8(),
                         ),

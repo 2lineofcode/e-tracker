@@ -5,6 +5,7 @@ import '../../helpers/helpers.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
+import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 
@@ -13,8 +14,8 @@ class SummaryRepository {
     final fixYM = '$year${month != null ? '-${month.reformatDate(from: 'MMMM', to: 'MM')}' : ''}';
     final response = await db //
         .from('expense')
-        .select()
-        // .select('date, amount')
+        // .select()
+        .select('date, amount, category_name, note')
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .or('date.ilike.$fixYM%')
         .order('date')
@@ -23,6 +24,20 @@ class SummaryRepository {
     });
     return response;
   }
+
+  Future<List<SupaCategory>> getCategory() async {
+    final response = await db //
+        .from('category')
+        .select('name, max_budget')
+        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .order('max_budget')
+        .withConverter<List<SupaCategory>>((data) {
+      return (data).map((e) => SupaCategory.fromJson(e)).toList();
+    });
+    return response;
+  }
+
+  
 
   /// ------------------------------------------------------------------------
   /// ! rpc

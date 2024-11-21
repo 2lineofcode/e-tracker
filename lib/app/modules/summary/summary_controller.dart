@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
-import '../../helpers/helper_overlayment.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
@@ -177,9 +176,35 @@ class SummaryController extends GetxController with StateMixin {
   }
 
   Future<void> getExpenseDataToClipboard() async {
-    final data = await repo.getExpenses(year: yearSelected.value, month: monthSelected.value);
-    await Clipboard.setData(ClipboardData(text: data.toString()));
-    OverlayHelper.notification('Data $monthSelected copied to clipboard');
+    final dataExpense = await repo.getExpenses(year: yearSelected.value, month: monthSelected.value);
+    final dataBudget = await repo.getCategory();
+    final dataExpenseSend = [];
+    final dataBudgetSend = [];
+
+    dataExpense.forEach((el) {
+      dataExpenseSend.add({
+        'date': el.date,
+        'category_name': el.categoryName,
+        'note': el.note,
+        'amount': el.amount,
+      });
+    });
+
+    dataBudget.forEach((el) {
+      dataBudgetSend.add({
+        'category_name': el.name,
+        'budget': el.maxBudget ?? 0,
+      });
+    });
+
+    /// copy data to clipboard
+    var text = 'bantu aku analisa data pengeluaranku, rekap paling boros dimana dan beri aku advice secara singkat dengan table:\n';
+    text += '$dataExpenseSend\n\n';
+    text += 'ini adalah anggaranku by category:\n';
+    text += '$dataBudgetSend\n';
+    await Clipboard.setData(ClipboardData(text: text));
+    // OverlayHelper.notification('Data $monthSelected copied to clipboard');
+    ExSnackbar.success('Data $monthSelected copied to clipboard', duration: 1);
   }
 
   Future<void> getSumAllMonth({required String year}) async {
