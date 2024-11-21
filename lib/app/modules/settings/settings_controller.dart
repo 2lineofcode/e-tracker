@@ -423,4 +423,32 @@ ${listToDelete.map((word) => '- $word').join('\n').replaceAll('${db.auth.current
     await Get.offAllNamed(Routes.LOGIN);
     ExLoading.dismiss();
   }
+
+  Future<void> addCron(
+    String date, {
+    required String note,
+    required String category,
+    required num amount,
+  }) async {
+    try {
+      await db //
+          .schema('cron')
+          .from('job')
+          .insert(
+        {
+          'schedule': '0 0 $date * *',
+          'jobname': 'test from app',
+          'command': '''
+    insert into expense 
+        (note, category_name, amount, date, user_id) values 
+        ('$note', '$category#${db.auth.currentSession?.user.email}', $amount, current_date, '${db.auth.currentSession?.user.id}')
+''',
+        },
+      );
+    } catch (e) {
+      // await ErrorLogHelper.record(page: 'settings', action: 'addCron', stack: e.toString());
+      ExAlert.error(message: '$e');
+      logE(e);
+    }
+  }
 }

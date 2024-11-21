@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
+// ignore: unused_import
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 
 import '../../core/app_color.dart';
-import '../../helpers/helper_misc.dart';
-import '../../helpers/helper_money.dart';
+import '../../helpers/helpers.dart';
 import '../../models/supa_category_entity.dart';
 import '../home/home_controller.dart';
 import '../home/section_dialog_input.dart';
@@ -138,7 +139,7 @@ class ViewBudget extends GetView<SummaryController> {
                     .color(AppColor.textOnBackground)
                     .make()
                     .pSymmetric(h: 4, v: 2),
-              ).cornerRadius(4),
+              ).onInkTap(() => controller.getExpenseDataToClipboard()).cornerRadius(4),
               Spacer(),
               Obx(() => '${controller.countRemainingBudget.value.moneyFormat()}'.text.bold.size(16).make()),
             ],

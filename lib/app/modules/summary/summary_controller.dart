@@ -1,9 +1,11 @@
 import 'package:ex_kit/ex.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
+import '../../helpers/helper_overlayment.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_by_category_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
@@ -172,6 +174,12 @@ class SummaryController extends GetxController with StateMixin {
     /// sort expenseHigh by amount
     final sortByAmount = highSpender.sortedBy((a, b) => b.amount!.compareTo(a.amount!));
     highSpender.value = sortByAmount;
+  }
+
+  Future<void> getExpenseDataToClipboard() async {
+    final data = await repo.getExpenses(year: yearSelected.value, month: monthSelected.value);
+    await Clipboard.setData(ClipboardData(text: data.toString()));
+    OverlayHelper.notification('Data $monthSelected copied to clipboard');
   }
 
   Future<void> getSumAllMonth({required String year}) async {

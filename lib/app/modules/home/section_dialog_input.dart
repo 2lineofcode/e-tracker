@@ -706,7 +706,6 @@ mixin DialogInputHelper {
     if (tfNote.isEmptyOrNull) return;
     if (tfCategory.isEmptyOrNull) return;
     if (tfAmount.isEmptyOrNull) return;
-    Get.back(); // close dialog first
 
     /// setup entity
     final newExpense = SupaExpense(
@@ -744,12 +743,13 @@ mixin DialogInputHelper {
       _controller.rpcSumByCategory.value = await _repo.rpcSumByCategory(_controller.focusedDay.value);
       await customCallback?.call();
       OverlayHelper.notification('Successfully ${expense != null ? 'Edit' : 'Added'} $tfNote', color: Vx.green600);
+      await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
+      Get.back(); // close dialog first
     } catch (e) {
       logE('e: $e');
       await ErrorLogHelper.record(page: 'section_dialog_input', action: '_submitExpense', stack: e.toString());
       OverlayHelper.notification('Failed to ${expense != null ? 'Edit' : 'Added'} Data', color: Vx.red600);
     }
-    await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
   }
 
   static Future<void> _submitCategory({

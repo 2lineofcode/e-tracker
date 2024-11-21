@@ -13,7 +13,8 @@ class SummaryRepository {
     final fixYM = '$year${month != null ? '-${month.reformatDate(from: 'MMMM', to: 'MM')}' : ''}';
     final response = await db //
         .from('expense')
-        .select('date, amount')
+        .select()
+        // .select('date, amount')
         .eq('user_id', db.auth.currentSession?.user.id ?? '')
         .or('date.ilike.$fixYM%')
         .order('date')

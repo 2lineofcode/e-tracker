@@ -18,7 +18,16 @@ class SectionRepeat extends GetView<SettingsController> {
         HStack([
           'Repeat Transaction'.text.bold.make(),
           Spacer(),
-          IconButton(onPressed: () {}, icon: Icon(Icons.add)),
+          IconButton(
+              onPressed: () {
+                controller.addCron(
+                  '19',
+                  amount: 1000,
+                  note: 'test',
+                  category: 'Food',
+                );
+              },
+              icon: Icon(Icons.add)),
         ]).pOnly(bottom: 16),
         Obx(
           () => controller.cronList.isNotEmpty
