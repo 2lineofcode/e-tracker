@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
+import 'package:markdown_widget/widget/markdown.dart';
 
 import '../../core/app_color.dart';
 import '../../helpers/helpers.dart';
@@ -139,7 +140,7 @@ class ViewBudget extends GetView<SummaryController> {
                     .color(AppColor.textOnBackground)
                     .make()
                     .pSymmetric(h: 4, v: 2),
-              ).onInkTap(() => controller.getExpenseDataToClipboard()).cornerRadius(4),
+              ),
               Spacer(),
               Obx(() => '${controller.countRemainingBudget.value.moneyFormat()}'.text.bold.size(16).make()),
             ],
@@ -172,17 +173,27 @@ class ViewBudget extends GetView<SummaryController> {
             ],
           ),
 
+          Divider(),
           if (DateTime.now().month == controller.monthSelected.value.toDateEx(format: 'MMMM').month && DateTime.now().year == controller.yearSelected.value.toInt()) ...[
             HStack([
               '${dayInMonth(DateTime.now()) - DateTime.now().day} Day Remaining'.text.color(AppColor.blue).size(12).makeCentered(),
-            ]).centered().pOnly(top: 8),
+              Spacer(),
+              'AI Analysis'.text.underline.size(12).make().onTap(() {
+                controller.isShowAIAnalysis.value = !controller.isShowAIAnalysis.value;
+              }),
+            ]).pOnly(top: 8),
           ] else ...[
             HStack([
               if (controller.countPercentage.value.toDouble() < 20) ...[
-                'Look Invalid! '.text.red500.size(12).make(),
+                'Look Invalid! '.text.color(AppColor.red).size(12).make(),
+              ] else ...[
+                'Surplus ${controller.surplus.value.moneyFormat()}'.text.color(AppColor.blue).size(12).makeCentered(),
               ],
-              'Surplus ${controller.surplus.value.moneyFormat()}'.text.color(AppColor.blue).size(12).makeCentered(),
-            ]).centered().pOnly(top: 8),
+              Spacer(),
+              'AI Analysis'.text.underline.size(12).make().onTap(() {
+                controller.isShowAIAnalysis.value = !controller.isShowAIAnalysis.value;
+              }),
+            ]).pOnly(top: 8),
           ],
         ],
       ).p8(),
@@ -190,88 +201,114 @@ class ViewBudget extends GetView<SummaryController> {
   }
 
   Widget detailPerMonth() {
-    return Container(
-      width: double.infinity,
-      decoration: ExDecorator.box(fillColor: AppColor.cardItemSecondary, borderColor: AppColor.cardItemSecondary, borderRadius: 4),
-      child: VStack(
-        [
-          Obx(
-            () => ListView.separated(
-              itemCount: controller.rpcSumByCategory.length,
-              separatorBuilder: (context, index) => 8.heightBox,
-              itemBuilder: (context, index) {
-                final item = controller.rpcSumByCategory[index];
-                return Container(
-                  decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
-                  child: HStack(
-                    [
-                      Icon(item.categoryIcon?.getIconData(), size: 16, color: item.categoryColor?.fromHex).pOnly(right: 12),
+    return Obx(
+      () => Container(
+        width: double.infinity,
+        decoration: ExDecorator.box(fillColor: AppColor.cardItemSecondary, borderColor: AppColor.cardItemSecondary, borderRadius: 4),
+        child: controller.isShowAIAnalysis.isFalse
+            ? VStack(
+                [
+                  Obx(
+                    () => ListView.separated(
+                      itemCount: controller.rpcSumByCategory.length,
+                      separatorBuilder: (context, index) => 8.heightBox,
+                      itemBuilder: (context, index) {
+                        final item = controller.rpcSumByCategory[index];
+                        return Container(
+                          decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+                          child: HStack(
+                            [
+                              Icon(item.categoryIcon?.getIconData(), size: 16, color: item.categoryColor?.fromHex).pOnly(right: 12),
 
-                      /// 1
-                      VStack([
-                        '${item.categoryName}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
-                        if (item.maxBudget != null && item.maxBudget! > 0) ...[
-                          '${item.remainingBudget?.moneyFormat()}'.text.size(11).color(item.remainingBudget! < 0 ? AppColor.red : AppColor.textReverse).bold.make(),
-                        ] else ...[
-                          InkWell(
-                            child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
-                            onTap: () {
-                              logI(jsonEncode(item));
-                              final entity = SupaCategory(
-                                id: item.categoryId,
-                                createdAt: DateTime.now().toStringEx(),
-                                name: item.categoryName,
-                                color: item.categoryColor,
-                                icon: item.categoryIcon,
-                                maxBudget: item.maxBudget,
-                              );
+                              /// 1
+                              VStack([
+                                '${item.categoryName}'.text.size(12).ellipsis.maxLines(1).make().pOnly(bottom: 2),
+                                if (item.maxBudget != null && item.maxBudget! > 0) ...[
+                                  '${item.remainingBudget?.moneyFormat()}'.text.size(11).color(item.remainingBudget! < 0 ? AppColor.red : AppColor.textReverse).bold.make(),
+                                ] else ...[
+                                  InkWell(
+                                    child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
+                                    onTap: () {
+                                      logI(jsonEncode(item));
+                                      final entity = SupaCategory(
+                                        id: item.categoryId,
+                                        createdAt: DateTime.now().toStringEx(),
+                                        name: item.categoryName,
+                                        color: item.categoryColor,
+                                        icon: item.categoryIcon,
+                                        maxBudget: item.maxBudget,
+                                      );
 
-                              DialogInputHelper.showDialogCategory(
-                                category: entity,
-                                callback: () async {
-                                  await Get.find<HomeController>().getCategory();
-                                  await controller.onMonthChange(controller.monthSelected.value);
-                                },
-                              );
-                            },
-                          ),
-                        ],
-                      ]).w(Get.context!.isMobile ? 100 : 130).pOnly(right: 12),
+                                      DialogInputHelper.showDialogCategory(
+                                        category: entity,
+                                        callback: () async {
+                                          await Get.find<HomeController>().getCategory();
+                                          await controller.onMonthChange(controller.monthSelected.value);
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ]).w(Get.context!.isMobile ? 100 : 130).pOnly(right: 12),
 
-                      /// 2
-                      if (item.maxBudget != null && item.maxBudget! > 0) ...[
-                        VStack([
-                          ExProgressBar(
-                            value: item.usePercentage ?? 0,
-                            color1: item.usePercentage! < 100 ? AppColor.bibit : AppColor.red,
-                            color2: AppColor.neutralLight,
-                            radius: 2,
-                            height: 8,
-                          ).pOnly(bottom: 4),
-                          HStack([
-                            ' ${item.usePercentage}% '.text.size(11).minFontSize(11).make(),
-                            Spacer(),
-                            'Rp. ${item.total?.moneyFormatCompact()}'.text.size(11).minFontSize(11).bold.color(item.usePercentage! < 100 ? AppColor.green : AppColor.red).make(),
-                            ' / '.text.size(11).minFontSize(11).make(),
-                            'Rp. ${item.maxBudget?.moneyFormatCompact()}'.text.size(12).minFontSize(11).make(),
-                          ]),
-                        ]).pOnly(right: 12).expand(),
-                      ] else ...[
-                        VStack([
-                          HStack([
-                            Spacer(),
-                            '${item.total?.moneyFormat()}'.text.bold.size(12).make(),
-                          ]),
-                        ]).pOnly(right: 12).expand(),
-                      ],
-                    ],
-                  ).onInkTap(() => controller.goAdvanceFilter(item.categoryName ?? '')).p12(),
-                );
-              },
-            ).expand(),
-          ),
-        ],
-      ).p12(),
+                              /// 2
+                              if (item.maxBudget != null && item.maxBudget! > 0) ...[
+                                VStack([
+                                  ExProgressBar(
+                                    value: item.usePercentage ?? 0,
+                                    color1: item.usePercentage! < 100 ? AppColor.bibit : AppColor.red,
+                                    color2: AppColor.neutralLight,
+                                    radius: 2,
+                                    height: 8,
+                                  ).pOnly(bottom: 4),
+                                  HStack([
+                                    ' ${item.usePercentage}% '.text.size(11).minFontSize(11).make(),
+                                    Spacer(),
+                                    'Rp. ${item.total?.moneyFormatCompact()}'.text.size(11).minFontSize(11).bold.color(item.usePercentage! < 100 ? AppColor.green : AppColor.red).make(),
+                                    ' / '.text.size(11).minFontSize(11).make(),
+                                    'Rp. ${item.maxBudget?.moneyFormatCompact()}'.text.size(12).minFontSize(11).make(),
+                                  ]),
+                                ]).pOnly(right: 12).expand(),
+                              ] else ...[
+                                VStack([
+                                  HStack([
+                                    Spacer(),
+                                    '${item.total?.moneyFormat()}'.text.bold.size(12).make(),
+                                  ]),
+                                ]).pOnly(right: 12).expand(),
+                              ],
+                            ],
+                          ).onInkTap(() => controller.goAdvanceFilter(item.categoryName ?? '')).p12(),
+                        );
+                      },
+                    ).expand(),
+                  ),
+                ],
+              ).p12()
+            : aiAnalysisUI().p12(),
+      ),
+    );
+  }
+
+  Widget aiAnalysisUI() {
+    return VStack(
+      [
+        HStack(
+          [
+            'AI Analysis (${controller.monthSelected} ${controller.yearSelected})'.text.bold.make(),
+            Spacer(),
+            ExButtonElevated(
+              label: 'Run Analysis',
+              onPressed: controller.isAIAnalysisRunning.isFalse ? () => controller.runAIAnalysis() : null,
+            )
+          ],
+        ).pOnly(bottom: 12),
+        Obx(
+          () => MarkdownWidget(
+            data: '${controller.aiAnalysisOutput.value}',
+          ).expand(),
+        ),
+      ],
     );
   }
 }

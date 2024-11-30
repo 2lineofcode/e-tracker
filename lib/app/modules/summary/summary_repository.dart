@@ -37,7 +37,16 @@ class SummaryRepository {
     return response;
   }
 
-  
+  Future<List<SupaUserProfile>> getUserProfile() async {
+    final response = await db //
+        .from('profiles')
+        .select()
+        .eq('id', db.auth.currentSession?.user.id ?? '')
+        .withConverter<List<SupaUserProfile>>((data) {
+      return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
+    });
+    return response;
+  }
 
   /// ------------------------------------------------------------------------
   /// ! rpc

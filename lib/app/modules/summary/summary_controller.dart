@@ -1,5 +1,5 @@
 import 'package:ex_kit/ex.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_setting.dart';
@@ -37,6 +37,9 @@ class SummaryController extends GetxController with StateMixin {
   // flag
   final isShowAllYear = false.obs;
   final menuSelected = 1.obs;
+  final isShowAIAnalysis = false.obs;
+  final aiAnalysisOutput = ''.obs;
+  final isAIAnalysisRunning = false.obs;
 
   // !income
   final income = 0.obs;
@@ -64,6 +67,7 @@ class SummaryController extends GetxController with StateMixin {
     change(0, status: RxStatus.loading());
     monthSelected.value = month;
     isShowAllYear.value = false;
+    aiAnalysisOutput.value = '';
 
     await getExpenses(year: yearSelected.value, month: monthSelected.value);
     await getSumByCategory(year: yearSelected.value, month: monthSelected.value);
@@ -175,38 +179,6 @@ class SummaryController extends GetxController with StateMixin {
     highSpender.value = sortByAmount;
   }
 
-  Future<void> getExpenseDataToClipboard() async {
-    final dataExpense = await repo.getExpenses(year: yearSelected.value, month: monthSelected.value);
-    final dataBudget = await repo.getCategory();
-    final dataExpenseSend = [];
-    final dataBudgetSend = [];
-
-    dataExpense.forEach((el) {
-      dataExpenseSend.add({
-        'date': el.date,
-        'category_name': el.categoryName,
-        'note': el.note,
-        'amount': el.amount,
-      });
-    });
-
-    dataBudget.forEach((el) {
-      dataBudgetSend.add({
-        'category_name': el.name,
-        'budget': el.maxBudget ?? 0,
-      });
-    });
-
-    /// copy data to clipboard
-    var text = 'bantu aku analisa data pengeluaranku, rekap paling boros dimana dan beri aku advice secara singkat dengan table:\n';
-    text += '$dataExpenseSend\n\n';
-    text += 'ini adalah anggaranku by category:\n';
-    text += '$dataBudgetSend\n';
-    await Clipboard.setData(ClipboardData(text: text));
-    // OverlayHelper.notification('Data $monthSelected copied to clipboard');
-    ExSnackbar.success('Data $monthSelected copied to clipboard', duration: 1);
-  }
-
   Future<void> getSumAllMonth({required String year}) async {
     rpcSumAllMonth.value = await repo.getSumAllMonth(year: year);
   }
@@ -271,5 +243,64 @@ class SummaryController extends GetxController with StateMixin {
         '${yearSelected.value}-12-31',
       ]);
     }
+  }
+
+  Future<void> runAIAnalysis() async {
+    aiAnalysisOutput.value = '';
+
+    // final dataExpense = await repo.getExpenses(year: yearSelected.value, month: monthSelected.value);
+    // final dataExpenseSend = [];
+    final dataBudget = await repo.getCategory();
+    final dataBudgetSend = [];
+    final dataPersonal = await repo.getUserProfile();
+    final dataPersonalSend = dataPersonal[0];
+
+    // Map<String, num> totalAmountByDate = {};
+    // for (var item in dataExpense) {
+    //   var date = item.date!;
+    //   var amount = item.amount;
+    //   if (totalAmountByDate.containsKey(date)) {
+    //     totalAmountByDate[date] = totalAmountByDate[date]! + amount!;
+    //   } else {
+    //     totalAmountByDate[date] = amount ?? 0;
+    //   }
+    // }
+    // var sortedResults = totalAmountByDate.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    // for (var entry in sortedResults) {
+    //   // print('Date: ${entry.key}, Total Amount: ${entry.value}');
+    //   dataExpenseSend.add({
+    //     'date': entry.key,
+    //     'amount': entry.value,
+    //   });
+    // }
+
+    dataBudget.forEach((el) {
+      dataBudgetSend.add({
+        'category': el.name,
+        'budget': el.maxBudget ?? 0,
+      });
+    });
+
+    isAIAnalysisRunning.value = true;
+
+    gemini.streamChat([
+      Content(
+        role: 'user',
+        parts: [
+          Parts(text: 'halo gemini!'),
+          Parts(text: 'ini data profile ku:'),
+          Parts(text: 'namaku ${dataPersonalSend.fullName}, umur ${dataPersonalSend.age}, incomeku ${dataPersonalSend.income}, tabunganku ${dataPersonalSend.balance}}'),
+          // Parts(text: 'ini data pengeluaranku:'),
+          // Parts(text: '$dataExpense'),
+          Parts(text: 'ini data anggaranku by category:'),
+          Parts(text: '$rpcSumByCategory'),
+          Parts(text: 'bantu aku analisa data pengeluaranku berdasarkan profileku dari umur, penghasilan dan anggaranku, beri aku advice panjang.'),
+          Parts(text: 'tapi jangan sebutin income dan tabunganku.'),
+        ],
+      )
+    ]).listen((ai) {
+      aiAnalysisOutput.value += ai.output ?? '';
+      isAIAnalysisRunning.value = false;
+    });
   }
 }

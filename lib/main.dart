@@ -2,6 +2,7 @@ import 'package:ex_kit/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,6 +16,9 @@ import 'env.g.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  /// gemini
+  Gemini.init(apiKey: Env.geminiApiKey);
 
   /// supabase
   await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:window_manager/window_manager.dart';
@@ -15,6 +16,8 @@ import 'const.dart';
 
 /// handy call sharedpref
 final pref = GetStorage(kStorageKey);
+final gemini = Gemini.instance;
+
 
 class AppSettingService extends GetxService {
   @override
