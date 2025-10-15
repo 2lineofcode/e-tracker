@@ -131,7 +131,7 @@ class FilteringView extends GetView<FilteringController> {
                 icon: Icon(
                   CupertinoIcons.list_bullet,
                   size: 16,
-                  color: controller.uiSelected.value == UiMode.list ? AppColor.blue : AppColor.textReverse.withOpacity(0.2),
+                  color: controller.uiSelected.value == UiMode.list ? AppColor.blue : AppColor.textReverse.withValues(alpha:  0.2),
                 ),
               ),
               IconButton(
@@ -139,7 +139,7 @@ class FilteringView extends GetView<FilteringController> {
                 icon: Icon(
                   CupertinoIcons.table,
                   size: 16,
-                  color: controller.uiSelected.value == UiMode.table ? AppColor.blue : AppColor.textReverse.withOpacity(0.2),
+                  color: controller.uiSelected.value == UiMode.table ? AppColor.blue : AppColor.textReverse.withValues(alpha: 0.2),
                 ),
               ),
             ],
@@ -171,7 +171,7 @@ class FilteringView extends GetView<FilteringController> {
         2: FlexColumnWidth(1),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      border: TableBorder.all(color: Get.theme.textTheme.bodySmall!.color!.withOpacity(0.4)),
+      border: TableBorder.all(color: Get.theme.textTheme.bodySmall!.color!.withValues(alpha:0.4)),
       children: [
         for (var date in controller.grouppedByDate!.keys) ...[
           TableRow(
@@ -192,7 +192,7 @@ class FilteringView extends GetView<FilteringController> {
                         .make()
                         .pSymmetric(h: 8),
                     if (e != controller.grouppedByDate![date]!.last) ...[
-                      Divider(color: AppColor.textReverse.withOpacity(0.4)),
+                      Divider(color: AppColor.textReverse.withValues(alpha:0.4)),
                     ]
                   ]
                 ]).pSymmetric(v: 8),

@@ -287,15 +287,15 @@ class SummaryController extends GetxController with StateMixin {
       Content(
         role: 'user',
         parts: [
-          Parts(text: 'halo gemini!'),
-          Parts(text: 'ini data profile ku:'),
-          Parts(text: 'namaku ${dataPersonalSend.fullName}, umur ${dataPersonalSend.age}, incomeku ${dataPersonalSend.income}, tabunganku ${dataPersonalSend.balance}}'),
-          // Parts(text: 'ini data pengeluaranku:'),
-          // Parts(text: '$dataExpense'),
-          Parts(text: 'ini data anggaranku by category:'),
-          Parts(text: '$rpcSumByCategory'),
-          Parts(text: 'bantu aku analisa data pengeluaranku berdasarkan profileku dari umur, penghasilan dan anggaranku, beri aku advice panjang.'),
-          Parts(text: 'tapi jangan sebutin income dan tabunganku.'),
+          Part.text('halo gemini!'),
+          Part.text('ini data profile ku:'),
+          Part.text('namaku ${dataPersonalSend.fullName}, umur ${dataPersonalSend.age}, incomeku ${dataPersonalSend.income}, tabunganku ${dataPersonalSend.balance}}'),
+          // Part.text('ini data pengeluaranku:'),
+          // Part.text('$dataExpense'),
+          Part.text('ini data anggaranku by category:'),
+          Part.text('$rpcSumByCategory'),
+          Part.text('bantu aku analisa data pengeluaranku berdasarkan profileku dari umur, penghasilan dan anggaranku, beri aku advice panjang.'),
+          Part.text('tapi jangan sebutin income dan tabunganku.'),
         ],
       )
     ]).listen((ai) {

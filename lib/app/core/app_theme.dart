@@ -15,7 +15,7 @@ mixin AppTheme {
       iconTheme: IconThemeData(color: Colors.white),
       titleTextStyle: TextStyle(color: Colors.white),
     ),
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       indicatorColor: AppColor.noteColor,
       labelColor: AppColor.textReverse,
       labelStyle: TextStyle(fontSize: 13),
@@ -27,7 +27,7 @@ mixin AppTheme {
 
   /// * dark
   static final dark = ThemeData.dark(useMaterial3: true).copyWith(
-    tabBarTheme: TabBarTheme(
+    tabBarTheme: TabBarThemeData(
       indicatorColor: AppColor.noteColor,
       labelColor: AppColor.textReverse,
       labelStyle: TextStyle(fontSize: 13),
