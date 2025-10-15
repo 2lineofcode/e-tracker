@@ -27,25 +27,32 @@ class ViewBarChart extends GetView<SummaryController> {
 
             /// list high spendings
             if (controller.highSpender.isNotEmpty) ...[
-              '🔥 High Spendings! (${controller.highSpender.length})'.text.make().pOnly(bottom: 12),
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: controller.highSpender.length,
-                itemBuilder: (context, index) {
-                  final item = controller.highSpender[index];
-                  return itemListHighSpender(item);
-                },
+              Container(
+                decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.border),
+                child: VStack(
+                  [
+                    '🔥 High Spendings! (${controller.highSpender.length})'.text.bold.make().pOnly(bottom: 12),
+                    ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: controller.highSpender.length,
+                      separatorBuilder: (context, index) => 8.heightBox,
+                      itemBuilder: (context, index) {
+                        final item = controller.highSpender[index];
+                        return itemListHighSpender(item);
+                      },
+                    ).expand(),
+                  ],
+                ).p12(),
               ).expand(),
             ],
           ]
-
           /// empty view
           else ...[
             ExUiErrorOrEmpty(
               bgColor: AppColor.emptyStatePrimary,
               title: 'No data to see',
               message: 'You dont have enough data transaction on this period',
-            ).h(250),
+            ).expand(),
           ],
         ],
       ).p12(),
@@ -54,10 +61,13 @@ class ViewBarChart extends GetView<SummaryController> {
   }
 
   Widget itemListHighSpender(SupaExpense item) {
-    return ListTile(
-      title: '${item.date?.reformatDate(from: yMd)}'.text.size(12).make(),
-      trailing: '${item.amount?.moneyFormat()}'.text.make(),
-      onTap: () => openDetail(item),
+    return Container(
+      decoration: ExDecorator.box(borderRadius: 12, borderColor: AppColor.border, fillColor: AppColor.box),
+      child: ListTile(
+        title: '${item.date?.reformatDate(from: yMd)}'.text.size(12).make(),
+        trailing: '${item.amount?.moneyFormat()}'.text.make(),
+        onTap: () => openDetail(item),
+      ),
     );
   }
 }
@@ -93,19 +103,20 @@ class _Chart extends GetView<SummaryController> {
                     ),
                   ],
                 ),
-              ]
+              ],
             ],
             barTouchData: BarTouchData(
-                touchTooltipData: lineTooltip(dataExpense),
-                touchCallback: (event, response) {
-                  if (response != null && response.spot != null && event is FlTapUpEvent) {
-                    final item = dataExpense.reversed.toList()[response.spot!.touchedBarGroupIndex];
-                    openDetail(item);
-                  }
-                },
-                mouseCursorResolver: (event, response) {
-                  return response == null || response.spot == null ? MouseCursor.defer : SystemMouseCursors.click;
-                }),
+              touchTooltipData: lineTooltip(dataExpense),
+              touchCallback: (event, response) {
+                if (response != null && response.spot != null && event is FlTapUpEvent) {
+                  final item = dataExpense.reversed.toList()[response.spot!.touchedBarGroupIndex];
+                  openDetail(item);
+                }
+              },
+              mouseCursorResolver: (event, response) {
+                return response == null || response.spot == null ? MouseCursor.defer : SystemMouseCursors.click;
+              },
+            ),
           ),
         );
       },

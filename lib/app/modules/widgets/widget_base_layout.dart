@@ -121,6 +121,7 @@ class MyLayout extends StatelessWidget {
   Widget myAppBarDesktop() {
     return AppBar(
       backgroundColor: AppColor.appbarPrimary,
+      surfaceTintColor: AppColor.appbarPrimary,
       title: appBarTitle,
       centerTitle: false,
       leading: isShowAppBarLeading == true

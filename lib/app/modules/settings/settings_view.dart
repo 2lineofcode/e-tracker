@@ -36,6 +36,7 @@ class SettingsView extends GetView<SettingsController> {
                   controller: controller.tfSearchAutoComplete,
                   style: TextStyle(fontSize: 13),
                   decoration: DecorationHelper.input(
+                    fillColor: Get.isDarkMode ? AppColor.card : null,
                     hint: 'Search...',
                     contentPadding: EdgeInsets.only(left: 8, right: 8),
                     suffix: Icon(Icons.clear, size: 10).pOnly(top: 4, right: 8).onInkTap(() async {
@@ -109,9 +110,9 @@ class SettingsView extends GetView<SettingsController> {
         () {
           switch (controller.menuSelected.value) {
             case SectionMenu.APP_CONFIG:
-              return 'Version: ${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'.text.make();
+              return 'Version: ${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'.text.size(12).make();
             case SectionMenu.AUTO_COMPLETE:
-              return '${controller.autoCompleteList.length} Record'.text.make();
+              return '${controller.autoCompleteList.length} Record'.text.size(12).make();
             default:
               return Container();
           }

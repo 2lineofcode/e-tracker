@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
 // ignore: unused_import
@@ -40,18 +38,13 @@ class ViewBudget extends GetView<SummaryController> {
   Widget headerAllYear() {
     return GlassContainer(
       width: double.infinity,
-      // decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
-      color: AppColor.cardHeaderPrimary,
       blur: 50,
-      border: Border.all(color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20)),
+      border: Border.all(color: AppColor.border),
       borderRadius: BorderRadius.all(Radius.circular(4)),
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          AppColor.cardHeaderPrimary,
-          Get.theme.scaffoldBackgroundColor,
-        ],
+        colors: [Vx.pink500, AppColor.primary],
       ),
       child: VStack(
         [
@@ -65,7 +58,7 @@ class ViewBudget extends GetView<SummaryController> {
   Widget detailAllYear() {
     return Container(
       width: double.infinity,
-      decoration: ExDecorator.box(fillColor: AppColor.cardItemSecondary, borderColor: AppColor.cardItemSecondary, borderRadius: 4),
+      decoration: ExDecorator.box(fillColor: AppColor.box, borderColor: AppColor.border, borderRadius: 4),
       child: VStack(
         [
           Obx(
@@ -93,17 +86,13 @@ class ViewBudget extends GetView<SummaryController> {
     if (controller.countBudget.value.isZero) {
       return GlassContainer(
         width: double.infinity,
-        color: AppColor.cardHeaderPrimary,
         blur: 50,
         border: Border.all(color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20)),
         borderRadius: BorderRadius.all(Radius.circular(4)),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColor.cardHeaderPrimary,
-            Get.theme.scaffoldBackgroundColor,
-          ],
+          colors: [Vx.pink500, AppColor.primary],
         ),
         child: VStack([
           'Total:'.text.make().pOnly(bottom: 8),
@@ -113,17 +102,13 @@ class ViewBudget extends GetView<SummaryController> {
     }
     return GlassContainer(
       width: double.infinity,
-      color: AppColor.cardHeaderPrimary,
       blur: 50,
       border: Border.all(color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20)),
       borderRadius: BorderRadius.all(Radius.circular(4)),
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          AppColor.cardHeaderPrimary,
-          Get.theme.scaffoldBackgroundColor,
-        ],
+        colors: [Vx.pink500, AppColor.primary],
       ),
       child: VStack(
         [
@@ -132,15 +117,14 @@ class ViewBudget extends GetView<SummaryController> {
             [
               'Remaining Budget'.text.size(11).make().pOnly(right: 8),
               Container(
-                color: Vx.blue500,
-                child: '${controller.monthSelected.value.reformatDate(from: 'MMMM', to: 'MMM')} ${controller.yearSelected.value}'
-                    .text
+                color: AppColor.primary,
+                child: '${controller.monthSelected.value.reformatDate(from: 'MMMM', to: 'MMM')} ${controller.yearSelected.value}'.text
                     .size(11)
                     .minFontSize(11)
                     .color(AppColor.textOnBackground)
                     .make()
-                    .pSymmetric(h: 4, v: 2),
-              ),
+                    .pSymmetric(h: 8, v: 2),
+              ).cornerRadius(8),
               Spacer(),
               Obx(() => '${controller.countRemainingBudget.value.moneyFormat()}'.text.bold.size(16).make()),
             ],
@@ -149,8 +133,8 @@ class ViewBudget extends GetView<SummaryController> {
           /// col2
           ExProgressBar(
             value: (controller.countPercentage.value).toInt(),
-            color1: (controller.countPercentage.value).toInt() < 100 ? AppColor.bibit : AppColor.red,
-            color2: AppColor.neutralLight,
+            color1: (controller.countPercentage.value).toInt() < 100 ? AppColor.primary : Vx.red500,
+            color2: Vx.neutral400,
             radius: 8,
           ).pSymmetric(v: 12),
 
@@ -159,8 +143,7 @@ class ViewBudget extends GetView<SummaryController> {
             [
               'Used: ${controller.countPercentage.value.toDoubleStringAsFixed()}%'.text.size(11).minFontSize(11).make().pOnly(left: 4),
               Spacer(),
-              '${controller.countOnly1Month.value.moneyFormat()}'
-                  .text
+              '${controller.countOnly1Month.value.moneyFormat()}'.text
                   .size(11)
                   .bold
                   .color(
@@ -176,10 +159,10 @@ class ViewBudget extends GetView<SummaryController> {
           Divider(),
           if (DateTime.now().month == controller.monthSelected.value.toDateEx(format: 'MMMM').month && DateTime.now().year == controller.yearSelected.value.toInt()) ...[
             HStack([
-              '${dayInMonth(DateTime.now()) - DateTime.now().day} Day Remaining'.text.color(AppColor.blue).size(12).makeCentered(),
+              '${dayInMonth(DateTime.now()) - DateTime.now().day} Day Remaining'.text.color(AppColor.textReverse).size(12).makeCentered(),
               Spacer(),
-              'AI Analysis'.text.underline.size(12).make().onTap(() {
-                controller.isShowAIAnalysis.value = !controller.isShowAIAnalysis.value;
+              'AI Insights'.text.underline.size(12).make().onTap(() {
+                controller.menuSelected.value = 5;
               }),
             ]).pOnly(top: 8),
           ] else ...[
@@ -190,8 +173,8 @@ class ViewBudget extends GetView<SummaryController> {
                 'Surplus ${controller.surplus.value.moneyFormat()}'.text.color(AppColor.blue).size(12).makeCentered(),
               ],
               Spacer(),
-              'AI Analysis'.text.underline.size(12).make().onTap(() {
-                controller.isShowAIAnalysis.value = !controller.isShowAIAnalysis.value;
+              'AI Insights'.text.underline.size(12).make().onTap(() {
+                controller.menuSelected.value = 5;
               }),
             ]).pOnly(top: 8),
           ],
@@ -204,7 +187,7 @@ class ViewBudget extends GetView<SummaryController> {
     return Obx(
       () => Container(
         width: double.infinity,
-        decoration: ExDecorator.box(fillColor: AppColor.cardItemSecondary, borderColor: AppColor.cardItemSecondary, borderRadius: 4),
+        decoration: ExDecorator.box(fillColor: AppColor.box, borderColor: AppColor.border, borderRadius: 4),
         child: controller.isShowAIAnalysis.isFalse
             ? VStack(
                 [
@@ -215,7 +198,7 @@ class ViewBudget extends GetView<SummaryController> {
                       itemBuilder: (context, index) {
                         final item = controller.rpcSumByCategory[index];
                         return Container(
-                          decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+                          decoration: ExDecorator.box(fillColor: AppColor.box, borderColor: AppColor.border, borderRadius: 12),
                           child: HStack(
                             [
                               Icon(item.categoryIcon?.getIconData(), size: 16, color: item.categoryColor?.fromHex).pOnly(right: 12),
@@ -226,10 +209,11 @@ class ViewBudget extends GetView<SummaryController> {
                                 if (item.maxBudget != null && item.maxBudget! > 0) ...[
                                   '${item.remainingBudget?.moneyFormat()}'.text.size(11).color(item.remainingBudget! < 0 ? AppColor.red : AppColor.textReverse).bold.make(),
                                 ] else ...[
-                                  InkWell(
+                                  if (!item.categoryName!.contains('Notes')) ...[
+                                    InkWell(
                                     child: 'Setup Budget'.text.underline.size(11).minFontSize(11).make(),
                                     onTap: () {
-                                      logI(jsonEncode(item));
+                                      // logI(jsonEncode(item));
                                       final entity = SupaCategory(
                                         id: item.categoryId,
                                         createdAt: DateTime.now().toStringEx(),
@@ -248,6 +232,7 @@ class ViewBudget extends GetView<SummaryController> {
                                       );
                                     },
                                   ),
+                                  ]
                                 ],
                               ]).w(Get.context!.isMobile ? 100 : 130).pOnly(right: 12),
 
@@ -256,9 +241,9 @@ class ViewBudget extends GetView<SummaryController> {
                                 VStack([
                                   ExProgressBar(
                                     value: item.usePercentage ?? 0,
-                                    color1: item.usePercentage! < 100 ? AppColor.bibit : AppColor.red,
-                                    color2: AppColor.neutralLight,
-                                    radius: 2,
+                                    color1: item.usePercentage! < 100 ? AppColor.primary : Colors.red,
+                                    color2: Vx.neutral400,
+                                    radius: 9,
                                     height: 8,
                                   ).pOnly(bottom: 4),
                                   HStack([
@@ -293,16 +278,6 @@ class ViewBudget extends GetView<SummaryController> {
   Widget aiAnalysisUI() {
     return VStack(
       [
-        HStack(
-          [
-            'AI Analysis (${controller.monthSelected} ${controller.yearSelected})'.text.bold.make(),
-            Spacer(),
-            ExButtonElevated(
-              label: 'Run Analysis',
-              onPressed: controller.isAIAnalysisRunning.isFalse ? () => controller.runAIAnalysis() : null,
-            )
-          ],
-        ).pOnly(bottom: 12),
         Obx(
           () => MarkdownWidget(
             data: '${controller.aiAnalysisOutput.value}',

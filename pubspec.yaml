@@ -1,10 +1,10 @@
 name: expense_tracker
-version: 1.0.0+146.20250123
+version: 1.0.0+163.20251016
 publish_to: none
 description: The Expense Tracker app is a handy tool for managing your personal finances. It allows you to easily track your expenses, categorize them, and analyze your spending patterns. With a user-friendly interface, the app provides features such as adding and editing expenses, setting budget goals, generating reports, and visualizing data through charts and graphs. Stay in control of your finances with the Expense Tracker app.
 
 environment:
-  sdk: ^3.5.3
+  sdk: ^3.9.0
 
 dependencies:
   # core
@@ -12,6 +12,7 @@ dependencies:
   get_storage: ^2.1.1
   supabase_flutter: ^2.10.3
   flutter_gemini: ^3.0.0
+  groq: ^1.1.1
 
   # ui
   ex_kit: ^0.7.0
@@ -22,14 +23,15 @@ dependencies:
   custom_radio_grouped_button: ^2.2.1
   window_manager: ^0.5.1
   syncfusion_flutter_charts: ^31.1.19
-
-  fl_chart: ^0.70.2
+  
+  fl_chart: ^1.1.1
 
   animated_text_kit: ^4.3.0
   flutter_popup: ^3.3.9
-  flutter_iconpicker_plus: ^3.2.3
+  flutter_iconpicker: ^4.0.3
 
-  lottie: 3.1.2
+  lottie: 3.3.2
+  
   animated_icon: ^0.0.9
   glassmorphism_ui: ^0.3.0
   overlayment: ^0.2.1
@@ -63,7 +65,8 @@ dev_dependencies:
     sdk: flutter
 
 dependency_overrides:
-  intl: ^0.20.1
+  intl: ^0.20.2
+  # vector_math: ^2.2.0
 
 flutter:
   uses-material-design: true

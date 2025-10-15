@@ -74,14 +74,13 @@ class FilteringView extends GetView<FilteringController> {
     return VStack(
       [
         GlassContainer(
-          color: AppColor.cardHeaderPrimary,
           width: double.infinity,
           blur: 50,
           border: Border.all(color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20)),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [AppColor.cardHeaderPrimary, Get.theme.scaffoldBackgroundColor],
+            colors: [Vx.pink500, AppColor.primary],
           ),
           child: VStack(
             [
@@ -121,7 +120,9 @@ class FilteringView extends GetView<FilteringController> {
             ],
           ).p12(),
         ).p8(),
+        
         16.heightBox,
+        
         Obx(
           () => HStack(
             [
@@ -131,7 +132,7 @@ class FilteringView extends GetView<FilteringController> {
                 icon: Icon(
                   CupertinoIcons.list_bullet,
                   size: 16,
-                  color: controller.uiSelected.value == UiMode.list ? AppColor.blue : AppColor.textReverse.withValues(alpha:  0.2),
+                  color: controller.uiSelected.value == UiMode.list ? null : AppColor.textReverse.withAlpha(50),
                 ),
               ),
               IconButton(
@@ -139,16 +140,15 @@ class FilteringView extends GetView<FilteringController> {
                 icon: Icon(
                   CupertinoIcons.table,
                   size: 16,
-                  color: controller.uiSelected.value == UiMode.table ? AppColor.blue : AppColor.textReverse.withValues(alpha: 0.2),
+                  color: controller.uiSelected.value == UiMode.table ? null : AppColor.textReverse.withAlpha(50),
                 ),
               ),
             ],
           ),
         ),
+        
         controller.obx(
-          (state) => Obx(
-            () => controller.uiSelected.value == UiMode.table ? uiModeTable() : uiModeList(),
-          ),
+          (state) => Obx(() => controller.uiSelected.value == UiMode.table ? uiModeTable() : uiModeList()),
           onEmpty: ExUiErrorOrEmpty(
             illustration: Lottie.asset('assets/lottie/empty.json', width: 150, reverse: true),
             title: 'No Data',
@@ -171,7 +171,7 @@ class FilteringView extends GetView<FilteringController> {
         2: FlexColumnWidth(1),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      border: TableBorder.all(color: Get.theme.textTheme.bodySmall!.color!.withValues(alpha:0.4)),
+      border: TableBorder.all(color: Get.theme.textTheme.bodySmall!.color!.withValues(alpha: 0.4)),
       children: [
         for (var date in controller.grouppedByDate!.keys) ...[
           TableRow(
@@ -182,8 +182,7 @@ class FilteringView extends GetView<FilteringController> {
               TableCell(
                 child: VStack([
                   for (var e in controller.grouppedByDate![date]!) ...[
-                    ''
-                        .richText
+                    ''.richText
                         .withTextSpanChildren([
                           '${e.note}'.textSpan.make(),
                           ' (${e.categoryName} - ${e.amount?.moneyFormatCompact()})'.textSpan.neutral500.size(11).make(),
@@ -192,9 +191,9 @@ class FilteringView extends GetView<FilteringController> {
                         .make()
                         .pSymmetric(h: 8),
                     if (e != controller.grouppedByDate![date]!.last) ...[
-                      Divider(color: AppColor.textReverse.withValues(alpha:0.4)),
-                    ]
-                  ]
+                      Divider(color: AppColor.textReverse.withValues(alpha: 0.4)),
+                    ],
+                  ],
                 ]).pSymmetric(v: 8),
               ),
               TableCell(
@@ -204,7 +203,7 @@ class FilteringView extends GetView<FilteringController> {
               ),
             ],
           ),
-        ]
+        ],
       ],
     ).scrollVertical().expand();
   }
@@ -220,7 +219,7 @@ class FilteringView extends GetView<FilteringController> {
         return Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColor.cardHeaderPrimary,
+            color: Color(0xFF19151F),
             borderRadius: BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
           ),
           child: HStack(
@@ -230,16 +229,16 @@ class FilteringView extends GetView<FilteringController> {
                 size: 8,
                 color: controller.sumByDate[element.date]?.getFlagColor(),
               ).tooltip('${controller.sumByDate[element.date]?.getFlagText()}').pOnly(right: 8),
-              '${element.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).make(),
+              '${element.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.color(AppColor.textOnBackground).size(11).make(),
               Spacer(),
-              '${controller.sumByDate[element.date]!.moneyFormat()}'.text.size(12).make(),
+              '${controller.sumByDate[element.date]!.moneyFormat()}'.text.size(12).color(AppColor.textOnBackground).make(),
             ],
           ).p8(),
         );
       },
       indexedItemBuilder: (context, item, index) {
         return Container(
-          decoration: BoxDecoration(color: AppColor.cardItemPrimary),
+          decoration: BoxDecoration(color: AppColor.card),
           child: HStack(
             [
               // row 0

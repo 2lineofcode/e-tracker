@@ -26,23 +26,21 @@ class SectionAutoComplete extends GetView<SettingsController> {
             groupHeaderBuilder: (element) {
               return Container(
                 width: double.infinity,
-                color: AppColor.cardHeaderPrimary,
-                child: Text(element.note?.first()?.toUpperCase() ?? '?').p8(),
+                color: AppColor.box,
+                child: Text(element.note?.first()?.toUpperCase() ?? '?', style: TextStyle(fontWeight: FontWeight.bold)).p8(),
               );
             },
             indexedItemBuilder: (context, item, index) {
               return HStack([
                 /// title
-                '${item.note}'.text.maxLines(1).ellipsis.make().pSymmetric(h: 8).constrainedBox(
-                      BoxConstraints(maxWidth: 300),
-                    ),
+                '${item.note}'.text.maxLines(1).ellipsis.make().pSymmetric(h: 8).constrainedBox(BoxConstraints(maxWidth: 300)),
 
                 /// amount
                 if (item.amount.isNotEmptyAndNotNull) ...[
                   Container(
-                    color: Vx.neutral800,
-                    child: '${item.amount?.toInt()?.moneyFormatCompact()}'.text.size(11).minFontSize(11).color(AppColor.textOnBackground).make().pSymmetric(h: 4, v: 2),
-                  ).cornerRadius(4).pOnly(top: 2),
+                    color: AppColor.primary.withAlpha(100),
+                    child: '${item.amount?.toInt()?.moneyFormatCompact()}'.text.size(11).minFontSize(11).color(AppColor.textOnBackground).make().pSymmetric(h: 8, v: 2),
+                  ).cornerRadius(90).pOnly(top: 2),
                 ],
 
                 Spacer(),
@@ -50,9 +48,9 @@ class SectionAutoComplete extends GetView<SettingsController> {
                 /// categoryName
                 if (item.categoryName.isNotEmptyAndNotNull && !item.categoryName!.contains('Others')) ...[
                   Container(
-                    color: Vx.neutral800,
-                    child: '${item.categoryName}'.text.size(11).minFontSize(11).color(AppColor.textOnBackground).make().pSymmetric(h: 4, v: 2),
-                  ).cornerRadius(4).pOnly(top: 2, right: 4),
+                    color: AppColor.primary.withAlpha(100),
+                    child: '${item.categoryName}'.text.size(11).minFontSize(11).color(AppColor.textOnBackground).make().pSymmetric(h: 8, v: 2),
+                  ).cornerRadius(90).pOnly(top: 2, right: 4),
                 ],
 
                 /// action
@@ -65,7 +63,7 @@ class SectionAutoComplete extends GetView<SettingsController> {
           ).expand(),
           onLoading: ExUiLoading().expand(),
           onEmpty: ExUiErrorOrEmpty(
-            illustration: Get.context!.isMobile //
+            illustration: Get.context!.isMobile
                 ? Image.asset('assets/icons/app_icon.png', width: 56, height: 56).pOnly(bottom: 16)
                 : Lottie.asset('assets/lottie/empty.json', width: 150, reverse: true),
             title: 'No Data',
@@ -77,7 +75,10 @@ class SectionAutoComplete extends GetView<SettingsController> {
           [
             TextField(
               controller: controller.tfAddAutoComplete,
-              decoration: DecorationHelper.input(hint: 'Create New', suffix: Icon(Icons.telegram, size: 14)),
+              decoration: DecorationHelper.input(
+                hint: 'Create New',
+                fillColor: Get.isDarkMode ? AppColor.card : null,
+              ),
               style: TextStyle(fontSize: 13),
               onSubmitted: (s) => controller.onAddAutoComplete(s),
             ).h(33).expand(),

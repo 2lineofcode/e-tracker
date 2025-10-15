@@ -89,7 +89,7 @@ class ViewPieChart extends GetView<SummaryController> {
               bgColor: AppColor.emptyStatePrimary,
               title: 'No data to see',
               message: 'You dont have any transaction on this period',
-            ).h(250),
+            ).h(530),
           ],
         ],
         //

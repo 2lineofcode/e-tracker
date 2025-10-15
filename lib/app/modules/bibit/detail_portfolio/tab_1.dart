@@ -242,7 +242,7 @@ class DetailPortpolioTab1 extends GetView<DetailPortfolioController> {
             ListView.separated(
               shrinkWrap: true,
               itemCount: data.items?.length ?? 0,
-              separatorBuilder: (_, __) => 12.heightBox,
+              separatorBuilder: (_, _) => 12.heightBox,
               itemBuilder: (context, index) {
                 final item = data.items?[index];
                 return Container(

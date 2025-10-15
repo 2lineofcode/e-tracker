@@ -111,7 +111,7 @@ mixin BibitHelper {
       } else if (number > 80) {
         return Vx.orange600;
       } else {
-        return Vx.green600;
+        return AppColor.calendarSelectedColor;
       }
     } catch (_) {
       return AppColor.textReverse;

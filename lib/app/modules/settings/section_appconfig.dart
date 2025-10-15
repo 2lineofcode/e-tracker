@@ -34,7 +34,7 @@ class SectionAppConfig extends GetView<SettingsController> {
   Widget boxAccount() {
     return Container(
       width: double.infinity,
-      decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+      decoration: ExDecorator.box(fillColor: AppColor.box, borderColor: AppColor.border, borderRadius: 4),
       child: VStack(
         [
           HStack(
@@ -79,17 +79,15 @@ class SectionAppConfig extends GetView<SettingsController> {
   Widget boxCommonConfig() {
     return Container(
       width: double.infinity,
-      decoration: ExDecorator.box(fillColor: AppColor.cardHeaderPrimary, borderColor: AppColor.cardHeaderPrimary, borderRadius: 4),
+      decoration: ExDecorator.box(fillColor: AppColor.box, borderColor: AppColor.border, borderRadius: 4),
       child: VStack(
         [
           HStack([
             'App Config'.text.bold.make(),
-            Spacer(),
-          ]),
+          ]).pOnly(bottom: 12),
 
-          Divider().pSymmetric(v: 8),
 
-          /// 0
+          /// 1
           HStack(
             [
               'Dark Mode:'.text.make().w(200),
@@ -101,66 +99,42 @@ class SectionAppConfig extends GetView<SettingsController> {
                 },
               ),
             ],
-          ),
-          Divider().pSymmetric(v: 8),
-
-          /// 1
-          // HStack([
-          //   'Currency Symbol:'.text.make().w(200),
-          //   DropdownMenu(
-          //     controller: controller.tfCurrencySymbol,
-          //     trailingIcon: 0.heightBox,
-          //     textStyle: TextStyle(fontSize: 13),
-          //     inputDecorationTheme: InputDecorationTheme(
-          //       filled: true,
-          //       fillColor: AppColor.textFieldPrimary,
-          //       enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
-          //       disabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
-          //       focusedBorder: OutlineInputBorder(borderSide: BorderSide.none),
-          //       focusedErrorBorder: OutlineInputBorder(borderSide: BorderSide.none),
-          //       contentPadding: EdgeInsets.only(top: 2, bottom: 2, left: 12, right: 12),
-          //       constraints: BoxConstraints(maxHeight: 28),
-          //     ),
-          //     dropdownMenuEntries: [
-          //       DropdownMenuEntry(value: 'Rp. ', label: 'Rp. '),
-          //       DropdownMenuEntry(value: '\$ ', label: '\$ '),
-          //     ],
-          //   ),
-          // ]),
-          // Divider().pSymmetric(v: 8),
+          ).pOnly(bottom: 12),
 
           /// 2
-          HStack([
-            'Max Flag Eco Day:'.text.make().w(200),
-            TextField(
-              controller: controller.tfEco,
-              decoration: DecorationHelper.input(
-                hint: '≤ 50.000',
-                prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
-              ),
-              style: TextStyle(fontSize: 13),
-              inputFormatters: [CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0))],
-            ).h(28).expand(),
-            Icon(Icons.circle, color: AppColor.green, size: 8).pOnly(left: 8),
-          ]),
-          Divider().pSymmetric(v: 8),
+          HStack(
+            [
+              'Max Flag Eco Day:'.text.make().w(200),
+              TextField(
+                controller: controller.tfEco,
+                decoration: DecorationHelper.input(
+                  hint: '≤ 50.000',
+                  prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
+                ),
+                style: TextStyle(fontSize: 13),
+                inputFormatters: [CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0))],
+              ).h(28).expand(),
+              Icon(Icons.circle, color: AppColor.green, size: 8).pOnly(left: 8),
+            ],
+          ).pOnly(bottom: 12),
 
           /// 3
-          HStack([
-            'Max Flag Average Day:'.text.make().w(200),
-            TextField(
-              controller: controller.tfAverage,
-              decoration: DecorationHelper.input(
-                hint: '≤ 100.000',
-                prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
-              ),
-              style: TextStyle(fontSize: 13),
-              inputFormatters: [CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0))],
-              onChanged: (s) => controller.tfSpender.text = s,
-            ).h(28).expand(),
-            Icon(Icons.circle, color: AppColor.orange, size: 8).pOnly(left: 8),
-          ]),
-          Divider().pSymmetric(v: 8),
+          HStack(
+            [
+              'Max Flag Average Day:'.text.make().w(200),
+              TextField(
+                controller: controller.tfAverage,
+                decoration: DecorationHelper.input(
+                  hint: '≤ 100.000',
+                  prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
+                ),
+                style: TextStyle(fontSize: 13),
+                inputFormatters: [CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0))],
+                onChanged: (s) => controller.tfSpender.text = s,
+              ).h(28).expand(),
+              Icon(Icons.circle, color: AppColor.orange, size: 8).pOnly(left: 8),
+            ],
+          ).pOnly(bottom: 12),
 
           /// 4
           HStack([
@@ -176,21 +150,19 @@ class SectionAppConfig extends GetView<SettingsController> {
               inputFormatters: [
                 CurrencyTextInputFormatter(
                   NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0),
-                )
+                ),
               ],
             ).h(28).expand(),
             Icon(Icons.circle, color: AppColor.red, size: 8).pOnly(left: 8),
           ]),
 
-          Divider().pSymmetric(v: 8),
+          Divider(color: AppColor.divider).pSymmetric(v: 8),
           HStack(
             [
               '📁'.text.make().onTap(() => controller.onGoAppPath()),
               Spacer(),
               ExButtonOutline(
                 label: 'Reset to default',
-                labelColor: AppColor.textReverse,
-                borderColor: Vx.neutral500,
                 labelSize: 11,
                 height: 38,
                 onPressed: () {
@@ -204,8 +176,6 @@ class SectionAppConfig extends GetView<SettingsController> {
               ExButtonOutline(
                 width: 120,
                 label: 'Apply',
-                labelColor: AppColor.textReverse,
-                borderColor: Vx.neutral500,
                 labelSize: 11,
                 height: 38,
                 onPressed: () async => await controller.onSaveConfig(),

@@ -10,6 +10,7 @@ import '../widgets/widgets.dart';
 import 'summary_controller.dart';
 import 'view_bar_chart.dart';
 import 'view_budget.dart';
+import 'view_insights.dart';
 import 'view_note_times.dart';
 import 'view_pie_chart.dart';
 
@@ -33,20 +34,24 @@ class SummaryView extends GetView<SummaryController> {
       () => HStack(
         [
           IconButton(
-            icon: Image.asset('assets/icons/ic_pig.png', height: 18, width: 18, color: menu.value == 1 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            icon: Image.asset('assets/icons/ic_pig.png', height: 18, width: 18, color: menu.value == 1 ? Get.isDarkMode ? Vx.white : AppColor.primary : Vx.neutral500),
             onPressed: () => menu.value = 1,
           ),
           IconButton(
-            icon: Icon(CupertinoIcons.chart_bar_alt_fill, size: 18, color: menu.value == 2 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            icon: Icon(CupertinoIcons.chart_bar_alt_fill, size: 18, color: menu.value == 2 ? Get.isDarkMode ? Vx.white : AppColor.primary : Vx.neutral500),
             onPressed: () => menu.value = 2,
           ),
           IconButton(
-            icon: Icon(CupertinoIcons.chart_pie_fill, size: 18, color: menu.value == 3 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            icon: Icon(CupertinoIcons.chart_pie_fill, size: 18, color: menu.value == 3 ? Get.isDarkMode ? Vx.white : AppColor.primary : Vx.neutral500),
             onPressed: () => menu.value = 3,
           ),
           IconButton(
-            icon: Image.asset('assets/icons/ic_overview.png', height: 18, width: 18, color: menu.value == 4 ? AppColor.menuSelected : AppColor.menuUnSelected),
+            icon: Image.asset('assets/icons/ic_overview.png', height: 18, width: 18, color: menu.value == 4 ? Get.isDarkMode ? Vx.white : AppColor.primary : Vx.neutral500),
             onPressed: () => menu.value = 4,
+          ),
+          IconButton(
+            icon: Icon(CupertinoIcons.chat_bubble_fill, size: 18, color: menu.value == 5 ? Get.isDarkMode ? Vx.white : AppColor.primary : Vx.neutral500),
+            onPressed: () => menu.value = 5,
           ),
         ],
       ),
@@ -65,10 +70,10 @@ class SummaryView extends GetView<SummaryController> {
               () => Container(
                 decoration: ExDecorator.box(
                   borderRadius: 90,
-                  fillColor: controller.isShowAllYear.isTrue ? AppColor.sideMenuSelected : Colors.transparent,
-                  borderColor: controller.isShowAllYear.isTrue ? AppColor.sideMenuSelected : Vx.neutral400,
+                  fillColor: controller.isShowAllYear.isTrue ? AppColor.primary : Colors.transparent,
+                  borderColor: controller.isShowAllYear.isTrue ? AppColor.primary : AppColor.border,
                 ),
-                child: ' Show All '.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 4),
+                child: 'All Year'.text.size(11).minFontSize(11).color(controller.isShowAllYear.isTrue ? AppColor.textOnBackground : null).make().pSymmetric(h: 8, v: 4),
               ).pOnly(left: 4),
             ),
           ),
@@ -111,9 +116,9 @@ class SummaryView extends GetView<SummaryController> {
                       '$period'.text.size(11).make().pOnly(right: 8),
                       if (total != 0) ...[
                         Container(
-                          color: Colors.white,
-                          child: '${total.moneyFormatCompact()}'.text.black.size(9).minFontSize(9).bold.make().pSymmetric(h: 2, v: 1),
-                        ).cornerRadius(4)
+                          color: AppColor.primary,
+                          child: '${total.moneyFormatCompact()}'.text.color(AppColor.textOnBackground).size(9).minFontSize(9).bold.make().pSymmetric(h: 6, v: 2),
+                        ).cornerRadius(90)
                       ],
                     ],
                   ).p8(),
@@ -168,6 +173,8 @@ class SummaryView extends GetView<SummaryController> {
         return ViewPieChart();
       case 4:
         return ViewNoteTimes();
+      case 5:
+        return ViewInsights();
       default:
         return Container();
     }

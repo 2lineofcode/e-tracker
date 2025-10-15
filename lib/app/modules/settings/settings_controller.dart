@@ -72,9 +72,7 @@ class SettingsController extends GetxController with StateMixin {
     userProfile.value = await repo.getUserProfile().then((value) => value[0]);
 
     /// Page: App Config
-    // tfEco.text = pref.read<num>(kFlagEco)?.moneyFormat() ?? '';
-    // tfAverage.text = pref.read<num>(kFlagAverage)?.moneyFormat() ?? '';
-    // tfSpender.text = pref.read<num>(kFlagSpender)?.moneyFormat() ?? '';
+   
     tfEco.text = userProfile.value.ecoDay?.moneyFormat() ?? '';
     tfAverage.text = userProfile.value.averageDay?.moneyFormat() ?? '';
     tfSpender.text = userProfile.value.spenderDay?.moneyFormat() ?? '';
@@ -90,6 +88,8 @@ class SettingsController extends GetxController with StateMixin {
 
     backupList.value = await repo.getBackupList();
     cronList.value = await repo.getCron();
+
+    change(200, status: RxStatus.success());
     super.onInit();
   }
 
@@ -107,11 +107,6 @@ class SettingsController extends GetxController with StateMixin {
         autoCompleteList.value = await repo.getAutoComplete();
       }
 
-      if (autoCompleteList.isEmpty) {
-        change(0, status: RxStatus.empty());
-      } else {
-        change(200, status: RxStatus.success());
-      }
     } catch (e) {
       await ErrorLogHelper.record(page: 'settings', action: 'getAutoComplete', stack: e.toString());
       change(400, status: RxStatus.error('$e'));

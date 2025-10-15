@@ -56,8 +56,8 @@ class SectionRepeat extends GetView<SettingsController> {
                     return Container(
                       decoration: ExDecorator.box(
                         borderRadius: 4,
-                        fillColor: AppColor.cardHeaderPrimary,
-                        borderColor: AppColor.cardItemPrimary,
+                        fillColor: AppColor.box,
+                        borderColor: AppColor.border,
                       ),
                       child: HStack(
                         [

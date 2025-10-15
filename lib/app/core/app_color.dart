@@ -3,37 +3,44 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 mixin AppColor {
-  ///
-  static Color get _primaryLight => Vx.blue600;
-  static Color get noteColor => Vx.blue600;
+
+  /// selected / unselected
+  static Color get primary => Get.isDarkMode ? Color.fromARGB(255, 93, 56, 114) : Color.fromARGB(255, 59, 12, 85);
+  static Color get secondary => Get.isDarkMode ? Color.fromARGB(255, 69, 45, 83).withAlpha(150): Vx.neutral200;
 
   /// layout
-  static Color get sideMenuPrimary => Get.isDarkMode ? Vx.neutral800 : Vx.neutral100;
-  static Color get sideMenuSecondary => Get.isDarkMode ? Vx.neutral700 : Vx.white;
-  static Color get appbarPrimary => Get.isDarkMode ? Vx.neutral900 : _primaryLight;
-  static Color get footerPrimary => Get.isDarkMode ? Vx.neutral900 : Vx.neutral300;
-  static Color get emptyStatePrimary => Get.isDarkMode ? Vx.neutral800 : Vx.neutral200;
+  static Color get sideMenuPrimary => Get.isDarkMode ? Color(0xFF261C2C) : Vx.neutral100;
+  static Color get appbarPrimary => Get.isDarkMode ? Color(0xff16141A) : Vx.neutral100;
+  static Color get footerPrimary => Get.isDarkMode ? Color(0xff16141A) : Vx.neutral100;
+  static Color get emptyStatePrimary => Get.isDarkMode ? Color(0xff16141A) : Vx.neutral100;
 
   /// calender
-  static Color get calendarTodayColor => Get.isDarkMode ? Vx.neutral700 : Vx.neutral200;
-  static Color get calendarSelectedColor => Get.isDarkMode ? Vx.blue500 : Vx.blue200;
-  static Color get calendarWeekEndColor => Get.isDarkMode ? Vx.red200 : Vx.red400;
+  static Color get calendarSelectedColor => Get.isDarkMode ? primary: primary.withAlpha(150);
+  static Color get calendarTodayColor => secondary;
+  static Color get calendarWeekEndColor => Get.isDarkMode ? Vx.red300 : Vx.red400;
+  
+  /// note
+  static Color get noteColor => Get.isDarkMode ? Vx.blue600.withAlpha(50) : Vx.blue600.withAlpha(150);
 
   /// menu
-  static Color get sideMenuSelected => Get.isDarkMode ? Vx.blue500 : Vx.blue200;
-  static Color get menuSelected => Get.isDarkMode ? Colors.blue : Colors.white;
-  static Color get menuUnSelected => Get.isDarkMode ? Colors.white : Vx.blue400;
+  static Color get sideMenuSelected => primary.withAlpha(150);
+  static Color get menuSelected => primary.withAlpha(100);
+  static Color get menuUnSelected => secondary;
 
   /// textfield
-  static Color get textFieldPrimary => Get.isDarkMode ? Vx.neutral700 : Vx.neutral200;
+  static Color get textFieldPrimary => Get.isDarkMode ? Vx.neutral800 : Vx.neutral200;
 
   /// card item
-  static Color get cardHeaderPrimary => Get.isDarkMode ? Vx.neutral900 : Vx.neutral300;
-  static Color get cardItemPrimary => Get.isDarkMode ? Vx.neutral700 : Vx.neutral200;
-  static Color get cardItemSecondary => Get.isDarkMode ? Vx.neutral800 : Vx.neutral200;
+  static Color get card => primary.withAlpha(50);
+  static Color get box => primary.withAlpha(20);
+  static Color get border => primary.withAlpha(80);
+  static Color get divider => primary.withAlpha(80);
+  
+  static Color get cardHeaderPrimary => Get.isDarkMode ? Vx.pink500 : Vx.neutral300;
+  static Color get cardItemSecondary => Get.isDarkMode ? Vx.pink500 : Vx.neutral200;
 
   /// fab
-  static Color get fabPrimary => Get.isDarkMode ? Vx.neutral600 : _primaryLight;
+  static Color get fabPrimary => primary;
 
   /// text on background (special case)
   static Color get textOnBackground => Get.isDarkMode ? Vx.white : Vx.neutral100;
@@ -41,11 +48,11 @@ mixin AppColor {
   static Color get textOnWhiteBackground => Get.isDarkMode ? Vx.black : Vx.black;
 
   /// table
-  static Color get tableHeader => Get.isDarkMode ? Vx.neutral800 : Vx.neutral300;
+  static Color get tableHeader => Get.isDarkMode ? card : Vx.neutral300;
 
   /// shimmer
-  static Color get shimmerPrimary => Get.isDarkMode ? Vx.neutral700 : Vx.neutral300;
-  static Color get shimmerSecondary => Get.isDarkMode ? Vx.neutral600 : Vx.neutral200;
+  static Color get shimmerPrimary => Get.isDarkMode ? box : Vx.neutral300;
+  static Color get shimmerSecondary => Get.isDarkMode ? card : Vx.neutral200;
 
   /// ------------------------------------------------------------------------
   /// green

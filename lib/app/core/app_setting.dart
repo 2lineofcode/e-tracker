@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:groq/groq.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../env.g.dart';
@@ -16,8 +17,13 @@ import 'const.dart';
 
 /// handy call sharedpref
 final pref = GetStorage(kStorageKey);
+
 final gemini = Gemini.instance;
 
+final groq = Groq(
+  apiKey: Env.groqApiKey,
+  configuration: Configuration(model: 'openai/gpt-oss-20b', temperature: 0.2),
+);
 
 class AppSettingService extends GetxService {
   @override

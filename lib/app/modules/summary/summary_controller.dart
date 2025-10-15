@@ -1,4 +1,5 @@
 import 'package:ex_kit/ex.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:get/get.dart';
 
@@ -41,6 +42,11 @@ class SummaryController extends GetxController with StateMixin {
   final aiAnalysisOutput = ''.obs;
   final isAIAnalysisRunning = false.obs;
 
+  // chat
+  final chatMessages = <Map<String, dynamic>>[].obs;
+  final chatInputController = TextEditingController();
+  final chatInputFocusNode = FocusNode();
+
   // !income
   final income = 0.obs;
   final surplus = 0.obs;
@@ -58,6 +64,13 @@ class SummaryController extends GetxController with StateMixin {
     income.value = await repo.getIncome();
     surplus.value = income.value - countOnly1Month.value;
 
+    // Listen to menuSelected changes and focus chat input when menu 5 is selected
+    ever(menuSelected, (value) {
+      if (value == 5) {
+        chatInputFocusNode.requestFocus();
+      }
+    });
+
     change(0, status: RxStatus.success());
     super.onInit();
   }
@@ -74,6 +87,8 @@ class SummaryController extends GetxController with StateMixin {
     await getSumNoteTimes(year: yearSelected.value, month: monthSelected.value);
     await calculateBudgetStatForHeader();
     surplus.value = income.value - countOnly1Month.value;
+
+    await clearChat();
     change(0, status: RxStatus.success());
   }
 
@@ -245,34 +260,57 @@ class SummaryController extends GetxController with StateMixin {
     }
   }
 
-  Future<void> runAIAnalysis() async {
-    aiAnalysisOutput.value = '';
 
-    // final dataExpense = await repo.getExpenses(year: yearSelected.value, month: monthSelected.value);
-    // final dataExpenseSend = [];
+  Future<void> clearChat() async {
+    chatMessages.clear();
+    chatInputFocusNode.requestFocus();
+  }
+
+  Future<void> sendMessage() async {
+    final message = chatInputController.text.trim();
+    if (message.isEmpty) return;
+
+    // Add user message
+    chatMessages.add({
+      'text': message,
+      'isUser': true,
+    });
+
+    // Clear input
+    chatInputController.clear();
+
+    // Prepare data for AI
+
+    List<SupaExpense> dataExpense = [];
+    if (isShowAllYear.isTrue) {
+      dataExpense = await repo.getExpenses(year: yearSelected.value);
+    } else {
+      dataExpense = await repo.getExpenses(year: yearSelected.value, month: monthSelected.value);
+    }
+
+    final dataExpenseSend = [];
     final dataBudget = await repo.getCategory();
     final dataBudgetSend = [];
     final dataPersonal = await repo.getUserProfile();
     final dataPersonalSend = dataPersonal[0];
 
-    // Map<String, num> totalAmountByDate = {};
-    // for (var item in dataExpense) {
-    //   var date = item.date!;
-    //   var amount = item.amount;
-    //   if (totalAmountByDate.containsKey(date)) {
-    //     totalAmountByDate[date] = totalAmountByDate[date]! + amount!;
-    //   } else {
-    //     totalAmountByDate[date] = amount ?? 0;
-    //   }
-    // }
-    // var sortedResults = totalAmountByDate.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
-    // for (var entry in sortedResults) {
-    //   // print('Date: ${entry.key}, Total Amount: ${entry.value}');
-    //   dataExpenseSend.add({
-    //     'date': entry.key,
-    //     'amount': entry.value,
-    //   });
-    // }
+    Map<String, num> totalAmountByDate = {};
+    for (var item in dataExpense) {
+      var date = item.date!;
+      var amount = item.amount;
+      if (totalAmountByDate.containsKey(date)) {
+        totalAmountByDate[date] = totalAmountByDate[date]! + amount!;
+      } else {
+        totalAmountByDate[date] = amount ?? 0;
+      }
+    }
+    var sortedResults = totalAmountByDate.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    for (var entry in sortedResults) {
+      dataExpenseSend.add({
+        'date': entry.key,
+        'amount': entry.value,
+      });
+    }
 
     dataBudget.forEach((el) {
       dataBudgetSend.add({
@@ -281,26 +319,66 @@ class SummaryController extends GetxController with StateMixin {
       });
     });
 
-    isAIAnalysisRunning.value = true;
-
-    gemini.streamChat([
-      Content(
-        role: 'user',
-        parts: [
-          Part.text('halo gemini!'),
-          Part.text('ini data profile ku:'),
-          Part.text('namaku ${dataPersonalSend.fullName}, umur ${dataPersonalSend.age}, incomeku ${dataPersonalSend.income}, tabunganku ${dataPersonalSend.balance}}'),
-          // Part.text('ini data pengeluaranku:'),
-          // Part.text('$dataExpense'),
-          Part.text('ini data anggaranku by category:'),
-          Part.text('$rpcSumByCategory'),
-          Part.text('bantu aku analisa data pengeluaranku berdasarkan profileku dari umur, penghasilan dan anggaranku, beri aku advice panjang.'),
-          Part.text('tapi jangan sebutin income dan tabunganku.'),
-        ],
-      )
-    ]).listen((ai) {
-      aiAnalysisOutput.value += ai.output ?? '';
-      isAIAnalysisRunning.value = false;
+    // Add temporary AI message
+    chatMessages.add({
+      'text': 'Typing...',
+      'isUser': false,
     });
+
+    final aiMessageIndex = chatMessages.length - 1;
+    String aiResponse = '';
+
+    // print('dataExpense: $dataExpense', name: 'xLOG');
+    // print('dataBudgetSend: $dataBudgetSend', name: 'xLOG');
+    // print('dataPersonalSend: $dataPersonalSend', name: 'xLOG');
+    // return;
+
+    // Stream AI response
+    gemini.streamChat(
+      [
+        Content(
+          role: 'model',
+          parts: [
+            Part.text('You are an assistant that helps users manage their budgets and expenses effectively.'),
+            Part.text('User profile data:'),
+            Part.text('Name: ${dataPersonalSend.fullName}, Age: ${dataPersonalSend.age}, Income: ${dataPersonalSend.income}, Savings: ${dataPersonalSend.balance}.'),
+            Part.text('Do not expose private financial data (income or savings) in your responses. Only nick name and age can be mentioned if relevant.'),
+            Part.text('This is user budget data:'),
+            Part.text('$dataBudgetSend'),
+            Part.text('This is user expense data:'),
+            Part.text('$dataExpense'),
+            Part.text('All responses must be in Indonesian language with slang word like "lo" "lu" "gue", "anjir", jaksel vibe. and dont use italic font'),
+          ],
+        ),
+        Content(
+          role: 'user',
+          parts: [
+            Part.text(message),
+          ],
+        ),
+      ],
+    ).listen(
+      (ai) {        
+        aiResponse += ai.output ?? '';
+        chatMessages[aiMessageIndex] = {
+          'text': aiResponse,
+          'isUser': false,
+        };
+      },
+      onDone: () => chatInputFocusNode.requestFocus(),
+      onError: (error) {
+        chatMessages[aiMessageIndex] = {
+          'text': 'Maaf, terjadi kesalahan. Coba lagi nanti.',
+          'isUser': false,
+        };
+      },
+    );
+  }
+
+  @override
+  void onClose() {
+    chatInputController.dispose();
+    chatInputFocusNode.dispose();
+    super.onClose();
   }
 }

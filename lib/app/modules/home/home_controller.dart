@@ -53,6 +53,8 @@ class HomeController extends GetxController with StateMixin {
   final isAdvanceSearch = false.obs;
   final advanceSearchText = ''.obs;
 
+  final footerStatus = ''.obs;
+
   /// init ~~
   @override
   Future<void> onInit() async {
@@ -165,7 +167,7 @@ class HomeController extends GetxController with StateMixin {
 
   Future<void> onAddCategory(
     String categoryName, {
-    String icon = 'code=59513&family=LineAwesomeIcons&pack=flutter_iconpicker_plus',
+    String icon = 'code=59513&family=LineAwesomeIcons&pack=flutter_iconpicker',
     String? iconColor,
   }) async {
     if (categoryName.isEmptyOrNull) return;
@@ -177,7 +179,7 @@ class HomeController extends GetxController with StateMixin {
         createdAt: DateTime.now().toStringEx(),
         name: categoryName,
         icon: icon,
-        color: iconColor ?? Vx.randomPrimaryColor.toHex(),
+        color: iconColor ?? Vx.randomPrimaryColor.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase(),
         isProtect: false,
       );
       await repo.addCategory(categoryEntity);

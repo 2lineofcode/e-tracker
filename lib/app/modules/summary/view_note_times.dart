@@ -69,7 +69,7 @@ class ViewNoteTimes extends GetView<SummaryController> {
               bgColor: AppColor.emptyStatePrimary,
               title: 'No data to see',
               message: 'You dont have any transaction on this period',
-            ).h(250),
+            ).expand(),
           ],
         ],
       ).p12(),
