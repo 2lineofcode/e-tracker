@@ -53,7 +53,7 @@ mixin DialogInputHelper {
     final isProtect = category!.name!.contains('Others') == false && category.name!.contains('Notes') == false;
     final isNotes = category.name!.contains('Notes');
 
-    ExAlert.adaptive(
+    DialogHelper.ios(
       content: VStack(
         [
           Text('Edit Category', style: TextStyle(fontWeight: FontWeight.bold)).pOnly(bottom: 24),
@@ -73,7 +73,10 @@ mixin DialogInputHelper {
               placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
               prefix: Icon(CupertinoIcons.bag_fill, size: 16, color: AppColor.textReverse).pOnly(left: 8),
               style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-              inputFormatters: [CurrencyTextInputFormatter(NumberFormat('', 'id')), LengthLimitingTextInputFormatter(13)],
+              inputFormatters: [
+                CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+                LengthLimitingTextInputFormatter(16),
+              ],
               keyboardType: TextInputType.number,
               onSubmitted: (_) async {
                 await _submitCategory(
@@ -148,7 +151,7 @@ mixin DialogInputHelper {
                 style: TextStyle(fontSize: 11, decoration: TextDecoration.underline),
               ).pOnly(right: 8).onTap(() async {
                 /// open dialog more color
-                ExAlert.adaptive(
+                DialogHelper.ios(
                   content: VStack(
                     [
                       Text('Pick Custom Color', style: TextStyle(fontWeight: FontWeight.bold)).pOnly(bottom: 24),
@@ -268,6 +271,10 @@ mixin DialogInputHelper {
               controller: _tfDate,
               readOnly: true,
               placeholder: 'Date',
+              decoration: BoxDecoration(
+                color: Get.isDarkMode ? AppColor.card : null,
+                borderRadius: BorderRadius.circular(8),
+              ),
               placeholderStyle: TextStyle(fontSize: 13),
               prefix: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse).pOnly(left: 8),
               style: TextStyle(fontSize: 13, color: AppColor.textReverse),
@@ -282,6 +289,10 @@ mixin DialogInputHelper {
           MyAutoComplete(
             autofocus: expense == null,
             initialValue: _tfNote.value,
+            decoration: BoxDecoration(
+              color: Get.isDarkMode ? AppColor.card : null,
+              borderRadius: BorderRadius.circular(8),
+            ),
             asyncSuggestions: (s) async {
               if (s.text.isBlank!) return [];
               return await debouncer.run(() async {
@@ -325,6 +336,10 @@ mixin DialogInputHelper {
                 textAlignVertical: TextAlignVertical.top,
                 textAlign: TextAlign.left,
                 clearButtonMode: OverlayVisibilityMode.editing,
+                decoration: BoxDecoration(
+                  color: Get.isDarkMode ? AppColor.card : null,
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ).pOnly(bottom: 16),
             ),
           ),
@@ -335,7 +350,7 @@ mixin DialogInputHelper {
               initialValue: '${_tfCategory.value}',
               style: TextStyle(fontSize: 12, color: AppColor.textReverse),
               decoration: DecorationHelper.input(
-                fillColor: Get.isDarkMode ? Vx.black : Vx.white,
+                fillColor: Get.isDarkMode ? AppColor.card : null,
                 border: OutlineInputBorder(
                   borderSide: BorderSide(
                     width: 1,
@@ -383,6 +398,10 @@ mixin DialogInputHelper {
               child: CupertinoTextField(
                 controller: _tfAmount,
                 placeholder: 'Rp. 10.000',
+                decoration: BoxDecoration(
+                  color: Get.isDarkMode ? AppColor.card : null,
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                 prefix: IconButton(
@@ -409,7 +428,7 @@ mixin DialogInputHelper {
                 ),
                 inputFormatters: [
                   CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
-                  LengthLimitingTextInputFormatter(13),
+                  LengthLimitingTextInputFormatter(16),
                 ],
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) async => {
@@ -464,7 +483,7 @@ mixin DialogInputHelper {
     final isTypeNotes = expense != null && expense.categoryName == 'Notes' ? true.obs : false.obs;
     final debouncer = DebounceSearch(duration: 200.milliseconds);
 
-    ExAlert.adaptive(
+    DialogHelper.ios(
       title: Text(
         '${expense != null ? 'Edit Expense' : 'Add Expense'}',
         style: TextStyle(fontWeight: FontWeight.bold),
@@ -625,7 +644,7 @@ mixin DialogInputHelper {
                     ),
                     inputFormatters: [
                       CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
-                      LengthLimitingTextInputFormatter(15),
+                      LengthLimitingTextInputFormatter(16),
                     ],
                     keyboardType: TextInputType.number,
                   ).h(32),
@@ -661,7 +680,7 @@ mixin DialogInputHelper {
 
     if (!_fnText.hasFocus) _fnText.requestFocus();
 
-    ExAlert.adaptive(
+    DialogHelper.ios(
       title: Text(
         'Add Expense',
         style: TextStyle(fontWeight: FontWeight.bold),
@@ -886,7 +905,7 @@ mixin DialogInputHelper {
     final _controller = Get.find<HomeController>();
     final _tfStartDate = TextEditingController(text: '');
     final _tfEndDate = TextEditingController(text: '');
-    ExAlert.adaptive(
+    DialogHelper.ios(
       title: Text(
         'Advance Search for "$s"',
         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),

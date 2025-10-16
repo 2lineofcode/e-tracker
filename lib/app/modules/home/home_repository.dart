@@ -13,10 +13,11 @@ class HomeRepository {
   /// ! category
   /// ------------------------------------------------------------------------
   Future<List<SupaCategory>> getCategory() async {
+    if (currentUserId == null) return [];
     final response = await db //
         .from('category')
         .select()
-        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .eq('user_id', currentUserId!)
         .order('max_budget')
         .withConverter<List<SupaCategory>>((data) {
       return (data).map((e) => SupaCategory.fromJson(e)).toList();
@@ -30,17 +31,19 @@ class HomeRepository {
   }
 
   Future<void> editCategory(SupaCategory categoryEntity) async {
+    if (currentUserId == null) return;
     final response = await db.from('category').update(categoryEntity.toJson()).match({
       'id': categoryEntity.id ?? '',
-      'user_id': db.auth.currentSession?.user.id ?? '',
+      'user_id': currentUserId!,
     });
     return response;
   }
 
   Future<void> deleteCategory(String id) async {
+    if (currentUserId == null) return;
     final response = await db.from('category').delete().match({
       'id': id,
-      'user_id': db.auth.currentSession?.user.id ?? '',
+      'user_id': currentUserId!,
     });
     return response;
   }
@@ -50,10 +53,11 @@ class HomeRepository {
   /// ------------------------------------------------------------------------
   // get all list: for calendar painting
   Future<List<SupaExpense>> getExpenseAll({String period = ''}) async {
+    if (currentUserId == null) return [];
     final response = await db //
         .from('expense')
         .select('date, amount')
-        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .eq('user_id', currentUserId!)
         .or('date.ilike.$period%')
         .order('date')
         .withConverter<List<SupaExpense>>((data) {
@@ -64,10 +68,11 @@ class HomeRepository {
 
   // get list by @date
   Future<List<SupaExpense>> getExpense(String date) async {
+    if (currentUserId == null) return [];
     final response = await db //
         .from('expense')
         .select('*, category(*)')
-        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .eq('user_id', currentUserId!)
         .eq('date', date)
         .order('amount')
         .withConverter<List<SupaExpense>>((data) {
@@ -80,11 +85,13 @@ class HomeRepository {
   Future<List<SupaExpense>> findExpense(String name, {String? startDate, String? endDate}) async {
     final List<SupaExpense> response;
 
+    if (currentUserId == null) return [];
+    
     if (startDate == null && endDate == null) {
       response = await db //
           .from('expense')
           .select('*, category(color, icon)')
-          .eq('user_id', db.auth.currentSession?.user.id ?? '')
+          .eq('user_id', currentUserId!)
           .or('note.ilike.%$name%, category_name.ilike.%$name%, detail.ilike.%$name%')
           .order('date')
           .withConverter<List<SupaExpense>>((data) {
@@ -96,7 +103,7 @@ class HomeRepository {
       response = await db //
           .from('expense')
           .select('*, category(color, icon)')
-          .eq('user_id', db.auth.currentSession?.user.id ?? '')
+          .eq('user_id', currentUserId!)
           .or('note.ilike.%$name%, category_name.ilike.%$name%, detail.ilike.%$name%')
           .or('date.gte.$startDate% and date.lte.$endDate%')
           .order('date')
@@ -109,13 +116,15 @@ class HomeRepository {
 
   // find list by date
   Future<List<SupaExpense>> findExpenseByDateRange(String date) async {
+    if (currentUserId == null) return [];
+    
     if (date.isNotEmpty && date.length <= 3) {
       final dateA = DateTime.now().subtract(Duration(days: date.toInt()! - 1)).toStringEx(format: yMd);
       final dateB = DateTime.now().toStringEx(format: yMd);
       final response = await db //
           .from('expense')
           .select('*, category(color, icon)')
-          .eq('user_id', db.auth.currentSession?.user.id ?? '')
+          .eq('user_id', currentUserId!)
           .gte('date', dateA)
           .lte('date', dateB)
           .order('date')
@@ -130,7 +139,7 @@ class HomeRepository {
       final response = await db //
           .from('expense')
           .select('*, category(color, icon)')
-          .eq('user_id', db.auth.currentSession?.user.id ?? '')
+          .eq('user_id', currentUserId!)
           .gte('date', dateA)
           .lte('date', dateB)
           .order('date')
@@ -145,10 +154,11 @@ class HomeRepository {
 
   // get sum by @date [1month]
   Future<int?> getCount1Month(String date) async {
+    if (currentUserId == null) return 0;
     final response = await db //
         .from('expense')
         .select('amount, date')
-        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .eq('user_id', currentUserId!)
         .like('date', '%$date%');
     num x = 0;
     for (var element in response) {
@@ -173,10 +183,11 @@ class HomeRepository {
   }
 
   Future<void> deleteExpense(String id) async {
+    if (currentUserId == null) return;
     final response = await db //
         .from('expense')
         .delete()
-        .match({'id': id, 'user_id': db.auth.currentSession?.user.id ?? ''});
+        .match({'id': id, 'user_id': currentUserId!});
     return response;
   }
 
@@ -184,10 +195,11 @@ class HomeRepository {
   /// ! autocomplete
   /// ------------------------------------------------------------------------
   Future<List<String>> findAutoCompleteStringNote(String note) async {
+    if (currentUserId == null) return [];
     final response = await db //
         .from('autocomplete')
         .select()
-        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .eq('user_id', currentUserId!)
         .ilike('note', '%$note%')
         .withConverter<List<String>>((data) {
       return (data).map((e) => e['note'].toString()).toList();
@@ -196,10 +208,11 @@ class HomeRepository {
   }
 
   Future<List<SupaAutoComplete>> findAutoCompleteFullObject(String note) async {
+    if (currentUserId == null) return [];
     final response = await db //
         .from('autocomplete')
         .select()
-        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .eq('user_id', currentUserId!)
         .eq('note', '$note')
         .withConverter<List<SupaAutoComplete>>((data) {
       return (data).map((e) => SupaAutoComplete.fromJson(e)).toList();
@@ -213,10 +226,11 @@ class HomeRepository {
   }
 
   Future<List<SupaUserProfile>> getUserProfile() async {
+    if (currentUserId == null) return [];
     final response = await db //
         .from('profiles')
         .select()
-        .eq('id', db.auth.currentSession?.user.id ?? '')
+        .eq('id', currentUserId!)
         .withConverter<List<SupaUserProfile>>((data) {
       return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
     });
@@ -227,19 +241,21 @@ class HomeRepository {
   /// ! rpc
   /// ------------------------------------------------------------------------
   Future<List<dynamic>> rpcGetSpenderDay(DateTime focusedDay) async {
+    if (currentUserId == null) return [];
     final fixYM = focusedDay.toStringEx(format: yM);
     final result = await db.rpc('get_spender_day', params: {
-      'userid': db.auth.currentSession?.user.id ?? '',
+      'userid': currentUserId!,
       'periode': fixYM,
     }).order('total', ascending: false);
     return result;
   }
 
   Future<List<RpcSumByCategory>> rpcSumByCategory(DateTime focusedDay) async {
+    if (currentUserId == null) return [];
     final fixYM = focusedDay.toStringEx(format: yMd).removeLast(3);
     final res = await db
         .rpc('sum_by_category', params: {
-          'userid': db.auth.currentSession?.user.id ?? '',
+          'userid': currentUserId!,
           'periode': fixYM,
         })
         .order('use_percentage', ascending: false)

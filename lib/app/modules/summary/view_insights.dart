@@ -104,7 +104,7 @@ class ViewInsights extends GetView<SummaryController> {
                     onPressed: () => controller.sendMessage(),
                     icon: Icon(Icons.send, size: 16, color: controller.chatInputController.text.isEmpty ? Vx.neutral500 : Vx.white),
                     style: IconButton.styleFrom(
-                      backgroundColor: AppColor.fabPrimary,
+                      backgroundColor: AppColor.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(90),
                       ),

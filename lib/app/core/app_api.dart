@@ -9,6 +9,9 @@ import 'const.dart';
 /// * handy call api -> supabase
 final db = Supabase.instance.client;
 
+/// * safe user id getter - returns null if not authenticated
+String? get currentUserId => db.auth.currentSession?.user.id;
+
 /// * handy call api -> bibit
 final _bibitUrl = Env.bibitApiUrl;
 final apiBibit = Get.find<ExHttp>(tag: 'bibit')

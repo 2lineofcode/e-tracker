@@ -37,13 +37,25 @@ class AppSettingService extends GetxService {
   /// ! setup default app config [for new user]
   /// ------------------------------------------------------------------------
   Future<void> checkAndApplyDefaultAppConfig() async {
+    // Skip if user is not authenticated
+    final userId = db.auth.currentSession?.user.id;
+    if (userId == null) {
+      logI('-- CONFIG SKIPPED (not authenticated) --');
+      return;
+    }
+    
     final response = await db //
         .from('profiles')
         .select()
-        .eq('id', db.auth.currentSession?.user.id ?? '')
+        .eq('id', userId)
         .withConverter<List<SupaUserProfile>>((data) {
       return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
     });
+
+    if (response.isEmpty) {
+      logI('-- CONFIG SKIPPED (no profile found) --');
+      return;
+    }
 
     await pref.write(kFlagEco, response[0].ecoDay ?? 50000);
     await pref.write(kFlagAverage, response[0].averageDay ?? 100000);

@@ -7,10 +7,11 @@ class FilteringRepository {
   /// ! category
   /// ------------------------------------------------------------------------
   Future<List<SupaCategory>> getCategory() async {
+    if (currentUserId == null) return [];
     final response = await db //
         .from('category')
         .select()
-        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .eq('user_id', currentUserId!)
         .order('max_budget')
         .withConverter<List<SupaCategory>>((data) {
       return (data).map((e) => SupaCategory.fromJson(e)).toList();
@@ -27,13 +28,14 @@ class FilteringRepository {
     String endDate, {
     String? orderBy,
   }) async {
+    if (currentUserId == null) return [];
     var response = <SupaExpense>[];
     if (categoryName == '*' || categoryName == 'All') {
       response = await db
           .from('expense')
           //
           .select('*, category(*)')
-          .eq('user_id', db.auth.currentSession?.user.id ?? '')
+          .eq('user_id', currentUserId!)
           .filter('date', 'gte', startDate)
           .filter('date', 'lte', endDate)
           .order(orderBy ?? 'amount', ascending: false)
@@ -44,7 +46,7 @@ class FilteringRepository {
       response = await db
           .from('expense')
           .select('*, category(*)')
-          .eq('user_id', db.auth.currentSession?.user.id ?? '')
+          .eq('user_id', currentUserId!)
           .eq('category_name', '$categoryName#${db.auth.currentSession?.user.email}')
           .filter('date', 'gte', startDate)
           .filter('date', 'lte', endDate)

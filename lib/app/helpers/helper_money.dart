@@ -9,8 +9,8 @@ import '../core/const.dart';
 
 extension MoneyFormatExt on num {
   /// example: 1000 -> 'Rp. 1,000'
-  String moneyFormat({String? symbol = 'Rp. '}) {
-    String formattedText = '$symbol${toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}';
+  String moneyFormat({String? symbol = 'Rp.'}) {
+    String formattedText = '$symbol${toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
     return formattedText;
   }
 

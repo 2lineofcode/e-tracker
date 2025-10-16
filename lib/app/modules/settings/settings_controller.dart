@@ -68,11 +68,10 @@ class SettingsController extends GetxController with StateMixin {
   Future<void> onInit() async {
     /// Page: AutoComplete
     menuList.value = await repo.getMenuList();
-    unawaited(getAutoCompleteList());
     userProfile.value = await repo.getUserProfile().then((value) => value[0]);
 
     /// Page: App Config
-   
+
     tfEco.text = userProfile.value.ecoDay?.moneyFormat() ?? '';
     tfAverage.text = userProfile.value.averageDay?.moneyFormat() ?? '';
     tfSpender.text = userProfile.value.spenderDay?.moneyFormat() ?? '';
@@ -80,7 +79,9 @@ class SettingsController extends GetxController with StateMixin {
 
     packageInfo = await PackageInfo.fromPlatform();
     appInfo.value = packageInfo?.data ?? {};
+    change(200, status: RxStatus.success());
 
+    unawaited(getAutoCompleteList());
     countExpense.value = await repo.countExpense();
     countCategory.value = await repo.countCategory();
     countAutoComplete.value = await repo.countAutoComplete();
@@ -89,7 +90,6 @@ class SettingsController extends GetxController with StateMixin {
     backupList.value = await repo.getBackupList();
     cronList.value = await repo.getCron();
 
-    change(200, status: RxStatus.success());
     super.onInit();
   }
 
@@ -100,13 +100,12 @@ class SettingsController extends GetxController with StateMixin {
 
   Future<void> getAutoCompleteList({String? q}) async {
     try {
-      change(0, status: RxStatus.loading());
+      // change(0, status: RxStatus.loading());
       if (q != null) {
         autoCompleteList.value = await repo.findAutoComplete(q);
       } else {
         autoCompleteList.value = await repo.getAutoComplete();
       }
-
     } catch (e) {
       await ErrorLogHelper.record(page: 'settings', action: 'getAutoComplete', stack: e.toString());
       change(400, status: RxStatus.error('$e'));
@@ -233,7 +232,7 @@ class SettingsController extends GetxController with StateMixin {
             style: TextStyle(fontSize: 13),
             inputFormatters: [
               CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
-              LengthLimitingTextInputFormatter(15),
+              LengthLimitingTextInputFormatter(16),
             ],
             keyboardType: TextInputType.number,
           ).h(33).pOnly(bottom: 12),
@@ -246,7 +245,7 @@ class SettingsController extends GetxController with StateMixin {
             style: TextStyle(fontSize: 13),
             inputFormatters: [
               CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
-              LengthLimitingTextInputFormatter(15),
+              LengthLimitingTextInputFormatter(16),
             ],
             keyboardType: TextInputType.number,
           ).h(33).pOnly(bottom: 12),
@@ -277,7 +276,7 @@ class SettingsController extends GetxController with StateMixin {
               await onInit();
               ExLoading.dismiss();
             },
-          ).centered()
+          ).centered(),
         ]).p16(),
       ),
     );
@@ -299,14 +298,17 @@ class SettingsController extends GetxController with StateMixin {
       await ImportExportHelper.exportToCSV(
         customPath: filePath.path,
         customCallback: (file) async {
-          await db.storage.from('backup').upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1')).then((response) async {
-            file.deleteSync();
-            await onInit();
-            OverlayHelper.notification('Syncronization Done');
-          }).catchError((e) {
-            ErrorLogHelper.record(page: 'settings', action: 'onUploadBackup', stack: e.toString());
-            ExAlert.error(message: '${(e as StorageException).message}');
-          });
+          await db.storage
+              .from('backup')
+              .upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1'))
+              .then((response) async {
+                file.deleteSync();
+                await onInit();
+                OverlayHelper.notification('Syncronization Done');
+              }).catchError((e) {
+                ErrorLogHelper.record(page: 'settings', action: 'onUploadBackup', stack: e.toString());
+                ExAlert.error(message: '${(e as StorageException).message}');
+              });
         },
       );
     } catch (e) {
@@ -332,28 +334,28 @@ class SettingsController extends GetxController with StateMixin {
       onYes: () async {
         Get.back();
         await db.storage.from('backup').download(fileObj.name).then((res) async {
-          final filePath = await getTemporaryDirectory();
-          final fileName = '${fileObj.name}';
-          final file = File('${filePath.path}/$fileName');
+              final filePath = await getTemporaryDirectory();
+              final fileName = '${fileObj.name}';
+              final file = File('${filePath.path}/$fileName');
 
-          await file.writeAsBytes(res);
-          await db.from('expense').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
-          await ImportExportHelper.importFromCSV(
-            customPath: '${filePath.path}/$fileName',
-            customCallback: () async {
-              file.deleteSync();
-              await onInit();
-              OverlayHelper.notification(
-                'Success Apply Migration "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}"',
-                duration: 4.seconds,
+              await file.writeAsBytes(res);
+              await db.from('expense').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
+              await ImportExportHelper.importFromCSV(
+                customPath: '${filePath.path}/$fileName',
+                customCallback: () async {
+                  file.deleteSync();
+                  await onInit();
+                  OverlayHelper.notification(
+                    'Success Apply Migration "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}"',
+                    duration: 4.seconds,
+                  );
+                },
               );
-            },
-          );
         }).catchError((e) {
-          log('e: $e');
-          ErrorLogHelper.record(page: 'settings', action: 'onDownloadBackup', stack: e.toString());
-          ExAlert.error(message: '$e');
-        });
+              log('e: $e');
+              ErrorLogHelper.record(page: 'settings', action: 'onDownloadBackup', stack: e.toString());
+              ExAlert.error(message: '$e');
+            });
       },
     );
   }
@@ -367,19 +369,20 @@ class SettingsController extends GetxController with StateMixin {
       });
 
     ExAlert.confirm(
-        title: 'Delete Old Data',
+      title: 'Delete Old Data',
         message: '''
-${listToDelete.length} data will be deleted
-${listToDelete.map((word) => '- $word').join('\n').replaceAll('${db.auth.currentSession?.user.email}_etracker_', '')}
-          '''
-            .trim(),
-        onYes: () async {
-          Get.back();
-          ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
-          await db.storage.from('backup').remove(listToDelete);
-          backupList.value = await repo.getBackupList();
-          ExLoading.dismiss();
-        });
+        ${listToDelete.length} data will be deleted
+        ${listToDelete.map((word) => '- $word').join('\n').replaceAll('${db.auth.currentSession?.user.email}_etracker_', '')}
+      '''
+              .trim(),
+      onYes: () async {
+        Get.back();
+        ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
+        await db.storage.from('backup').remove(listToDelete);
+        backupList.value = await repo.getBackupList();
+        ExLoading.dismiss();
+      },
+    );
   }
 
   Future<void> onSaveConfig() async {
@@ -430,16 +433,16 @@ ${listToDelete.map((word) => '- $word').join('\n').replaceAll('${db.auth.current
           .schema('cron')
           .from('job')
           .insert(
-        {
-          'schedule': '0 0 $date * *',
-          'jobname': 'test from app',
+            {
+              'schedule': '0 0 $date * *',
+              'jobname': 'test from app',
           'command': '''
-    insert into expense 
-        (note, category_name, amount, date, user_id) values 
-        ('$note', '$category#${db.auth.currentSession?.user.email}', $amount, current_date, '${db.auth.currentSession?.user.id}')
-''',
-        },
-      );
+            insert into expense 
+                (note, category_name, amount, date, user_id) values 
+                ('$note', '$category#${db.auth.currentSession?.user.email}', $amount, current_date, '${db.auth.currentSession?.user.id}')
+          ''',
+            },
+          );
     } catch (e) {
       // await ErrorLogHelper.record(page: 'settings', action: 'addCron', stack: e.toString());
       ExAlert.error(message: '$e');

@@ -60,26 +60,28 @@ class MyLayout extends StatelessWidget {
       /// appbar -> Mobile
       appBar: context.isMobile ? myAppBarMobile() : null,
       floatingActionButton: floatingActionButton?.pOnly(bottom: 16),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          /// row 1 -> Desktop
-          if (!context.isMobile) sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
-
-          /// row 2
-          VStack(
-            [
-              /// appbar -> Desktop
-              if (!context.isMobile) myAppBarDesktop(),
-
-              /// body
-              body().expand(),
-
-              /// footer
-              footer(),
-            ],
-          ).expand(),
-        ],
+      body: SafeArea(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// row 1 -> Desktop
+            if (!context.isMobile) sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
+        
+            /// row 2
+            VStack(
+              [
+                /// appbar -> Desktop
+                if (!context.isMobile) myAppBarDesktop(),
+        
+                /// body
+                body().expand(),
+        
+                /// footer
+                footer(),
+              ],
+            ).expand(),
+          ],
+        ),
       ),
     );
   }
@@ -111,6 +113,7 @@ class MyLayout extends StatelessWidget {
   AppBar myAppBarMobile() {
     return AppBar(
       backgroundColor: AppColor.appbarPrimary,
+      surfaceTintColor: AppColor.appbarPrimary,
       title: appBarTitle,
       leadingWidth: 40,
       centerTitle: false,

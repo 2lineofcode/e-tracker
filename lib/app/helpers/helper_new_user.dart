@@ -49,7 +49,11 @@ mixin NewUserHelper {
   static Future<void> sayWelcome() async {
     final opt1 = true.obs;
 
-    final userProfile = await db.from('profiles').select().eq('id', db.auth.currentSession?.user.id ?? '').withConverter<List<SupaUserProfile>>((data) {
+    if (currentUserId == null) {
+      await Get.offAllNamed(Routes.LOGIN);
+      return;
+    }
+    final userProfile = await db.from('profiles').select().eq('id', currentUserId!).withConverter<List<SupaUserProfile>>((data) {
       return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
     });
 
@@ -82,7 +86,7 @@ mixin NewUserHelper {
               ).centered().pOnly(bottom: 16);
             } else {
               return ExImageNoCacheView(
-                url: db.storage.from('avatars').getPublicUrl('${db.auth.currentSession?.user.id}.png'),
+                url: db.storage.from('avatars').getPublicUrl('$currentUserId.png'),
                 size: 64,
                 radius: 90,
                 errorBuilder: (p0, p1, p2) => ExAvatarView(source: '', name: tfFullName.text, size: 64),
@@ -97,7 +101,7 @@ mixin NewUserHelper {
                   isReplacePhoto.value = true;
 
                   final file = File(img.paths.first ?? '');
-                  final fileName = '${db.auth.currentSession?.user.id}.png';
+                  final fileName = '$currentUserId.png';
                   imgReplace.value = file.readAsBytesSync();
 
                   await db.storage.from('avatars').upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1')).then((response) async {
@@ -143,7 +147,7 @@ mixin NewUserHelper {
                         final expsenses = SupaExpense(
                           id: UuidV4().generate(),
                           createdAt: DateTime.now().toStringEx(),
-                          userId: db.auth.currentSession?.user.id ?? '',
+                          userId: currentUserId ?? '',
                           date: DateTime.now().toStringEx(format: 'yyyy-MM-dd'),
                           categoryName: 'Notes',
                           amount: 0,
@@ -180,13 +184,15 @@ mixin NewUserHelper {
                 updatedAt: DateTime.now().toStringEx(),
               );
               await Overlayment.dismissAll();
-              await db //
-                  .from('profiles')
-                  .update(editProfile.toJson())
-                  .eq('id', db.auth.currentSession?.user.id ?? '')
-                  .then((value) {
-                //
-              });
+              if (currentUserId != null) {
+                await db //
+                    .from('profiles')
+                    .update(editProfile.toJson())
+                    .eq('id', currentUserId!)
+                    .then((value) {
+                  //
+                });
+              }
             },
           )
         ]).p16(),

@@ -36,12 +36,6 @@ mixin AppColor {
   static Color get border => primary.withAlpha(80);
   static Color get divider => primary.withAlpha(80);
   
-  static Color get cardHeaderPrimary => Get.isDarkMode ? Vx.pink500 : Vx.neutral300;
-  static Color get cardItemSecondary => Get.isDarkMode ? Vx.pink500 : Vx.neutral200;
-
-  /// fab
-  static Color get fabPrimary => primary;
-
   /// text on background (special case)
   static Color get textOnBackground => Get.isDarkMode ? Vx.white : Vx.neutral100;
   static Color get textReverse => Get.isDarkMode ? Vx.white : Vx.black;

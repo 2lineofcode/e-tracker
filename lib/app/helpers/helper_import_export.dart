@@ -35,10 +35,14 @@ mixin ImportExportHelper {
       }
 
       /// get data
+      if (currentUserId == null) {
+        ExSnackbar.danger('User not authenticated');
+        return;
+      }
       final ex = await db //
           .from('expense')
           .select('*, category(*)')
-          .eq('user_id', db.auth.currentSession?.user.id ?? '')
+          .eq('user_id', currentUserId!)
           .order('date', ascending: false)
           .withConverter<List<SupaExpense>>((data) {
         return (data).map((e) => SupaExpense.fromJson(e)).toList();
@@ -130,7 +134,7 @@ mixin ImportExportHelper {
         supaExpense.add(
           SupaExpense(
             id: UuidV4().generate(),
-            userId: db.auth.currentSession?.user.id ?? '',
+            userId: currentUserId ?? '',
             createdAt: e['created_at'].toString(),
             date: e['date'].toString(),
             categoryName: e['category_name'].toString(),
@@ -151,7 +155,7 @@ mixin ImportExportHelper {
           supaCategory.add(
             SupaCategory(
               id: UuidV4().generate(),
-              userId: db.auth.currentSession?.user.id ?? '',
+              userId: currentUserId ?? '',
               createdAt: DateTime.now().toStringEx(),
               color: Vx.randomPrimaryColor.toHex(),
               icon: 'code=59513&family=LineAwesomeIcons&pack=flutter_iconpicker_plus',
@@ -181,7 +185,7 @@ mixin ImportExportHelper {
         supaAutoComplete.add(
           SupaAutoComplete(
             id: UuidV4().generate(),
-            userId: db.auth.currentSession?.user.id ?? '',
+            userId: currentUserId ?? '',
             createdAt: DateTime.now().toStringEx(),
             amount: e.amount.toString(),
             categoryName: e.categoryName.toString(),
@@ -254,9 +258,10 @@ mixin ImportExportHelper {
   static Future<void> deleteAllData({bool withRefresh = true}) async {
     ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
     try {
-      await db.from('expense').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
-      await db.from('autocomplete').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
-      await db.from('category').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
+      if (currentUserId == null) return;
+      await db.from('expense').delete().match({'user_id': currentUserId!});
+      await db.from('autocomplete').delete().match({'user_id': currentUserId!});
+      await db.from('category').delete().match({'user_id': currentUserId!});
       if (withRefresh) await __refresh__();
 
       ExLoading.dismiss();
@@ -274,8 +279,9 @@ mixin ImportExportHelper {
     try {
       await deleteAllData(withRefresh: false);
 
-      await db.storage.from('avatars').remove(['${db.auth.currentSession?.user.id}.png']);
-      await dbAdmin.auth.admin.deleteUser(db.auth.currentSession?.user.id ?? '');
+      if (currentUserId == null) return;
+      await db.storage.from('avatars').remove(['$currentUserId.png']);
+      await dbAdmin.auth.admin.deleteUser(currentUserId!);
       await Get.find<SettingsController>().onLogout();
       ExLoading.dismiss();
     } catch (e) {

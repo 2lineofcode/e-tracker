@@ -28,10 +28,11 @@ class SettingsRepository {
   /// ! autocomplete
   /// ------------------------------------------------------------------------
   Future<List<SupaAutoComplete>> getAutoComplete() async {
+    if (currentUserId == null) return [];
     final response = await db //
         .from('autocomplete')
         .select()
-        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .eq('user_id', currentUserId!)
         .order('note', ascending: true)
         .withConverter<List<SupaAutoComplete>>((data) {
       return (data).map((e) => SupaAutoComplete.fromJson(e)).toList();
@@ -40,10 +41,11 @@ class SettingsRepository {
   }
 
   Future<List<SupaAutoComplete>> findAutoComplete(String q) async {
+    if (currentUserId == null) return [];
     final response = await db //
         .from('autocomplete')
         .select()
-        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .eq('user_id', currentUserId!)
         .ilike('note', '%$q%')
         .order('note', ascending: true)
         .withConverter<List<SupaAutoComplete>>((data) {
@@ -58,9 +60,10 @@ class SettingsRepository {
   }
 
   Future<void> deleteAutoComplete(String note) async {
+    if (currentUserId == null) return;
     final response = await db.from('autocomplete').delete().match({
       'note': note,
-      'user_id': db.auth.currentSession?.user.id ?? '',
+      'user_id': currentUserId!,
     });
     return response;
   }
@@ -69,17 +72,20 @@ class SettingsRepository {
   /// ! count data
   /// ------------------------------------------------------------------------
   Future<int> countExpense() async {
-    final response = await db.from('expense').count().eq('user_id', db.auth.currentSession?.user.id ?? '');
+    if (currentUserId == null) return 0;
+    final response = await db.from('expense').count().eq('user_id', currentUserId!);
     return response;
   }
 
   Future<int> countCategory() async {
-    final response = await db.from('category').count().eq('user_id', db.auth.currentSession?.user.id ?? '');
+    if (currentUserId == null) return 0;
+    final response = await db.from('category').count().eq('user_id', currentUserId!);
     return response;
   }
 
   Future<int> countAutoComplete() async {
-    final response = await db.from('autocomplete').count().eq('user_id', db.auth.currentSession?.user.id ?? '');
+    if (currentUserId == null) return 0;
+    final response = await db.from('autocomplete').count().eq('user_id', currentUserId!);
     return response;
   }
 
@@ -101,10 +107,11 @@ class SettingsRepository {
   /// ------------------------------------------------------------------------
   ///
   Future<List<SupaUserProfile>> getUserProfile() async {
+    if (currentUserId == null) return [];
     final response = await db //
         .from('profiles')
         .select()
-        .eq('id', db.auth.currentSession?.user.id ?? '')
+        .eq('id', currentUserId!)
         .withConverter<List<SupaUserProfile>>((data) {
       return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
     });
@@ -113,10 +120,11 @@ class SettingsRepository {
 
   // editProfile
   Future<void> editProfile(SupaUserProfile entity) async {
+    if (currentUserId == null) return;
     final response = await db //
         .from('profiles')
         .update(entity.toJson())
-        .eq('id', db.auth.currentSession?.user.id ?? '');
+        .eq('id', currentUserId!);
     return response;
   }
 
@@ -137,11 +145,12 @@ class SettingsRepository {
   }
 
   Future<num> sumAllExpense() async {
+    if (currentUserId == null) return 0;
     var totalExpense = 0 as num;
     final response = await db //
         .from('expense')
         .select()
-        .eq('user_id', db.auth.currentSession?.user.id ?? '')
+        .eq('user_id', currentUserId!)
         .withConverter<List<SupaExpense>>((data) {
       return (data).map((e) => SupaExpense.fromJson(e)).toList();
     });

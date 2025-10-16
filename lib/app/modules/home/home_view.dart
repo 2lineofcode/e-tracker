@@ -354,7 +354,7 @@ class HomeView extends GetView<HomeController> {
               ),
               style: TextStyle(fontSize: 13),
               onSubmitted: (value) => controller.onAddCategory(value),
-            ).h(33).p8(),
+            ).h(33).p8().pOnly(top:16),
           ],
         ).expand(),
       ],
@@ -514,7 +514,7 @@ class HomeView extends GetView<HomeController> {
             ],
           ).p8(),
         ).pOnly(bottom: 8),
-        controller.isAdvanceSearch.isTrue ? '${controller.advanceSearchText}'.text.size(10).minFontSize(10).make() : 0.heightBox,
+        controller.isAdvanceSearch.isTrue ? '${controller.advanceSearchText}'.text.size(12).minFontSize(12).make() : 0.heightBox,
       ],
     ).pOnly(bottom: 12);
   }
@@ -549,7 +549,7 @@ class HomeView extends GetView<HomeController> {
                     ? '${item.detail}'
                           //
                           .text
-                          .xs
+                          .size(12)
                           .color(Get.isDarkMode ? Vx.neutral300 : Vx.neutral800)
                           .make()
                           .pOnly(bottom: 8)
@@ -593,7 +593,7 @@ class HomeView extends GetView<HomeController> {
             [
               '${item.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).bold.make(),
               Spacer(),
-              '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'.text.minFontSize(10).size(10).make(),
+              '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'.text.minFontSize(11).size(11).make(),
             ],
           ).p8(),
         ).onTap(() async => await controller.onCalenderGoDate(item.date!.toDateEx(format: yMd)));
@@ -617,7 +617,7 @@ class HomeView extends GetView<HomeController> {
                     ? '${item.detail}'
                           //
                           .text
-                          .xs
+                          .size(12)
                           .color(Get.isDarkMode ? Vx.neutral300 : Vx.neutral800)
                           .make()
                           .pOnly(bottom: 8)
@@ -713,11 +713,11 @@ class HomeView extends GetView<HomeController> {
             'Income    : ${controller.userProfile.value.income}'.text.size(12).black.make(),
             'LastUpd. : ${controller.userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y, HH:mm')}'.text.size(12).black.make(),
           ]), //.onTap(() => controller.goSetting()),
-          child: '◉'.text.make(),
+          child: Icon(Icons.circle_notifications_rounded, color: AppColor.textReverse, size: 16),
         ),
       ),
 
-      Obx(() => '${controller.footerStatus}'.text.ellipsis.xs.make().tooltip(controller.footerStatus.value).pOnly(left: 8, right: 12)).expand(),
+      Obx(() => '${controller.footerStatus}'.text.ellipsis.size(12).make().tooltip(controller.footerStatus.value).pOnly(left: 8, right: 12)).expand(),
       Obx(
         () =>
             '${controller.focusedDay.value.toStringEx(format: 'MMM')}: ${controller.countOfMonth.value.moneyFormat()}' //
@@ -733,7 +733,7 @@ class HomeView extends GetView<HomeController> {
       () => controller.expenseList.isNotEmpty
           ? FloatingActionButton(
               mini: true,
-              backgroundColor: AppColor.fabPrimary,
+              backgroundColor: AppColor.primary,
               child: Icon(CupertinoIcons.add, color: Colors.white),
               onPressed: () => DialogInputHelper.dialogExpenseAI(),
             ).pOnly(bottom: Get.context!.isMobile ? 90 : 68)

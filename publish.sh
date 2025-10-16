@@ -1,7 +1,11 @@
 #!/bin/bash
 
+set -e
+
 # generate secure .env file
+echo "🔐 Generating secure .env file..."
 dart run enven
+
 
 # update version by year month + git revision
 current_version=$(grep 'version:' pubspec.yaml | awk '{print $2}')
@@ -10,7 +14,8 @@ echo "current version: $current_version"
 git_rev=$(git rev-list --all|wc -l|xargs)
 yMd=$(date '+%Y%m%d')
 
-new_version="${current_version%+*}+$git_rev.$yMd"
+base_version=$(echo "$current_version" | cut -d'+' -f1)
+new_version="${base_version}+${git_rev}${yMd}"
 echo "new_version: $new_version"
 
 echo "Updating version to: $new_version"
@@ -25,8 +30,17 @@ if [ "$(uname)" == "Darwin" ]; then
     # build for macos
     flutter build macos --release --no-tree-shake-icons
 
-    # build for web
-    flutter build web --release --no-tree-shake-icons
+    # build web (optimized for Safari/iOS)
+    echo "🌐 Building Flutter Web (CanvasKit renderer)..."
+    FLUTTER_WEB_RENDERER=canvaskit flutter build web --release --no-tree-shake-icons --base-href "/"
+
+    # optional: optimize index.html for mobile PWA
+    echo "⚙️ Injecting viewport meta for better mobile scaling..."
+    sed -i '' '/<meta charset="UTF-8">/a\
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">' build/web/index.html
+
+    # deploy
+    echo "🚀 Deploying to Firebase..."
 
     # deploy
     firebase deploy

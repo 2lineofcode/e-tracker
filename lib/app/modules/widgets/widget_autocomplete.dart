@@ -19,6 +19,7 @@ class MyAutoComplete extends StatelessWidget {
     this.prefix,
     this.suffix,
     this.hint,
+    this.decoration,
   });
 
   final TextEditingValue? initialValue;
@@ -33,6 +34,8 @@ class MyAutoComplete extends StatelessWidget {
   final Widget? prefix;
   final Widget? suffix;
   final String? hint;
+
+  final BoxDecoration? decoration;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +59,7 @@ class MyAutoComplete extends StatelessWidget {
           placeholder: hint,
           placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
           clearButtonMode: OverlayVisibilityMode.editing,
+          decoration: decoration,
         );
       },
       optionsViewBuilder: (context, onSelected, options) {
