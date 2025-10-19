@@ -341,7 +341,7 @@ class SummaryController extends GetxController with StateMixin {
           parts: [
             Part.text('You are an assistant that helps users manage their budgets and expenses effectively.'),
             Part.text('User profile data:'),
-            Part.text('Name: ${dataPersonalSend.fullName}, Age: ${dataPersonalSend.age}, Income: ${dataPersonalSend.income}, Savings: ${dataPersonalSend.balance}.'),
+            Part.text('$dataPersonalSend'),
             Part.text('Do not expose private financial data (income or savings) in your responses. Only nick name and age can be mentioned if relevant.'),
             Part.text('This is user budget data:'),
             Part.text('$dataBudgetSend'),

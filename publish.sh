@@ -15,7 +15,7 @@ git_rev=$(git rev-list --all|wc -l|xargs)
 yMd=$(date '+%Y%m%d')
 
 base_version=$(echo "$current_version" | cut -d'+' -f1)
-new_version="${base_version}+${git_rev}${yMd}"
+new_version="${base_version}+${git_rev}"
 echo "new_version: $new_version"
 
 echo "Updating version to: $new_version"
@@ -28,7 +28,7 @@ flutter pub get
 if [ "$(uname)" == "Darwin" ]; then
     echo "=== macOS ==="
     # build for macos
-    flutter build macos --release --no-tree-shake-icons
+    # flutter build macos --release --no-tree-shake-icons
 
     # build web (optimized for Safari/iOS)
     echo "🌐 Building Flutter Web (CanvasKit renderer)..."

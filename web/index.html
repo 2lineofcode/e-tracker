@@ -7,11 +7,18 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
 
+  <!-- Preconnect to speed up loading -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com">
+
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="expense_tracker">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   
   <!-- CSS -->
   <link rel="stylesheet" type="text/css" href="styles.css">
@@ -28,13 +35,89 @@
   </script>
   <!-- This script adds the flutter initialization JS code -->
   <script src="flutter.js" defer></script>
+
+  <!-- Preload critical resources -->
+  <link rel="preload" href="main.dart.js" as="script">
+
+
+  <style>
+    html, body {
+      overscroll-behavior: none;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000;
+    }
+
+    #flt-glass-pane {
+      height: 100% !important;
+    }
+
+    /* Loading skeleton */
+    .center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+  </style>
+
+  <script>
+    // Fix for iOS Safari keyboard covering content
+    let viewportTimeout;
+    
+    function updateViewportHeight() {
+      if (window.visualViewport) {
+        clearTimeout(viewportTimeout);
+        viewportTimeout = setTimeout(() => {
+          const viewport = window.visualViewport;
+          const viewportHeight = viewport.height;
+          document.documentElement.style.setProperty('--viewport-height', viewportHeight + 'px');
+        }, 50);
+      }
+    }
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateViewportHeight);
+      updateViewportHeight();
+    }
+  </script>
 </head>
 
 <body>
 
-  <!-- Ensure your flutter target is present on the page... -->
-  <!-- <div class="center" id="flutter_host">Please wait...</div> -->
-  <img src="icons/Icon-192.png" class="center" height="64" width="64" />
+  <!-- Loading indicator -->
+  <div class="center loading-container" id="loading">
+    <img src="icons/Icon-192.png" height="64" width="64" />
+    <!-- <div class="spinner"></div> -->
+    <div class="loading-text">...</div>
+  </div>
 
   <script>
     window.addEventListener('load', function (ev) {
@@ -46,6 +129,11 @@
         onEntrypointLoaded: function (engineInitializer) {
           engineInitializer.initializeEngine().then(function (appRunner) {
             appRunner.runApp();
+            // Hide loading indicator
+            setTimeout(() => {
+              const loading = document.getElementById('loading');
+              if (loading) loading.style.display = 'none';
+            }, 10);
           });
         }
       });

@@ -1,13 +1,16 @@
 {
      "name": "Expense Tracker",
-     "short_name": "Expense Tracker",
+     "short_name": "e-Tracker",
      "start_url": ".",
      "display": "standalone",
-     "background_color": "#0175C2",
-     "theme_color": "#0175C2",
+     "background_color": "#000000",
+     "theme_color": "#000000",
      "description": "The Expense Tracker app is a handy tool for managing your personal finances. It allows you to easily track your expenses, categorize them, and analyze your spending patterns. With a user-friendly interface, the app provides features such as adding and editing expenses, setting budget goals, generating reports, and visualizing data through charts and graphs. Stay in control of your finances with the Expense Tracker app.",
      "orientation": "portrait-primary",
      "prefer_related_applications": false,
+     "categories": ["finance", "productivity"],
+     "screenshots": [],
+     "shortcuts": [],
      "icons": [
           {
                "src": "icons/Icon-192.png",

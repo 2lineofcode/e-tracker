@@ -1,5 +1,29 @@
 {
     "files.exclude": {
+        "**/.git": false,
+        "**/.svn": false,
+        "**/.hg": false,
+        "**/.DS_Store": false,
+        "**/Thumbs.db": false,
+        "**/CVS": false,
+        ".idea": false,
+        ".dart_**": false,
+        ".firebase": false,
+        ".flutter-**": false,
+        "linux": false,
+        "android": false,
+        "windows": false,
+        "macos": false,
+        "ios": false,
+        "web": false,
+        "build": false,
+        "supabase": false,
+        "*.iml": false,
+        "**/.netlify": false,
+        "**/.github": false,
+        "netlify.toml": false
+    },
+    "explorerExclude.backup": {
         "**/.git": true,
         "**/.svn": true,
         "**/.hg": true,
@@ -23,7 +47,6 @@
         "**/.github": true,
         "netlify.toml": true
     },
-    "explorerExclude.backup": {},
     "dart.lineLength": 200,
     "workbench.editor.enablePreview": true,
     "editor.codeActionsOnSave": {

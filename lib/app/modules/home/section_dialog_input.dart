@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -272,8 +273,8 @@ mixin DialogInputHelper {
               readOnly: true,
               placeholder: 'Date',
               decoration: BoxDecoration(
-                color: Get.isDarkMode ? AppColor.card : null,
-                borderRadius: BorderRadius.circular(8),
+                color: Get.isDarkMode ? Vx.black : Vx.white,
+                borderRadius: BorderRadius.circular(4),
               ),
               placeholderStyle: TextStyle(fontSize: 13),
               prefix: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse).pOnly(left: 8),
@@ -290,8 +291,8 @@ mixin DialogInputHelper {
             autofocus: expense == null,
             initialValue: _tfNote.value,
             decoration: BoxDecoration(
-              color: Get.isDarkMode ? AppColor.card : null,
-              borderRadius: BorderRadius.circular(8),
+              color: Get.isDarkMode ? Vx.black : Vx.white,
+              borderRadius: BorderRadius.circular(4),
             ),
             asyncSuggestions: (s) async {
               if (s.text.isBlank!) return [];
@@ -337,8 +338,8 @@ mixin DialogInputHelper {
                 textAlign: TextAlign.left,
                 clearButtonMode: OverlayVisibilityMode.editing,
                 decoration: BoxDecoration(
-                  color: Get.isDarkMode ? AppColor.card : null,
-                  borderRadius: BorderRadius.circular(8),
+                  color: Get.isDarkMode ? Vx.black : Vx.white,
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ).pOnly(bottom: 16),
             ),
@@ -350,12 +351,12 @@ mixin DialogInputHelper {
               initialValue: '${_tfCategory.value}',
               style: TextStyle(fontSize: 12, color: AppColor.textReverse),
               decoration: DecorationHelper.input(
-                fillColor: Get.isDarkMode ? AppColor.card : null,
+                fillColor: Get.isDarkMode ? Vx.black : Vx.white,
                 border: OutlineInputBorder(
                   borderSide: BorderSide(
-                    width: 1,
+                    width: 0,
                     style: BorderStyle.solid,
-                    color: Get.isDarkMode ? Vx.neutral800 : Vx.neutral300,
+                    color: Get.isDarkMode ? Vx.black : Vx.white,
                   ),
                 ),
               ),
@@ -399,8 +400,8 @@ mixin DialogInputHelper {
                 controller: _tfAmount,
                 placeholder: 'Rp. 10.000',
                 decoration: BoxDecoration(
-                  color: Get.isDarkMode ? AppColor.card : null,
-                  borderRadius: BorderRadius.circular(8),
+                  color: Get.isDarkMode ? Vx.black : Vx.white,
+                  borderRadius: BorderRadius.circular(4),
                 ),
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
@@ -506,6 +507,10 @@ mixin DialogInputHelper {
                   readOnly: true,
                   placeholder: 'Date',
                   placeholderStyle: TextStyle(fontSize: 13),
+                  decoration: BoxDecoration(
+                    color: Get.isDarkMode ? Vx.black : Vx.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                   prefix: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse).pOnly(left: 8),
                   style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                   onTap: () => ExDatePicker.materialDatePicker(
@@ -519,6 +524,10 @@ mixin DialogInputHelper {
               MyAutoComplete(
                 autofocus: false,
                 initialValue: _tfNote.value,
+                decoration: BoxDecoration(
+                  color: Get.isDarkMode ? Vx.black : Vx.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
                 asyncSuggestions: (s) async {
                   if (s.text.isBlank!) return [];
                   return await debouncer.run(() async {
@@ -555,6 +564,10 @@ mixin DialogInputHelper {
                   child: CupertinoTextField(
                     controller: _tfDescription,
                     placeholder: 'Detail: Nama Toko/Waktu',
+                    decoration: BoxDecoration(
+                      color: Get.isDarkMode ? Vx.black : Vx.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                     placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                     style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                     minLines: 3,
@@ -573,9 +586,9 @@ mixin DialogInputHelper {
                     fillColor: Get.isDarkMode ? Vx.black : Vx.white,
                     border: OutlineInputBorder(
                       borderSide: BorderSide(
-                        width: 1,
+                        width: 0,
                         style: BorderStyle.solid,
-                        color: Get.isDarkMode ? Vx.neutral800 : Vx.neutral300,
+                        color: Get.isDarkMode ? Vx.black : Vx.white,
                       ),
                     ),
                   ),
@@ -619,6 +632,10 @@ mixin DialogInputHelper {
                     controller: _tfAmount,
                     placeholder: 'Rp. 10.000',
                     placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+                    decoration: BoxDecoration(
+                      color: Get.isDarkMode ? Vx.black : Vx.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                     style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                     prefix: IconButton(
                       icon: Icon(Icons.calculate, size: 14, color: AppColor.textReverse),
@@ -675,40 +692,102 @@ mixin DialogInputHelper {
   // ⵌ dialog expense AI
   // ────────────────────────────────────────────────────────────────
   static Future<void> dialogExpenseAI() async {
-    final _tfText = TextEditingController();
-    final _fnText = FocusNode();
+   
+    // ** desktop
+    if (!Get.context!.isMobile) {
+      final _tfText = TextEditingController();
+      final _fnText = FocusNode();
+      if (!_fnText.hasFocus) _fnText.requestFocus();
 
-    if (!_fnText.hasFocus) _fnText.requestFocus();
+      DialogHelper.ios(
+        title: Text(
+          'Add Expense',
+          style: TextStyle(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.left,
+        ).pOnly(bottom: 16),
+        content: VStack([
+          CupertinoTextField(
+            controller: _tfText,
+            focusNode: _fnText,
+            placeholder: 'Type your expense here...',
+            placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+            style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+            onSubmitted: (s) async {
+              Get.back();
+              await processAIInput(s);
+            },
+          ).h(32),
+        ]),
+        actions: [
+          CupertinoDialogAction(
+            child: Text('Submit', style: TextStyle(fontSize: 13)),
+            onPressed: () async {
+              Get.back();
+              await processAIInput(_tfText.text);
+            },
+          ),
+        ],
+      );
+    }
+    
+    // ** mobile
+    else {
+      final _tfText = TextEditingController();
+      final _fnText = FocusNode();
 
-    DialogHelper.ios(
-      title: Text(
-        'Add Expense',
-        style: TextStyle(fontWeight: FontWeight.bold),
-        textAlign: TextAlign.left,
-      ).pOnly(bottom: 16),
-      content: VStack([
-        CupertinoTextField(
-          controller: _tfText,
-          focusNode: _fnText,
-          placeholder: 'Type your expense here...',
-          placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-          style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-          onSubmitted: (s) async {
-            Get.back();
-            await processAIInput(s);
-          },
-        ).h(32),
-      ]),
-      actions: [
-        CupertinoDialogAction(
-          child: Text('Submit', style: TextStyle(fontSize: 13)),
-          onPressed: () async {
-            Get.back();
-            await processAIInput(_tfText.text);
-          },
+      ExBottomSheet.basic(
+        title: 'Add Expense',
+        content: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: kIsWeb 
+              ? MediaQuery.of(Get.context!).size.height * 0.35
+              : MediaQuery.of(Get.context!).size.height * 0.8,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    // iOS Safari requires user gesture to show keyboard
+                    if (!_fnText.hasFocus) {
+                      _fnText.requestFocus();
+                    }
+                  },
+                  child: CupertinoTextField(
+                    controller: _tfText,
+                    focusNode: _fnText,
+                    minLines: 3,
+                    maxLines: 3,
+                    autofocus: !kIsWeb,
+                    placeholder: kIsWeb ? 'Tap here to type your expense...' : 'Type your expense here...',
+                    placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+                    style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+                    onSubmitted: (s) async {
+                      Get.back();
+                      await processAIInput(s);
+                    },
+                  ),
+                ),
+                Divider().pOnly(top: 6, bottom: 0),
+                ExButtonText(
+                  label: 'Submit',
+                  labelSize: 13,
+                  onPressed: () async {
+                    Get.back();
+                    await processAIInput(_tfText.text);
+                  },
+                ).wFull(Get.context!),
+                12.heightBox,
+              ],
+            ).pSymmetric(h: 24),
+          ),
         ),
-      ],
-    );
+      );
+
+      // iOS Safari: keyboard only shows on user gesture, not programmatic focus
+      // User must tap the input field to show keyboard
+    }
   }
 
   // ────────────────────────────────────────────────────────────────
@@ -725,11 +804,13 @@ mixin DialogInputHelper {
       Interpret Indonesian currency shortcuts: 'k' or 'rb' means thousands (x1000), 'M' or 'jt' means millions (x1,000,000).
       You must pick a category value that aligns with the transaction type using the provided list.
       here the category list: ${_controller.categoryList.map((e) => e.name).join(', ')}
+
       `note` TitleCase format is required, simplify the detail.
       `description` is optional, if user input much detail, you can use it.
       `category` is required.
       `amount` is required.
       `date` is required.
+
       Return your response ONLY as a single, minified JSON object with the following structure. Do not add any other text or explanation.
       {
         "note": "string",             // string
