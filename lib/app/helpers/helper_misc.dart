@@ -19,8 +19,14 @@ extension TimeAgoToString on DateTime {
   /// Output: '2 months ago'
   ///
   String getTimeAgoFromNow() {
-    final selDate = toStringEx(format: 'yyyy-MM-dd').toDateEx(format: 'yyyy-MM-dd');
-    final now = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    final selDate = toStringEx(
+      format: 'yyyy-MM-dd',
+    ).toDateEx(format: 'yyyy-MM-dd');
+    final now = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
     Duration difference = now.difference(selDate);
     int days = difference.inDays;
     final diff = now.subtract(Duration(days: days));
@@ -84,34 +90,6 @@ extension ConvertHexToString on String {
     }
     return Colors.white;
   }
-}
-
-extension StringToIconData on String {
-  /// Example:
-  /// ```
-  /// String iconString = 'code=59462&family=MaterialIcons&pack=null';
-  /// IconData? iconData = iconString.getIconData();
-  /// ```
-  /// Output: IconData(U+EB3E, fontFamily: 'MaterialIcons')
-  /// String -> IconData
-  IconData? getIconData() {
-    final _iconCode = allBetween('code=', '&family=').toInt() ?? 59462;
-    String? _iconFamily = allBetween('&family=', '&pack=');
-    String? _iconPack = allAfter('&pack=');
-    bool? isPackNull = _iconPack.contains('null');
-    return IconData(_iconCode, fontFamily: _iconFamily, fontPackage: isPackNull ? null : _iconPack);
-  }
-}
-
-extension IconDataToString on IconData {
-  /// Example:
-  /// ```
-  /// IconData myIcon = IconData(59462, fontFamily: 'MaterialIcons', fontPackage: 'null');
-  /// String? iconString = myIcon.setIconData();
-  /// ```
-  /// Output: 'code=59462&family=MaterialIcons&pack=null'
-  /// IconData -> String
-  String? setIconData() => 'code=$codePoint&family=$fontFamily&pack=$fontPackage';
 }
 
 String formatFileSize(int bytes) {

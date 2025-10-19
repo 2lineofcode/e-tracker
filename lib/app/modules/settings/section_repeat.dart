@@ -2,10 +2,11 @@ import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:uicons_pro/uicons_pro.dart';
 
-import '../../core/app_api.dart';
 import '../../core/app_color.dart';
 import '../../helpers/helpers.dart';
+import '../../models/supa_category_entity.dart';
 import 'settings_controller.dart';
 
 class SectionRepeat extends GetView<SettingsController> {
@@ -19,15 +20,9 @@ class SectionRepeat extends GetView<SettingsController> {
           'Repeat Transaction'.text.bold.make(),
           Spacer(),
           IconButton(
-              onPressed: () {
-                controller.addCron(
-                  '19',
-                  amount: 1000,
-                  note: 'test',
-                  category: 'Food',
-                );
-              },
-              icon: Icon(Icons.add)),
+            icon: Icon(Icons.add),
+            onPressed: () => controller.onShowAddCronDialog(),
+          ),
         ]).pOnly(bottom: 16),
         Obx(
           () => controller.cronList.isNotEmpty
@@ -37,16 +32,18 @@ class SectionRepeat extends GetView<SettingsController> {
                   itemBuilder: (context, index) {
                     final item = controller.cronList[index];
 
-                    var jobName = item.command?.replaceAll('\n', '').allBetween('values', "', '");
-                    jobName = jobName?.replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), '').trimAll;
+                    // Parse data from cron job command
+                    final command = item.command ?? '';
+
+                    // Use regex to extract all values at once
+                    final valuesRegex = RegExp(r"VALUES\s*\('([^']*)',\s*'([^']*)',\s*(\d+)");
+                    final match = valuesRegex.firstMatch(command);
+
+                    final note = match?.group(1) ?? '';
+                    final categoryFull = match?.group(2) ?? '';
+                    final categoryName = categoryFull.split('#').first.trim();
+                    final amount = num.tryParse(match?.group(3) ?? '0') ?? 0;
                     final dueDate = item.schedule.allBetween('0 0 ', ' * *');
-                    final amount = item.command.allBetween("', ", ', current_date').replaceAll(RegExp(r'[^0-9]'), '').toNum();
-                    final categoryName = item.command
-                        .allBetween("', ", ', current_date')
-                        .replaceAll(RegExp('[0-9]'), '')
-                        .replaceAll(RegExp(",|!|'"), '')
-                        .replaceAll('#${db.auth.currentSession?.user.email}', '')
-                        .trim();
 
                     final now = DateTime.now();
                     final dateA = DateTime(now.year, now.month, now.day);
@@ -54,30 +51,37 @@ class SectionRepeat extends GetView<SettingsController> {
                     final remainingDays = dateB.difference(dateA).inDays;
 
                     return Container(
-                      decoration: ExDecorator.box(
-                        borderRadius: 4,
-                        fillColor: AppColor.box,
-                        borderColor: AppColor.border,
-                      ),
+                      decoration: ExDecorator.box(borderRadius: 12, fillColor: AppColor.box, borderColor: AppColor.border),
                       child: HStack(
                         [
                           /// body
                           VStack([
-                            '🗓️ Every day-of-month $dueDate'.text.size(12).make().pOnly(bottom: 8),
-                            '$jobName ($categoryName)'.text.size(13).bold.make(),
-                            if (remainingDays.isNegative) ...[
-                              'Next month'.text.green300.size(11).minFontSize(11).make(),
-                            ] else ...[
-                              'Remaining $remainingDays more days'.text.orange300.size(11).minFontSize(11).make(),
-                            ],
-                          ]).expand(),
+                            HStack([
+                              Icon(UIconsPro.solidRounded.calendar_day, size: 11, color: AppColor.red).pOnly(right: 8),
+                              'Every month, date $dueDate '.text.size(11).minFontSize(11).make(),
+                            ]).pOnly(bottom: 8),
 
-                          /// trailing
-                          '${amount?.moneyFormat()}'.text.bold.make(),
+                            HStack([
+                              '$note'.text.size(13).bold.make().expand(),
+                              '${amount.moneyFormat()}'.text.bold.make(),
+                            ]).pOnly(bottom: 8),
+
+                            HStack(
+                              [
+                                Icon(resolveExpenseCategory(categoryName).icon, size: 12, color: resolveExpenseCategory(categoryName).color).pOnly(right: 8),
+                                '${resolveExpenseCategory(categoryName).label}'.text.size(11).minFontSize(11).color(resolveExpenseCategory(categoryName).color).make().expand(),
+                                if (remainingDays.isNegative) ...[
+                                  'Next month'.text.green300.size(11).minFontSize(11).make(),
+                                ] else ...[
+                                  'Remaining $remainingDays more days'.text.orange300.size(11).minFontSize(11).make(),
+                                ],
+                              ],
+                            ),
+                          ]).expand(),
                         ],
                       ).p12(),
                     ).onInkTap(() {
-                      ExAlert.success(title: item.schedule, message: item.command);
+                      controller.onShowCronInfo(item);
                     });
                   },
                 ).expand()

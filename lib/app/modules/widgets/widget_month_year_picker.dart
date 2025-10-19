@@ -51,10 +51,11 @@ class MyMonthYearPicker extends StatelessWidget {
                     onGoDate.call(dt);
                     Get.back();
                   },
-                  child: '${(i + 1).toString().reformatDate(from: 'M', to: 'MMM')}' //
-                      .text
-                      .color(monthSelected.value == (i + 1).toString() ? Vx.blue500 : Vx.neutral500)
-                      .make(),
+                  child:
+                      '${(i + 1).toString().reformatDate(from: 'M', to: 'MMM')}' //
+                          .text
+                          .color(monthSelected.value == (i + 1).toString() ? Vx.blue500 : Vx.neutral500)
+                          .make(),
                 ).p8(),
               ],
             ],

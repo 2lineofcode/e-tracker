@@ -1,5 +1,6 @@
 import 'package:ex_kit/ex.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:overlayment/overlayment.dart';
@@ -9,6 +10,7 @@ import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_expense_entity.dart';
 import '../home/home_repository.dart';
+import '../home/section_dialog_expense.dart';
 import '../widgets/widget_shimmer_summary.dart';
 import 'summary_controller.dart';
 
@@ -23,12 +25,17 @@ class ViewBarChart extends GetView<SummaryController> {
           'Period: ${controller.monthSelected} ${controller.yearSelected}'.text.bold.make().pOnly(bottom: 16),
           if (controller.expenses.length > 1) ...[
             /// chart
-            _Chart(dataExpense: controller.expenses).wh(double.infinity, 200).pOnly(bottom: 24),
+            _Chart(
+              dataExpense: controller.expenses,
+            ).wh(double.infinity, 200).pOnly(bottom: 24),
 
             /// list high spendings
             if (controller.highSpender.isNotEmpty) ...[
               Container(
-                decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.border),
+                decoration: ExDecorator.box(
+                  borderRadius: 4,
+                  borderColor: AppColor.border,
+                ),
                 child: VStack(
                   [
                     '🔥 High Spendings! (${controller.highSpender.length})'.text.bold.make().pOnly(bottom: 12),
@@ -62,12 +69,15 @@ class ViewBarChart extends GetView<SummaryController> {
 
   Widget itemListHighSpender(SupaExpense item) {
     return Container(
-      decoration: ExDecorator.box(borderRadius: 12, borderColor: AppColor.border, fillColor: AppColor.box),
+      decoration: ExDecorator.box(
+        borderRadius: 12,
+        borderColor: AppColor.border,
+        fillColor: AppColor.box,
+      ),
       child: ListTile(
         title: '${item.date?.reformatDate(from: yMd)}'.text.size(12).make(),
         trailing: '${item.amount?.moneyFormat()}'.text.make(),
-        onTap: () => openDetail(item),
-      ),
+      ).onInkTap(() => openDetail(item)),
     );
   }
 }
@@ -113,6 +123,7 @@ class _Chart extends GetView<SummaryController> {
                   openDetail(item);
                 }
               },
+
               mouseCursorResolver: (event, response) {
                 return response == null || response.spot == null ? MouseCursor.defer : SystemMouseCursors.click;
               },
@@ -132,7 +143,9 @@ class _Chart extends GetView<SummaryController> {
       direction: TooltipDirection.top,
       getTooltipItem: (group, groupIndex, rod, rodIndex) {
         final amount = fixChart[groupIndex].amount?.moneyFormat();
-        final date = fixChart[groupIndex].date?.reformatDate(from: 'yyyy-MM-dd');
+        final date = fixChart[groupIndex].date?.reformatDate(
+          from: 'yyyy-MM-dd',
+        );
         final output = '$date\n $amount';
         final textStyle = TextStyle(color: Vx.black, fontSize: 11);
         return BarTooltipItem('$output', textStyle);
@@ -142,40 +155,60 @@ class _Chart extends GetView<SummaryController> {
 }
 
 Future<void> openDetail(SupaExpense item) async {
+  ExLoading.show(paddingSymmetric: 250, child: CupertinoActivityIndicator());
   final expense = await Get.find<HomeRepository>().getExpense(item.date!);
+  ExLoading.dismiss();
+
   await Overlayment.show(
     context: Get.context,
     OverPanel(
       alignment: Alignment.centerRight,
       width: 300,
+      backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+      animation: OverSlideAnimation(
+        begin: Offset(1, 0),
+        end: Offset(0, 0),
+        durationMilliseconds: 100,
+        reverseDurationMilliseconds: 100,
+      ),
       child: VStack([
-        ExDivider().pSymmetric(v: 16),
-        'Detail Expense for ${item.date?.reformatDate(from: yMd)}'.text.bold.make(),
-        ExDivider().pSymmetric(v: 16),
+        'Detail Expense for ${item.date?.reformatDate(from: yMd)}'.text.bold.make().pSymmetric(v: 12),
+        12.heightBox,
         ListView.separated(
           itemCount: expense.length,
-          separatorBuilder: (context, index) => Divider(),
+          separatorBuilder: (context, index) => 12.heightBox,
           itemBuilder: (context, index) {
             final itemDetail = expense[index];
-            return HStack([
-              VStack([
-                '${itemDetail.note}'.text.make(),
-                HStack([
-                  Icon(itemDetail.category?.icon?.getIconData() ?? Icons.circle_outlined, color: itemDetail.category?.color?.fromHex, size: 12).pOnly(right: 8),
-                  '${itemDetail.categoryName}'.text.size(12).neutral400.make(),
-                ]),
-              ]),
-              Spacer(),
-              '${itemDetail.amount?.moneyFormat()}'.text.make(),
-            ]);
+            return Container(
+              decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.border, fillColor: AppColor.box),
+              child: HStack([
+                VStack([
+                  '${itemDetail.note}'.text.make(),
+                  HStack([
+                    Icon(itemDetail.resolvedCategory.icon ?? Icons.circle_outlined, color: itemDetail.resolvedCategory.color, size: 12).pOnly(right: 8),
+                    itemDetail.resolvedCategory.label.text.ellipsis.size(12).color(AppColor.neutral).make().expand(),
+                  ]),
+                ]).expand(),
+                '${itemDetail.amount?.moneyFormat()}'.text.make(),
+              ]).p8(),
+            ).onInkTap(
+              () => DialogExpense.openManualInput(
+                expense: itemDetail,
+                customCallback: () async {
+                  await Overlayment.dismissAll();
+                  await 100.milliseconds.delay();
+                  await openDetail(item);
+                },
+              ),
+            );
           },
         ).expand(),
-        ExDivider().pSymmetric(v: 16),
+        Divider(),
         HStack([
           Spacer(),
           'Total ${item.amount?.moneyFormat()}'.text.bold.make(),
         ]),
-        ExDivider().pSymmetric(v: 16),
+        Divider(),
       ]).p8(),
     ),
   );

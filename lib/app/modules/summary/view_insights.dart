@@ -127,7 +127,7 @@ class ViewInsights extends GetView<SummaryController> {
   }
 
   Widget _buildChatBubble({required String message, required bool isUser}) {
-    final isTyping = message == 'Typing...' && !isUser;
+    final isTyping = message == 'Thinking...' && !isUser;
 
     return Row(
       mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -155,7 +155,7 @@ class ViewInsights extends GetView<SummaryController> {
             ),
             child: isTyping
                 ? HStack([
-                    'Typing...'.text.color(Vx.neutral100).size(12).make(),
+                    'Thinking...'.text.color(Vx.neutral100).size(12).make(),
                     8.widthBox,
                     SizedBox(
                       width: 16,
@@ -171,75 +171,27 @@ class ViewInsights extends GetView<SummaryController> {
                     selectable: true,
                     config: MarkdownConfig(
                       configs: [
-                        PConfig(
-                          textStyle: TextStyle(
-                            color: Vx.neutral100,
-                            fontSize: 12,
-                            height: 1.5,
-                          ),
-                        ),
+                        PConfig(textStyle: TextStyle(color: Vx.neutral100, fontSize: 12, height: 1.5)),
                         H1Config(
-                          style: TextStyle(
-                            color: Vx.neutral100,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(color: Vx.neutral100, fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                         H2Config(
-                          style: TextStyle(
-                            color: Vx.neutral100,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(color: Vx.neutral100, fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         H3Config(
-                          style: TextStyle(
-                            color: Vx.neutral100,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(color: Vx.neutral100, fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                         CodeConfig(
-                          style: TextStyle(
-                            color: Vx.green300,
-                            fontSize: 12,
-                            fontFamily: 'monospace',
-                          ),
+                          style: TextStyle(color: Vx.green700, fontSize: 12, fontFamily: 'monospace'),
                         ),
                         PreConfig(
-                          decoration: BoxDecoration(
-                            color: Vx.neutral900,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                          decoration: BoxDecoration(color: Vx.neutral900, borderRadius: BorderRadius.circular(8)),
                           padding: EdgeInsets.all(12),
-                          textStyle: TextStyle(
-                            color: Vx.green300,
-                            fontSize: 12,
-                            fontFamily: 'monospace',
-                          ),
+                          textStyle: TextStyle(color: Vx.green700, fontSize: 12, fontFamily: 'monospace'),
                         ),
-                        BlockquoteConfig(
-                          sideColor: AppColor.blue,
-                        ),
-                        ListConfig(
-                          marker: (isOrdered, depth, index) {
-                            if (isOrdered) {
-                              return Text(
-                                '${index + 1}. ',
-                                style: TextStyle(color: Vx.neutral100),
-                              );
-                            }
-                            return Text(
-                              '• ',
-                              style: TextStyle(color: AppColor.blue, fontSize: 16),
-                            );
-                          },
-                        ),
+                        BlockquoteConfig(sideColor: AppColor.blue, textColor: AppColor.orangeLight),
                         LinkConfig(
-                          style: TextStyle(
-                            color: AppColor.blue,
-                            decoration: TextDecoration.underline,
-                          ),
+                          style: TextStyle(color: AppColor.blue, decoration: TextDecoration.underline),
                         ),
                       ],
                     ),

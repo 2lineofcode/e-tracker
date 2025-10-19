@@ -38,7 +38,6 @@ class SectionIEmport extends GetView<SettingsController> {
           '📈 Analytics'.text.bold.make().pOnly(bottom: 8),
           'Total Data Expense: ${controller.countExpense.value} | ${controller.sumAllExpense.value.moneyFormat()}'.text.size(11).make(),
           'Total Data Category: ${controller.countCategory.value}'.text.size(11).make(),
-          'Total Data AutoComplete: ${controller.autoCompleteList.length}'.text.size(11).make(),
         ]).p12(),
       ),
     );
@@ -54,13 +53,13 @@ class SectionIEmport extends GetView<SettingsController> {
           HStack(
             [
               'Import From CSV'.text.make().expand(),
-              ExButtonElevated(
-                height: 33,
-                width: 75,
+              ExButtonOutline(
                 label: 'Select File',
                 labelSize: 12,
-                radius: 8,
-                onPressed: () async => await ImportExportHelper.importFromCSV(),
+                height: 38,
+                borderColor: AppColor.primary,
+                labelColor: AppColor.textReverse,
+                onPressed: () async => await HelperImportExport.importFromCSV(),
               ),
             ],
           ).pOnly(bottom: 12),
@@ -69,7 +68,7 @@ class SectionIEmport extends GetView<SettingsController> {
           HStack([
             'Export As CSV'.text.make().expand(),
             IconButton(
-              onPressed: () async => await ImportExportHelper.exportToCSV(),
+              onPressed: () async => await HelperImportExport.exportToCSV(),
               icon: Icon(Icons.arrow_forward_ios_rounded, size: 14),
             ),
           ]).pOnly(bottom: 12),
@@ -79,7 +78,7 @@ class SectionIEmport extends GetView<SettingsController> {
             title: 'Delete All Data',
             subtitle: 'to confirm delete all data',
             btnLabel: 'Delete Data',
-            action: () async => await ImportExportHelper.deleteAllData(),
+            action: () async => await HelperImportExport.deleteAllData(),
           ).pOnly(bottom: 12),
 
           // 4
@@ -87,8 +86,7 @@ class SectionIEmport extends GetView<SettingsController> {
             title: 'Delete Account',
             subtitle: 'to confirm delete account',
             btnLabel: 'Delete Account',
-            btnColor: Vx.red900,
-            action: () async => await ImportExportHelper.deleteAccount(),
+            action: () async => await HelperImportExport.deleteAccount(),
           ).pOnly(bottom: 12),
         ],
       ).p12(),
@@ -105,14 +103,12 @@ class SectionIEmport extends GetView<SettingsController> {
     return HStack(
       [
         title.text.make().expand(),
-        ExButtonElevated(
-          height: 33,
-          width: 75,
+        ExButtonOutline(
           label: btnLabel,
           labelSize: 12,
-          labelColor: Vx.red50,
-          backgroundColor: btnColor ?? Vx.red700,
-          radius: 8,
+          height: 38,
+          borderColor: btnColor ?? Vx.red400,
+          labelColor: Vx.red400,
           onPressed: () async {
             final tf = TextEditingController();
             final isValid = false.obs;
@@ -139,7 +135,7 @@ class SectionIEmport extends GetView<SettingsController> {
                   ).centered(),
                   TextField(
                     controller: tf,
-                    decoration: DecorationHelper.input(hint: db.auth.currentSession?.user.email),
+                    decoration: HelperDecoration.input(hint: db.auth.currentSession?.user.email),
                     style: TextStyle(fontSize: 13),
                     textAlign: TextAlign.center,
                     onChanged: (s) => isValid.value = s == db.auth.currentSession?.user.email,

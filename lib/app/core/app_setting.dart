@@ -28,8 +28,8 @@ final groq = Groq(
 class AppSettingService extends GetxService {
   @override
   Future<void> onInit() async {
-    await checkAndApplyDefaultAppConfig();
     await initForDesktop();
+    await checkAndApplyDefaultAppConfig();
     super.onInit();
   }
 
@@ -37,38 +37,43 @@ class AppSettingService extends GetxService {
   /// ! setup default app config [for new user]
   /// ------------------------------------------------------------------------
   Future<void> checkAndApplyDefaultAppConfig() async {
-    // Skip if user is not authenticated
     final userId = db.auth.currentSession?.user.id;
     if (userId == null) {
       logI('-- CONFIG SKIPPED (not authenticated) --');
       return;
     }
-    
-    final response = await db //
-        .from('profiles')
-        .select()
-        .eq('id', userId)
-        .withConverter<List<SupaUserProfile>>((data) {
-      return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
-    });
 
-    if (response.isEmpty) {
-      logI('-- CONFIG SKIPPED (no profile found) --');
-      return;
-    }
+    final needInit = [
+      kFlagEco,
+      kFlagAverage,
+      kFlagSpender,
+      kCurrencySymbol,
+      kIsDarkMode,
+    ].any((key) => !pref.hasData(key));
 
-    await pref.write(kFlagEco, response[0].ecoDay ?? 50000);
-    await pref.write(kFlagAverage, response[0].averageDay ?? 100000);
-    await pref.write(kFlagSpender, response[0].spenderDay ?? 100000);
+    if (needInit) {
+      final response = await db
+          .from('profiles')
+          .select()
+          .eq('id', userId)
+          .withConverter<List<SupaUserProfile>>(
+            (data) => (data).map((e) => SupaUserProfile.fromJson(e)).toList(),
+          );
 
-    if (!pref.hasData(kFlagEco) || //
-        !pref.hasData(kFlagAverage) ||
-        !pref.hasData(kFlagSpender) ||
-        !pref.hasData(kCurrencySymbol) ||
-        !pref.hasData(kIsDarkMode)) {
+      if (response.isEmpty) {
+        logE('No profile found for $userId');
+        return;
+      }
+
+      final profile = response.first;
+
       await pref.write(kCurrencySymbol, 'Rp. ');
       await pref.write(kIsDarkMode, true);
+      await pref.write(kFlagEco, profile.ecoDay ?? 50000);
+      await pref.write(kFlagAverage, profile.averageDay ?? 100000);
+      await pref.write(kFlagSpender, profile.spenderDay ?? 100000);
     }
+
     logI('-- CONFIG LOADED --');
   }
 
@@ -76,24 +81,24 @@ class AppSettingService extends GetxService {
   /// ! initForDesktop
   /// ------------------------------------------------------------------------
   Future<void> initForDesktop() async {
-    if (isDesktop) {
-      final idealSize = Size(690, 700);
-      await windowManager.ensureInitialized();
-      WindowOptions windowOptions = WindowOptions(
-        title: Env.appName,
-        size: idealSize,
-        minimumSize: kReleaseMode ? idealSize : null,
-        maximumSize: Platform.isWindows ? idealSize : null,
-        titleBarStyle: Platform.isMacOS ? TitleBarStyle.hidden : TitleBarStyle.normal,
-        alwaysOnTop: Platform.isWindows ? true : false,
-        center: true,
-        backgroundColor: Colors.transparent,
-        skipTaskbar: false,
-      );
-      await windowManager.waitUntilReadyToShow(windowOptions, () async {
-        await windowManager.show();
-        await windowManager.focus();
-      });
-    }
+    if (!isDesktop) return;
+
+    final idealSize = Size(690, 700);
+    await windowManager.ensureInitialized();
+    WindowOptions windowOptions = WindowOptions(
+      title: Env.appName,
+      size: idealSize,
+      minimumSize: kReleaseMode ? idealSize : null,
+      maximumSize: Platform.isWindows ? idealSize : null,
+      titleBarStyle: Platform.isMacOS ? TitleBarStyle.hidden : TitleBarStyle.normal,
+      alwaysOnTop: Platform.isWindows ? true : false,
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+    );
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
   }
 }

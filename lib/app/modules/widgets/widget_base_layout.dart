@@ -66,16 +66,16 @@ class MyLayout extends StatelessWidget {
           children: [
             /// row 1 -> Desktop
             if (!context.isMobile) sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
-        
+
             /// row 2
             VStack(
               [
                 /// appbar -> Desktop
                 if (!context.isMobile) myAppBarDesktop(),
-        
+
                 /// body
                 body().expand(),
-        
+
                 /// footer
                 footer(),
               ],
@@ -129,10 +129,10 @@ class MyLayout extends StatelessWidget {
       centerTitle: false,
       leading: isShowAppBarLeading == true
           ? appBarLeading?.pOnly(right: 8) ??
-              IconButton(
-                icon: Icon(CupertinoIcons.arrow_left, size: 22),
-                onPressed: Get.back,
-              ).pOnly(right: 8)
+                IconButton(
+                  icon: Icon(CupertinoIcons.arrow_left, size: 22),
+                  onPressed: Get.back,
+                ).pOnly(right: 8)
           : null,
       actions: [
         appBarAction ?? Container(),

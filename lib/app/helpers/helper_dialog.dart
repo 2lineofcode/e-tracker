@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-mixin DialogHelper {
+mixin HelperDialog {
   static void ios({
     bool? isDismissible,
     Widget? icon,
@@ -23,6 +23,7 @@ mixin DialogHelper {
       },
       barrierDismissible: isDismissible ?? true,
       useSafeArea: true,
+      
     );
   }
 }

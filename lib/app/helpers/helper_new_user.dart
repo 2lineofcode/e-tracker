@@ -17,30 +17,15 @@ import '../modules/widgets/widget_image_no_cache_view.dart';
 import '../routes/app_pages.dart';
 import 'helper_decoration.dart';
 
-mixin NewUserHelper {
+mixin HelperNewUser {
   static Future<void> gettingStart() async {
     final _home = Get.find<HomeController>();
 
     if (_home.categoryList.isEmptyOrNull && _home.expenseList.isEmptyOrNull) {
-      log('=== _createCategory ===');
-      await _createRequireCategory();
-
       log('=== sayWelcome ===');
       await sayWelcome();
       await _home.onInit();
     }
-  }
-
-  /// ------------------------------------------------------------------------
-  /// ! create category
-  /// ------------------------------------------------------------------------
-  static Future<void> _createRequireCategory() async {
-    final _home = Get.find<HomeController>();
-    await _home.onAddCategory('Food', icon: 'code=58566&family=FontAwesomeSolid&pack=font_awesome_flutter', iconColor: '#ffbebcb6');
-    await _home.onAddCategory('Bill', icon: 'code=62781&family=FontAwesomeSolid&pack=font_awesome_flutter', iconColor: '#ff9fe57d');
-    await _home.onAddCategory('Shopping', icon: 'code=60561&family=MaterialIcons&pack=null', iconColor: '#ffff8800');
-    await _home.onAddCategory('Others', iconColor: '#fff', icon: 'code=59402&family=LineAwesomeIcons&pack=flutter_iconpicker_plus');
-    await _home.onAddCategory('Notes', icon: 'code=63033&family=CupertinoIcons&pack=cupertino_icons', iconColor: '#fffdf0b0');
   }
 
   /// ------------------------------------------------------------------------
@@ -116,13 +101,13 @@ mixin NewUserHelper {
           ).centered().pOnly(bottom: 16),
           TextField(
             controller: tfFullName,
-            decoration: DecorationHelper.input(hint: 'Full Name'),
+            decoration: HelperDecoration.input(hint: 'Full Name'),
             style: TextStyle(fontSize: 13),
             onChanged: (value) => name.value = value,
           ).h(33).pOnly(bottom: 12),
           TextField(
             controller: tfAge,
-            decoration: DecorationHelper.input(hint: 'Age'),
+            decoration: HelperDecoration.input(hint: 'Age'),
             style: TextStyle(fontSize: 13),
           ).h(33),
           Divider().pSymmetric(v: 16),
@@ -149,7 +134,7 @@ mixin NewUserHelper {
                           createdAt: DateTime.now().toStringEx(),
                           userId: currentUserId ?? '',
                           date: DateTime.now().toStringEx(format: 'yyyy-MM-dd'),
-                          categoryName: 'Notes',
+                          categoryName: 'expense:misc:notes',
                           amount: 0,
                           note: 'Hi!',
                           detail: 'This is the day you commit to starting record your fucking expenses! 🔥',
@@ -190,11 +175,11 @@ mixin NewUserHelper {
                     .update(editProfile.toJson())
                     .eq('id', currentUserId!)
                     .then((value) {
-                  //
-                });
+                      //
+                    });
               }
             },
-          )
+          ),
         ]).p16(),
       ),
     );

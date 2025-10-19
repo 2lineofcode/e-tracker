@@ -17,7 +17,7 @@ class FilteringController extends GetxController with StateMixin {
 
   /// category
   final tfCategory = TextEditingController();
-  final categoryList = <SupaCategory>[].obs;
+  final categoryList = <ExpenseCategory>[].obs;
 
   /// argument
   final categorySelected = ''.obs;
@@ -42,8 +42,10 @@ class FilteringController extends GetxController with StateMixin {
     startDate.value = Get.arguments[1];
     endDate.value = Get.arguments[2];
 
-    categoryList.value = await repo.getCategory();
-    categoryList.insert(0, SupaCategory(name: 'All'));
+    categoryList.assignAll([
+      const ExpenseCategory(code: 'All', label: 'All', groupLabel: 'All'),
+      ...expenseCategoryList,
+    ]);
 
     await findExpense(categorySelected.value);
     super.onInit();
@@ -78,7 +80,7 @@ class FilteringController extends GetxController with StateMixin {
         }
       }
     } catch (e) {
-      await ErrorLogHelper.record(page: 'filter', action: 'findExpense', stack: e.toString());
+      await HelperErrorLog.record(page: 'filter', action: 'findExpense', stack: e.toString());
       change(0, status: RxStatus.error('$e'));
     }
 

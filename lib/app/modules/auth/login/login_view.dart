@@ -57,7 +57,7 @@ class LoginView extends GetView<LoginController> {
           controller: controller.tfEmail,
           keyboardType: TextInputType.emailAddress,
           style: TextStyle(fontSize: 13),
-          decoration: DecorationHelper.input(
+          decoration: HelperDecoration.input(
             hint: 'Enter your email/username',
           ),
           onSubmitted: (_) => controller.onLogin(),
@@ -71,7 +71,7 @@ class LoginView extends GetView<LoginController> {
             obscureText: !passwordVisible.value,
             enableSuggestions: false,
             autocorrect: false,
-            decoration: DecorationHelper.input(
+            decoration: HelperDecoration.input(
               hint: 'Enter your password',
               suffixIcon: IconButton(
                 icon: Icon(passwordVisible.isTrue ? Icons.visibility : Icons.visibility_off, size: 16),

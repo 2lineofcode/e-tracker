@@ -13,15 +13,16 @@ import 'package:overlayment/overlayment.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uicons_pro/uicons_pro.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:uuid/v4.dart';
 
 import '../../core/app_api.dart';
+import '../../core/app_color.dart';
 import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
-import '../../models/supa_autocomplete_entity.dart';
+import '../../models/supa_category_entity.dart';
 import '../../models/supa_cron_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 import '../../routes/app_pages.dart';
@@ -37,11 +38,6 @@ class SettingsController extends GetxController with StateMixin {
   final menuList = <String>[].obs;
   final menuSelected = SectionMenu.APP_CONFIG.obs;
 
-  /// Page: AutoComplete
-  final tfSearchAutoComplete = TextEditingController();
-  final tfAddAutoComplete = TextEditingController();
-  final autoCompleteList = <SupaAutoComplete>[].obs;
-
   /// Page: App Config
   final tfEco = TextEditingController();
   final tfAverage = TextEditingController();
@@ -55,7 +51,6 @@ class SettingsController extends GetxController with StateMixin {
   /// counting & sum
   final countExpense = 0.obs;
   final countCategory = 0.obs;
-  final countAutoComplete = 0.obs;
   final sumAllExpense = Rx<num>(0);
 
   /// backupList
@@ -66,7 +61,6 @@ class SettingsController extends GetxController with StateMixin {
 
   @override
   Future<void> onInit() async {
-    /// Page: AutoComplete
     menuList.value = await repo.getMenuList();
     userProfile.value = await repo.getUserProfile().then((value) => value[0]);
 
@@ -81,10 +75,8 @@ class SettingsController extends GetxController with StateMixin {
     appInfo.value = packageInfo?.data ?? {};
     change(200, status: RxStatus.success());
 
-    unawaited(getAutoCompleteList());
     countExpense.value = await repo.countExpense();
     countCategory.value = await repo.countCategory();
-    countAutoComplete.value = await repo.countAutoComplete();
     sumAllExpense.value = await repo.sumAllExpense();
 
     backupList.value = await repo.getBackupList();
@@ -96,44 +88,6 @@ class SettingsController extends GetxController with StateMixin {
   Future<void> onMenuChange(String menu) async {
     menuSelected.value = menu;
     closeDrawer();
-  }
-
-  Future<void> getAutoCompleteList({String? q}) async {
-    try {
-      // change(0, status: RxStatus.loading());
-      if (q != null) {
-        autoCompleteList.value = await repo.findAutoComplete(q);
-      } else {
-        autoCompleteList.value = await repo.getAutoComplete();
-      }
-    } catch (e) {
-      await ErrorLogHelper.record(page: 'settings', action: 'getAutoComplete', stack: e.toString());
-      change(400, status: RxStatus.error('$e'));
-    }
-  }
-
-  Future<void> onAddAutoComplete(String note) async {
-    if (note.isEmptyOrNull) return;
-
-    final newAutoComplete = SupaAutoComplete(
-      id: UuidV4().generate(),
-      userId: db.auth.currentSession?.user.id ?? '',
-      createdAt: DateTime.now().toStringEx(),
-      note: note,
-      amount: '0',
-      categoryName: 'Others',
-    );
-
-    await repo.addAutoComplete(newAutoComplete);
-    tfAddAutoComplete.clear();
-    autoCompleteList.value = await repo.getAutoComplete();
-    change(0, status: RxStatus.success());
-  }
-
-  Future<void> onDeleteAutoComplete(SupaAutoComplete entity) async {
-    await repo.deleteAutoComplete(entity.note ?? '');
-    autoCompleteList.value = await repo.getAutoComplete();
-    change(0, status: RxStatus.success());
   }
 
   void onEditProfile() {
@@ -173,9 +127,13 @@ class SettingsController extends GetxController with StateMixin {
             }
           }).onInkTap(() {
             logW('clicked');
-            launchUrlString(db.storage.from('avatars').getPublicUrl('${db.auth.currentSession?.user.id}.png'));
+            launchUrlString(
+              db.storage.from('avatars').getPublicUrl('${db.auth.currentSession?.user.id}.png'),
+            );
           }),
-          Obx(() => errorMsg.value.isNotEmpty ? '$errorMsg'.text.size(11).minFontSize(11).align(TextAlign.center).makeCentered().pSymmetric(v: 4) : 0.heightBox),
+          Obx(
+            () => errorMsg.value.isNotEmpty ? '$errorMsg'.text.size(11).minFontSize(11).align(TextAlign.center).makeCentered().pSymmetric(v: 4) : 0.heightBox,
+          ),
           ExButtonElevated(
             onPressed: () async {
               // filepicker select file and upload to supabase storage
@@ -188,18 +146,32 @@ class SettingsController extends GetxController with StateMixin {
                     final fileName = '${db.auth.currentSession?.user.id}.png';
                     imgReplace.value = file.readAsBytesSync();
 
-                    await db.storage.from('avatars').upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1')).then((response) async {
-                      tfAvatar.value = db.storage.from('avatars').getPublicUrl(fileName);
-                      log('tfAvatar: $tfAvatar');
-                      errorMsg.value = '';
-                    });
+                    await db.storage
+                        .from('avatars')
+                        .upload(
+                          fileName,
+                          file,
+                          fileOptions: FileOptions(
+                            upsert: true,
+                            cacheControl: '1',
+                          ),
+                        )
+                        .then((response) async {
+                          tfAvatar.value = db.storage.from('avatars').getPublicUrl(fileName);
+                          log('tfAvatar: $tfAvatar');
+                          errorMsg.value = '';
+                        });
                   }
                 });
               } catch (e) {
                 if (e is StorageException) {
                   errorMsg.value = '${e.message}\nMax 5MB';
                 } else {
-                  await ErrorLogHelper.record(page: 'settings', action: 'onEditProfile', stack: e.toString());
+                  await HelperErrorLog.record(
+                    page: 'settings',
+                    action: 'onEditProfile',
+                    stack: e.toString(),
+                  );
                   errorMsg.value = '$e';
                 }
               }
@@ -209,7 +181,7 @@ class SettingsController extends GetxController with StateMixin {
           ).centered().pOnly(bottom: 16),
           TextField(
             controller: tfFullName,
-            decoration: DecorationHelper.input(
+            decoration: HelperDecoration.input(
               hint: 'Jhon Doe',
               prefixIcon: 'Full Name'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
             ),
@@ -217,7 +189,7 @@ class SettingsController extends GetxController with StateMixin {
           ).h(33).pOnly(bottom: 12),
           TextField(
             controller: tfAge,
-            decoration: DecorationHelper.input(
+            decoration: HelperDecoration.input(
               hint: '29',
               prefixIcon: 'Age'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
             ),
@@ -225,26 +197,38 @@ class SettingsController extends GetxController with StateMixin {
           ).h(33).pOnly(bottom: 12),
           TextField(
             controller: tfIncome,
-            decoration: DecorationHelper.input(
+            decoration: HelperDecoration.input(
               hint: 'Rp.1.234.567',
               prefixIcon: 'Income'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
             ),
             style: TextStyle(fontSize: 13),
             inputFormatters: [
-              CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+              CurrencyTextInputFormatter(
+                NumberFormat.simpleCurrency(
+                  locale: 'id_ID',
+                  name: 'Rp.',
+                  decimalDigits: 0,
+                ),
+              ),
               LengthLimitingTextInputFormatter(16),
             ],
             keyboardType: TextInputType.number,
           ).h(33).pOnly(bottom: 12),
           TextField(
             controller: tfBalance,
-            decoration: DecorationHelper.input(
+            decoration: HelperDecoration.input(
               hint: 'Rp.1.234.567',
               prefixIcon: 'Balance'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
             ),
             style: TextStyle(fontSize: 13),
             inputFormatters: [
-              CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+              CurrencyTextInputFormatter(
+                NumberFormat.simpleCurrency(
+                  locale: 'id_ID',
+                  name: 'Rp.',
+                  decimalDigits: 0,
+                ),
+              ),
               LengthLimitingTextInputFormatter(16),
             ],
             keyboardType: TextInputType.number,
@@ -271,7 +255,10 @@ class SettingsController extends GetxController with StateMixin {
                 updatedAt: DateTime.now().toStringEx(),
               );
               await Overlayment.dismissAll();
-              ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
+              ExLoading.show(
+                paddingSymmetric: Get.context!.isMobile ? 90 : 250,
+                child: CupertinoActivityIndicator(),
+              );
               await repo.editProfile(editProfile);
               await onInit();
               ExLoading.dismiss();
@@ -295,25 +282,38 @@ class SettingsController extends GetxController with StateMixin {
       final filePath = await getTemporaryDirectory();
       final fileName = '${db.auth.currentSession?.user.email}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
 
-      await ImportExportHelper.exportToCSV(
+      await HelperImportExport.exportToCSV(
         customPath: filePath.path,
         customCallback: (file) async {
           await db.storage
               .from('backup')
-              .upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1'))
+              .upload(
+                fileName,
+                file,
+                fileOptions: FileOptions(upsert: true, cacheControl: '1'),
+              )
               .then((response) async {
                 file.deleteSync();
                 await onInit();
-                OverlayHelper.notification('Syncronization Done');
-              }).catchError((e) {
-                ErrorLogHelper.record(page: 'settings', action: 'onUploadBackup', stack: e.toString());
+                await HelperToast.success('Syncronization Done');
+              })
+              .catchError((e) {
+                HelperErrorLog.record(
+                  page: 'settings',
+                  action: 'onUploadBackup',
+                  stack: e.toString(),
+                );
                 ExAlert.error(message: '${(e as StorageException).message}');
               });
         },
       );
     } catch (e) {
       log('e: $e');
-      await ErrorLogHelper.record(page: 'settings', action: 'onUploadBackup', stack: e.toString());
+      await HelperErrorLog.record(
+        page: 'settings',
+        action: 'onUploadBackup',
+        stack: e.toString(),
+      );
       ExAlert.error(message: '$e');
     }
   }
@@ -333,27 +333,34 @@ class SettingsController extends GetxController with StateMixin {
       message: 'Are you sure want to apply migration from\n"$filename"?',
       onYes: () async {
         Get.back();
-        await db.storage.from('backup').download(fileObj.name).then((res) async {
+        await db.storage
+            .from('backup')
+            .download(fileObj.name)
+            .then((res) async {
               final filePath = await getTemporaryDirectory();
               final fileName = '${fileObj.name}';
               final file = File('${filePath.path}/$fileName');
 
               await file.writeAsBytes(res);
-              await db.from('expense').delete().match({'user_id': db.auth.currentSession?.user.id ?? ''});
-              await ImportExportHelper.importFromCSV(
+              await db.from('expense').delete().match({
+                'user_id': db.auth.currentSession?.user.id ?? '',
+              });
+              await HelperImportExport.importFromCSV(
                 customPath: '${filePath.path}/$fileName',
                 customCallback: () async {
                   file.deleteSync();
                   await onInit();
-                  OverlayHelper.notification(
-                    'Success Apply Migration "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}"',
-                    duration: 4.seconds,
-                  );
+                  await HelperToast.success('Success Apply Migration "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}"');
                 },
               );
-        }).catchError((e) {
+            })
+            .catchError((e) {
               log('e: $e');
-              ErrorLogHelper.record(page: 'settings', action: 'onDownloadBackup', stack: e.toString());
+              HelperErrorLog.record(
+                page: 'settings',
+                action: 'onDownloadBackup',
+                stack: e.toString(),
+              );
               ExAlert.error(message: '$e');
             });
       },
@@ -370,14 +377,18 @@ class SettingsController extends GetxController with StateMixin {
 
     ExAlert.confirm(
       title: 'Delete Old Data',
-        message: '''
+      message:
+          '''
         ${listToDelete.length} data will be deleted
         ${listToDelete.map((word) => '- $word').join('\n').replaceAll('${db.auth.currentSession?.user.email}_etracker_', '')}
       '''
               .trim(),
       onYes: () async {
         Get.back();
-        ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
+        ExLoading.show(
+          paddingSymmetric: Get.context!.isMobile ? 90 : 250,
+          child: CupertinoActivityIndicator(),
+        );
         await db.storage.from('backup').remove(listToDelete);
         backupList.value = await repo.getBackupList();
         ExLoading.dismiss();
@@ -391,7 +402,10 @@ class SettingsController extends GetxController with StateMixin {
       return;
     }
 
-    ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
+    ExLoading.show(
+      paddingSymmetric: Get.context!.isMobile ? 90 : 250,
+      child: CupertinoActivityIndicator(),
+    );
     final entity = userProfile.value;
     entity.username = userProfile.value.fullName?.replaceAll(' ', '_').toLowerCase();
     entity.ecoDay = tfEco.text.moneyUnformat();
@@ -401,7 +415,7 @@ class SettingsController extends GetxController with StateMixin {
     await Get.find<AppSettingService>().checkAndApplyDefaultAppConfig();
     await Get.forceAppUpdate();
     ExLoading.dismiss();
-    OverlayHelper.notification('Config Saved', color: Vx.green600);
+    await HelperToast.success('Config Saved');
   }
 
   Future<void> onGoAppPath() async {
@@ -429,24 +443,274 @@ class SettingsController extends GetxController with StateMixin {
     required num amount,
   }) async {
     try {
-      await db //
-          .schema('cron')
-          .from('job')
-          .insert(
-            {
-              'schedule': '0 0 $date * *',
-              'jobname': 'test from app',
-          'command': '''
-            insert into expense 
-                (note, category_name, amount, date, user_id) values 
-                ('$note', '$category#${db.auth.currentSession?.user.email}', $amount, current_date, '${db.auth.currentSession?.user.id}')
-          ''',
-            },
-          );
+      final cleanNote = note
+          .toLowerCase()
+          .replaceAll(RegExp(r'[^a-z0-9\s]'), '') // Remove special chars
+          .trim()
+          .replaceAll(RegExp(r'\s+'), '_') // Spaces to underscore
+          .substring(0, note.length > 30 ? 30 : note.length); // Max 30 chars
+
+      // Add timestamp suffix for uniqueness
+      final timestamp = DateTime.now().millisecondsSinceEpoch.toString().substring(7); // Last 6 digits
+      final jobName = '${cleanNote}_$timestamp';
+
+      // Call database function
+      await db.rpc(
+        'create_expense_cron',
+        params: {
+          'job_name': jobName,
+          'day_of_month': date,
+          'note_text': note,
+          'category_text': category,
+          'amount_value': amount,
+          'user_email': db.auth.currentSession?.user.email ?? '',
+          'user_id_value': db.auth.currentSession?.user.id ?? '',
+        },
+      );
+
+      cronList.value = await repo.getCron();
     } catch (e) {
-      // await ErrorLogHelper.record(page: 'settings', action: 'addCron', stack: e.toString());
-      ExAlert.error(message: '$e');
+      await HelperErrorLog.record(page: 'settings', action: 'addCron', stack: e.toString());
       logE(e);
     }
+  }
+
+  /// Delete cron job by job name
+  Future<void> deleteCron(String jobName) async {
+    try {
+      await db.rpc('delete_expense_cron', params: {'job_name': jobName});
+      cronList.value = await repo.getCron();
+    } catch (e) {
+      await HelperErrorLog.record(page: 'settings', action: 'deleteCron', stack: e.toString());
+      ExAlert.error(message: 'Error: $e');
+      logE(e);
+    }
+  }
+
+  /// Show dialog to add new cron job
+  void onShowAddCronDialog() {
+    final homeController = Get.find<HomeController>();
+
+    final tfNote = TextEditingController();
+    final tfCategory = TextEditingController();
+    final tfCategoryCode = homeController.categoryList[0].code.obs;
+    final tfAmount = TextEditingController();
+    final tfDate = TextEditingController();
+
+    Overlayment.show(
+      context: Get.context!,
+      OverPanel(
+        alignment: Alignment.center,
+        width: 300,
+        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
+
+        child: VStack([
+          HStack([
+            'Add Cron'.text.bold.make(),
+            Spacer(),
+            IconButton(
+              icon: Icon(UIconsPro.solidRounded.cross, size: 14),
+              onPressed: () => Overlayment.dismissLast(),
+            ),
+          ]).pOnly(bottom: 24),
+
+          /// field date
+          CupertinoTextField(
+            controller: tfDate,
+            autofocus: true,
+            placeholder: 'Date of month (1-31)',
+            placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+            decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+            style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+            prefix: Icon(UIconsPro.solidRounded.calendar_day, size: 13, color: AppColor.blue).pOnly(left: 12, right: 4),
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            maxLength: 2,
+          ).h(33).pOnly(bottom: 4),
+
+          'Day of month (1-31)'.text.size(9).minFontSize(9).neutral500.make().pOnly(bottom: 16, left: 4),
+
+          /// field note
+          CupertinoTextField(
+            controller: tfNote,
+            autofocus: true,
+            placeholder: 'e.g. Netflix Subscription',
+            placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+            decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+            style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+            prefix: Icon(UIconsPro.solidRounded.hastag, size: 13, color: AppColor.textReverse).pOnly(left: 12, right: 4),
+          ).h(32).pOnly(bottom: 12),
+
+          /// field category
+          Obx(
+            () => CupertinoTextField(
+              controller: tfCategory,
+              readOnly: true,
+              placeholder: 'Select Category',
+              decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+              placeholderStyle: TextStyle(fontSize: 13, color: AppColor.neutral),
+              prefix: Icon(resolveExpenseCategory(tfCategoryCode.value).icon, size: 13, color: resolveExpenseCategory(tfCategoryCode.value).color).pOnly(left: 12, right: 4),
+              style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+              onTap: () => HelperOverlay.openCategoryPicker(
+                callback: (c) {
+                  tfCategory.text = resolveExpenseCategory(c).label;
+                  tfCategoryCode.value = c;
+                },
+              ),
+            ).pOnly(bottom: 12),
+          ),
+
+          /// field amount
+          CupertinoTextField(
+            controller: tfAmount,
+            placeholder: 'Rp. 10.000',
+            placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+            decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+            style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+            prefix: Icon(UIconsPro.solidRounded.coins, size: 13, color: AppColor.textReverse).pOnly(left: 12, right: 4),
+            inputFormatters: [
+              CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+              LengthLimitingTextInputFormatter(16),
+            ],
+            keyboardType: TextInputType.number,
+          ).h(32),
+
+          Divider().pSymmetric(v: 6),
+
+          // Buttons
+          HStack([
+            ExButtonText(
+              label: 'Save',
+              onPressed: () async {
+                // Validation
+                if (tfNote.text.isEmpty) {
+                  ExSnackbar.danger('Note is required');
+                  return;
+                }
+                if (tfAmount.text.isEmpty) {
+                  ExSnackbar.danger('Amount is required');
+                  return;
+                }
+                if (tfDate.text.isEmpty) {
+                  ExSnackbar.danger('Day is required');
+                  return;
+                }
+
+                final day = int.tryParse(tfDate.text);
+                if (day == null || day < 1 || day > 31) {
+                  ExSnackbar.danger('Day must be between 1-31');
+                  return;
+                }
+
+                await Overlayment.dismissAll();
+
+                // Add cron job
+                await addCron(
+                  tfDate.text,
+                  note: tfNote.text,
+                  category: tfCategoryCode.value,
+                  amount: tfAmount.text.moneyUnformat() ?? 0,
+                );
+              },
+            ).expand(),
+          ]),
+        ]).p16(),
+      ),
+    );
+  }
+
+  /// Show info dialog when tap cron item
+  void onShowCronInfo(SupaCron item) {
+    final command = item.command ?? '';
+
+    // Use regex to extract all values at once
+    final valuesRegex = RegExp(r"VALUES\s*\('([^']*)',\s*'([^']*)',\s*(\d+)");
+    final match = valuesRegex.firstMatch(command);
+
+    final note = match?.group(1) ?? '';
+    final categoryFull = match?.group(2) ?? '';
+    final categoryName = categoryFull.split('#').first.trim();
+    final amount = num.tryParse(match?.group(3) ?? '0') ?? 0;
+    final dueDate = item.schedule.allBetween('0 0 ', ' * *');
+
+    final now = DateTime.now();
+    final dateA = DateTime(now.year, now.month, now.day);
+    final dateB = DateTime(now.year, now.month, int.parse(dueDate));
+    final remainingDays = dateB.difference(dateA).inDays;
+
+    Overlayment.show(
+      context: Get.context!,
+      OverPanel(
+        alignment: Alignment.center,
+        width: 300,
+        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColor.appbarPrimary),
+        child: VStack([
+          HStack([
+            'Info'.text.bold.size(16).make(),
+            Spacer(),
+            IconButton(
+              icon: Icon(UIconsPro.solidRounded.cross, size: 16),
+              onPressed: () => Overlayment.dismissAll(),
+            ),
+          ]).pOnly(bottom: 12),
+
+          // Note
+          VStack([
+            'Note'.text.size(11).neutral500.make(),
+            4.heightBox,
+            '📝 $note'.text.size(13).make(),
+          ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
+
+          // Category
+          VStack([
+            'Category'.text.size(11).neutral500.make(),
+            4.heightBox,
+            '🏷️ ${resolveExpenseCategory(categoryName).label}'.text.size(13).make(),
+          ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
+
+          // Amount
+          VStack([
+            'Amount'.text.size(11).neutral500.make(),
+            4.heightBox,
+            '💰 ${amount.moneyFormat()}'.text.size(13).bold.make(),
+          ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
+
+          // Schedule
+          VStack([
+            'Schedule'.text.size(11).neutral500.make(),
+            4.heightBox,
+            '🗓️ Every month, date $dueDate at 00:00'.text.size(13).make(),
+          ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
+
+          // Next Run
+          VStack([
+            'Next Run'.text.size(11).neutral500.make(),
+            4.heightBox,
+            if (remainingDays.isNegative) ...[
+              '⏰ Next month (${remainingDays.abs()} days ago)'.text.green300.size(13).make(),
+            ] else if (remainingDays == 0) ...[
+              '⏰ Today!'.text.orange300.size(13).bold.make(),
+            ] else ...[
+              '⏰ In $remainingDays days'.text.orange300.size(13).make(),
+            ],
+          ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
+
+          Divider(thickness: 0.5),
+
+          // Buttons
+          HStack([
+            ExButtonText(
+              child: 'Delete'.text.color(AppColor.red).size(12).make(),
+              onPressed: () async {
+                await deleteCron(item.jobname ?? '');
+                await Overlayment.dismissAll();
+              },
+            ).expand(),
+          ]),
+        ]).p16(),
+      ),
+    );
   }
 }

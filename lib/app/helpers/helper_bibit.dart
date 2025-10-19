@@ -4,7 +4,7 @@ import 'package:ex_kit/ex.dart';
 import '../core/app_color.dart';
 import 'helpers.dart';
 
-mixin BibitHelper {
+mixin HelperBibit {
   /// #### isStockMarketOpen
   /// - true:
   ///     - mon-thu: 09.00 - 12.00 WIB, 13.30 - 15.49 WIB,

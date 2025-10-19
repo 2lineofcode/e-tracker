@@ -8,9 +8,5 @@ abstract class Routes {
   static const SUMMARY = '/summary';
   static const SETTINGS = '/settings';
   static const FILTERING = '/filtering';
-  static const BIBIT = '/bibit';
-  static const DETAIL_STOCK = '/detail-stock';
-  static const DETAIL_CRYPTO = '/detail-crypto';
-  static const DETAIL_MUTUAL = '/detail-mutual';
-  static const DETAIL_PORTFOLIO = '/detail-portfolio';
+  static const XLSIO = '/xlsio';
 }

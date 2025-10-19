@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../../core/app_color.dart';
 import '../../helpers/helper_money.dart';
+import '../../helpers/helpers.dart';
 import '../widgets/widget_shimmer_summary.dart';
 import 'summary_controller.dart';
 
@@ -53,8 +54,11 @@ class ViewNoteTimes extends GetView<SummaryController> {
                       children: [
                         TableCell(
                           child: '${item[i].note}'.text.make().p8().onTap(
-                                () async => await Clipboard.setData(ClipboardData(text: '${item[i].note}')),
-                              ),
+                            () async {
+                              await Clipboard.setData(ClipboardData(text: '${item[i].note}'));
+                              await HelperToast.info('Copied "${item[i].note}" to clipboard');
+                            },
+                          ),
                         ),
                         TableCell(child: '${item[i].times}'.text.align(TextAlign.center).make().p8()),
                         TableCell(child: '${item[i].total?.moneyFormat()}'.text.align(TextAlign.end).make().p8()),

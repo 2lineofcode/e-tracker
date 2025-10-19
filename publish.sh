@@ -28,7 +28,7 @@ flutter pub get
 if [ "$(uname)" == "Darwin" ]; then
     echo "=== macOS ==="
     # build for macos
-    # flutter build macos --release --no-tree-shake-icons
+    flutter build macos --release --no-tree-shake-icons
 
     # build web (optimized for Safari/iOS)
     echo "🌐 Building Flutter Web (CanvasKit renderer)..."

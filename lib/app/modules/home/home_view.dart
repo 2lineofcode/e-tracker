@@ -8,6 +8,7 @@ import 'package:grouped_list/grouped_list.dart';
 import 'package:lottie/lottie.dart';
 import 'package:overlayment/overlayment.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:uicons_pro/uicons_pro.dart';
 
 import '../../core/app_color.dart';
 import '../../core/const.dart';
@@ -15,7 +16,11 @@ import '../../helpers/helpers.dart';
 import '../../models/supa_expense_entity.dart';
 import '../widgets/widgets.dart';
 import 'home_controller.dart';
-import 'section_dialog_input.dart';
+import 'section_dialog_asset.dart';
+import 'section_dialog_budget.dart';
+import 'section_dialog_expense.dart';
+import 'section_dialog_goal.dart';
+import 'section_dialog_note.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -39,7 +44,7 @@ class HomeView extends GetView<HomeController> {
     return TextField(
       controller: controller.tfSearchExpense.value,
       style: TextStyle(fontSize: 13),
-      decoration: DecorationHelper.input(
+      decoration: HelperDecoration.input(
         fillColor: Get.isDarkMode ? AppColor.card : null,
         prefixIcon: CustomPopup(
           content: VStack([
@@ -56,13 +61,22 @@ class HomeView extends GetView<HomeController> {
                 .minFontSize(11)
                 .make(),
           ]),
-          child: Icon(CupertinoIcons.search, size: 14, color: AppColor.textReverse).pOnly(top: 0),
+          child: Icon(
+            CupertinoIcons.search,
+            size: 14,
+            color: AppColor.textReverse,
+          ).pOnly(top: 0),
         ),
         hint: 'Search: Note, Category, Days, Date Range...',
-        suffix: Icon(CupertinoIcons.clear, size: 12, color: AppColor.textReverse).pOnly(top: 0).onInkTap(() async {
-          controller.tfSearchExpense.value.clear();
-          await controller.getExpense();
-        }),
+        suffix:
+            Icon(
+              CupertinoIcons.clear,
+              size: 12,
+              color: AppColor.textReverse,
+            ).pOnly(top: 0).onInkTap(() async {
+              controller.tfSearchExpense.value.clear();
+              await controller.getExpense();
+            }),
       ),
       onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
     ).wh(double.infinity, 30);
@@ -71,7 +85,7 @@ class HomeView extends GetView<HomeController> {
   Widget appBarLeading() {
     return IconButton(
       icon: Icon(CupertinoIcons.add, size: 22),
-      onPressed: () => DialogInputHelper.showDialogExpense(),
+      onPressed: () => DialogExpense.openManualInput(),
     );
   }
 
@@ -91,10 +105,6 @@ class HomeView extends GetView<HomeController> {
                   animateIcon: AnimateIcons.settings,
                 ),
         ).pOnly(right: 4),
-        IconButton(
-          onPressed: () => controller.goBibit(),
-          icon: Image.asset('assets/icons/ic_robo.png', height: 20, width: 20, color: Get.isDarkMode ? Colors.white.withAlpha(230) : Colors.white),
-        ).pOnly(right: 4).hide(),
         IconButton(
           onPressed: () => controller.goSummary(),
           icon: isMobileWeb
@@ -165,198 +175,193 @@ class HomeView extends GetView<HomeController> {
           },
         ),
 
-        /// info
+        /// add-ons
         VStack(
           [
-            /// 1
-            Obx(
-              () => controller.rpcSpenderDay.isNotEmpty && controller.rpcSumByCategory.isNotEmpty
-                  ? HStack([
-                      '🔥 High Spendings!'.text.size(12).make(),
-                      Spacer(),
-                      CustomPopup(
-                        content: VStack([
-                          Wrap(
-                            children: [
-                              'You spend a lot on '.text.size(13).black.make(),
-                              Icon(
-                                controller.rpcSumByCategory[0].categoryIcon?.getIconData(),
-                                color: Vx.black,
-                                size: 16,
-                              ).pOnly(bottom: 2, right: 6),
-                              '(${controller.rpcSumByCategory[0].categoryName})'.text.size(11).black.make(),
-                            ],
-                          ),
-                          'Total Usage: ${controller.rpcSumByCategory[0].total?.moneyFormat()} (${controller.rpcSumByCategory[0].usePercentage}%) '.text
-                              .size(11)
-                              .minFontSize(11)
-                              .color(controller.rpcSumByCategory[0].usePercentage! > 100 ? Colors.red : Vx.neutral500)
-                              .make(),
-                          Divider(),
-                          for (var e in controller.rpcSpenderDay) ...[
-                            '- ${e['date'].toString().reformatDate(from: yMd, to: 'dd MMM')} \t\t ${e['total'].toString().toInt()?.moneyFormat()}'
-                                .text //
-                                .neutral500
-                                .size(11)
-                                .minFontSize(11)
-                                .make()
-                                .pOnly(top: 4)
-                                .onTap(() => controller.onCalenderGoDate(e['date'].toString().toDateEx(format: yMd))),
-                          ],
-                        ]).w(220).scrollVertical(),
-                        child: Container(
-                          decoration: ExDecorator.box(borderRadius: 90, borderColor: Colors.transparent, fillColor: AppColor.primary.withAlpha(100)),
-                          child: '${controller.rpcSpenderDay.length}'.text.size(11).minFontSize(11).makeCentered().pOnly(left: 8, right: 8, top: 2, bottom: 2),
-                        ),
-                      ),
-                    ]).p8()
-                  : Container(),
-            ),
+            Divider(color: AppColor.border),
 
-            /// 2
-            Obx(
-              () => controller.countRemainingBudget.value != 0
-                  ? HStack([
-                      '💰 Budget'.text.size(12).make(),
-                      ExProgressBar(
-                        value: controller.countRemainingBudget.value,
-                        color1: BibitHelper.getColorForPercentage((controller.countRemainingBudget.value).toInt()),
-                        color2: Vx.neutral400,
-                        height: 8,
-                        radius: 4,
-                      ).pSymmetric(h: 12).expand(),
-                      CustomPopup(
-                        content: VStack([
-                          '== ${controller.focusedDay.value.toStringEx(format: 'MMMM y')} =='.text.size(13).black.makeCentered(),
-                          '${controller.countRemainingBudget.value <= 100 ? '✅ You are on budget' : '🔴 You are over budget'}'.text.black.size(12).makeCentered(),
-                          Table(
-                            border: TableBorder.all(borderRadius: BorderRadius.circular(8), color: AppColor.neutralLight),
-                            children: [
-                              // row 1
-                              TableRow(
-                                children: [
-                                  TableCell(
-                                    child: VStack([
-                                      'Spent so far'.text.neutral500.size(12).makeCentered(),
-                                      '${controller.countOfMonth.value.moneyFormat()}'.text.size(13).black.makeCentered(),
-                                    ]).p12(),
-                                  ),
-                                  TableCell(
-                                    child: VStack([
-                                      'Budgeted'.text.neutral500.size(12).makeCentered(),
-                                      '${controller.countMaxBudget.value.moneyFormat()}'.text.size(13).black.makeCentered(),
-                                    ]).p12(),
-                                  ),
-                                ],
-                              ),
-                              // row 2
-                              TableRow(
-                                children: [
-                                  TableCell(
-                                    child: VStack([
-                                      'Remaining'.text.neutral500.size(12).makeCentered(),
-                                      if (controller.countMaxBudget.value - controller.countOfMonth.value >= 0) ...[
-                                        '${(controller.countMaxBudget.value - controller.countOfMonth.value).moneyFormat()}'.text.size(13).black.makeCentered(),
-                                        '(${100 - controller.countRemainingBudget.value}%)'.text.blue500.size(12).blue500.makeCentered(),
-                                      ] else ...[
-                                        '${0.moneyFormat()}'.text.black.size(13).makeCentered(),
-                                        '(0%)'.text.blue500.size(12).blue500.makeCentered(),
-                                      ],
-                                    ]).p12(),
-                                  ),
-                                  TableCell(
-                                    child: VStack([
-                                      'You can spent'.text.neutral500.size(12).makeCentered(),
-                                      if (controller.focusedDay.value.month == DateTime.now().month && controller.focusedDay.value.year == DateTime.now().year) ...[
-                                        '${((controller.countMaxBudget.value - controller.countOfMonth.value) / (dayInMonth(DateTime.now()) - DateTime.now().day + 1)).moneyFormat()}'.text
-                                            .size(13)
-                                            .black
-                                            .makeCentered(),
-                                        '(Per Day)'.text.blue500.size(12).makeCentered(),
-                                      ] else ...[
-                                        '-'.text.blue500.size(13).makeCentered(),
-                                        '(Passed)'.text.green600.size(12).makeCentered(),
-                                      ],
-                                    ]).p12(),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ).pSymmetric(v: 8),
-                          if (controller.focusedDay.value.month == DateTime.now().month && controller.focusedDay.value.year == DateTime.now().year) ...[
-                            '${(dayInMonth(DateTime.now()) - DateTime.now().day + 1)} Remaining Days'.text.black.size(12).makeCentered(),
-                          ] else ...[
-                            // 'Based your income, surplus Rp.2.122.112'.text.black.size(12).makeCentered(),
-                          ],
-                          ExButtonElevated(
-                            label: 'View Detail',
-                            labelSize: 10,
-                            labelColor: Colors.white,
-                            backgroundColor: AppColor.sideMenuPrimary,
-                            height: 33,
-                            width: double.infinity,
-                            onPressed: () => {Get.back(), controller.goSummary()},
-                          ).pSymmetric(h: 24).pOnly(top: 8),
-                        ]).w(250),
-                        child: Container(
-                          decoration: ExDecorator.box(borderRadius: 90, borderColor: Colors.transparent, fillColor: AppColor.primary.withAlpha(100)),
-                          child: '${controller.countRemainingBudget}%'.text.size(11).minFontSize(11).makeCentered().pOnly(left: 8, right: 8, top: 2, bottom: 2),
-                        ),
-                      ),
-                    ]).p8()
-                  : Container(),
-            ),
+            // :0:
+            '::Tools'.text.size(12).bold.make().pOnly(top: 2, bottom: 8),
 
-            /// 3
-            Divider(),
+            // :1: high spending
             Obx(
-              () => ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: controller.categoryList.length,
-                itemBuilder: (context, index) {
-                  final item = controller.categoryList[index];
-                  return ListTile(
-                    title: HStack(
-                      [
-                        Icon(item.icon?.getIconData() ?? Icons.circle_outlined, color: item.color?.fromHex, size: 16).pOnly(right: 8),
-                        '${item.name}'.text.size(12).make().pOnly(right: 8),
-                        if (item.maxBudget != null) ...[
-                          Container(
-                            color: AppColor.primary.withAlpha(100),
-                            child: '${item.maxBudget!.moneyFormatCompact()}'.text.size(11).minFontSize(11).make().pSymmetric(h: 4, v: 2),
-                          ).cornerRadius(4).pOnly(top: 2),
-                        ],
-                        Spacer(),
-                        if (item.maxBudget == null && item.name != 'Notes') ...[
-                          !isMobileWeb
-                              ? Icon(Icons.edit, size: 16)
-                              : AnimateIcon(
-                                  onTap: () => DialogInputHelper.showDialogCategory(category: item),
-                                  iconType: IconType.animatedOnHover,
-                                  animateIcon: AnimateIcons.edit,
-                                  color: AppColor.textReverse,
-                                ).wh(16, 16),
-                        ],
+              () => HStack([
+                Icon(UIconsPro.solidRounded.sensor_fire, size: 14, color: Color.fromARGB(255, 195, 86, 69)).pOnly(right: 8),
+                'High Spendings!'.text.size(12).make(),
+                Spacer(),
+                CustomPopup(
+                  content: VStack(
+                    [
+                      '🔥 High Spendings'.text.bold.black.size(12).make().pOnly(bottom: 8),
+                      for (var e in controller.rpcSpenderDay) ...[
+                        '- ${e['date'].toString().reformatDate(from: yMd, to: 'dd MMM')} \t\t ${e['total'].toString().toInt()?.moneyFormat()}'
+                            .text //
+                            .black
+                            .size(11)
+                            .minFontSize(11)
+                            .make()
+                            .pOnly(top: 4)
+                            .onTap(() => controller.onCalenderGoDate(e['date'].toString().toDateEx(format: yMd))),
                       ],
+                    ],
+                  ).w(150).scrollVertical(),
+                  child: Container(
+                    decoration: ExDecorator.box(
+                      borderRadius: 90,
+                      borderColor: Colors.transparent,
+                      fillColor: AppColor.primary.withAlpha(100),
                     ),
-                    onTap: () => DialogInputHelper.showDialogCategory(category: item),
-                  ).pSymmetric(h: 4);
-                },
-              ).expand(),
-            ),
+                    child: '${controller.rpcSpenderDay.length}'.text.size(11).minFontSize(11).makeCentered().pOnly(left: 8, right: 8, top: 2, bottom: 2),
+                  ),
+                ),
+              ]).pOnly(left: 4, right: 8),
+            ).pOnly(bottom: 12),
 
-            /// 4
-            TextField(
-              controller: controller.tfCategory,
-              decoration: DecorationHelper.input(
-                hint: 'Add Category',
-                fillColor: Get.isDarkMode ? AppColor.card : null,
+            // :2: budgets
+            VStack(
+              [
+                HStack([
+                  Icon(UIconsPro.solidRounded.piggy_bank_budget, size: 14, color: Color.fromARGB(255, 69, 195, 109)).pOnly(right: 8),
+                  'Budgets Planning'.text.size(12).make().expand(),
+                  Container(
+                    decoration: ExDecorator.box(
+                      borderRadius: 90,
+                      borderColor: Colors.transparent,
+                      fillColor: AppColor.primary.withAlpha(100),
+                    ),
+                    child: Obx(() => '${controller.budgetsList.length}'.text.size(11).minFontSize(11).make().pSymmetric(h: 8, v: 2)),
+                  ),
+                ]).pOnly(left: 4, right: 8).onInkTap(() => DialogBudget.openList()),
+              ],
+            ).pOnly(bottom: 12),
+
+            // :3:
+            VStack(
+              [
+                HStack([
+                  Icon(UIconsPro.solidRounded.plant_seed_invest, size: 14, color: Color.fromARGB(255, 195, 193, 69)).pOnly(right: 8),
+                  'Assets'.text.size(12).make().expand(),
+                  Container(
+                    decoration: ExDecorator.box(borderRadius: 90, borderColor: Colors.transparent, fillColor: AppColor.primary.withAlpha(100)),
+                    child: Obx(() => '${controller.totalAssets.value.moneyFormatCompact()}'.text.size(11).minFontSize(11).make().pSymmetric(h: 8, v: 2)),
+                  ),
+                ]).pOnly(left: 4, right: 8).onInkTap(() => DialogAsset.openList()),
+              ],
+            ).pOnly(bottom: 12),
+
+            // :4:
+            VStack(
+              [
+                HStack([
+                  Icon(UIconsPro.solidRounded.location_crosshairs, size: 14, color: Color.fromARGB(255, 69, 132, 195)).pOnly(right: 8),
+                  'Goals'.text.size(12).make().expand(),
+                  Container(
+                    decoration: ExDecorator.box(
+                      borderRadius: 90,
+                      borderColor: Colors.transparent,
+                      fillColor: AppColor.primary.withAlpha(100),
+                    ),
+                    child: 'Open'.text.size(11).minFontSize(11).make().pSymmetric(h: 8, v: 2),
+                  ),
+                ]).pOnly(left: 4, right: 8).onInkTap(() => DialogGoal.openList()),
+              ],
+            ).pOnly(bottom: 12),
+
+            // :5:
+            VStack(
+              [
+                HStack([
+                  Icon(UIconsPro.solidRounded.notebook, size: 14, color: Color.fromARGB(255, 204, 211, 186)).pOnly(right: 8),
+                  'Notes'.text.size(12).make().expand(),
+                  Container(
+                    decoration: ExDecorator.box(
+                      borderRadius: 90,
+                      borderColor: Colors.transparent,
+                      fillColor: AppColor.primary.withAlpha(100),
+                    ),
+                    child: 'Open'.text.size(11).minFontSize(11).make().pSymmetric(h: 8, v: 2),
+                  ),
+                ]).pOnly(left: 4, right: 8).onInkTap(() => DialogNote.openList()),
+              ],
+            ).pOnly(bottom: 12),
+
+            // :6:
+            // VStack(
+            //   [
+            //     HStack([
+            //       Icon(UIconsPro.solidRounded.file_excel, size: 14, color: Color.fromARGB(255, 57, 182, 107)).pOnly(right: 8),
+            //       'Xlsio'.text.size(12).make().expand(),
+            //       Container(
+            //         decoration: ExDecorator.box(
+            //           borderRadius: 90,
+            //           borderColor: Colors.transparent,
+            //           fillColor: AppColor.primary.withAlpha(100),
+            //         ),
+            //         child: 'Open'.text.size(11).minFontSize(11).make().pSymmetric(h: 8, v: 2),
+            //       ),
+            //     ]).pOnly(left: 4, right: 8).onInkTap(() => Get.toNamed(Routes.XLSIO)),
+            //   ],
+            // ).pOnly(bottom: 12),
+
+            // :summary:
+            Spacer(),
+            Container(
+              decoration: ExDecorator.box(
+                borderRadius: 4,
+                borderColor: AppColor.border,
+                fillColor: AppColor.card,
               ),
-              style: TextStyle(fontSize: 13),
-              onSubmitted: (value) => controller.onAddCategory(value),
-            ).h(33).p8().pOnly(top:16),
+              child: VStack(
+                [
+                  HStack([
+                    'Spend vs Budgets'.text.bold.size(11).minFontSize(11).make().expand(),
+                    Obx(() {
+                      final totalSpentRaw = controller.totalSumAllBudget.value;
+                      final totalBudgetRaw = controller.totalAllBudget.value;
+                      final totalSpent = totalSpentRaw.isFinite ? totalSpentRaw : 0;
+                      final totalBudget = totalBudgetRaw.isFinite ? totalBudgetRaw : 0;
+                      return '${totalSpent.moneyFormatCompact()} / ${totalBudget.moneyFormatCompact()}'.text.size(12).make();
+                    }),
+                  ]),
+                  Obx(
+                    () {
+                      final totalSpentRaw = controller.totalSumAllBudget.value;
+                      final totalBudgetRaw = controller.totalAllBudget.value;
+                      final totalSpent = totalSpentRaw.isFinite && totalSpentRaw >= 0 ? totalSpentRaw.toDouble() : 0.0;
+                      final totalBudget = totalBudgetRaw.isFinite && totalBudgetRaw > 0 ? totalBudgetRaw.toDouble() : 0.0;
+                      final ratio = totalBudget == 0 ? 0.0 : (totalSpent / totalBudget) * 100;
+                      final percentage = ratio.isFinite && !ratio.isNaN ? ratio.clamp(0, 999).round() : 0;
+                      final progressValue = percentage.clamp(0, 100);
+
+                      return HStack(
+                        [
+                          ExProgressBar(
+                            value: progressValue.toInt(),
+                            color1: HelperBibit.getColorForPercentage(
+                              percentage.toInt(),
+                            ),
+                            color2: Vx.neutral400,
+                          ).h(4).expand(),
+                          '${percentage.toInt()}%'.text.size(11).minFontSize(11).make().pOnly(left: 12),
+                        ],
+                      );
+                    },
+                  ).pSymmetric(v: 3),
+
+                  /// day remaining...
+                  Obx(() {
+                    if (DateTime.now().month == controller.focusedDay.value.month && DateTime.now().year == controller.focusedDay.value.year) {
+                      return HStack([
+                        '${dayInMonth(DateTime.now()) - DateTime.now().day} Day Remaining'.text.color(AppColor.textReverse).size(10).minFontSize(10).make(),
+                      ]);
+                    }
+                    return 0.heightBox;
+                  }),
+                ],
+              ).p12(),
+            ).pOnly(bottom: 12),
           ],
-        ).expand(),
+        ).pSymmetric(h: 12).expand(),
       ],
     ).expand();
   }
@@ -365,11 +370,19 @@ class HomeView extends GetView<HomeController> {
     return ExSwipe(
       onLeftSwipe: (detail) async {
         controller.focusedDay.value = controller.focusedDay.value.add(1.days);
-        await controller.onCalenderDayChange(controller.focusedDay.value, controller.focusedDay.value);
+        await controller.onCalenderDayChange(
+          controller.focusedDay.value,
+          controller.focusedDay.value,
+        );
       },
       onRightSwipe: (detail) async {
-        controller.focusedDay.value = controller.focusedDay.value.subtract(1.days);
-        await controller.onCalenderDayChange(controller.focusedDay.value, controller.focusedDay.value);
+        controller.focusedDay.value = controller.focusedDay.value.subtract(
+          1.days,
+        );
+        await controller.onCalenderDayChange(
+          controller.focusedDay.value,
+          controller.focusedDay.value,
+        );
       },
       child: controller.obx(
         (state) => Obx(
@@ -398,7 +411,7 @@ class HomeView extends GetView<HomeController> {
                 'Total:'.text.bold.color(AppColor.textReverse).make(),
                 Spacer(),
                 '${controller.countOfDay.value.moneyFormat()}'.text.bold.color(AppColor.textReverse).make().onInkTap(() {
-                  OverlayHelper.openCalculator(
+                  HelperOverlay.openCalculator(
                     initialValue: controller.countOfDay.value.toDouble(),
                     onTappedDisplay: (p0, p1) => Overlayment.dismissAll(),
                   );
@@ -468,7 +481,10 @@ class HomeView extends GetView<HomeController> {
         final startDate = DateTime.now().subtract(Duration(days: searchText.toInt()! - 1)).toStringEx(format: 'd MMM y');
         final endDate = DateTime.now().toStringEx(format: 'd MMM y');
         return Container(
-          decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.border),
+          decoration: ExDecorator.box(
+            borderRadius: 4,
+            borderColor: AppColor.border,
+          ),
           width: double.infinity,
           child: VStack(
             [
@@ -485,7 +501,10 @@ class HomeView extends GetView<HomeController> {
           final startDate = searchText.substring(0, 10).reformatDate(from: yMd, to: 'd MMM y');
           final endDate = searchText.substring(11).reformatDate(from: yMd, to: 'd MMM y');
           return Container(
-            decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.border),
+            decoration: ExDecorator.box(
+              borderRadius: 4,
+              borderColor: AppColor.border,
+            ),
             width: double.infinity,
             child: VStack([
               'Showing for date range:'.text.bold.make().pOnly(bottom: 4),
@@ -493,7 +512,11 @@ class HomeView extends GetView<HomeController> {
             ]).p8(),
           );
         } catch (e) {
-          ErrorLogHelper.record(page: 'homeView', action: 'bodyHeaderSearchView', stack: e.toString());
+          HelperErrorLog.record(
+            page: 'homeView',
+            action: 'bodyHeaderSearchView',
+            stack: e.toString(),
+          );
           return '$searchText'.text.make();
         }
       }
@@ -503,13 +526,18 @@ class HomeView extends GetView<HomeController> {
     return VStack(
       [
         Container(
-          decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.border),
+          decoration: ExDecorator.box(
+            borderRadius: 4,
+            borderColor: AppColor.border,
+          ),
           child: HStack(
             [
               'Search For: `${controller.tfSearchExpense.value.text}`'.text.bold.make(),
               Spacer(),
               'Filter'.text.size(8).underline.make().onInkTap(() {
-                DialogInputHelper.advenceFilterExpense(controller.tfSearchExpense.value.text);
+                DialogExpense.openAdvenceFilter(
+                  controller.tfSearchExpense.value.text,
+                );
               }),
             ],
           ).p8(),
@@ -524,7 +552,8 @@ class HomeView extends GetView<HomeController> {
       itemCount: controller.expenseList.length,
       itemBuilder: (context, index) {
         final item = controller.expenseList[index];
-        final isTypeNotes = item.categoryName?.contains('Notes') ?? false;
+        final category = item.resolvedCategory;
+        final isTypeNotes = category.code == 'expense:misc:notes' || category.label.contains('Notes');
 
         return Container(
           width: double.infinity,
@@ -539,7 +568,10 @@ class HomeView extends GetView<HomeController> {
                 HStack([
                   '${item.note}'.text.bold.color(isTypeNotes ? Vx.white : AppColor.textReverse).make(),
                   if (!isTypeNotes) ...[
-                    Icon(CupertinoIcons.time, size: 10).pOnly(left: 8, right: 2, top: 2),
+                    Icon(
+                      CupertinoIcons.time,
+                      size: 10,
+                    ).pOnly(left: 8, right: 2, top: 2),
                     '(${item.createdAt?.reformatDate(to: 'HH:mm')})'.text.size(10).minFontSize(10).make(),
                   ],
                 ]).pOnly(bottom: 8),
@@ -550,21 +582,29 @@ class HomeView extends GetView<HomeController> {
                           //
                           .text
                           .size(12)
-                          .color(Get.isDarkMode ? Vx.neutral300 : Vx.neutral800)
+                          .color(
+                            Get.isDarkMode ? Vx.neutral300 : Vx.neutral800,
+                          )
                           .make()
                           .pOnly(bottom: 8)
                     : 0.heightBox,
 
                 /// category
                 HStack([
-                  Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, color: item.category?.color?.fromHex, size: 12).pOnly(right: 8),
-                  '${item.category?.name}'
+                  Icon(
+                    category.icon ?? Icons.circle_outlined,
+                    color: category.color,
+                    size: 12,
+                  ).pOnly(right: 8),
+                  '${category.label}'
                       //
                       .text
                       .size(12)
                       .color(isTypeNotes ? Vx.white : AppColor.textReverse)
-                      .make(),
-                  Spacer(),
+                      .ellipsis
+                      .make()
+                      .expand(),
+
                   isTypeNotes ? '${item.createdAt?.reformatDate(to: 'HH:mm')}'.text.white.size(11).minFontSize(11).make() : 0.heightBox,
                 ]),
               ]).expand(),
@@ -573,7 +613,7 @@ class HomeView extends GetView<HomeController> {
               isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
             ],
           ).p12(),
-        ).pSymmetric(h: 8, v: 4).onInkTap(() => DialogInputHelper.showDialogExpense(expense: item));
+        ).pSymmetric(h: 8, v: 4).onInkTap(() => DialogExpense.openManualInput(expense: item));
       },
     ).pSymmetric(v: 8).expand();
   }
@@ -588,7 +628,9 @@ class HomeView extends GetView<HomeController> {
       groupHeaderBuilder: (item) {
         return Container(
           width: double.infinity,
-          decoration: BoxDecoration(color: Get.isDarkMode ? Color(0xFF19151F) : Colors.white),
+          decoration: BoxDecoration(
+            color: Get.isDarkMode ? Color(0xFF19151F) : Colors.white,
+          ),
           child: HStack(
             [
               '${item.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.size(11).bold.make(),
@@ -596,10 +638,15 @@ class HomeView extends GetView<HomeController> {
               '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'.text.minFontSize(11).size(11).make(),
             ],
           ).p8(),
-        ).onTap(() async => await controller.onCalenderGoDate(item.date!.toDateEx(format: yMd)));
+        ).onTap(
+          () async => await controller.onCalenderGoDate(
+            item.date!.toDateEx(format: yMd),
+          ),
+        );
       },
       indexedItemBuilder: (context, item, index) {
-        final isTypeNotes = item.categoryName?.contains('Notes') ?? false;
+        final category = item.resolvedCategory;
+        final isTypeNotes = category.code == 'expense:misc:notes' || category.label.contains('Notes');
         return Container(
           decoration: BoxDecoration(
             color: isTypeNotes ? AppColor.noteColor : AppColor.card.withAlpha(50),
@@ -618,25 +665,30 @@ class HomeView extends GetView<HomeController> {
                           //
                           .text
                           .size(12)
-                          .color(Get.isDarkMode ? Vx.neutral300 : Vx.neutral800)
+                          .color(
+                            Get.isDarkMode ? Vx.neutral300 : Vx.neutral800,
+                          )
                           .make()
                           .pOnly(bottom: 8)
                     : 0.heightBox,
 
                 /// category
                 HStack([
-                  Icon(item.category?.icon?.getIconData() ?? Icons.circle_outlined, size: 12, color: item.category?.color?.fromHex).pOnly(right: 8),
-                  '${item.categoryName}'.text.color(isTypeNotes ? Vx.white : AppColor.textReverse).size(12).make(),
-                  12.widthBox,
+                  Icon(
+                    category.icon ?? Icons.circle_outlined,
+                    size: 12,
+                    color: category.color,
+                  ).pOnly(right: 8),
+                  '${category.label}'.text.color(isTypeNotes ? Vx.white : AppColor.textReverse).size(12).ellipsis.make().expand(),
                   isTypeNotes ? '(${item.createdAt?.reformatDate(to: 'HH:mm')})'.text.white.size(11).minFontSize(11).make() : 0.heightBox,
                 ]),
               ]).expand(),
 
               /// amount
-              isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make(),
+              isTypeNotes ? 0.heightBox : '${item.amount?.moneyFormat()}'.text.bold.size(16).make().pOnly(left: 12),
             ],
           ).p12(),
-        ).pSymmetric(h: 8, v: 8).onInkTap(() => DialogInputHelper.showDialogExpense(expense: item));
+        ).pSymmetric(h: 8, v: 8).onInkTap(() => DialogExpense.openManualInput(expense: item));
       },
     ).pSymmetric(v: 12).expand();
   }
@@ -659,7 +711,10 @@ class HomeView extends GetView<HomeController> {
             ]),
             Spacer(),
             Container(
-              decoration: ExDecorator.box(borderRadius: 90, borderColor: AppColor.textReverse),
+              decoration: ExDecorator.box(
+                borderRadius: 90,
+                borderColor: AppColor.textReverse,
+              ),
               child: 'No Record'.text.size(12).minFontSize(12).color(AppColor.textReverse).make().p4().pSymmetric(h: 4),
             ),
           ],
@@ -676,8 +731,16 @@ class HomeView extends GetView<HomeController> {
           Get
                   .context!
                   .isMobile //
-              ? Image.asset('assets/icons/app_icon.png', width: 56, height: 56).pOnly(bottom: 16)
-              : Lottie.asset('assets/lottie/empty.json', width: 150, reverse: true),
+              ? Image.asset(
+                  'assets/icons/app_icon.png',
+                  width: 56,
+                  height: 56,
+                ).pOnly(bottom: 16)
+              : Lottie.asset(
+                  'assets/lottie/empty.json',
+                  width: 150,
+                  reverse: true,
+                ),
           'No Expense'.text.bold.align(TextAlign.center).make().pOnly(bottom: 8),
           Obx(
             () =>
@@ -695,7 +758,7 @@ class HomeView extends GetView<HomeController> {
             label: 'Add Expense',
             labelSize: 12,
             labelColor: AppColor.textReverse,
-            onPressed: () => DialogInputHelper.dialogExpenseAI(),
+            onPressed: () => DialogExpense.openAIInput(),
           ),
         ],
       ),
@@ -713,11 +776,17 @@ class HomeView extends GetView<HomeController> {
             'Income    : ${controller.userProfile.value.income}'.text.size(12).black.make(),
             'LastUpd. : ${controller.userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y, HH:mm')}'.text.size(12).black.make(),
           ]), //.onTap(() => controller.goSetting()),
-          child: Icon(Icons.circle_notifications_rounded, color: AppColor.textReverse, size: 16),
+          child: Icon(
+            UIconsPro.solidRounded.clipboard_user,
+            color: AppColor.textReverse,
+            size: 18,
+          ),
         ),
       ),
 
-      Obx(() => '${controller.footerStatus}'.text.ellipsis.size(12).make().tooltip(controller.footerStatus.value).pOnly(left: 8, right: 12)).expand(),
+      Obx(
+        () => '${controller.footerStatus}'.text.ellipsis.size(12).make().tooltip(controller.footerStatus.value).pOnly(left: 8, right: 12),
+      ).expand(),
       Obx(
         () =>
             '${controller.focusedDay.value.toStringEx(format: 'MMM')}: ${controller.countOfMonth.value.moneyFormat()}' //
@@ -735,7 +804,7 @@ class HomeView extends GetView<HomeController> {
               mini: true,
               backgroundColor: AppColor.primary,
               child: Icon(CupertinoIcons.add, color: Colors.white),
-              onPressed: () => DialogInputHelper.dialogExpenseAI(),
+              onPressed: () => DialogExpense.openAIInput(),
             ).pOnly(bottom: Get.context!.isMobile ? 90 : 68)
           : 0.heightBox,
     );

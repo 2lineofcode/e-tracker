@@ -1,20 +1,23 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:uuid/v4.dart';
 
-import '../../core/app_api.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
-import '../../models/rpc_sum_by_category_entity.dart';
+import '../../models/supa_assets_entity.dart';
+import '../../models/supa_budgets_entity.dart';
 import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
+import '../../models/supa_goals_entity.dart';
+import '../../models/supa_notes_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 import '../../routes/app_pages.dart';
 import 'home_repository.dart';
+import 'home_rt.dart';
 
 class HomeController extends GetxController with StateMixin {
   /// repo
@@ -28,9 +31,23 @@ class HomeController extends GetxController with StateMixin {
   final events = <DateTime, List<String>>{}.obs;
 
   /// category
-  final tfCategory = TextEditingController();
-  final categoryList = <SupaCategory>[].obs;
+  final categoryList = <ExpenseCategory>[].obs;
+  final categoryGroups = <ExpenseCategoryGroup>[].obs;
   final categorySelected = ''.obs;
+
+  /// budgets
+  final budgetsList = <SupaBudgets>[].obs;
+  final monthlyExpenseByGroup = RxMap<String, num>();
+  final totalAllBudget = 0.obs;
+  final totalSumAllBudget = 0.obs;
+
+  /// assets
+  final assetsList = <SupaAssets>[].obs;
+  final totalAssets = 0.obs;
+
+  /// goals & notes
+  final goalsList = <SupaGoals>[].obs;
+  final notesList = <SupaNotes>[].obs;
 
   /// expense
   final userProfile = SupaUserProfile().obs;
@@ -43,7 +60,6 @@ class HomeController extends GetxController with StateMixin {
   final rpcSpenderDay = [].obs;
   final countMaxBudget = 0.obs;
   final countRemainingBudget = 0.obs;
-  final rpcSumByCategory = <RpcSumByCategory>[].obs;
 
   /// flag
   final isSearchMode = false.obs;
@@ -59,20 +75,85 @@ class HomeController extends GetxController with StateMixin {
   @override
   Future<void> onInit() async {
     selectedDays.add(DateTime.now());
-    await getCategory();
+    loadCategories();
+    await refreshBudgetsList();
     await getExpense();
     await getCount1Month(DateTime.now());
     await onCalenderRefreshEvent(period: focusedDay.value.toStringEx(format: yM));
+    await loadAssetsSummary();
+    await loadGoalsList();
+    await loadNotesList();
+
     rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
-    rpcSumByCategory.value = await repo.rpcSumByCategory(focusedDay.value);
     userProfile.value = await repo.getUserProfile().then((value) => value[0]);
+    await HomeRT.initRealtime();
+    update();
     super.onInit();
   }
 
   @override
   Future<void> onReady() async {
-    await NewUserHelper.gettingStart();
+    await HelperNewUser.gettingStart();
     super.onReady();
+  }
+
+  Future<void> loadAssetsSummary() async {
+    try {
+      final assets = await repo.getAssets();
+      assetsList.assignAll(assets);
+      totalAssets.value = assets.fold<num>(0, (sum, e) => sum + (e.amount ?? 0)).toInt();
+    } catch (e) {
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'loadAssetsSummary',
+        stack: e.toString(),
+      );
+      assetsList.clear();
+      totalAssets.value = 0;
+    }
+  }
+
+  Future<void> loadGoalsList() async {
+    try {
+      final goals = await repo.getGoals();
+      goalsList.assignAll(goals);
+    } catch (e) {
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'loadGoalsList',
+        stack: e.toString(),
+      );
+      goalsList.clear();
+    }
+  }
+
+  Future<void> loadNotesList() async {
+    try {
+      final notes = await repo.getNotes();
+      notesList.assignAll(notes);
+    } catch (e) {
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'loadNotesList',
+        stack: e.toString(),
+      );
+      notesList.clear();
+    }
+  }
+
+  void _updateTotalBudgetAggregate() {
+    totalAllBudget.value = budgetsList.fold(0, (sum, value) => sum + (value.amount ?? 0));
+  }
+
+  Future<void> refreshBudgetsList() async {
+    try {
+      final data = await repo.getBudgets();
+      budgetsList.assignAll(data);
+      _updateTotalBudgetAggregate();
+      update();
+    } catch (e) {
+      await HelperErrorLog.record(page: 'home', action: 'refreshBudgetsList', stack: e.toString());
+    }
   }
 
   /// calendar
@@ -82,6 +163,7 @@ class HomeController extends GetxController with StateMixin {
     selectedDays.clear();
     selectedDays.add(fDay);
     await getExpense();
+    await getCount1Month(fDay);
   }
 
   Future<void> onCalenderGoToday() async {
@@ -89,6 +171,7 @@ class HomeController extends GetxController with StateMixin {
     focusedDay.value = DateTime.now();
     selectedDays.add(DateTime.now());
     await getExpense();
+    await getCount1Month(focusedDay.value);
     closeDrawer();
   }
 
@@ -97,6 +180,7 @@ class HomeController extends GetxController with StateMixin {
     focusedDay.value = dateTime;
     selectedDays.add(dateTime);
     await getExpense();
+    await getCount1Month(focusedDay.value);
   }
 
   Future<void> onCalenderGoPrevMonth() async {
@@ -112,7 +196,6 @@ class HomeController extends GetxController with StateMixin {
     await onCalenderRefreshEvent(period: fd.toStringEx(format: yM));
     await getCount1Month(fd);
     rpcSpenderDay.value = await repo.rpcGetSpenderDay(fd);
-    rpcSumByCategory.value = await repo.rpcSumByCategory(focusedDay.value);
   }
 
   List<String> onCalenderLoadEvent(DateTime day) {
@@ -147,57 +230,65 @@ class HomeController extends GetxController with StateMixin {
     try {
       final month = dateTime.toStringEx(format: yM);
       countOfMonth.value = await repo.getCount1Month(month) ?? 0;
+      await loadMonthlyExpenseByGroup(dateTime);
 
       // count percentage of remain budget
       var sum = 0;
-      for (var e in categoryList) sum += e.maxBudget?.toInt() ?? 0;
+      for (var e in categoryList) {
+        sum += e.defaultBudget ?? 0;
+      }
       countMaxBudget.value = sum;
-      countRemainingBudget.value = (countOfMonth.value / sum * 100).toInt();
+      countRemainingBudget.value = sum > 0 ? (countOfMonth.value / sum * 100).toInt() : 0;
     } catch (e) {
-      await ErrorLogHelper.record(page: 'home', action: 'getCount1Month', stack: e.toString());
+      await HelperErrorLog.record(page: 'home', action: 'getCount1Month', stack: e.toString());
       countMaxBudget.value = 0;
       countRemainingBudget.value = 0;
     }
   }
 
-  /// category
-  Future<void> getCategory() async {
-    categoryList.value = await repo.getCategory();
+  Future<void> loadMonthlyExpenseByGroup(DateTime dateTime) async {
+    try {
+      final result = await repo.getMonthlyExpenseByBudgets(dateTime);
+      monthlyExpenseByGroup.assignAll(result);
+      monthlyExpenseByGroup.refresh();
+
+      _updateTotalBudgetAggregate();
+      totalSumAllBudget.value = monthlyExpenseByGroup.values.fold(0, (sum, value) => sum + value.toInt());
+      update();
+    } catch (e) {
+      await HelperErrorLog.record(page: 'home', action: 'loadMonthlyExpenseByGroup', stack: e.toString());
+      monthlyExpenseByGroup.clear();
+    }
   }
 
-  Future<void> onAddCategory(
-    String categoryName, {
-    String icon = 'code=59513&family=LineAwesomeIcons&pack=flutter_iconpicker',
-    String? iconColor,
-  }) async {
-    if (categoryName.isEmptyOrNull) return;
-
-    try {
-      final categoryEntity = SupaCategory(
-        id: UuidV4().generate(),
-        userId: db.auth.currentSession?.user.id ?? '',
-        createdAt: DateTime.now().toStringEx(),
-        name: categoryName,
-        icon: icon,
-        color: iconColor ?? Vx.randomPrimaryColor.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase(),
-        isProtect: false,
-      );
-      await repo.addCategory(categoryEntity);
-      await getCategory();
-
-      if (iconColor == null) {
-        OverlayHelper.notification('Category $categoryName Added', color: Vx.green600);
-      }
-      tfCategory.clear();
-    } catch (e) {
-      await ErrorLogHelper.record(page: 'home', action: 'onAddCategory', stack: e.toString());
-      OverlayHelper.notification('Failed, $categoryName already exists', color: Vx.red600, duration: 2.seconds);
+  /// category
+  void loadCategories() {
+    categoryList.assignAll(expenseCategoryList);
+    categoryGroups.assignAll(expenseCategoryGroups);
+    if (categorySelected.value.isEmpty && categoryList.isNotEmpty) {
+      categorySelected.value = categoryList.first.code;
     }
   }
 
   /// expense
-  Future<void> getExpense({String? find, String? startDate, String? endDate}) async {
-    change(0, status: RxStatus.loading());
+  Future<void> getExpense({
+    String? find,
+    String? startDate,
+    String? endDate,
+    bool showLoading = true,
+  }) async {
+    if (find == null) {
+      HomeRT.rtActiveSearchQuery = null;
+      HomeRT.rtActiveStartDate = null;
+      HomeRT.rtActiveEndDate = null;
+    } else {
+      HomeRT.rtActiveSearchQuery = find;
+      HomeRT.rtActiveStartDate = startDate;
+      HomeRT.rtActiveEndDate = endDate;
+    }
+
+    if (showLoading) change(0, status: RxStatus.loading());
+
     final date = focusedDay.value.toStringEx(format: yMd);
     try {
       if (find == null) {
@@ -219,7 +310,7 @@ class HomeController extends GetxController with StateMixin {
         isSearchMode.value = true;
       }
     } catch (e) {
-      await ErrorLogHelper.record(page: 'home', action: 'getExpense', stack: e.toString());
+      await HelperErrorLog.record(page: 'home', action: 'getExpense', stack: e.toString());
       change(0, status: RxStatus.error('$e'));
     }
 
@@ -251,7 +342,9 @@ class HomeController extends GetxController with StateMixin {
     Get.toNamed(Routes.SETTINGS);
   }
 
-  void goBibit() {
-    Get.toNamed(Routes.BIBIT);
+  @override
+  void onClose() {
+    unawaited(HomeRT.dispose());
+    super.onClose();
   }
 }

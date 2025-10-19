@@ -12,8 +12,9 @@ import '../../core/app_color.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
+import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
-import '../home/section_dialog_input.dart';
+import '../home/section_dialog_expense.dart';
 import '../widgets/widgets.dart';
 import 'filtering_controller.dart';
 
@@ -39,35 +40,89 @@ class FilteringView extends GetView<FilteringController> {
     return VStack(
       [
         if (Get.context!.isMobile) 24.heightBox,
-        Obx(() => ' 📦 CATEGORY (${controller.categoryList.length})'.text.bold.make().pSymmetric(h: 8, v: 8)),
+        Obx(
+          () => ' 📦 CATEGORY (${controller.categoryList.length})'.text.bold.make().pSymmetric(h: 8, v: 8),
+        ),
         12.heightBox,
         Obx(
-          () => ListView.separated(
-            padding: EdgeInsets.zero,
-            itemCount: controller.categoryList.length,
-            separatorBuilder: (context, index) => 8.heightBox,
-            itemBuilder: (context, index) {
-              final item = controller.categoryList[index];
-              return Obx(
-                () => InkWell(
-                  onTap: () => controller.onCategoryChange(item.name!),
-                  child: Container(
-                    decoration: ExDecorator.box(
-                      fillColor: item.name == controller.categorySelected.value ? AppColor.sideMenuSelected : Colors.transparent,
-                      borderColor: Colors.transparent,
-                    ),
-                    child: HStack([
-                      Icon(item.icon?.getIconData() ?? Icons.circle_outlined, color: item.color?.fromHex, size: 12).pOnly(right: 8),
-                      '${item.name}'.text.size(11).make().expand(),
-                    ]).p8(),
-                  ).pSymmetric(h: 8),
-                ),
+          () {
+            final categories = controller.categoryList;
+            if (categories.isEmpty) {
+              return const SizedBox().expand();
+            }
+
+            ExpenseCategory? allCategory;
+            final groupedCategories = <String, List<ExpenseCategory>>{};
+
+            for (final item in categories) {
+              if (item.code == 'All') {
+                allCategory = item;
+                continue;
+              }
+              groupedCategories.putIfAbsent(item.groupLabel, () => <ExpenseCategory>[]).add(item);
+            }
+
+            final children = <Widget>[];
+            if (allCategory != null) {
+              children.add(_buildCategoryTile(allCategory));
+            }
+
+            final groupedEntries = groupedCategories.entries.toList(growable: false);
+            for (var i = 0; i < groupedEntries.length; i++) {
+              final entry = groupedEntries[i];
+              if (children.isNotEmpty) {
+                children.add(12.heightBox);
+              }
+
+              children.add(
+                entry.key.text.size(10).semiBold.color(AppColor.textReverse.withAlpha(150)).make().pSymmetric(h: 8),
               );
-            },
-          ).expand(),
+              children.add(6.heightBox);
+
+              final items = entry.value;
+              for (var j = 0; j < items.length; j++) {
+                if (j > 0) {
+                  children.add(4.heightBox);
+                }
+                children.add(_buildCategoryTile(items[j]));
+              }
+            }
+
+            if (children.isEmpty) {
+              return const SizedBox().expand();
+            }
+
+            return ListView(
+              padding: EdgeInsets.zero,
+              children: children,
+            ).expand();
+          },
         ),
       ],
     ).expand();
+  }
+
+  Widget _buildCategoryTile(ExpenseCategory item) {
+    final isSelected = controller.categorySelected.value == item.code;
+    return InkWell(
+      onTap: () => controller.onCategoryChange(item.code),
+      child: Container(
+        decoration: ExDecorator.box(
+          fillColor: isSelected ? AppColor.sideMenuSelected : Colors.transparent,
+          borderColor: Colors.transparent,
+        ),
+        child: HStack(
+          [
+            Icon(
+              item.icon ?? Icons.circle_outlined,
+              color: item.color ?? AppColor.textReverse,
+              size: 12,
+            ).pOnly(right: 8),
+            '${item.label}'.text.ellipsis.maxLines(1).size(11).make().expand(),
+          ],
+        ).p8(),
+      ).pSymmetric(h: 8),
+    );
   }
 
   Widget bodyContent() {
@@ -76,7 +131,9 @@ class FilteringView extends GetView<FilteringController> {
         GlassContainer(
           width: double.infinity,
           blur: 50,
-          border: Border.all(color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20)),
+          border: Border.all(
+            color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20),
+          ),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -88,7 +145,13 @@ class FilteringView extends GetView<FilteringController> {
               Obx(
                 () => HStack([
                   'Filter: '.text.size(12).make(),
-                  '${controller.categorySelected.value}'.text.size(12).make(),
+                  (() {
+                    final code = controller.categorySelected.value;
+                    if (code == 'All' || code == '*') return 'All'.text.size(12).make();
+                    return resolveExpenseCategory(
+                      code,
+                    ).label.text.size(12).make();
+                  })(),
                 ]),
               ),
               8.heightBox,
@@ -97,7 +160,9 @@ class FilteringView extends GetView<FilteringController> {
 
                 // start date
                 MyMonthYearPicker(
-                  child: Obx(() => '${controller.startDate.value.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.underline.size(12).make()),
+                  child: Obx(
+                    () => '${controller.startDate.value.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.underline.size(12).make(),
+                  ),
                   onGoDate: (dt) {
                     controller.startDate.value = '${dt.toStringEx(format: yM)}-01';
                     controller.findExpense(controller.categorySelected.value);
@@ -108,11 +173,15 @@ class FilteringView extends GetView<FilteringController> {
 
                 // end date
                 MyMonthYearPicker(
-                  child: Obx(() => '${controller.endDate.value.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.underline.size(12).make()),
+                  child: Obx(
+                    () => '${controller.endDate.value.reformatDate(from: yMd, to: 'dd MMM yyyy')}'.text.underline.size(12).make(),
+                  ),
                   onGoDate: (dt) async {
                     final ldate = dayInMonth(dt);
                     controller.endDate.value = '${dt.toStringEx(format: yM)}-$ldate';
-                    await controller.findExpense(controller.categorySelected.value);
+                    await controller.findExpense(
+                      controller.categorySelected.value,
+                    );
                   },
                 ),
               ]),
@@ -120,9 +189,9 @@ class FilteringView extends GetView<FilteringController> {
             ],
           ).p12(),
         ).p8(),
-        
+
         16.heightBox,
-        
+
         Obx(
           () => HStack(
             [
@@ -146,11 +215,17 @@ class FilteringView extends GetView<FilteringController> {
             ],
           ),
         ),
-        
+
         controller.obx(
-          (state) => Obx(() => controller.uiSelected.value == UiMode.table ? uiModeTable() : uiModeList()),
+          (state) => Obx(
+            () => controller.uiSelected.value == UiMode.table ? uiModeTable() : uiModeList(),
+          ),
           onEmpty: ExUiErrorOrEmpty(
-            illustration: Lottie.asset('assets/lottie/empty.json', width: 150, reverse: true),
+            illustration: Lottie.asset(
+              'assets/lottie/empty.json',
+              width: 150,
+              reverse: true,
+            ),
             title: 'No Data',
           ).expand(),
           onError: (e) => ExUiErrorOrEmpty(
@@ -171,7 +246,9 @@ class FilteringView extends GetView<FilteringController> {
         2: FlexColumnWidth(1),
       },
       defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      border: TableBorder.all(color: Get.theme.textTheme.bodySmall!.color!.withValues(alpha: 0.4)),
+      border: TableBorder.all(
+        color: Get.theme.textTheme.bodySmall!.color!.withValues(alpha: 0.4),
+      ),
       children: [
         for (var date in controller.grouppedByDate!.keys) ...[
           TableRow(
@@ -185,13 +262,15 @@ class FilteringView extends GetView<FilteringController> {
                     ''.richText
                         .withTextSpanChildren([
                           '${e.note}'.textSpan.make(),
-                          ' (${e.categoryName} - ${e.amount?.moneyFormatCompact()})'.textSpan.neutral500.size(11).make(),
+                          ' (${resolveExpenseCategory(e.categoryName).label} - ${e.amount?.moneyFormatCompact()})'.textSpan.neutral500.size(11).make(),
                         ])
                         .size(13)
                         .make()
                         .pSymmetric(h: 8),
                     if (e != controller.grouppedByDate![date]!.last) ...[
-                      Divider(color: AppColor.textReverse.withValues(alpha: 0.4)),
+                      Divider(
+                        color: AppColor.textReverse.withValues(alpha: 0.4),
+                      ),
                     ],
                   ],
                 ]).pSymmetric(v: 8),
@@ -205,7 +284,7 @@ class FilteringView extends GetView<FilteringController> {
           ),
         ],
       ],
-    ).scrollVertical().expand();
+    ).pSymmetric(h: 12).scrollVertical().expand();
   }
 
   Widget uiModeList() {
@@ -220,15 +299,22 @@ class FilteringView extends GetView<FilteringController> {
           width: double.infinity,
           decoration: BoxDecoration(
             color: Color(0xFF19151F),
-            borderRadius: BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(4),
+              topRight: Radius.circular(4),
+            ),
           ),
           child: HStack(
             [
               Icon(
-                Icons.circle,
-                size: 8,
-                color: controller.sumByDate[element.date]?.getFlagColor(),
-              ).tooltip('${controller.sumByDate[element.date]?.getFlagText()}').pOnly(right: 8),
+                    Icons.circle,
+                    size: 8,
+                    color: controller.sumByDate[element.date]?.getFlagColor(),
+                  )
+                  .tooltip(
+                    '${controller.sumByDate[element.date]?.getFlagText()}',
+                  )
+                  .pOnly(right: 8),
               '${element.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.color(AppColor.textOnBackground).size(11).make(),
               Spacer(),
               '${controller.sumByDate[element.date]!.moneyFormat()}'.text.size(12).color(AppColor.textOnBackground).make(),
@@ -245,16 +331,16 @@ class FilteringView extends GetView<FilteringController> {
               CustomPopup(
                 content: VStack(
                   [
-                    '${item.categoryName}'.text.black.size(13).make(),
+                    item.resolvedCategory.label.text.black.size(13).make(),
                     item.detail.isNotEmptyAndNotNull ? '${item.detail}'.text.black.size(12).make() : 0.heightBox,
                   ],
                 ),
                 child: Container(
                   decoration: ExDecorator.box(),
                   child: Icon(
-                    item.category?.icon?.getIconData() ?? Icons.circle,
+                    item.resolvedCategory.icon ?? Icons.circle,
                     size: 16,
-                    color: item.category?.color?.fromHex,
+                    color: item.resolvedCategory.color,
                   ).p8(),
                 ).pOnly(left: 8),
               ),
@@ -272,9 +358,9 @@ class FilteringView extends GetView<FilteringController> {
                 IconButton(
                   icon: Icon(Icons.edit, size: 16),
                   onPressed: () async {
-                    await DialogInputHelper.showDialogExpense(
+                    await DialogExpense.openManualInput(
                       expense: item,
-                      customCallback: () async => await controller.findExpense(item.categoryName!),
+                      customCallback: () async => await controller.findExpense(item.categoryName ?? ''),
                     );
                   },
                 ),
@@ -295,7 +381,9 @@ class FilteringView extends GetView<FilteringController> {
         ),
       ],
       Spacer(),
-      Obx(() => 'Total: ${controller.sumAll.value.moneyFormat()}'.text.bold.make()),
+      Obx(
+        () => 'Total: ${controller.sumAll.value.moneyFormat()}'.text.bold.make(),
+      ),
     ]).p12();
   }
 }

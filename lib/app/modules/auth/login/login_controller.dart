@@ -35,17 +35,20 @@ class LoginController extends GetxController {
       paddingSymmetric: Get.context!.isMobile ? 90 : 250,
       child: CupertinoActivityIndicator(),
     );
-    await repo.login(tfEmail.text, tfPassword.text).then((response) {
-      ExLoading.dismiss();
-      Get.offAllNamed(Routes.HOME);
-    }).catchError((e) {
-      ErrorLogHelper.record(userEmail: tfEmail.text, page: 'login', action: 'onLogin', stack: e.toString());
-      if (e is AuthException && e.message.contains('credentials')) {
-        OverlayHelper.notification('${e.message}', color: Vx.red600, duration: 5.seconds);
-      } else {
-        ExAlert.error(title: 'Login Failed', message: '$e');
-      }
-      ExLoading.dismiss();
-    });
+    await repo
+        .login(tfEmail.text, tfPassword.text)
+        .then((response) {
+          ExLoading.dismiss();
+          Get.offAllNamed(Routes.HOME);
+        })
+        .catchError((e) async {
+          await HelperErrorLog.record(userEmail: tfEmail.text, page: 'login', action: 'onLogin', stack: e.toString());
+          if (e is AuthException && e.message.contains('credentials')) {
+            await HelperToast.error('${e.message}');
+          } else {
+            ExAlert.error(title: 'Login Failed', message: '$e');
+          }
+          ExLoading.dismiss();
+        });
   }
 }

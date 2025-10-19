@@ -61,3 +61,8 @@ env.g.dart
 # Local Netlify folder
 .netlify
 netlify.*
+
+
+# 
+*.pdf
+*.csv

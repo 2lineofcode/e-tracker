@@ -4,7 +4,7 @@ import 'package:uuid/v4.dart';
 import '../core/app_api.dart';
 import '../models/supa_error_log_entity.dart';
 
-mixin ErrorLogHelper {
+mixin HelperErrorLog {
   static Future<void> record({
     String? userEmail,
     required String page,

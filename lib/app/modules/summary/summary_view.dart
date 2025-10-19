@@ -9,9 +9,9 @@ import '../../helpers/helpers.dart';
 import '../widgets/widgets.dart';
 import 'summary_controller.dart';
 import 'view_bar_chart.dart';
-import 'view_budget.dart';
 import 'view_insights.dart';
 import 'view_note_times.dart';
+import 'view_overview.dart';
 import 'view_pie_chart.dart';
 
 class SummaryView extends GetView<SummaryController> {
@@ -20,7 +20,7 @@ class SummaryView extends GetView<SummaryController> {
   Widget build(BuildContext context) {
     return MyLayout(
       drawerKey: drawerKeySummary,
-      appBarTitle: 'Summary'.text.size(11).bold.make(),
+      appBarTitle: 'Analytics'.text.size(11).bold.make(),
       appBarAction: appBarAction(),
       sideMenuContent: sideMenuContent(),
       bodyContent: bodyContent(),
@@ -34,23 +34,65 @@ class SummaryView extends GetView<SummaryController> {
       () => HStack(
         [
           IconButton(
-            icon: Image.asset('assets/icons/ic_pig.png', height: 18, width: 18, color: menu.value == 1 ? Get.isDarkMode ? Vx.white : AppColor.primary : Vx.neutral500),
+            icon: Image.asset(
+              'assets/icons/ic_pig.png',
+              height: 18,
+              width: 18,
+              color: menu.value == 1
+                  ? Get.isDarkMode
+                        ? Vx.white
+                        : AppColor.primary
+                  : Vx.neutral500,
+            ),
             onPressed: () => menu.value = 1,
           ),
           IconButton(
-            icon: Icon(CupertinoIcons.chart_bar_alt_fill, size: 18, color: menu.value == 2 ? Get.isDarkMode ? Vx.white : AppColor.primary : Vx.neutral500),
+            icon: Icon(
+              CupertinoIcons.chart_bar_alt_fill,
+              size: 18,
+              color: menu.value == 2
+                  ? Get.isDarkMode
+                        ? Vx.white
+                        : AppColor.primary
+                  : Vx.neutral500,
+            ),
             onPressed: () => menu.value = 2,
           ),
           IconButton(
-            icon: Icon(CupertinoIcons.chart_pie_fill, size: 18, color: menu.value == 3 ? Get.isDarkMode ? Vx.white : AppColor.primary : Vx.neutral500),
+            icon: Icon(
+              CupertinoIcons.chart_pie_fill,
+              size: 18,
+              color: menu.value == 3
+                  ? Get.isDarkMode
+                        ? Vx.white
+                        : AppColor.primary
+                  : Vx.neutral500,
+            ),
             onPressed: () => menu.value = 3,
           ),
           IconButton(
-            icon: Image.asset('assets/icons/ic_overview.png', height: 18, width: 18, color: menu.value == 4 ? Get.isDarkMode ? Vx.white : AppColor.primary : Vx.neutral500),
+            icon: Image.asset(
+              'assets/icons/ic_overview.png',
+              height: 18,
+              width: 18,
+              color: menu.value == 4
+                  ? Get.isDarkMode
+                        ? Vx.white
+                        : AppColor.primary
+                  : Vx.neutral500,
+            ),
             onPressed: () => menu.value = 4,
           ),
           IconButton(
-            icon: Icon(CupertinoIcons.chat_bubble_fill, size: 18, color: menu.value == 5 ? Get.isDarkMode ? Vx.white : AppColor.primary : Vx.neutral500),
+            icon: Icon(
+              CupertinoIcons.chat_bubble_fill,
+              size: 18,
+              color: menu.value == 5
+                  ? Get.isDarkMode
+                        ? Vx.white
+                        : AppColor.primary
+                  : Vx.neutral500,
+            ),
             onPressed: () => menu.value = 5,
           ),
         ],
@@ -118,7 +160,7 @@ class SummaryView extends GetView<SummaryController> {
                         Container(
                           color: AppColor.primary,
                           child: '${total.moneyFormatCompact()}'.text.color(AppColor.textOnBackground).size(9).minFontSize(9).bold.make().pSymmetric(h: 6, v: 2),
-                        ).cornerRadius(90)
+                        ).cornerRadius(90),
                       ],
                     ],
                   ).p8(),
@@ -166,7 +208,7 @@ class SummaryView extends GetView<SummaryController> {
   Widget buildUI() {
     switch (controller.menuSelected.value) {
       case 1:
-        return ViewBudget();
+        return ViewOverview();
       case 2:
         return ViewBarChart();
       case 3:

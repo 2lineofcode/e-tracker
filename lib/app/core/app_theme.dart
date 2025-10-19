@@ -17,6 +17,7 @@ mixin AppTheme {
       unselectedLabelStyle: TextStyle(fontSize: 13),
     ),
     dividerColor: AppColor.divider,
+    dividerTheme: DividerThemeData(thickness: 0.5, color: AppColor.divider),
   );
 
   /// * dark
@@ -29,6 +30,7 @@ mixin AppTheme {
       unselectedLabelStyle: TextStyle(fontSize: 13),
     ),
     dividerColor: AppColor.divider,
+    dividerTheme: DividerThemeData(thickness: 0.5, color: AppColor.divider),
   );
 
   /// load theme

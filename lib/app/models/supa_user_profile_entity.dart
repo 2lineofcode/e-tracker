@@ -16,6 +16,7 @@ class SupaUserProfile {
   num? ecoDay;
   num? averageDay;
   num? spenderDay;
+  num? paymentDay;
 
   SupaUserProfile({
     this.id,
@@ -29,6 +30,7 @@ class SupaUserProfile {
     this.ecoDay,
     this.averageDay,
     this.spenderDay,
+    this.paymentDay,
   });
 
   SupaUserProfile.fromJson(Map<String, dynamic> json) {
@@ -43,6 +45,7 @@ class SupaUserProfile {
     ecoDay = json['eco_day'] ?? 0;
     averageDay = json['average_day'] ?? 0;
     spenderDay = json['spender_day'] ?? 0;
+    paymentDay = json['pay_day'] ?? 28;
   }
 
   Map<String, dynamic> toJson() {
@@ -58,6 +61,7 @@ class SupaUserProfile {
     data['eco_day'] = ecoDay;
     data['average_day'] = averageDay;
     data['spender_day'] = spenderDay;
+    data['pay_day'] = paymentDay;
     return data;
   }
 

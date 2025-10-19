@@ -7,7 +7,6 @@ import '../../core/app_color.dart';
 import '../../helpers/helpers.dart';
 import '../widgets/widgets.dart';
 import 'section_appconfig.dart';
-import 'section_autocomplete.dart';
 import 'section_iemport.dart';
 import 'section_repeat.dart';
 import 'settings_controller.dart';
@@ -27,36 +26,7 @@ class SettingsView extends GetView<SettingsController> {
     );
   }
 
-  Widget appBarAction() {
-    return HStack(
-      [
-        Obx(
-          () => controller.menuSelected.value == SectionMenu.AUTO_COMPLETE
-              ? TextField(
-                  controller: controller.tfSearchAutoComplete,
-                  style: TextStyle(fontSize: 13),
-                  decoration: DecorationHelper.input(
-                    fillColor: Get.isDarkMode ? AppColor.card : null,
-                    hint: 'Search...',
-                    contentPadding: EdgeInsets.only(left: 8, right: 8),
-                    suffix: Icon(Icons.clear, size: 10).pOnly(top: 4, right: 8).onInkTap(() async {
-                      controller.tfSearchAutoComplete.clear();
-                      await controller.getAutoCompleteList();
-                    }),
-                  ),
-                  onSubmitted: (s) async {
-                    if (s.isNotEmpty) {
-                      await controller.getAutoCompleteList(q: s);
-                    } else {
-                      await controller.getAutoCompleteList();
-                    }
-                  },
-                ).wh(170, 28).pOnly(right: 12)
-              : 0.heightBox,
-        ),
-      ],
-    );
-  }
+  Widget appBarAction() => const SizedBox.shrink();
 
   Widget sideMenuContent() {
     return Obx(
@@ -86,8 +56,6 @@ class SettingsView extends GetView<SettingsController> {
     switch (controller.menuSelected.value) {
       case SectionMenu.APP_CONFIG:
         return SectionAppConfig();
-      case SectionMenu.AUTO_COMPLETE:
-        return SectionAutoComplete();
       case SectionMenu.REPEAT_SETTING:
         return SectionRepeat();
       case SectionMenu.IMPORT_EXPORT:
@@ -111,8 +79,6 @@ class SettingsView extends GetView<SettingsController> {
           switch (controller.menuSelected.value) {
             case SectionMenu.APP_CONFIG:
               return 'Version: ${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'.text.size(12).make();
-            case SectionMenu.AUTO_COMPLETE:
-              return '${controller.autoCompleteList.length} Record'.text.size(12).make();
             default:
               return Container();
           }

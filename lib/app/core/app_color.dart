@@ -3,10 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 mixin AppColor {
-
   /// selected / unselected
   static Color get primary => Get.isDarkMode ? Color.fromARGB(255, 93, 56, 114) : Color.fromARGB(255, 59, 12, 85);
-  static Color get secondary => Get.isDarkMode ? Color.fromARGB(255, 69, 45, 83).withAlpha(150): Vx.neutral200;
+  static Color get secondary => Get.isDarkMode ? Color.fromARGB(255, 69, 45, 83).withAlpha(150) : Vx.neutral200;
 
   /// layout
   static Color get sideMenuPrimary => Get.isDarkMode ? Color(0xFF261C2C) : Vx.neutral100;
@@ -15,10 +14,10 @@ mixin AppColor {
   static Color get emptyStatePrimary => Get.isDarkMode ? Color(0xff16141A) : Vx.neutral100;
 
   /// calender
-  static Color get calendarSelectedColor => Get.isDarkMode ? primary: primary.withAlpha(150);
+  static Color get calendarSelectedColor => Get.isDarkMode ? primary : primary.withAlpha(150);
   static Color get calendarTodayColor => secondary;
   static Color get calendarWeekEndColor => Get.isDarkMode ? Vx.red300 : Vx.red400;
-  
+
   /// note
   static Color get noteColor => Get.isDarkMode ? Vx.blue600.withAlpha(50) : Vx.blue600.withAlpha(150);
 
@@ -34,8 +33,8 @@ mixin AppColor {
   static Color get card => primary.withAlpha(50);
   static Color get box => primary.withAlpha(20);
   static Color get border => primary.withAlpha(80);
-  static Color get divider => primary.withAlpha(80);
-  
+  static Color get divider => neutral;
+
   /// text on background (special case)
   static Color get textOnBackground => Get.isDarkMode ? Vx.white : Vx.neutral100;
   static Color get textReverse => Get.isDarkMode ? Vx.white : Vx.black;
@@ -73,6 +72,5 @@ mixin AppColor {
   static Color get blue => Get.isDarkMode ? Vx.blue300 : Vx.blue600;
 
   /// neutral
-  static Color get neutral => Get.isDarkMode ? Vx.neutral700 : Vx.neutral300;
-  static Color get neutralLight => Get.isDarkMode ? Vx.neutral300 : Vx.neutral700;
+  static Color get neutral => Get.isDarkMode ? Vx.neutral400 : Vx.neutral500;
 }
