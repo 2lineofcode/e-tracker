@@ -20,7 +20,7 @@
         "supabase": true,
         "*.iml": true,
         "**/.netlify": true,
-        "**/.github": true,
+        "**/.github": false,
         "netlify.toml": true
     },
     "explorerExclude.backup": {},

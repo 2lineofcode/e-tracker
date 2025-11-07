@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_color.dart';
-import '../../helpers/helper_money.dart';
 import '../../helpers/helpers.dart';
 import '../widgets/widget_shimmer_summary.dart';
 import 'summary_controller.dart';
@@ -24,10 +23,7 @@ class ViewNoteTimes extends GetView<SummaryController> {
             Container(
               decoration: BoxDecoration(
                 color: AppColor.tableHeader,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(8),
-                  topRight: Radius.circular(8),
-                ),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
                 border: Border.all(color: Vx.neutral600),
               ),
               child: HStack([
