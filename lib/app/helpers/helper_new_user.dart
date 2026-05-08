@@ -81,7 +81,7 @@ mixin HelperNewUser {
           ExButtonElevated(
             onPressed: () async {
               // filepicker select file and upload to supabase storage
-              await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false).then((img) async {
+              await FilePicker.pickFiles(type: FileType.image, allowMultiple: false).then((img) async {
                 if (img != null) {
                   isReplacePhoto.value = true;
 

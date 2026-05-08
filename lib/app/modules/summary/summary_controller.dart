@@ -49,6 +49,11 @@ class SummaryController extends GetxController with StateMixin {
   final chatMessages = <Map<String, dynamic>>[].obs;
   final chatInputController = TextEditingController();
   final chatInputFocusNode = FocusNode();
+  final chatTemplates = [
+    'hitung berapa pengeluaran rata2 ku bulan ini',
+    'top 5 pengeluaran terbesar di bulan ini',
+    'di kategori apa pengeluaran terbesar di bulan ini',
+  ];
 
   // !income
   final income = 0.obs;

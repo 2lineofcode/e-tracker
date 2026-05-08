@@ -37,13 +37,18 @@ class SettingsView extends GetView<SettingsController> {
           final item = controller.menuList[index];
           return Obx(
             () => InkWell(
-              onTap: () => controller.onMenuChange(item),
+              onTap: () => controller.onMenuChange(item['label']),
               child: Container(
                 decoration: ExDecorator.box(
-                  fillColor: item == controller.menuSelected.value ? AppColor.sideMenuSelected : Colors.transparent,
+                  fillColor: item['label'] == controller.menuSelected.value ? AppColor.sideMenuSelected : Colors.transparent,
                   borderColor: Colors.transparent,
                 ),
-                child: '$item'.text.size(11).make().p8(),
+                child: HStack(
+                  [
+                    Icon(item['icon'], color: AppColor.textReverse, size: 14).pOnly(right: 8),
+                    '${item['label']}'.text.size(11).make(),
+                  ],
+                ).p8(),
               ).pSymmetric(h: 10).pOnly(bottom: 8),
             ),
           );

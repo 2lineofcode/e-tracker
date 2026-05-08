@@ -63,7 +63,7 @@ class SectionAppConfig extends GetView<SettingsController> {
                         '${controller.userProfile.value.fullName}'.text.bold.make(),
                       ],
                       '${db.auth.currentSession?.user.email}'.text.size(13).neutral400.make(),
-                      '${controller.userProfile.value.age} Y/o'.text.size(13).neutral400.make(),
+                      '${controller.userProfile.value.age} Y/o'.text.size(13).orange300.make(),
                     ]).pSymmetric(h: 12),
                   ]).pOnly(bottom: 24),
           ),
@@ -114,6 +114,7 @@ class SectionAppConfig extends GetView<SettingsController> {
                 decoration: HelperDecoration.input(
                   hint: '≤ 50.000',
                   prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
+                  fillColor: Get.isDarkMode ? Colors.black : Colors.white,
                 ),
                 style: TextStyle(fontSize: 13),
                 inputFormatters: [
@@ -134,6 +135,7 @@ class SectionAppConfig extends GetView<SettingsController> {
                 decoration: HelperDecoration.input(
                   hint: '≤ 100.000',
                   prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
+                  fillColor: Get.isDarkMode ? Colors.black : Colors.white,
                 ),
                 style: TextStyle(fontSize: 13),
                 inputFormatters: [
@@ -155,6 +157,7 @@ class SectionAppConfig extends GetView<SettingsController> {
               decoration: HelperDecoration.input(
                 hint: '> 100.000',
                 prefixIcon: '> '.text.make().pOnly(left: 12, top: 4),
+                fillColor: Get.isDarkMode ? Colors.black : Colors.white,
               ),
               style: TextStyle(fontSize: 13),
               inputFormatters: [

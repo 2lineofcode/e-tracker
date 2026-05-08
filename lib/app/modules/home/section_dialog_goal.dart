@@ -83,6 +83,8 @@ mixin DialogGoal {
                 final remainingFromTarget = (item.target ?? 0) - (item.amount ?? 0);
                 final monthsLeft = moreMonths > 0 ? moreMonths : 1;
                 final savingRecomend = monthsLeft == 0 ? remainingFromTarget : remainingFromTarget / monthsLeft;
+                final safeDaysLeft = diffDays > 0 ? diffDays : 1;
+                final dailySaving = remainingFromTarget > 0 ? remainingFromTarget / safeDaysLeft : 0;
 
                 return Container(
                   decoration: ExDecorator.box(borderRadius: 12, borderColor: AppColor.border, fillColor: AppColor.box),
@@ -124,6 +126,12 @@ mixin DialogGoal {
                           'per month'.text.size(11).minFontSize(11).make(),
                           Spacer(),
                         ]),
+                        HStack([
+                          'Daily target: '.text.size(11).minFontSize(11).make(),
+                          '${dailySaving.moneyFormatCompact()} '.text.bold.size(11).minFontSize(11).color(AppColor.blue).make(),
+                          'per day'.text.size(11).minFontSize(11).make(),
+                          Spacer(),
+                        ]).pOnly(top: 2),
                       ]).pSymmetric(v: 8, h: 12).color(AppColor.box).cornerRadius(8),
                     ],
                   ),
@@ -158,6 +166,7 @@ mixin DialogGoal {
           onReady: () async => _fnTitle.requestFocus(),
           onClose: (_) async {
             await Overlayment.dismissLast();
+            await 100.milliseconds.delay();
             await openList();
           },
         ),

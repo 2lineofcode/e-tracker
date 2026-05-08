@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:csv/csv.dart';
+import 'package:csv/csv.dart' as csv;
 import 'package:ex_kit/ex.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,7 +26,7 @@ mixin HelperImportExport {
 
       /// get path
       if (customPath == null) {
-        final abPath = await FilePicker.platform.getDirectoryPath(dialogTitle: 'Save to');
+        final abPath = await FilePicker.getDirectoryPath(dialogTitle: 'Save to');
         path = abPath?.replaceAll('/Volumes/Macintosh HD', '');
         if (path == null) return;
       } else {
@@ -88,14 +88,75 @@ mixin HelperImportExport {
 
       /// export to csv
       if (customCallback == null) {
-        File(csvFilePath).writeAsStringSync(ListToCsvConverter().convert(csvData));
+        File(csvFilePath).writeAsStringSync(csv.csv.encode(csvData));
         ExSnackbar.success(csvFilePath);
       } else {
-        File(csvFilePath).writeAsStringSync(ListToCsvConverter().convert(csvData));
+        File(csvFilePath).writeAsStringSync(csv.csv.encode(csvData));
         customCallback.call(File(csvFilePath));
       }
     } catch (e) {
       ExSnackbar.danger('$e');
+    }
+  }
+
+  static Future<void> exportFullBackupBundle({String? customPath, Function(File)? customCallback}) async {
+    try {
+      String? path;
+
+      if (customPath == null) {
+        final abPath = await FilePicker.getDirectoryPath(dialogTitle: 'Save full backup to');
+        path = abPath?.replaceAll('/Volumes/Macintosh HD', '');
+        if (path == null) return;
+      } else {
+        path = customPath;
+      }
+
+      if (currentUserId == null) {
+        ExSnackbar.danger('User not authenticated');
+        return;
+      }
+
+      final data = <String, dynamic>{
+        'meta': {
+          'app': 'expense_tracker',
+          'version': 1,
+          'exported_at': DateTime.now().toStringEx(),
+          'user_id': currentUserId,
+        },
+        'profiles': await _safeSelectRows('profiles', idColumn: 'id'),
+        'expense': await _safeSelectRows('expense'),
+        'budgets': await _safeSelectRows('budgets'),
+        'assets': await _safeSelectRows('assets'),
+        'goals': await _safeSelectRows('goals'),
+        'notes': await _safeSelectRows('notes'),
+        'category': await _safeSelectRows('category'),
+        'autocomplete': await _safeSelectRows('autocomplete'),
+      };
+
+      final filePath = '$path/etracker_full_${DateTime.now().toStringEx(format: 'ddMMMy_HHmm')}.json';
+      final file = File(filePath);
+      file.writeAsStringSync(JsonEncoder.withIndent('  ').convert(data));
+
+      if (customCallback == null) {
+        ExSnackbar.success(filePath);
+      } else {
+        customCallback.call(file);
+      }
+    } catch (e) {
+      ExSnackbar.danger('$e');
+    }
+  }
+
+  static Future<List<dynamic>> _safeSelectRows(String table, {String idColumn = 'user_id'}) async {
+    try {
+      if (currentUserId == null) return [];
+      return await db.from(table).select().eq(idColumn, currentUserId!);
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST205') {
+        logW('$table table not found, skipping export');
+        return [];
+      }
+      rethrow;
     }
   }
 
@@ -106,7 +167,7 @@ mixin HelperImportExport {
 
       /// get path
       if (customPath == null) {
-        final result = await FilePicker.platform.pickFiles(allowedExtensions: ['csv'], type: FileType.custom);
+        final result = await FilePicker.pickFiles(allowedExtensions: ['csv'], type: FileType.custom);
         if (result == null) return;
         path = result.files.first.path ?? '';
       } else {
@@ -117,7 +178,7 @@ mixin HelperImportExport {
       /// # CVS TO JSON ####################################################################
       /// ----------------------------------------------------------------------------------
       final csvString = await File(path).readAsString();
-      List<List<dynamic>> csvTable = CsvToListConverter().convert(csvString);
+      List<List<dynamic>> csvTable = csv.csv.decode(csvString);
       List<Map<String, dynamic>> jsonList = [];
       List<String> headers = csvTable[0].map((header) => header.toString()).toList();
 

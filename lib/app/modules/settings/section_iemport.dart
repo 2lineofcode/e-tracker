@@ -73,6 +73,17 @@ class SectionIEmport extends GetView<SettingsController> {
             ),
           ]).pOnly(bottom: 12),
 
+          HStack([
+            VStack([
+              'Export Full Backup'.text.make(),
+              'Expense, budgets, assets, goals, notes'.text.size(10).minFontSize(10).color(AppColor.neutral).make(),
+            ]).expand(),
+            IconButton(
+              onPressed: () async => await HelperImportExport.exportFullBackupBundle(),
+              icon: Icon(Icons.archive_outlined, size: 16),
+            ),
+          ]).pOnly(bottom: 12),
+
           // 3
           buttonDelete(
             title: 'Delete All Data',

@@ -56,7 +56,10 @@ mixin DialogExpense {
     }
   }
 
-  static Future<void> _manualInputForMobile({SupaExpense? expense, Function? customCallback}) async {
+  static Future<void> _manualInputForMobile({
+    SupaExpense? expense,
+    Function? customCallback,
+  }) async {
     final _controller = Get.find<HomeController>();
 
     if (_controller.categoryList.isEmptyOrNull) {
@@ -64,15 +67,32 @@ mixin DialogExpense {
       return;
     }
 
-    final _tfDate = TextEditingController(text: expense != null ? expense.date : '');
-    final _tfNote = TextEditingController(text: expense != null ? expense.note : '');
-    final _tfDescription = TextEditingController(text: expense != null ? expense.detail : '');
-    final _tfCategory = (expense != null ? expense.categoryName ?? '' : _controller.categoryList[0].code).obs;
-    final _tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
+    final _tfDate = TextEditingController(
+      text: expense != null ? expense.date : '',
+    );
+    final _tfNote = TextEditingController(
+      text: expense != null ? expense.note : '',
+    );
+    final _tfDescription = TextEditingController(
+      text: expense != null ? expense.detail : '',
+    );
+    final _tfCategory =
+        (expense != null
+                ? expense.categoryName ?? ''
+                : _controller.categoryList[0].code)
+            .obs;
+    final _tfAmount = TextEditingController(
+      text: expense != null ? expense.amount!.moneyFormat() : '',
+    );
 
     /// flag
-    final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
-    final isTypeNotes = expense != null && expense.resolvedCategory.code == 'expense:misc:notes' ? true.obs : false.obs;
+    final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull
+        ? true.obs
+        : false.obs;
+    final isTypeNotes =
+        expense != null && expense.resolvedCategory.code == 'expense:misc:notes'
+        ? true.obs
+        : false.obs;
     ExBottomSheet.basic(
       title: '${expense != null ? 'Edit Expense' : 'Add Expense'}',
       content: VStack(
@@ -82,9 +102,16 @@ mixin DialogExpense {
               controller: _tfDate,
               readOnly: true,
               placeholder: 'Date',
-              decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+              decoration: BoxDecoration(
+                color: Get.isDarkMode ? Vx.black : Vx.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
               placeholderStyle: TextStyle(fontSize: 13),
-              prefix: Icon(CupertinoIcons.calendar_today, size: 16, color: AppColor.textReverse).pOnly(left: 8),
+              prefix: Icon(
+                CupertinoIcons.calendar_today,
+                size: 16,
+                color: AppColor.textReverse,
+              ).pOnly(left: 8),
               style: TextStyle(fontSize: 13, color: AppColor.textReverse),
               onTap: () => ExDatePicker.materialDatePicker(
                 initialDate: expense.date?.toDateEx(format: yMd),
@@ -98,7 +125,10 @@ mixin DialogExpense {
             controller: _tfNote,
             placeholder: 'Note: Nasi Padang',
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-            decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+            decoration: BoxDecoration(
+              color: Get.isDarkMode ? Vx.black : Vx.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
             style: TextStyle(fontSize: 13, color: AppColor.textReverse),
           ).pOnly(bottom: 16),
 
@@ -107,7 +137,10 @@ mixin DialogExpense {
               Spacer(),
               Text(
                 'with Detail?',
-                style: TextStyle(fontSize: 11, decoration: TextDecoration.underline),
+                style: TextStyle(
+                  fontSize: 11,
+                  decoration: TextDecoration.underline,
+                ),
               ).onInkTap(() {
                 isShowDetail.value = !isShowDetail.value;
               }),
@@ -128,7 +161,10 @@ mixin DialogExpense {
                 textAlignVertical: TextAlignVertical.top,
                 textAlign: TextAlign.left,
                 clearButtonMode: OverlayVisibilityMode.editing,
-                decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+                decoration: BoxDecoration(
+                  color: Get.isDarkMode ? Vx.black : Vx.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ).pOnly(bottom: 16),
             ),
           ),
@@ -148,13 +184,17 @@ mixin DialogExpense {
                 group.items.map((element) {
                   return DropdownMenuItem<String>(
                     value: element.code,
-                    child: HStack(
-                      alignment: MainAxisAlignment.spaceEvenly,
-                      [
-                        Icon(element.icon ?? Icons.circle_outlined, size: 16, color: element.color).pOnly(right: 8),
-                        Text(element.label),
-                      ],
-                    ),
+                    child: HStack([
+                      Icon(
+                        element.icon ?? Icons.circle_outlined,
+                        size: 16,
+                        color: element.color,
+                      ).pOnly(right: 8),
+                      Text(
+                        '${element.label}',
+                        overflow: TextOverflow.ellipsis,
+                      ).w(250),
+                    ]),
                   );
                 }),
               );
@@ -197,11 +237,18 @@ mixin DialogExpense {
               child: CupertinoTextField(
                 controller: _tfAmount,
                 placeholder: 'Rp. 10.000',
-                decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+                decoration: BoxDecoration(
+                  color: Get.isDarkMode ? Vx.black : Vx.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                 prefix: IconButton(
-                  icon: Icon(Icons.calculate, size: 14, color: AppColor.textReverse),
+                  icon: Icon(
+                    Icons.calculate,
+                    size: 14,
+                    color: AppColor.textReverse,
+                  ),
                   onPressed: () {
                     showModalBottomSheet(
                       isScrollControlled: true,
@@ -211,10 +258,12 @@ mixin DialogExpense {
                         child: SimpleCalculator(
                           autofocus: true,
                           hideSurroundingBorder: true,
-                          value: _tfAmount.text.moneyUnformat()?.toDouble() ?? 0.0,
+                          value:
+                              _tfAmount.text.moneyUnformat()?.toDouble() ?? 0.0,
                           onTappedDisplay: (p0, p1) => Get.back(),
                           onChanged: (key, value, expression) {
-                            final moneyFormat = value!.toString().toInt()?.moneyFormat() ?? '';
+                            final moneyFormat =
+                                value!.toString().toInt()?.moneyFormat() ?? '';
                             _tfAmount.text = moneyFormat;
                           },
                         ),
@@ -223,11 +272,18 @@ mixin DialogExpense {
                   },
                 ),
                 inputFormatters: [
-                  CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+                  CurrencyTextInputFormatter(
+                    NumberFormat.simpleCurrency(
+                      locale: 'id_ID',
+                      name: 'Rp.',
+                      decimalDigits: 0,
+                    ),
+                  ),
                   LengthLimitingTextInputFormatter(16),
                 ],
                 keyboardType: TextInputType.number,
                 onSubmitted: (_) async => {
+                  Get.back(),
                   await _submitExpense(
                     _tfNote.text,
                     _tfDescription.text,
@@ -249,16 +305,23 @@ mixin DialogExpense {
             [
               if (expense != null) ...[
                 ExButtonElevated(
-                  child: Text('Delete', style: TextStyle(color: Vx.red500, fontSize: 13)),
-                  onPressed: () async => await _deleteExpense(
-                    expense: expense,
-                    callback: customCallback,
+                  child: Text(
+                    'Delete',
+                    style: TextStyle(color: Vx.red500, fontSize: 13),
                   ),
+                  onPressed: () async {
+                    Get.back();
+                    await _deleteExpense(
+                      expense: expense,
+                      callback: customCallback,
+                    );
+                  },
                 ).pOnly(right: 12).expand(),
               ],
               ExButtonElevated(
                 child: Text('Submit', style: TextStyle(fontSize: 13)),
                 onPressed: () async {
+                  Get.back();
                   await _submitExpense(
                     _tfNote.text,
                     _tfDescription.text,
@@ -277,7 +340,10 @@ mixin DialogExpense {
     );
   }
 
-  static Future<void> _manualInputForDesktop({SupaExpense? expense, Function? customCallback}) async {
+  static Future<void> _manualInputForDesktop({
+    SupaExpense? expense,
+    Function? customCallback,
+  }) async {
     // local inject
     final _controller = Get.find<HomeController>();
 
@@ -286,27 +352,54 @@ mixin DialogExpense {
       return;
     }
 
-    final _tfDate = TextEditingController(text: expense != null ? expense.date : '');
-    final _tfNote = TextEditingController(text: expense != null ? expense.note : '');
+    final _tfDate = TextEditingController(
+      text: expense != null ? expense.date : '',
+    );
+    final _tfNote = TextEditingController(
+      text: expense != null ? expense.note : '',
+    );
     final _fnNote = FocusNode();
-    final _tfDescription = TextEditingController(text: expense != null ? expense.detail : '');
-    final _tfCategory = TextEditingController(text: expense != null ? resolveExpenseCategory(expense.categoryName ?? '').label : resolveExpenseCategory(_controller.categoryList[0].code).label);
-    final _tfCategoryCode = (expense != null ? expense.categoryName ?? '' : _controller.categoryList[0].code).obs;
+    final _tfDescription = TextEditingController(
+      text: expense != null ? expense.detail : '',
+    );
+    final _tfCategory = TextEditingController(
+      text: expense != null
+          ? resolveExpenseCategory(expense.categoryName ?? '').label
+          : resolveExpenseCategory(_controller.categoryList[0].code).label,
+    );
+    final _tfCategoryCode =
+        (expense != null
+                ? expense.categoryName ?? ''
+                : _controller.categoryList[0].code)
+            .obs;
 
-    final _tfAmount = TextEditingController(text: expense != null ? expense.amount!.moneyFormat() : '');
+    final _tfAmount = TextEditingController(
+      text: expense != null ? expense.amount!.moneyFormat() : '',
+    );
 
     /// flag
-    final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull ? true.obs : false.obs;
-    final isTypeNotes = expense != null && expense.resolvedCategory.code == 'expense:misc:notes' ? true.obs : false.obs;
+    final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull
+        ? true.obs
+        : false.obs;
+    final isTypeNotes =
+        expense != null && expense.resolvedCategory.code == 'expense:misc:notes'
+        ? true.obs
+        : false.obs;
 
     await Overlayment.show(
       context: Get.context!,
       OverPanel(
         width: 270,
         alignment: Alignment.center,
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColor.appbarPrimary),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: AppColor.appbarPrimary,
+        ),
         backgroundSettings: BackgroundSettings(color: Colors.black54, blur: 1),
-        animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
+        animation: OverScaleAnimation(
+          durationMilliseconds: 100,
+          reverseDurationMilliseconds: 100,
+        ),
         actions: OverlayActions(
           onReady: () async => _fnNote.requestFocus(),
           onClose: (_) async => await Overlayment.dismissLast(),
@@ -316,10 +409,15 @@ mixin DialogExpense {
             VStack([
               // header
               HStack([
-                '${expense != null ? 'Edit Expense' : 'Add Expense'}'.text.bold.make(),
+                '${expense != null ? 'Edit Expense' : 'Add Expense'}'.text.bold
+                    .make(),
                 Spacer(),
                 IconButton(
-                  icon: Icon(Icons.close, size: 16, color: AppColor.textReverse),
+                  icon: Icon(
+                    Icons.close,
+                    size: 16,
+                    color: AppColor.textReverse,
+                  ),
                   onPressed: () async => await Overlayment.dismissLast(),
                 ),
               ]).pOnly(bottom: 12),
@@ -331,8 +429,15 @@ mixin DialogExpense {
                   readOnly: true,
                   placeholder: 'Date',
                   placeholderStyle: TextStyle(fontSize: 13),
-                  decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
-                  prefix: Icon(UIconsPro.solidRounded.calendar_day, size: 13, color: AppColor.textReverse).pOnly(left: 12, right: 4),
+                  decoration: BoxDecoration(
+                    color: Get.isDarkMode ? Vx.black : Vx.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  prefix: Icon(
+                    UIconsPro.solidRounded.calendar_day,
+                    size: 13,
+                    color: AppColor.textReverse,
+                  ).pOnly(left: 12, right: 4),
                   style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                   onTap: () => HelperOverlay.openDatePicker(
                     initialDate: expense.date?.toDateEx(format: yMd),
@@ -347,16 +452,28 @@ mixin DialogExpense {
                 autofocus: true,
                 placeholder: 'Note: Nasi Padang',
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-                decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+                decoration: BoxDecoration(
+                  color: Get.isDarkMode ? Vx.black : Vx.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-                prefix: Icon(UIconsPro.solidRounded.notebook, size: 13, color: AppColor.textReverse).pOnly(left: 12, right: 4),
+                prefix: Icon(
+                  UIconsPro.solidRounded.notebook,
+                  size: 13,
+                  color: AppColor.textReverse,
+                ).pOnly(left: 12, right: 4),
               ).pOnly(bottom: 8),
 
               HStack([
                 Spacer(),
-                'with Detail?'.text.size(11).minFontSize(11).underline.make().onInkTap(() {
-                  isShowDetail.value = !isShowDetail.value;
-                }),
+                'with Detail?'.text
+                    .size(11)
+                    .minFontSize(11)
+                    .underline
+                    .make()
+                    .onInkTap(() {
+                      isShowDetail.value = !isShowDetail.value;
+                    }),
               ]).pOnly(bottom: 12),
 
               /// description / detail
@@ -366,8 +483,14 @@ mixin DialogExpense {
                   child: CupertinoTextField(
                     controller: _tfDescription,
                     placeholder: 'Detail: Nama Toko/Waktu',
-                    decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
-                    placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+                    decoration: BoxDecoration(
+                      color: Get.isDarkMode ? Vx.black : Vx.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    placeholderStyle: TextStyle(
+                      fontSize: 13,
+                      color: Vx.neutral500,
+                    ),
                     style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                     minLines: 2,
                     maxLines: 4,
@@ -382,10 +505,24 @@ mixin DialogExpense {
                   controller: _tfCategory,
                   readOnly: true,
                   placeholder: 'Select Category',
-                  decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
-                  placeholderStyle: TextStyle(fontSize: 13, color: AppColor.neutral),
-                  prefix: Icon(resolveExpenseCategory(_tfCategoryCode.value).icon, size: 13, color: resolveExpenseCategory(_tfCategoryCode.value).color).pOnly(left: 12, right: 4),
-                  suffix: Icon(UIconsPro.solidRounded.caret_down, size: 13, color: AppColor.textReverse).pOnly(right: 12),
+                  decoration: BoxDecoration(
+                    color: Get.isDarkMode ? Vx.black : Vx.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  placeholderStyle: TextStyle(
+                    fontSize: 13,
+                    color: AppColor.neutral,
+                  ),
+                  prefix: Icon(
+                    resolveExpenseCategory(_tfCategoryCode.value).icon,
+                    size: 13,
+                    color: resolveExpenseCategory(_tfCategoryCode.value).color,
+                  ).pOnly(left: 12, right: 4),
+                  suffix: Icon(
+                    UIconsPro.solidRounded.caret_down,
+                    size: 13,
+                    color: AppColor.textReverse,
+                  ).pOnly(right: 12),
                   style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                   onTap: () => HelperOverlay.openCategoryPicker(
                     callback: (c) {
@@ -403,12 +540,28 @@ mixin DialogExpense {
                   child: CupertinoTextField(
                     controller: _tfAmount,
                     placeholder: 'Rp. 10.000',
-                    placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-                    decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+                    placeholderStyle: TextStyle(
+                      fontSize: 13,
+                      color: Vx.neutral500,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Get.isDarkMode ? Vx.black : Vx.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
                     style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-                    prefix: Icon(UIconsPro.solidRounded.coins, size: 13, color: AppColor.textReverse).pOnly(left: 12, right: 4),
+                    prefix: Icon(
+                      UIconsPro.solidRounded.coins,
+                      size: 13,
+                      color: AppColor.textReverse,
+                    ).pOnly(left: 12, right: 4),
                     inputFormatters: [
-                      CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+                      CurrencyTextInputFormatter(
+                        NumberFormat.simpleCurrency(
+                          locale: 'id_ID',
+                          name: 'Rp.',
+                          decimalDigits: 0,
+                        ),
+                      ),
                       LengthLimitingTextInputFormatter(16),
                     ],
                     keyboardType: TextInputType.number,
@@ -426,16 +579,31 @@ mixin DialogExpense {
                   child: 'Delete'.text.color(AppColor.red).size(13).make(),
                   onPressed: () async {
                     await Overlayment.dismissLast();
-                    await _deleteExpense(expense: expense, callback: customCallback);
+                    await _deleteExpense(
+                      expense: expense,
+                      callback: customCallback,
+                    );
                   },
                 ).expand(),
-                Container(width: 0.5, height: 24, color: AppColor.divider).pSymmetric(h: 4),
+                Container(
+                  width: 0.5,
+                  height: 24,
+                  color: AppColor.divider,
+                ).pSymmetric(h: 4),
               ],
               ExButtonText(
                 child: Text('Submit', style: TextStyle(fontSize: 13)),
                 onPressed: () async {
                   await Overlayment.dismissLast();
-                  await _submitExpense(_tfNote.text, _tfDescription.text, _tfCategoryCode.value, _tfAmount.text, expense: expense, tfDate: _tfDate.text, customCallback: customCallback);
+                  await _submitExpense(
+                    _tfNote.text,
+                    _tfDescription.text,
+                    _tfCategoryCode.value,
+                    _tfAmount.text,
+                    expense: expense,
+                    tfDate: _tfDate.text,
+                    customCallback: customCallback,
+                  );
                 },
               ).expand(),
             ]).pOnly(bottom: 8, left: 12, right: 12),
@@ -489,12 +657,24 @@ mixin DialogExpense {
     else {
       final _tfText = TextEditingController();
       final _fnText = FocusNode();
+      final _isListening = false.obs;
+      final _isVoiceSupported = kIsWeb && HelperVoiceInput.isSupported;
+
+      void applyVoiceText(String text) {
+        final current = _tfText.text.trim();
+        _tfText.text = current.isEmpty ? text : '$current $text';
+        _tfText.selection = TextSelection.fromPosition(
+          TextPosition(offset: _tfText.text.length),
+        );
+      }
 
       ExBottomSheet.basic(
         title: 'Add Expense',
         content: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: kIsWeb ? MediaQuery.of(Get.context!).size.height * 0.35 : MediaQuery.of(Get.context!).size.height * 0.8,
+            maxHeight: kIsWeb
+                ? MediaQuery.of(Get.context!).size.height * 0.35
+                : MediaQuery.of(Get.context!).size.height * 0.8,
           ),
           child: SingleChildScrollView(
             child: Column(
@@ -513,7 +693,9 @@ mixin DialogExpense {
                     minLines: 3,
                     maxLines: 3,
                     autofocus: !kIsWeb,
-                    placeholder: kIsWeb ? 'Tap here to type your expense...' : 'Type your expense here...',
+                    placeholder: kIsWeb
+                        ? 'Tap here to type your expense...'
+                        : 'Type your expense here...',
                     placeholderStyle: TextStyle(
                       fontSize: 13,
                       color: Vx.neutral500,
@@ -526,14 +708,55 @@ mixin DialogExpense {
                   ),
                 ),
                 Divider().pOnly(top: 6, bottom: 0),
-                ExButtonText(
-                  label: 'Submit',
-                  labelSize: 13,
-                  onPressed: () async {
-                    Get.back();
-                    await _processAIInput(_tfText.text);
-                  },
-                ).wFull(Get.context!),
+                HStack([
+                  if (_isVoiceSupported) ...[
+                    Obx(
+                      () => ExButtonText(
+                        onPressed: _isListening.value
+                            ? null
+                            : () {
+                                HelperVoiceInput.listenIndonesian(
+                                  onStart: () => _isListening.value = true,
+                                  onEnd: () => _isListening.value = false,
+                                  onResult: applyVoiceText,
+                                  onError: (e) async {
+                                    _isListening.value = false;
+                                    await HelperToast.warn('$e');
+                                  },
+                                );
+                              },
+                        child: HStack([
+                          Icon(
+                            _isListening.value
+                                ? CupertinoIcons.waveform
+                                : CupertinoIcons.mic_fill,
+                            size: 14,
+                            color: _isListening.value
+                                ? AppColor.red
+                                : AppColor.textReverse,
+                          ).pOnly(right: 6),
+                          (_isListening.value ? 'Listening...' : 'Voice').text
+                              .size(12)
+                              .minFontSize(12)
+                              .make(),
+                        ]).centered(),
+                      ).expand(),
+                    ),
+                    Container(
+                      height: 24,
+                      width: 0.5,
+                      color: AppColor.border,
+                    ).pSymmetric(h: 8),
+                  ],
+                  ExButtonText(
+                    label: 'Submit',
+                    labelSize: 13,
+                    onPressed: () async {
+                      Get.back();
+                      await _processAIInput(_tfText.text);
+                    },
+                  ).expand(),
+                ]).wFull(Get.context!),
                 12.heightBox,
               ],
             ).pSymmetric(h: 24),
@@ -558,7 +781,7 @@ mixin DialogExpense {
       You must pick a category value that aligns with the transaction type using the provided list.
       here the category list: ${_controller.categoryList.map((e) => e.code).join(', ')}
 
-      `note` TitleCase format is required, simplify the detail.
+      `note` TitleCase format is required, simplify the detail. better use indonesia language
       `detail` if user put much detail, put it, but if small detail keep empty string.
       `category` is required.
       `amount` is required.
@@ -574,10 +797,12 @@ mixin DialogExpense {
       }
     ''');
 
+    // If the user does not specify a date, assume it is the current date.
+    // here the category list: ${_controller.categoryList.map((e) => e.code).join(', ')}
+
     final response = await groq.sendMessage('''
       Current date: ${DateTime.now().toStringEx(format: yMd)}
-      If the user does not specify a date, assume it is the current date.
-      here the category list: ${_controller.categoryList.map((e) => e.code).join(', ')}
+      date selected is: ${_controller.focusedDay.value.toStringEx(format: yMd)}
       If no category fits, use "expense:unkown"
       Analyze the following text:
       $userText
@@ -646,25 +871,75 @@ mixin DialogExpense {
       id: expense != null ? expense.id : UuidV4().generate(),
       userId: db.auth.currentSession?.user.id ?? '',
       createdAt: DateTime.now().toStringEx(),
-      date: tfDate.isNotEmptyAndNotNull ? tfDate : _controller.focusedDay.value.toStringEx(format: yMd),
+      date: tfDate.isNotEmptyAndNotNull
+          ? tfDate
+          : _controller.focusedDay.value.toStringEx(format: yMd),
       amount: tfAmount.moneyUnformat(),
       categoryName: tfCategory,
       note: '${tfNote.toTitleCase}',
       detail: tfDescription ?? '',
     );
 
-    if (resolveExpenseCategory(newExpense.categoryName).code == 'expense:misc:notes') {
+    if (resolveExpenseCategory(newExpense.categoryName).code ==
+        'expense:misc:notes') {
       newExpense.amount = 0;
     }
+
+    final duplicates = await _repo.findPotentialDuplicate(
+      date:
+          newExpense.date ??
+          _controller.focusedDay.value.toStringEx(format: yMd),
+      note: newExpense.note ?? '',
+      amount: newExpense.amount ?? 0,
+      excludeId: expense?.id,
+    );
+
+    if (duplicates.isNotEmpty) {
+      final duplicate = duplicates.first;
+      ExAlert.confirm(
+        title: 'Possible Duplicate',
+        message:
+            '${duplicate.note} (${duplicate.amount?.moneyFormat()}) already exists on ${duplicate.date?.reformatDate(from: yMd, to: 'dd MMM y')}.\n\nContinue saving this transaction?',
+        btnYesText: 'Save Anyway',
+        onYes: () async {
+          Get.back();
+          await _persistExpense(
+            newExpense,
+            isEdit: expense != null,
+            customCallback: customCallback,
+          );
+        },
+      );
+      return;
+    }
+
+    await _persistExpense(
+      newExpense,
+      isEdit: expense != null,
+      customCallback: customCallback,
+    );
+  }
+
+  static Future<void> _persistExpense(
+    SupaExpense newExpense, {
+    required bool isEdit,
+    Function? customCallback,
+  }) async {
+    final _controller = Get.find<HomeController>();
+    final _repo = Get.find<HomeRepository>();
 
     /// process data
     try {
       /// insert to db
-      expense != null ? await _repo.editExpense(newExpense) : await _repo.addExpense(newExpense);
+      isEdit
+          ? await _repo.editExpense(newExpense)
+          : await _repo.addExpense(newExpense);
 
       /// refresh data after insert
       await _controller.getExpense(
-        find: _controller.tfSearchExpense.value.text.isNotBlank ? _controller.tfSearchExpense.value.text : null,
+        find: _controller.tfSearchExpense.value.text.isNotBlank
+            ? _controller.tfSearchExpense.value.text
+            : null,
       );
       await _controller.getCount1Month(_controller.focusedDay.value);
       _controller.rpcSpenderDay.value = await _repo.rpcGetSpenderDay(
@@ -672,11 +947,17 @@ mixin DialogExpense {
       );
       await customCallback?.call();
       // await HelperToast.info('Successfully ${expense != null ? 'Edit' : 'Added'} $tfNote');
-      await _controller.onCalenderRefreshEvent(period: _controller.focusedDay.value.toStringEx(format: yM));
+      await _controller.onCalenderRefreshEvent(
+        period: _controller.focusedDay.value.toStringEx(format: yM),
+      );
     } catch (e) {
       logE('e: $e');
-      await HelperErrorLog.record(page: 'section_dialog_input', action: '_submitExpense', stack: e.toString());
-      await HelperToast.error('Failed to ${expense != null ? 'Edit' : 'Added'} Data');
+      await HelperErrorLog.record(
+        page: 'section_dialog_input',
+        action: '_persistExpense',
+        stack: e.toString(),
+      );
+      await HelperToast.error('Failed to ${isEdit ? 'Edit' : 'Added'} Data');
     }
   }
 
@@ -739,7 +1020,9 @@ mixin DialogExpense {
                 style: TextStyle(decoration: TextDecoration.underline),
                 overflow: TextOverflow.ellipsis,
               ).onInkTap(() {
-                _tfStartDate.text = DateTime.now().subtract(Duration(days: DateTime.now().day - 1)).toStringEx(format: yMd);
+                _tfStartDate.text = DateTime.now()
+                    .subtract(Duration(days: DateTime.now().day - 1))
+                    .toStringEx(format: yMd);
                 _tfEndDate.text = DateTime.now()
                     .add(
                       Duration(
@@ -754,7 +1037,9 @@ mixin DialogExpense {
                 style: TextStyle(decoration: TextDecoration.underline),
                 overflow: TextOverflow.ellipsis,
               ).onInkTap(() {
-                _tfStartDate.text = DateTime.now().subtract(Duration(days: 7)).toStringEx(format: yMd);
+                _tfStartDate.text = DateTime.now()
+                    .subtract(Duration(days: 7))
+                    .toStringEx(format: yMd);
                 _tfEndDate.text = DateTime.now().toStringEx(format: yMd);
               }),
               Spacer(),
@@ -763,7 +1048,9 @@ mixin DialogExpense {
                 style: TextStyle(decoration: TextDecoration.underline),
                 overflow: TextOverflow.ellipsis,
               ).onInkTap(() {
-                _tfStartDate.text = DateTime.now().subtract(Duration(days: 30)).toStringEx(format: yMd);
+                _tfStartDate.text = DateTime.now()
+                    .subtract(Duration(days: 30))
+                    .toStringEx(format: yMd);
                 _tfEndDate.text = DateTime.now().toStringEx(format: yMd);
               }),
             ],
@@ -775,7 +1062,11 @@ mixin DialogExpense {
           child: Text('Submit', style: TextStyle(fontSize: 13)),
           onPressed: () async {
             if (_tfStartDate.text.isNotBlank && _tfEndDate.text.isNotBlank) {
-              await _controller.getExpense(find: s, startDate: _tfStartDate.text, endDate: _tfEndDate.text);
+              await _controller.getExpense(
+                find: s,
+                startDate: _tfStartDate.text,
+                endDate: _tfEndDate.text,
+              );
               Get.back();
             } else {
               await HelperToast.warn('Please select date range');

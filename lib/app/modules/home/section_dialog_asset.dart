@@ -117,6 +117,7 @@ mixin DialogAsset {
           onReady: () async => _fnTitle.requestFocus(),
           onClose: (_) async {
             await Overlayment.dismissLast();
+            await 100.milliseconds.delay();
             await openList();
           },
         ),

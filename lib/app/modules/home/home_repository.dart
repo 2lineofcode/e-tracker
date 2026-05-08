@@ -1,11 +1,14 @@
 import 'package:ex_kit/ex.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../env.g.dart';
 import '../../core/app_api.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_assets_entity.dart';
 import '../../models/supa_budgets_entity.dart';
 import '../../models/supa_category_entity.dart';
+import '../../models/supa_cron_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../../models/supa_goals_entity.dart';
 import '../../models/supa_notes_entity.dart';
@@ -177,6 +180,35 @@ class HomeRepository {
     return response;
   }
 
+  Future<List<SupaExpense>> findPotentialDuplicate({
+    required String date,
+    required String note,
+    required num amount,
+    String? excludeId,
+  }) async {
+    if (currentUserId == null) return [];
+
+    final response =
+        await db //
+            .from('expense')
+            .select()
+            .eq('user_id', currentUserId!)
+            .eq('date', date)
+            .eq('amount', amount)
+            .withConverter<List<SupaExpense>>((data) {
+              return (data).map((e) => SupaExpense.fromJson(e)).toList();
+            });
+
+    String normalize(String value) => value.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
+    final normalizedNote = normalize(note);
+
+    return response.where((expense) {
+      if (excludeId != null && expense.id == excludeId) return false;
+      final candidate = normalize(expense.note ?? '');
+      return candidate == normalizedNote || candidate.contains(normalizedNote) || normalizedNote.contains(candidate);
+    }).toList();
+  }
+
   Future<List<SupaUserProfile>> getUserProfile() async {
     if (currentUserId == null) return [];
     final response =
@@ -208,7 +240,6 @@ class HomeRepository {
   }
 
   Future<Map<String, num>> getMonthlyExpenseByBudgets(DateTime dateTime) async {
-    logD('getMonthlyExpenseByBudgets -> called');
     if (currentUserId == null) return {};
 
     final firstDay = DateTime(dateTime.year, dateTime.month, 1);
@@ -439,5 +470,18 @@ class HomeRepository {
         )
         .order('total', ascending: false);
     return result;
+  }
+
+  Future<List<SupaCron>> getCron() async {
+    if (currentUserId == null) return [];
+    final sb = SupabaseClient(Env.supabaseUrl, Env.supabaseServiceRole);
+    return await sb
+        .schema('cron')
+        .from('job')
+        .select()
+        .or('command.ilike.%$currentUserId%')
+        .withConverter<List<SupaCron>>((data) {
+          return (data).map((e) => SupaCron.fromJson(e)).toList();
+        });
   }
 }

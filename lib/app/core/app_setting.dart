@@ -3,10 +3,13 @@ import 'dart:io';
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:groq/groq.dart';
+import 'package:hotkey_manager/hotkey_manager.dart';
+import 'package:overlayment/overlayment.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../env.g.dart';
@@ -28,15 +31,16 @@ final groq = Groq(
 class AppSettingService extends GetxService {
   @override
   Future<void> onInit() async {
-    await initForDesktop();
-    await checkAndApplyDefaultAppConfig();
+    await setupDesktop();
+    await setupAppPref();
+    await setupHotkey();
     super.onInit();
   }
 
   /// ------------------------------------------------------------------------
   /// ! setup default app config [for new user]
   /// ------------------------------------------------------------------------
-  Future<void> checkAndApplyDefaultAppConfig() async {
+  Future<void> setupAppPref() async {
     final userId = db.auth.currentSession?.user.id;
     if (userId == null) {
       logI('-- CONFIG SKIPPED (not authenticated) --');
@@ -80,17 +84,21 @@ class AppSettingService extends GetxService {
   /// ------------------------------------------------------------------------
   /// ! initForDesktop
   /// ------------------------------------------------------------------------
-  Future<void> initForDesktop() async {
+  Future<void> setupDesktop() async {
     if (!isDesktop) return;
 
-    final idealSize = Size(690, 700);
+    final idealSize = Size(690, 720); // desktop
+    // final idealSize = Size(390, 720); // mobile
+
     await windowManager.ensureInitialized();
     WindowOptions windowOptions = WindowOptions(
       title: Env.appName,
       size: idealSize,
       minimumSize: kReleaseMode ? idealSize : null,
       maximumSize: Platform.isWindows ? idealSize : null,
-      titleBarStyle: Platform.isMacOS ? TitleBarStyle.hidden : TitleBarStyle.normal,
+      titleBarStyle: Platform.isMacOS
+          ? TitleBarStyle.hidden
+          : TitleBarStyle.normal,
       alwaysOnTop: Platform.isWindows ? true : false,
       center: true,
       backgroundColor: Colors.transparent,
@@ -100,5 +108,33 @@ class AppSettingService extends GetxService {
       await windowManager.show();
       await windowManager.focus();
     });
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // ⵌ hotkey
+  // ────────────────────────────────────────────────────────────────
+  Future<void> setupHotkey() async {
+    if (!isDesktop) return;
+
+    HotKey _hotKeyEsc = HotKey(
+      key: PhysicalKeyboardKey.escape,
+      modifiers: [],
+      scope: HotKeyScope.inapp,
+    );
+
+    await hotKeyManager.register(
+      _hotKeyEsc,
+      keyUpHandler: (hotKey) {
+        logD('hotKeyEsc Pressed');
+        try {
+          if (Get.isDialogOpen!) {
+            Get.back();
+          }
+          if (Overlayment.count != 0) {
+            Overlayment.dismissLast();
+          }
+        } catch (_) {}
+      },
+    );
   }
 }

@@ -35,7 +35,7 @@ class SettingsController extends GetxController with StateMixin {
   final repo = Get.find<SettingsRepository>();
 
   // menu
-  final menuList = <String>[].obs;
+  final menuList = <Map<String, dynamic>>[].obs;
   final menuSelected = SectionMenu.APP_CONFIG.obs;
 
   /// Page: App Config
@@ -138,7 +138,7 @@ class SettingsController extends GetxController with StateMixin {
             onPressed: () async {
               // filepicker select file and upload to supabase storage
               try {
-                await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false).then((img) async {
+                await FilePicker.pickFiles(type: FileType.image, allowMultiple: false).then((img) async {
                   if (img != null) {
                     isReplacePhoto.value = true;
 
@@ -252,6 +252,7 @@ class SettingsController extends GetxController with StateMixin {
                 ecoDay: userProfile.value.ecoDay,
                 averageDay: userProfile.value.averageDay,
                 spenderDay: userProfile.value.spenderDay,
+                paymentDay: userProfile.value.paymentDay,
                 updatedAt: DateTime.now().toStringEx(),
               );
               await Overlayment.dismissAll();
@@ -412,7 +413,7 @@ class SettingsController extends GetxController with StateMixin {
     entity.averageDay = tfAverage.text.moneyUnformat();
     entity.spenderDay = tfSpender.text.moneyUnformat();
     await repo.editProfile(entity);
-    await Get.find<AppSettingService>().checkAndApplyDefaultAppConfig();
+    await Get.find<AppSettingService>().setupAppPref();
     await Get.forceAppUpdate();
     ExLoading.dismiss();
     await HelperToast.success('Config Saved');

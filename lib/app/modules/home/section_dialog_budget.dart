@@ -81,6 +81,8 @@ mixin DialogBudget {
                   final progressValue = percent.isFinite ? percent.clamp(0, 100).toDouble() : 0.0;
                   final progressColor = HelperBibit.getColorForPercentage(percent);
                   final percentLabel = '${(percent.isFinite ? percent.clamp(0, 999).round() : 0)}%';
+                  final remaining = budgetAmount - spent;
+                  final isWarning = percent >= 80;
 
                   return Container(
                     decoration: ExDecorator.box(borderRadius: 12, borderColor: AppColor.border, fillColor: AppColor.box),
@@ -107,6 +109,22 @@ mixin DialogBudget {
                           color2: Vx.neutral400,
                           height: 4,
                         ).pOnly(bottom: 4),
+                        HStack([
+                          (remaining >= 0 ? 'Remaining ${remaining.moneyFormatCompact()}' : 'Over ${remaining.abs().moneyFormatCompact()}')
+                              .text
+                              .size(10)
+                              .minFontSize(10)
+                              .color(remaining >= 0 ? AppColor.green : AppColor.red)
+                              .make()
+                              .expand(),
+                          if (isWarning)
+                            (percent >= 100 ? 'Over budget' : 'Watch pace')
+                                .text
+                                .size(10)
+                                .minFontSize(10)
+                                .color(AppColor.red)
+                                .make(),
+                        ]),
                       ]).expand(),
                     ]).pSymmetric(h: 8, v: 4),
                   ).onInkTap(() => openAddEdit(budget: item));
@@ -156,6 +174,7 @@ mixin DialogBudget {
           onReady: () async => _fnAmount.requestFocus(),
           onClose: (_) async {
             await Overlayment.dismissLast();
+            await 100.milliseconds.delay();
             await openList();
           },
         ),

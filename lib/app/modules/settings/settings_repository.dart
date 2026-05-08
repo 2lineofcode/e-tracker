@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uicons_pro/uicons_pro.dart';
 
 import '../../../env.g.dart';
 import '../../core/app_api.dart';
@@ -14,12 +15,11 @@ mixin SectionMenu {
 }
 
 class SettingsRepository {
-  Future<List<String>> getMenuList() async {
+  Future<List<Map<String, dynamic>>> getMenuList() async {
     return [
-      SectionMenu.APP_CONFIG,
-      // SectionMenu.AUTO_COMPLETE,
-      SectionMenu.REPEAT_SETTING,
-      SectionMenu.IMPORT_EXPORT,
+      {'label': SectionMenu.APP_CONFIG, 'icon': UIconsPro.solidRounded.settings},
+      {'label': SectionMenu.REPEAT_SETTING, 'icon': UIconsPro.solidRounded.calendar_clock},
+      {'label': SectionMenu.IMPORT_EXPORT, 'icon': UIconsPro.solidRounded.file_export},
     ];
   }
 

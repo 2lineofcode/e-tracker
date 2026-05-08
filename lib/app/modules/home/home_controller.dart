@@ -11,6 +11,7 @@ import '../../helpers/helpers.dart';
 import '../../models/supa_assets_entity.dart';
 import '../../models/supa_budgets_entity.dart';
 import '../../models/supa_category_entity.dart';
+import '../../models/supa_cron_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../../models/supa_goals_entity.dart';
 import '../../models/supa_notes_entity.dart';
@@ -48,6 +49,7 @@ class HomeController extends GetxController with StateMixin {
   /// goals & notes
   final goalsList = <SupaGoals>[].obs;
   final notesList = <SupaNotes>[].obs;
+  final cronList = <SupaCron>[].obs;
 
   /// expense
   final userProfile = SupaUserProfile().obs;
@@ -83,6 +85,7 @@ class HomeController extends GetxController with StateMixin {
     await loadAssetsSummary();
     await loadGoalsList();
     await loadNotesList();
+    await loadCronList();
 
     rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
     userProfile.value = await repo.getUserProfile().then((value) => value[0]);
@@ -138,6 +141,20 @@ class HomeController extends GetxController with StateMixin {
         stack: e.toString(),
       );
       notesList.clear();
+    }
+  }
+
+  Future<void> loadCronList() async {
+    try {
+      final cron = await repo.getCron();
+      cronList.assignAll(cron);
+    } catch (e) {
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'loadCronList',
+        stack: e.toString(),
+      );
+      cronList.clear();
     }
   }
 
@@ -342,9 +359,145 @@ class HomeController extends GetxController with StateMixin {
     Get.toNamed(Routes.SETTINGS);
   }
 
+  int get focusedMonthDays => dayInMonth(focusedDay.value);
+
+  bool get isFocusedCurrentMonth {
+    final now = DateTime.now();
+    return focusedDay.value.year == now.year && focusedDay.value.month == now.month;
+  }
+
+  int get elapsedDaysForForecast {
+    if (isFocusedCurrentMonth) return DateTime.now().day.clamp(1, focusedMonthDays);
+    return focusedMonthDays;
+  }
+
+  int get remainingDaysForForecast {
+    if (isFocusedCurrentMonth) return (focusedMonthDays - DateTime.now().day).clamp(0, focusedMonthDays);
+    return 0;
+  }
+
+  num get projectedMonthSpend {
+    if (countOfMonth.value <= 0) return 0;
+    return countOfMonth.value / elapsedDaysForForecast * focusedMonthDays;
+  }
+
+  num get projectedBudgetDelta => totalAllBudget.value - projectedMonthSpend;
+
+  int get projectedBudgetPercent {
+    final budget = totalAllBudget.value;
+    if (budget <= 0) return 0;
+    final value = projectedMonthSpend / budget * 100;
+    return value.isFinite ? value.clamp(0, 999).round() : 0;
+  }
+
+  num get dailyAllowance {
+    final remainingBudget = totalAllBudget.value - countOfMonth.value;
+    final days = remainingDaysForForecast;
+    if (remainingBudget <= 0 || days <= 0) return 0;
+    return remainingBudget / days;
+  }
+
+  int get budgetWarningCount {
+    var count = 0;
+    for (final budget in budgetsList) {
+      final category = resolveExpenseCategory(budget.categoryCode);
+      final budgetAmount = budget.amount ?? 0;
+      final spent = monthlyExpenseByGroup[category.code] ?? 0;
+      if (budgetAmount > 0 && spent / budgetAmount >= 0.8) count++;
+    }
+    return count;
+  }
+
+  List<MapEntry<ExpenseCategory, num>> get unbudgetedCategorySpending {
+    final budgetedCodes = budgetsList.map((budget) => resolveExpenseCategory(budget.categoryCode).code).toSet();
+    final result = <MapEntry<ExpenseCategory, num>>[];
+
+    monthlyExpenseByGroup.forEach((code, total) {
+      final category = resolveExpenseCategory(code);
+      if (total <= 0) return;
+      if (category.code == 'expense:misc:notes') return;
+      if (!budgetedCodes.contains(category.code)) {
+        result.add(MapEntry(category, total));
+      }
+    });
+
+    result.sort((a, b) => b.value.compareTo(a.value));
+    return result;
+  }
+
+  List<UpcomingRepeatTransaction> get upcomingRepeatTransactions {
+    final now = DateTime.now();
+    final result = <UpcomingRepeatTransaction>[];
+
+    for (final item in cronList) {
+      if (item.active == false) continue;
+      final parsed = UpcomingRepeatTransaction.fromCron(item, now: now);
+      if (parsed == null) continue;
+      if (parsed.dueDate.difference(now).inDays <= 31) {
+        result.add(parsed);
+      }
+    }
+
+    result.sort((a, b) => a.dueDate.compareTo(b.dueDate));
+    return result;
+  }
+
   @override
   void onClose() {
     unawaited(HomeRT.dispose());
     super.onClose();
+  }
+}
+
+class UpcomingRepeatTransaction {
+  final String note;
+  final ExpenseCategory category;
+  final num amount;
+  final DateTime dueDate;
+
+  UpcomingRepeatTransaction({
+    required this.note,
+    required this.category,
+    required this.amount,
+    required this.dueDate,
+  });
+
+  int get remainingDays {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final due = DateTime(dueDate.year, dueDate.month, dueDate.day);
+    return due.difference(today).inDays;
+  }
+
+  static UpcomingRepeatTransaction? fromCron(SupaCron cron, {required DateTime now}) {
+    final scheduleMatch = RegExp(r'^0\s+0\s+(\d{1,2})\s+\*\s+\*$').firstMatch(cron.schedule ?? '');
+    final dueDay = int.tryParse(scheduleMatch?.group(1) ?? '');
+    if (dueDay == null) return null;
+
+    final valuesMatch = RegExp(r"VALUES\s*\('([^']*)',\s*'([^']*)',\s*(\d+)").firstMatch(cron.command ?? '');
+    if (valuesMatch == null) return null;
+
+    final note = valuesMatch.group(1) ?? cron.jobname ?? '';
+    final categoryRaw = (valuesMatch.group(2) ?? '').split('#').first.trim();
+    final amount = num.tryParse(valuesMatch.group(3) ?? '0') ?? 0;
+
+    var dueDate = _safeDueDate(now.year, now.month, dueDay);
+    final today = DateTime(now.year, now.month, now.day);
+    if (dueDate.isBefore(today)) {
+      final nextMonth = DateTime(now.year, now.month + 1, 1);
+      dueDate = _safeDueDate(nextMonth.year, nextMonth.month, dueDay);
+    }
+
+    return UpcomingRepeatTransaction(
+      note: note,
+      category: resolveExpenseCategory(categoryRaw),
+      amount: amount,
+      dueDate: dueDate,
+    );
+  }
+
+  static DateTime _safeDueDate(int year, int month, int day) {
+    final maxDay = dayInMonth(DateTime(year, month, 1));
+    return DateTime(year, month, day.clamp(1, maxDay));
   }
 }

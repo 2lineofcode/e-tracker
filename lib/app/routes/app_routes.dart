@@ -8,5 +8,7 @@ abstract class Routes {
   static const SUMMARY = '/summary';
   static const SETTINGS = '/settings';
   static const FILTERING = '/filtering';
-  static const XLSIO = '/xlsio';
+  static const SQL_EDITOR = '/sqleditor';
+  static const CALCP = '/calcp';
+  static const TESTER = '/tester';
 }

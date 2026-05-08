@@ -192,14 +192,17 @@ Future<void> openDetail(SupaExpense item) async {
                 '${itemDetail.amount?.moneyFormat()}'.text.make(),
               ]).p8(),
             ).onInkTap(
-              () => DialogExpense.openManualInput(
-                expense: itemDetail,
-                customCallback: () async {
-                  await Overlayment.dismissAll();
-                  await 100.milliseconds.delay();
-                  await openDetail(item);
-                },
-              ),
+              () {
+                if (Get.context!.isMobile) Overlayment.dismissLast();
+                DialogExpense.openManualInput(
+                  expense: itemDetail,
+                  customCallback: () async {
+                    await Overlayment.dismissAll();
+                    await 100.milliseconds.delay();
+                    await openDetail(item);
+                  },
+                );
+              },
             );
           },
         ).expand(),
