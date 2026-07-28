@@ -227,7 +227,7 @@ class ViewOverview extends GetView<SummaryController> {
                 controller.menuSelected.value = 5;
                 await 100.milliseconds.delay();
                 controller.chatInputController.text =
-                    'sisa uangku ${controller.countRemainingBudget.value.moneyFormat()} untuk ${_remainingDaysInSelectedMonth()} hari lagi sampai akhir bulan. baiknya perhari nya berapa? jawab singkat aja';
+                    'sisa uangku ${controller.countRemainingBudget.value.moneyFormat()} sampai tanggal 28 (gajian). baiknya pengeluaranku perhari-nya berapa? jawab singkat aja';
                 // await 100.milliseconds.delay();
                 // await controller.sendMessage();
               }),

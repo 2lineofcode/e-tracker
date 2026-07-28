@@ -9,6 +9,7 @@ import '../../helpers/helper_misc.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
 import '../../models/supa_category_entity.dart';
+import '../../models/supa_cron_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../../routes/app_pages.dart';
 import '../home/home_controller.dart';
@@ -61,8 +62,14 @@ class SummaryController extends GetxController with StateMixin {
 
   @override
   Future<void> onInit() async {
-    yearSelected.value = Get.parameters['period'].toString().reformatDate(from: yM, to: 'y');
-    monthSelected.value = Get.parameters['period'].toString().reformatDate(from: yM, to: 'MMMM');
+    yearSelected.value = Get.parameters['period'].toString().reformatDate(
+      from: yM,
+      to: 'y',
+    );
+    monthSelected.value = Get.parameters['period'].toString().reformatDate(
+      from: yM,
+      to: 'MMMM',
+    );
 
     await getExpenses(year: yearSelected.value, month: monthSelected.value);
     await getSumAllMonth(year: yearSelected.value);
@@ -87,7 +94,8 @@ class SummaryController extends GetxController with StateMixin {
     final now = DateTime.now();
     final nextMonth = DateTime(now.year, now.month + 1, 1);
 
-    if (now.month == monthSelected.value.reformatDate(from: 'MMMM', to: 'MM').toInt()!) {
+    if (now.month ==
+        monthSelected.value.reformatDate(from: 'MMMM', to: 'MM').toInt()!) {
       dayRemaining.value = nextMonth.difference(now).inDays;
     } else {
       dayRemaining.value = 0;
@@ -206,7 +214,9 @@ class SummaryController extends GetxController with StateMixin {
     }
 
     /// sort expenseHigh by amount
-    final sortByAmount = highSpender.sortedBy((a, b) => b.amount!.compareTo(a.amount!));
+    final sortByAmount = highSpender.sortedBy(
+      (a, b) => b.amount!.compareTo(a.amount!),
+    );
     highSpender.value = sortByAmount;
   }
 
@@ -215,7 +225,10 @@ class SummaryController extends GetxController with StateMixin {
   }
 
   Future<void> getSumNoteTimes({required String year, String? month}) async {
-    rpcSumNoteTimes.value = await repo.getSumNoteTimes(year: year, month: month);
+    rpcSumNoteTimes.value = await repo.getSumNoteTimes(
+      year: year,
+      month: month,
+    );
   }
 
   Future<void> calculateBudgetStatForHeader() async {
@@ -228,21 +241,25 @@ class SummaryController extends GetxController with StateMixin {
 
     /// formula...
     rpcSumAllMonth.forEach((element) {
-      if (element.total != null) _totalAllyear.value = _totalAllyear.value + element.total!;
+      if (element.total != null)
+        _totalAllyear.value = _totalAllyear.value + element.total!;
     });
 
     _maxBudget.value = Get.find<HomeController>().totalAllBudget.value;
 
     if (isShowAllYear.isFalse) {
-      _month.value = monthSelected.value.reformatDate(from: 'MMMM', to: 'MM').toInt()! - 1;
+      _month.value =
+          monthSelected.value.reformatDate(from: 'MMMM', to: 'MM').toInt()! - 1;
     }
 
-    _remainingBudget.value = _maxBudget.value - rpcSumAllMonth[_month.value].total!;
+    _remainingBudget.value =
+        _maxBudget.value - rpcSumAllMonth[_month.value].total!;
 
     if (_maxBudget.value.isZero) {
       _percentage.value = 0;
     } else {
-      _percentage.value = rpcSumAllMonth[_month.value].total! / _maxBudget.value * 100;
+      _percentage.value =
+          rpcSumAllMonth[_month.value].total! / _maxBudget.value * 100;
     }
 
     /// apply
@@ -302,7 +319,10 @@ class SummaryController extends GetxController with StateMixin {
     if (isShowAllYear.isTrue) {
       dataExpense = await repo.getExpenses(year: yearSelected.value);
     } else {
-      dataExpense = await repo.getExpenses(year: yearSelected.value, month: monthSelected.value);
+      dataExpense = await repo.getExpenses(
+        year: yearSelected.value,
+        month: monthSelected.value,
+      );
     }
 
     final dataExpenseSend = [];
@@ -344,9 +364,12 @@ class SummaryController extends GetxController with StateMixin {
     dataBudget.forEach((el) {
       final item = el;
       final category = resolveExpenseCategory(item.categoryCode);
-      final spent = Get.find<HomeController>().monthlyExpenseByGroup[category.code] ?? 0;
+      final spent =
+          Get.find<HomeController>().monthlyExpenseByGroup[category.code] ?? 0;
       final budgetAmount = item.amount ?? 0;
-      final percent = budgetAmount > 0 ? (spent.toDouble() / budgetAmount) * 100 : 0.0;
+      final percent = budgetAmount > 0
+          ? (spent.toDouble() / budgetAmount) * 100
+          : 0.0;
       dataBudgetSend.add({
         'category': category.label,
         'budget': budgetAmount,
@@ -379,17 +402,22 @@ class SummaryController extends GetxController with StateMixin {
 
     dataCron.forEach((el) {
       final command = el.command ?? '';
-      final valuesRegex = RegExp(r"VALUES\s*\('([^']*)',\s*'([^']*)',\s*(\d+)");
+      final valuesRegex = RegExp(
+        r"values\s*\('([^']*)',\s*'([^']*)',\s*([0-9.]+)",
+        caseSensitive: false,
+      );
       final match = valuesRegex.firstMatch(command);
 
       final note = match?.group(1) ?? '';
       final categoryFull = match?.group(2) ?? '';
       final categoryName = categoryFull.split('#').first.trim();
       final amount = num.tryParse(match?.group(3) ?? '0') ?? 0;
-      final dueDate = el.schedule.allBetween('0 0 ', ' * *');
+      final schedule = SupaCronSchedule.parse(el.schedule);
+      final dueDate = schedule?.dueDay.toString() ?? '';
 
       dataCronSend.add({
         'cron_due_date': dueDate,
+        'cron_schedule': schedule?.label ?? 'Custom schedule',
         'cron_note': note,
         'cron_category': resolveExpenseCategory(categoryName).label,
         'cron_amount': amount,
@@ -416,10 +444,14 @@ class SummaryController extends GetxController with StateMixin {
             Content(
               role: 'model',
               parts: [
-                Part.text('You are an assistant that helps users manage their budgets, expenses, and financial goals effectively.'),
+                Part.text(
+                  'You are an assistant that helps users manage their budgets, expenses, and financial goals effectively.',
+                ),
                 Part.text('Here is the user profile:'),
                 Part.text('$dataPersonalSend'),
-                Part.text('Important rules: Never expose private financial data (like income or balance) in your responses. You may mention only nickname and age if relevant.'),
+                Part.text(
+                  'Important rules: Never expose private financial data (like income or balance) in your responses. You may mention only nickname and age if relevant.',
+                ),
                 Part.text('User budget data:'),
                 Part.text('$dataBudgetSend'),
                 Part.text('User expense data:'),
@@ -428,9 +460,13 @@ class SummaryController extends GetxController with StateMixin {
                 Part.text('$dataGoalsSend'),
                 Part.text('User cron data (recurring monthly payments):'),
                 Part.text('$dataCronSend'),
-                Part.text('Your tone must mix Indonesian and English slang naturally — with a BETAWI vibe (casual, friendly, a bit playful).'),
+                Part.text(
+                  'Your tone must mix Indonesian and English slang naturally — with a BETAWI vibe (casual, friendly, a bit playful).',
+                ),
                 Part.text('Never use italic font in responses.'),
-                Part.text('Keep spacing natural, like casual chat — it’s okay if not perfectly formatted.'),
+                Part.text(
+                  'Keep spacing natural, like casual chat — it’s okay if not perfectly formatted.',
+                ),
               ],
             ),
             Content(
@@ -474,8 +510,17 @@ class SummaryController extends GetxController with StateMixin {
       totals.update(code, (value) => value + amount, ifAbsent: () => amount);
     }
 
-    final mapped = totals.entries.where((entry) => entry.value > 0).map((entry) => CategorySpendSummary(categoryCode: entry.key, total: entry.value)).toList()
-      ..sort((a, b) => b.total.compareTo(a.total));
+    final mapped =
+        totals.entries
+            .where((entry) => entry.value > 0)
+            .map(
+              (entry) => CategorySpendSummary(
+                categoryCode: entry.key,
+                total: entry.value,
+              ),
+            )
+            .toList()
+          ..sort((a, b) => b.total.compareTo(a.total));
 
     categorySummaries.value = mapped;
   }

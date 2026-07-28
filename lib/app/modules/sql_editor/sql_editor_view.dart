@@ -11,7 +11,6 @@ import 'package:re_highlight/styles/atom-one-dark.dart';
 import 'package:uicons_pro/uicons_pro.dart';
 
 import '../../core/app_api.dart';
-import '../../core/app_setting.dart';
 import '../../helpers/helpers.dart';
 import 'sql_editor_controller.dart';
 import 'sql_editor_repository.dart';
@@ -138,16 +137,17 @@ class SqlEditorView extends GetView<SqlEditorController> {
   Widget _buildTopBar() {
     return Row(
       children: [
-        const Text(
-          'SQL Editor',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+        Expanded(
+          child: _SqlTabBar(
+            controller: controller,
+            surface: _surface,
+            border: _border,
+            mutedText: _mutedText,
+            accent: _accent,
+            onRename: (index, currentName) => _promptRenameTab(Get.context!, index, currentName),
           ),
         ),
-        const SizedBox(width: 12),
-        const Spacer(),
+        const SizedBox(width: 8),
         IconButton(
           onPressed: () => Get.back(),
           splashRadius: 18,
@@ -159,6 +159,55 @@ class SqlEditorView extends GetView<SqlEditorController> {
         ),
       ],
     );
+  }
+
+  Future<void> _promptRenameTab(BuildContext context, int index, String currentName) async {
+    final nameController = TextEditingController(text: currentName);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: _surface,
+          title: const Text('Rename tab', style: TextStyle(color: Colors.white)),
+          content: TextField(
+            controller: nameController,
+            autofocus: true,
+            maxLength: 40,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              labelText: 'Tab name',
+              labelStyle: TextStyle(color: Colors.white70),
+              counterText: '',
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
+              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white54)),
+            ),
+            onSubmitted: (value) {
+              final trimmed = value.trim();
+              if (trimmed.isEmpty) return;
+              Navigator.of(dialogContext).pop(trimmed);
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final trimmed = nameController.text.trim();
+                if (trimmed.isEmpty) return;
+                Navigator.of(dialogContext).pop(trimmed);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+    nameController.dispose();
+
+    if (name == null || name.trim().isEmpty) return;
+    await controller.renameTab(index, name);
   }
 
   Widget _buildEditorCard(BuildContext context) {
@@ -194,18 +243,11 @@ class SqlEditorView extends GetView<SqlEditorController> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          // _templateMenu(),
-          // const SizedBox(width: 8),
-          _savedTemplatesMenu(Get.context!),
-          const SizedBox(width: 8),
-
           _tag('Get uuid', labelStyle: TextStyle(fontSize: 8, color: Vx.neutral500)).onInkTap(() {
             Clipboard.setData(ClipboardData(text: '${currentUserId ?? ''}'));
             HelperToast.info('copied "${currentUserId ?? ''}"', duration: 500.milliseconds);
           }),
           const Spacer(),
-          _saveTemplateButton(Get.context!),
-          const SizedBox(width: 8),
           _runButton(),
         ],
       ),
@@ -247,9 +289,9 @@ class SqlEditorView extends GetView<SqlEditorController> {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         onChanged: (value) async {
-          // get value text
-          logD(value.codeLines.asString(TextLineBreak.crlf));
-          await pref.write('_seedQuery', value.codeLines.asString(TextLineBreak.crlf));
+          final sql = value.codeLines.asString(TextLineBreak.crlf);
+          logD(sql);
+          controller.updateActiveTabSql(sql);
         },
         indicatorBuilder: (context, editingController, chunkController, notifier) {
           return Container(
@@ -299,254 +341,6 @@ class SqlEditorView extends GetView<SqlEditorController> {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
       child: Text(label, style: labelStyle),
-    );
-  }
-
-  Future<void> _promptSaveTemplate(BuildContext context) async {
-    final sql = controller.queryController.text.trim();
-    if (sql.isEmpty) {
-      await HelperToast.error('Write a query first', duration: 1500.milliseconds);
-      return;
-    }
-
-    final defaultName = 'Template ${DateFormat.Hm().format(DateTime.now())}';
-    final nameController = TextEditingController(text: defaultName);
-    final name = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: _surface,
-          title: const Text('Save template', style: TextStyle(color: Colors.white)),
-          content: TextField(
-            controller: nameController,
-            autofocus: true,
-            maxLength: 60,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              labelText: 'Template name',
-              labelStyle: TextStyle(color: Colors.white70),
-              counterText: '',
-              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
-              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white54)),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final trimmed = nameController.text.trim();
-                if (trimmed.isEmpty) return;
-                Navigator.of(dialogContext).pop(trimmed);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-    nameController.dispose();
-
-    if (name == null || name.trim().isEmpty) return;
-    await controller.saveTemplate(name: name.trim(), sql: sql);
-    await HelperToast.success('Template "$name" saved', duration: 1200.milliseconds);
-  }
-
-  Future<void> _openTemplatesManager(BuildContext context) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
-        final bottomInset = MediaQuery.viewInsetsOf(sheetContext).bottom;
-        final maxHeight = math.min(MediaQuery.sizeOf(sheetContext).height * 0.75, 520.0);
-        return Padding(
-          padding: EdgeInsets.fromLTRB(16, 0, 16, bottomInset + 16),
-          child: Material(
-            color: _surface,
-            borderRadius: BorderRadius.circular(20),
-            child: Obx(
-              () {
-                final templates = controller.savedTemplates;
-                return SizedBox(
-                  height: templates.isEmpty ? 260 : maxHeight,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                        child: Row(
-                          children: [
-                            const Text(
-                              'Saved templates',
-                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                            ),
-                            const Spacer(),
-                            IconButton(
-                              tooltip: 'Close',
-                              onPressed: () => Navigator.of(sheetContext).pop(),
-                              icon: Icon(UIconsPro.solidRounded.cross, color: _mutedText, size: 18),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              side: BorderSide(color: _border),
-                              backgroundColor: const Color(0xFF151823),
-                            ),
-                            onPressed: () {
-                              Navigator.of(sheetContext).pop();
-                              _promptSaveTemplate(context);
-                            },
-                            icon: const Icon(Icons.bookmark_add_outlined, size: 16),
-                            label: const Text('Save current query'),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Expanded(
-                        child: templates.isEmpty
-                            ? _buildEmptyTemplatesState()
-                            : ListView.separated(
-                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                                itemCount: templates.length,
-                                separatorBuilder: (_, _) => const SizedBox(height: 8),
-                                itemBuilder: (context, index) {
-                                  final template = templates[index];
-                                  return _buildTemplateTile(sheetContext, context, template);
-                                },
-                              ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildEmptyTemplatesState() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.bookmark_border, color: _mutedText, size: 36),
-          const SizedBox(height: 8),
-          Text(
-            'No templates saved yet.',
-            style: TextStyle(color: _mutedText),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Save a query to reuse it later.',
-            style: TextStyle(color: _mutedText, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTemplateTile(BuildContext sheetContext, BuildContext parentContext, SavedSqlTemplate template) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1F2E),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _border),
-      ),
-      child: ListTile(
-        title: Text(
-          template.name,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-        ),
-        subtitle: Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Text(
-            DateFormat('MMM d · HH:mm').format(template.createdAt),
-            style: TextStyle(color: _mutedText, fontSize: 12),
-          ),
-        ),
-        onTap: () {
-          controller.applySavedTemplate(template);
-          Navigator.of(sheetContext).pop();
-          HelperToast.success('Loaded "${template.name}"', duration: 1200.milliseconds);
-        },
-        trailing: IconButton(
-          tooltip: 'Delete template',
-          icon: const Icon(Icons.delete_outline, color: Color(0xFFDD4A68)),
-          onPressed: () => _confirmDeleteTemplate(parentContext, template),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _confirmDeleteTemplate(BuildContext context, SavedSqlTemplate template) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: _surface,
-          title: const Text('Delete template?', style: TextStyle(color: Colors.white)),
-          content: Text(
-            'Remove "${template.name}"?',
-            style: const TextStyle(color: Colors.white70),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: const Color(0xFFDD4A68)),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
-    if (confirmed != true) return;
-    await controller.deleteTemplate(template.id);
-    await HelperToast.info('Template deleted', duration: 1200.milliseconds);
-  }
-
-  Widget _savedTemplatesMenu(BuildContext context) {
-    return OutlinedButton.icon(
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        foregroundColor: Colors.white,
-        side: BorderSide(color: _border),
-        backgroundColor: const Color(0xFF151823),
-      ),
-      onPressed: () => _openTemplatesManager(context),
-      icon: const Icon(Icons.list_alt_outlined, size: 14),
-      label: const Text('My Queries', style: TextStyle(fontSize: 12)),
-    );
-  }
-
-  Widget _saveTemplateButton(BuildContext context) {
-    return Tooltip(
-      message: 'Save current query as template',
-      child: OutlinedButton.icon(
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          foregroundColor: Colors.white,
-          side: BorderSide(color: _border),
-          backgroundColor: const Color(0xFF151823),
-        ),
-        onPressed: () => _promptSaveTemplate(context),
-        icon: const Icon(Icons.bookmark_add_outlined, size: 14),
-        label: const Text('Save', style: TextStyle(fontSize: 12)),
-      ),
     );
   }
 
@@ -926,6 +720,143 @@ class SqlEditorView extends GetView<SqlEditorController> {
           ),
         );
       },
+    );
+  }
+}
+
+class _SqlTabBar extends StatelessWidget {
+  const _SqlTabBar({
+    required this.controller,
+    required this.surface,
+    required this.border,
+    required this.mutedText,
+    required this.accent,
+    required this.onRename,
+  });
+
+  final SqlEditorController controller;
+  final Color surface;
+  final Color border;
+  final Color mutedText;
+  final Color accent;
+  final Future<void> Function(int index, String currentName) onRename;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      return SizedBox(
+        height: 34,
+        child: Row(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.tabs.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 6),
+                itemBuilder: (context, index) {
+                  final tab = controller.tabs[index];
+                  return _SqlTabItem(
+                    label: tab.name,
+                    isActive: controller.activeTab.value == index,
+                    canClose: controller.tabs.length > 1,
+                    surface: surface,
+                    border: border,
+                    mutedText: mutedText,
+                    accent: accent,
+                    onTap: () => controller.selectTab(index),
+                    onDoubleTap: () => onRename(index, tab.name),
+                    onClose: () => controller.closeTab(index),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 6),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+              padding: EdgeInsets.zero,
+              tooltip: 'Add tab',
+              icon: Icon(UIconsPro.solidRounded.plus, size: 16, color: mutedText),
+              onPressed: controller.addTab,
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _SqlTabItem extends StatelessWidget {
+  const _SqlTabItem({
+    required this.label,
+    required this.isActive,
+    required this.canClose,
+    required this.surface,
+    required this.border,
+    required this.mutedText,
+    required this.accent,
+    required this.onTap,
+    required this.onDoubleTap,
+    required this.onClose,
+  });
+
+  final String label;
+  final bool isActive;
+  final bool canClose;
+  final Color surface;
+  final Color border;
+  final Color mutedText;
+  final Color accent;
+  final VoidCallback onTap;
+  final VoidCallback onDoubleTap;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = isActive ? Colors.white : mutedText;
+
+    return GestureDetector(
+      onDoubleTap: onDoubleTap,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          width: canClose ? 132 : 108,
+          height: 34,
+          padding: const EdgeInsets.only(left: 10, right: 6),
+          decoration: BoxDecoration(
+            color: isActive ? accent.withAlpha(35) : surface,
+            border: Border.all(color: isActive ? accent.withAlpha(150) : border),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 12,
+                    fontFamily: 'RobotoMono',
+                    height: 1,
+                  ),
+                ),
+              ),
+              if (canClose)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints.tightFor(width: 24, height: 24),
+                  padding: EdgeInsets.zero,
+                  tooltip: 'Close tab',
+                  icon: Icon(UIconsPro.solidRounded.cross_small, size: 15, color: textColor.withAlpha(180)),
+                  onPressed: onClose,
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

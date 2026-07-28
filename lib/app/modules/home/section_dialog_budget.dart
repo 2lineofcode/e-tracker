@@ -28,7 +28,7 @@ mixin DialogBudget {
       context: Get.context!,
       OverPanel(
         alignment: Alignment.centerRight,
-        width: 300,
+        width: Get.context!.isMobile ? Get.width * 0.92 : 340,
         backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
         animation: OverSlideAnimation(
           begin: Offset(1, 0),
@@ -43,14 +43,14 @@ mixin DialogBudget {
             Icon(
               UIconsPro.solidRounded.piggy_bank_budget,
               size: 16,
-            ).pOnly(right: 12),
-            'Budgets'.text.bold.make().pSymmetric(h: 8, v: 2).color(AppColor.border).cornerRadius(4),
+            ).pOnly(right: 10),
+            'Budgets'.text.bold.make().pSymmetric(h: 10, v: 3).color(AppColor.border).cornerRadius(6),
             Spacer(),
             IconButton(
               icon: Icon(UIconsPro.solidRounded.plus, size: 16),
               onPressed: () => openAddEdit(),
             ),
-          ]).pOnly(bottom: 8),
+          ]).pOnly(bottom: 12),
 
           // body
           GetBuilder(
@@ -69,9 +69,9 @@ mixin DialogBudget {
                 ]).centered();
               }
               return ListView.separated(
-                padding: EdgeInsets.zero,
+                padding: EdgeInsets.only(bottom: 12),
                 itemCount: budgetsList.length,
-                separatorBuilder: (context, index) => 12.heightBox,
+                separatorBuilder: (context, index) => 10.heightBox,
                 itemBuilder: (context, index) {
                   final item = budgetsList[index];
                   final category = resolveExpenseCategory(item.categoryCode);
@@ -84,71 +84,149 @@ mixin DialogBudget {
                   final remaining = budgetAmount - spent;
                   final isWarning = percent >= 80;
 
-                  return Container(
-                    decoration: ExDecorator.box(borderRadius: 12, borderColor: AppColor.border, fillColor: AppColor.box),
-                    child: HStack([
-                      Icon(category.icon ?? Icons.circle_outlined, size: 18, color: category.color ?? AppColor.textReverse).pOnly(right: 12),
-                      VStack([
-                        '${category.label}'.text.bold.size(12).maxLines(1).ellipsis.make().pOnly(bottom: 0),
-                        HStack([
-                          '${spent.moneyFormatCompact()} / ${budgetAmount.moneyFormatCompact()} Used'.text.size(11).minFontSize(11).color(AppColor.neutral).make().expand(),
-                          percentLabel.text
-                              .size(11)
-                              .minFontSize(11)
-                              .color(percent > 100 ? Colors.red : AppColor.textReverse)
-                              .make()
-                              .pSymmetric(h: 6, v: 2)
-                              .box
-                              .color(AppColor.card)
-                              .make()
-                              .cornerRadius(90),
-                        ]).pOnly(bottom: 6),
-                        ExProgressBar(
-                          value: progressValue.toInt(),
-                          color1: progressColor,
-                          color2: Vx.neutral400,
-                          height: 4,
-                        ).pOnly(bottom: 4),
-                        HStack([
-                          (remaining >= 0 ? 'Remaining ${remaining.moneyFormatCompact()}' : 'Over ${remaining.abs().moneyFormatCompact()}')
-                              .text
-                              .size(10)
-                              .minFontSize(10)
-                              .color(remaining >= 0 ? AppColor.green : AppColor.red)
-                              .make()
-                              .expand(),
-                          if (isWarning)
-                            (percent >= 100 ? 'Over budget' : 'Watch pace')
-                                .text
-                                .size(10)
-                                .minFontSize(10)
-                                .color(AppColor.red)
-                                .make(),
-                        ]),
-                      ]).expand(),
-                    ]).pSymmetric(h: 8, v: 4),
-                  ).onInkTap(() => openAddEdit(budget: item));
+                  return _budgetTile(
+                    budget: item,
+                    category: category,
+                    spent: spent,
+                    budgetAmount: budgetAmount,
+                    percentLabel: percentLabel,
+                    progressValue: progressValue,
+                    progressColor: progressColor,
+                    remaining: remaining,
+                    isWarning: isWarning,
+                    isOverBudget: percent >= 100,
+                  );
                 },
               );
             },
           ).expand(),
 
           // xx
-          Container(
-            decoration: ExDecorator.box(borderRadius: 90, borderColor: AppColor.border, fillColor: AppColor.primary),
-            child: VStack([
-              HStack([
-                'Total Budgets:'.text.bold.size(12).color(AppColor.textOnBackground).make().expand(),
-                Obx(() {
-                  final totalBudgetRaw = _controller.totalAllBudget.value;
-                  final totalBudget = totalBudgetRaw.isFinite ? totalBudgetRaw : 0;
-                  return '${totalBudget.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).size(12).make();
-                }),
-              ]).pOnly(bottom: 8),
-            ]).pOnly(top: 8, left: 12, right: 12),
-          ),
+          _budgetTotalBar(_controller),
         ]).p12(),
       ),
+    );
+  }
+
+  static Widget _budgetTile({
+    required SupaBudgets budget,
+    required ExpenseCategory category,
+    required num spent,
+    required num budgetAmount,
+    required String percentLabel,
+    required double progressValue,
+    required Color progressColor,
+    required num remaining,
+    required bool isWarning,
+    required bool isOverBudget,
+  }) {
+    return Container(
+      decoration: ExDecorator.box(
+        borderRadius: 8,
+        borderColor: AppColor.border,
+        fillColor: AppColor.box,
+      ),
+      child: VStack([
+        HStack(
+          crossAlignment: CrossAxisAlignment.start,
+          [
+            Container(
+              width: 34,
+              height: 34,
+              alignment: Alignment.center,
+              decoration: ExDecorator.box(
+                borderRadius: 8,
+                borderColor: Colors.transparent,
+                fillColor: (category.color ?? AppColor.primary).withAlpha(28),
+              ),
+              child: Icon(
+                category.icon ?? Icons.circle_outlined,
+                size: 18,
+                color: category.color ?? AppColor.textReverse,
+              ),
+            ).pOnly(right: 10, top: 2),
+            VStack([
+              HStack([
+                '${category.label}'.text.bold.size(12).maxLines(2).ellipsis.make().expand(),
+                _percentBadge(percentLabel, isOverBudget).pOnly(left: 8),
+              ]).pOnly(bottom: 4),
+              '${spent.moneyFormatCompact()} / ${budgetAmount.moneyFormatCompact()} Used'
+                  .text
+                  .size(11)
+                  .minFontSize(11)
+                  .color(AppColor.neutral)
+                  .make(),
+            ]).expand(),
+          ],
+        ).pOnly(bottom: 10),
+
+        ExProgressBar(
+          value: progressValue.toInt(),
+          color1: progressColor,
+          color2: Vx.neutral400,
+          height: 5,
+        ).pOnly(bottom: 8),
+
+        HStack([
+          _statusPill(
+            remaining >= 0
+                ? 'Remaining ${remaining.moneyFormatCompact()}'
+                : 'Over ${remaining.abs().moneyFormatCompact()}',
+            remaining >= 0 ? AppColor.green : AppColor.red,
+          ),
+          Spacer(),
+          if (isWarning)
+            _statusPill(
+              isOverBudget ? 'Over budget' : 'Watch pace',
+              AppColor.red,
+            ),
+        ]),
+      ]).pSymmetric(h: 12, v: 10),
+    ).onInkTap(() => openAddEdit(budget: budget));
+  }
+
+  static Widget _percentBadge(String label, bool isOverBudget) {
+    return label.text
+        .size(11)
+        .minFontSize(11)
+        .bold
+        .color(isOverBudget ? AppColor.red : AppColor.textReverse)
+        .make()
+        .pSymmetric(h: 8, v: 3)
+        .box
+        .color(AppColor.card)
+        .make()
+        .cornerRadius(90);
+  }
+
+  static Widget _statusPill(String label, Color color) {
+    return label.text
+        .size(10)
+        .minFontSize(10)
+        .color(color)
+        .make()
+        .pSymmetric(h: 8, v: 3)
+        .box
+        .color(color.withAlpha(22))
+        .make()
+        .cornerRadius(90);
+  }
+
+  static Widget _budgetTotalBar(HomeController controller) {
+    return Container(
+      decoration: ExDecorator.box(
+        borderRadius: 8,
+        borderColor: Colors.transparent,
+        fillColor: AppColor.primary,
+      ),
+      child: HStack([
+        'Total Budgets'.text.bold.size(12).color(AppColor.textOnBackground).make().expand(),
+        Obx(() {
+          final totalBudgetRaw = controller.totalAllBudget.value;
+          final totalBudget = totalBudgetRaw.isFinite ? totalBudgetRaw : 0;
+          return '${totalBudget.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).size(12).make();
+        }),
+      ]).pSymmetric(h: 14, v: 10),
     );
   }
 

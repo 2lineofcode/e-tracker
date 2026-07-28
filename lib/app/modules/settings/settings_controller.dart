@@ -20,6 +20,7 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../core/app_api.dart';
 import '../../core/app_color.dart';
 import '../../core/app_setting.dart';
+import '../../core/app_theme.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_category_entity.dart';
@@ -43,7 +44,9 @@ class SettingsController extends GetxController with StateMixin {
   final tfAverage = TextEditingController();
   final tfSpender = TextEditingController();
   final tfCurrencySymbol = TextEditingController();
+  final tfCalendarStartDay = TextEditingController();
   final userProfile = SupaUserProfile().obs;
+  final selectedThemeColor = AppColor.themeColorValue.obs;
 
   late PackageInfo? packageInfo;
   final appInfo = <String, dynamic>{}.obs;
@@ -70,6 +73,8 @@ class SettingsController extends GetxController with StateMixin {
     tfAverage.text = userProfile.value.averageDay?.moneyFormat() ?? '';
     tfSpender.text = userProfile.value.spenderDay?.moneyFormat() ?? '';
     tfCurrencySymbol.text = pref.read<String>(kCurrencySymbol) ?? '';
+    tfCalendarStartDay.text = '${pref.read<int>(kCalendarStartDay) ?? 1}';
+    selectedThemeColor.value = AppColor.themeColorValue;
 
     packageInfo = await PackageInfo.fromPlatform();
     appInfo.value = packageInfo?.data ?? {};
@@ -119,45 +124,69 @@ class SettingsController extends GetxController with StateMixin {
               ).centered().pOnly(bottom: 16);
             } else {
               return ExImageNoCacheView(
-                url: db.storage.from('avatars').getPublicUrl('${db.auth.currentSession?.user.id}.png'),
+                url: db.storage
+                    .from('avatars')
+                    .getPublicUrl('${db.auth.currentSession?.user.id}.png'),
                 size: 64,
                 radius: 90,
-                errorBuilder: (p0, p1, p2) => ExAvatarView(source: '', name: tfFullName.text, size: 64),
+                errorBuilder: (p0, p1, p2) =>
+                    ExAvatarView(source: '', name: tfFullName.text, size: 64),
               ).centered().pOnly(bottom: 16);
             }
           }).onInkTap(() {
             logW('clicked');
             launchUrlString(
-              db.storage.from('avatars').getPublicUrl('${db.auth.currentSession?.user.id}.png'),
+              db.storage
+                  .from('avatars')
+                  .getPublicUrl('${db.auth.currentSession?.user.id}.png'),
             );
           }),
           Obx(
-            () => errorMsg.value.isNotEmpty ? '$errorMsg'.text.size(11).minFontSize(11).align(TextAlign.center).makeCentered().pSymmetric(v: 4) : 0.heightBox,
+            () => errorMsg.value.isNotEmpty
+                ? '$errorMsg'.text
+                      .size(11)
+                      .minFontSize(11)
+                      .align(TextAlign.center)
+                      .makeCentered()
+                      .pSymmetric(v: 4)
+                : 0.heightBox,
           ),
           ExButtonElevated(
             onPressed: () async {
               // filepicker select file and upload to supabase storage
               try {
-                await FilePicker.pickFiles(type: FileType.image, allowMultiple: false).then((img) async {
+                await FilePicker.pickFiles(
+                  type: FileType.image,
+                  allowMultiple: false,
+                  withData: true,
+                ).then((img) async {
                   if (img != null) {
+                    final bytes = img.files.first.bytes;
+                    if (bytes == null) {
+                      errorMsg.value = 'Failed to read selected image';
+                      return;
+                    }
+
                     isReplacePhoto.value = true;
 
-                    final file = File(img.paths.first ?? '');
                     final fileName = '${db.auth.currentSession?.user.id}.png';
-                    imgReplace.value = file.readAsBytesSync();
+                    imgReplace.value = bytes;
 
                     await db.storage
                         .from('avatars')
-                        .upload(
+                        .uploadBinary(
                           fileName,
-                          file,
+                          bytes,
                           fileOptions: FileOptions(
                             upsert: true,
                             cacheControl: '1',
+                            contentType: 'image/png',
                           ),
                         )
                         .then((response) async {
-                          tfAvatar.value = db.storage.from('avatars').getPublicUrl(fileName);
+                          tfAvatar.value = db.storage
+                              .from('avatars')
+                              .getPublicUrl(fileName);
                           log('tfAvatar: $tfAvatar');
                           errorMsg.value = '';
                         });
@@ -183,7 +212,11 @@ class SettingsController extends GetxController with StateMixin {
             controller: tfFullName,
             decoration: HelperDecoration.input(
               hint: 'Jhon Doe',
-              prefixIcon: 'Full Name'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
+              prefixIcon: 'Full Name'.text
+                  .size(13)
+                  .bold
+                  .make()
+                  .pOnly(top: 8, left: 8, right: 16),
             ),
             style: TextStyle(fontSize: 13),
           ).h(33).pOnly(bottom: 12),
@@ -191,7 +224,11 @@ class SettingsController extends GetxController with StateMixin {
             controller: tfAge,
             decoration: HelperDecoration.input(
               hint: '29',
-              prefixIcon: 'Age'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
+              prefixIcon: 'Age'.text
+                  .size(13)
+                  .bold
+                  .make()
+                  .pOnly(top: 8, left: 8, right: 16),
             ),
             style: TextStyle(fontSize: 13),
           ).h(33).pOnly(bottom: 12),
@@ -199,7 +236,11 @@ class SettingsController extends GetxController with StateMixin {
             controller: tfIncome,
             decoration: HelperDecoration.input(
               hint: 'Rp.1.234.567',
-              prefixIcon: 'Income'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
+              prefixIcon: 'Income'.text
+                  .size(13)
+                  .bold
+                  .make()
+                  .pOnly(top: 8, left: 8, right: 16),
             ),
             style: TextStyle(fontSize: 13),
             inputFormatters: [
@@ -218,7 +259,11 @@ class SettingsController extends GetxController with StateMixin {
             controller: tfBalance,
             decoration: HelperDecoration.input(
               hint: 'Rp.1.234.567',
-              prefixIcon: 'Balance'.text.size(13).bold.make().pOnly(top: 8, left: 8, right: 16),
+              prefixIcon: 'Balance'.text
+                  .size(13)
+                  .bold
+                  .make()
+                  .pOnly(top: 8, left: 8, right: 16),
             ),
             style: TextStyle(fontSize: 13),
             inputFormatters: [
@@ -235,7 +280,11 @@ class SettingsController extends GetxController with StateMixin {
           ).h(33).pOnly(bottom: 12),
           HStack([
             Spacer(),
-            'Last Updated: ${userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y HH:mm')}'.text.size(12).neutral500.make(),
+            'Last Updated: ${userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y HH:mm')}'
+                .text
+                .size(12)
+                .neutral500
+                .make(),
           ]),
           Divider().pSymmetric(v: 16),
           ExButtonElevated(
@@ -281,7 +330,8 @@ class SettingsController extends GetxController with StateMixin {
   Future<void> onUploadBackup() async {
     try {
       final filePath = await getTemporaryDirectory();
-      final fileName = '${db.auth.currentSession?.user.email}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
+      final fileName =
+          '${db.auth.currentSession?.user.email}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
 
       await HelperImportExport.exportToCSV(
         customPath: filePath.path,
@@ -328,7 +378,8 @@ class SettingsController extends GetxController with StateMixin {
   /// 6. show notification
   /// 7. handle error
   Future<void> onDownloadBackup(FileObject fileObj) async {
-    final filename = '${fileObj.name.replaceAll('${db.auth.currentSession?.user.email}_', '')}';
+    final filename =
+        '${fileObj.name.replaceAll('${db.auth.currentSession?.user.email}_', '')}';
     ExAlert.confirm(
       title: 'Confirm Apply Migration',
       message: 'Are you sure want to apply migration from\n"$filename"?',
@@ -351,7 +402,9 @@ class SettingsController extends GetxController with StateMixin {
                 customCallback: () async {
                   file.deleteSync();
                   await onInit();
-                  await HelperToast.success('Success Apply Migration "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}"');
+                  await HelperToast.success(
+                    'Success Apply Migration "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}"',
+                  );
                 },
               );
             })
@@ -403,20 +456,38 @@ class SettingsController extends GetxController with StateMixin {
       return;
     }
 
+    final calendarStartDay = int.tryParse(tfCalendarStartDay.text);
+    if (calendarStartDay == null ||
+        calendarStartDay < 1 ||
+        calendarStartDay > 31) {
+      ExSnackbar.danger('"calendar start day" must be 1-31');
+      return;
+    }
+
     ExLoading.show(
       paddingSymmetric: Get.context!.isMobile ? 90 : 250,
       child: CupertinoActivityIndicator(),
     );
     final entity = userProfile.value;
-    entity.username = userProfile.value.fullName?.replaceAll(' ', '_').toLowerCase();
+    entity.username = userProfile.value.fullName
+        ?.replaceAll(' ', '_')
+        .toLowerCase();
     entity.ecoDay = tfEco.text.moneyUnformat();
     entity.averageDay = tfAverage.text.moneyUnformat();
     entity.spenderDay = tfSpender.text.moneyUnformat();
     await repo.editProfile(entity);
+    await pref.write(kCalendarStartDay, calendarStartDay);
     await Get.find<AppSettingService>().setupAppPref();
     await Get.forceAppUpdate();
     ExLoading.dismiss();
     await HelperToast.success('Config Saved');
+  }
+
+  Future<void> onThemeColorChange(int colorValue) async {
+    await pref.write(kThemeColor, colorValue);
+    await 50.milliseconds.delay();
+    selectedThemeColor.value = colorValue;
+    await AppTheme.refreshTheme();
   }
 
   Future<void> onGoAppPath() async {
@@ -442,6 +513,7 @@ class SettingsController extends GetxController with StateMixin {
     required String note,
     required String category,
     required num amount,
+    int repeatMonths = 1,
   }) async {
     try {
       final cleanNote = note
@@ -452,26 +524,38 @@ class SettingsController extends GetxController with StateMixin {
           .substring(0, note.length > 30 ? 30 : note.length); // Max 30 chars
 
       // Add timestamp suffix for uniqueness
-      final timestamp = DateTime.now().millisecondsSinceEpoch.toString().substring(7); // Last 6 digits
+      final timestamp = DateTime.now().millisecondsSinceEpoch
+          .toString()
+          .substring(7); // Last 6 digits
       final jobName = '${cleanNote}_$timestamp';
 
       // Call database function
+      final params = <String, dynamic>{
+        'job_name': jobName,
+        'day_of_month': date,
+        'note_text': note,
+        'category_text': category,
+        'amount_value': amount,
+        'user_email': db.auth.currentSession?.user.email ?? '',
+        'user_id_value': db.auth.currentSession?.user.id ?? '',
+      };
+      if (repeatMonths != 1) {
+        params['repeat_months'] = repeatMonths;
+        params['start_month'] = DateTime.now().month;
+      }
+
       await db.rpc(
         'create_expense_cron',
-        params: {
-          'job_name': jobName,
-          'day_of_month': date,
-          'note_text': note,
-          'category_text': category,
-          'amount_value': amount,
-          'user_email': db.auth.currentSession?.user.email ?? '',
-          'user_id_value': db.auth.currentSession?.user.id ?? '',
-        },
+        params: params,
       );
 
       cronList.value = await repo.getCron();
     } catch (e) {
-      await HelperErrorLog.record(page: 'settings', action: 'addCron', stack: e.toString());
+      await HelperErrorLog.record(
+        page: 'settings',
+        action: 'addCron',
+        stack: e.toString(),
+      );
       logE(e);
     }
   }
@@ -482,7 +566,11 @@ class SettingsController extends GetxController with StateMixin {
       await db.rpc('delete_expense_cron', params: {'job_name': jobName});
       cronList.value = await repo.getCron();
     } catch (e) {
-      await HelperErrorLog.record(page: 'settings', action: 'deleteCron', stack: e.toString());
+      await HelperErrorLog.record(
+        page: 'settings',
+        action: 'deleteCron',
+        stack: e.toString(),
+      );
       ExAlert.error(message: 'Error: $e');
       logE(e);
     }
@@ -497,6 +585,14 @@ class SettingsController extends GetxController with StateMixin {
     final tfCategoryCode = homeController.categoryList[0].code.obs;
     final tfAmount = TextEditingController();
     final tfDate = TextEditingController();
+    final repeatMonths = 1.obs;
+    final tfRepeat = TextEditingController(text: 'Every month');
+    final repeatOptions = {
+      1: 'Every month',
+      3: 'Every 3 months',
+      6: 'Every 6 months',
+      12: 'Every year',
+    };
 
     Overlayment.show(
       context: Get.context!,
@@ -504,7 +600,10 @@ class SettingsController extends GetxController with StateMixin {
         alignment: Alignment.center,
         width: 300,
         backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
-        animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
+        animation: OverScaleAnimation(
+          durationMilliseconds: 100,
+          reverseDurationMilliseconds: 100,
+        ),
 
         child: VStack([
           HStack([
@@ -522,14 +621,57 @@ class SettingsController extends GetxController with StateMixin {
             autofocus: true,
             placeholder: 'Date of month (1-31)',
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-            decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+            decoration: BoxDecoration(
+              color: Get.isDarkMode ? Vx.black : Vx.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
             style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-            prefix: Icon(UIconsPro.solidRounded.calendar_day, size: 13, color: AppColor.blue).pOnly(left: 12, right: 4),
+            prefix: Icon(
+              UIconsPro.solidRounded.calendar_day,
+              size: 13,
+              color: AppColor.blue,
+            ).pOnly(left: 12, right: 4),
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             maxLength: 2,
           ).h(33).pOnly(bottom: 4),
 
-          'Day of month (1-31)'.text.size(9).minFontSize(9).neutral500.make().pOnly(bottom: 16, left: 4),
+          'Day of month (1-31)'.text
+              .size(9)
+              .minFontSize(9)
+              .neutral500
+              .make()
+              .pOnly(bottom: 16, left: 4),
+
+          /// field repeat interval
+          CupertinoTextField(
+            controller: tfRepeat,
+            readOnly: true,
+            placeholder: 'Repeat interval',
+            placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+            style: TextStyle(fontSize: 12, color: AppColor.textReverse),
+            decoration: BoxDecoration(
+              color: Get.isDarkMode ? Vx.black : Vx.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            prefix: Icon(
+              Icons.repeat_rounded,
+              size: 13,
+              color: AppColor.blue,
+            ).pOnly(left: 12, right: 4),
+            suffix: Icon(
+              UIconsPro.solidRounded.caret_down,
+              size: 13,
+              color: AppColor.textReverse,
+            ).pOnly(right: 12),
+            onTap: () => _openRepeatIntervalPicker(
+              selectedValue: repeatMonths.value,
+              options: repeatOptions,
+              callback: (value) {
+                repeatMonths.value = value;
+                tfRepeat.text = repeatOptions[value] ?? 'Every month';
+              },
+            ),
+          ).h(33).pOnly(bottom: 12),
 
           /// field note
           CupertinoTextField(
@@ -537,9 +679,16 @@ class SettingsController extends GetxController with StateMixin {
             autofocus: true,
             placeholder: 'e.g. Netflix Subscription',
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-            decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+            decoration: BoxDecoration(
+              color: Get.isDarkMode ? Vx.black : Vx.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
             style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-            prefix: Icon(UIconsPro.solidRounded.hastag, size: 13, color: AppColor.textReverse).pOnly(left: 12, right: 4),
+            prefix: Icon(
+              UIconsPro.solidRounded.hastag,
+              size: 13,
+              color: AppColor.textReverse,
+            ).pOnly(left: 12, right: 4),
           ).h(32).pOnly(bottom: 12),
 
           /// field category
@@ -548,9 +697,19 @@ class SettingsController extends GetxController with StateMixin {
               controller: tfCategory,
               readOnly: true,
               placeholder: 'Select Category',
-              decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
-              placeholderStyle: TextStyle(fontSize: 13, color: AppColor.neutral),
-              prefix: Icon(resolveExpenseCategory(tfCategoryCode.value).icon, size: 13, color: resolveExpenseCategory(tfCategoryCode.value).color).pOnly(left: 12, right: 4),
+              decoration: BoxDecoration(
+                color: Get.isDarkMode ? Vx.black : Vx.white,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              placeholderStyle: TextStyle(
+                fontSize: 13,
+                color: AppColor.neutral,
+              ),
+              prefix: Icon(
+                resolveExpenseCategory(tfCategoryCode.value).icon,
+                size: 13,
+                color: resolveExpenseCategory(tfCategoryCode.value).color,
+              ).pOnly(left: 12, right: 4),
               style: TextStyle(fontSize: 13, color: AppColor.textReverse),
               onTap: () => HelperOverlay.openCategoryPicker(
                 callback: (c) {
@@ -566,11 +725,24 @@ class SettingsController extends GetxController with StateMixin {
             controller: tfAmount,
             placeholder: 'Rp. 10.000',
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-            decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
+            decoration: BoxDecoration(
+              color: Get.isDarkMode ? Vx.black : Vx.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
             style: TextStyle(fontSize: 13, color: AppColor.textReverse),
-            prefix: Icon(UIconsPro.solidRounded.coins, size: 13, color: AppColor.textReverse).pOnly(left: 12, right: 4),
+            prefix: Icon(
+              UIconsPro.solidRounded.coins,
+              size: 13,
+              color: AppColor.textReverse,
+            ).pOnly(left: 12, right: 4),
             inputFormatters: [
-              CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+              CurrencyTextInputFormatter(
+                NumberFormat.simpleCurrency(
+                  locale: 'id_ID',
+                  name: 'Rp.',
+                  decimalDigits: 0,
+                ),
+              ),
               LengthLimitingTextInputFormatter(16),
             ],
             keyboardType: TextInputType.number,
@@ -611,6 +783,7 @@ class SettingsController extends GetxController with StateMixin {
                   note: tfNote.text,
                   category: tfCategoryCode.value,
                   amount: tfAmount.text.moneyUnformat() ?? 0,
+                  repeatMonths: repeatMonths.value,
                 );
               },
             ).expand(),
@@ -620,24 +793,87 @@ class SettingsController extends GetxController with StateMixin {
     );
   }
 
+  void _openRepeatIntervalPicker({
+    required int selectedValue,
+    required Map<int, String> options,
+    required Function(int value) callback,
+  }) {
+    Overlayment.show(
+      context: Get.context!,
+      OverPanel(
+        alignment: Alignment.center,
+        width: 260,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: AppColor.appbarPrimary,
+        ),
+        backgroundSettings: BackgroundSettings(color: Colors.black54, blur: 1),
+        animation: OverScaleAnimation(
+          durationMilliseconds: 100,
+          reverseDurationMilliseconds: 100,
+        ),
+        child: VStack([
+          HStack([
+            'Repeat Interval'.text.bold.make().expand(),
+            IconButton(
+              icon: Icon(UIconsPro.solidRounded.cross, size: 14),
+              onPressed: () => Overlayment.dismissLast(),
+            ),
+          ]).pOnly(bottom: 8),
+          ...options.entries.map((entry) {
+            final isSelected = entry.key == selectedValue;
+            return Container(
+                  decoration: ExDecorator.box(
+                    borderRadius: 6,
+                    fillColor: isSelected
+                        ? AppColor.menuSelected
+                        : Colors.transparent,
+                    borderColor: Colors.transparent,
+                  ),
+                  child: HStack([
+                    Icon(
+                      Icons.repeat_rounded,
+                      size: 13,
+                      color: isSelected
+                          ? AppColor.primary
+                          : AppColor.textReverse,
+                    ).pOnly(right: 8),
+                    entry.value.text.size(12).make().expand(),
+                    if (isSelected) ...[
+                      Icon(Icons.check, size: 14, color: AppColor.primary),
+                    ],
+                  ]).p8(),
+                )
+                .onInkTap(() async {
+                  callback(entry.key);
+                  await Overlayment.dismissLast();
+                })
+                .pOnly(bottom: 4);
+          }),
+        ]).p12(),
+      ),
+    );
+  }
+
   /// Show info dialog when tap cron item
   void onShowCronInfo(SupaCron item) {
     final command = item.command ?? '';
 
     // Use regex to extract all values at once
-    final valuesRegex = RegExp(r"VALUES\s*\('([^']*)',\s*'([^']*)',\s*(\d+)");
+    final valuesRegex = RegExp(
+      r"values\s*\('([^']*)',\s*'([^']*)',\s*([0-9.]+)",
+      caseSensitive: false,
+    );
     final match = valuesRegex.firstMatch(command);
 
     final note = match?.group(1) ?? '';
     final categoryFull = match?.group(2) ?? '';
     final categoryName = categoryFull.split('#').first.trim();
     final amount = num.tryParse(match?.group(3) ?? '0') ?? 0;
-    final dueDate = item.schedule.allBetween('0 0 ', ' * *');
-
-    final now = DateTime.now();
-    final dateA = DateTime(now.year, now.month, now.day);
-    final dateB = DateTime(now.year, now.month, int.parse(dueDate));
-    final remainingDays = dateB.difference(dateA).inDays;
+    final schedule = SupaCronSchedule.parse(item.schedule);
+    final dueDate = schedule?.dueDay.toString() ?? '-';
+    final remainingDays = schedule?.remainingDays() ?? 0;
+    final scheduleLabel = schedule?.label ?? 'Custom schedule';
 
     Overlayment.show(
       context: Get.context!,
@@ -645,8 +881,14 @@ class SettingsController extends GetxController with StateMixin {
         alignment: Alignment.center,
         width: 300,
         backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
-        animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColor.appbarPrimary),
+        animation: OverScaleAnimation(
+          durationMilliseconds: 100,
+          reverseDurationMilliseconds: 100,
+        ),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: AppColor.appbarPrimary,
+        ),
         child: VStack([
           HStack([
             'Info'.text.bold.size(16).make(),
@@ -668,7 +910,9 @@ class SettingsController extends GetxController with StateMixin {
           VStack([
             'Category'.text.size(11).neutral500.make(),
             4.heightBox,
-            '🏷️ ${resolveExpenseCategory(categoryName).label}'.text.size(13).make(),
+            '🏷️ ${resolveExpenseCategory(categoryName).label}'.text
+                .size(13)
+                .make(),
           ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
 
           // Amount
@@ -682,7 +926,7 @@ class SettingsController extends GetxController with StateMixin {
           VStack([
             'Schedule'.text.size(11).neutral500.make(),
             4.heightBox,
-            '🗓️ Every month, date $dueDate at 00:00'.text.size(13).make(),
+            '🗓️ $scheduleLabel, date $dueDate at 00:00'.text.size(13).make(),
           ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
 
           // Next Run
@@ -690,7 +934,9 @@ class SettingsController extends GetxController with StateMixin {
             'Next Run'.text.size(11).neutral500.make(),
             4.heightBox,
             if (remainingDays.isNegative) ...[
-              '⏰ Next month (${remainingDays.abs()} days ago)'.text.green300.size(13).make(),
+              '⏰ Next month (${remainingDays.abs()} days ago)'.text.green300
+                  .size(13)
+                  .make(),
             ] else if (remainingDays == 0) ...[
               '⏰ Today!'.text.orange300.size(13).bold.make(),
             ] else ...[

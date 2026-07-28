@@ -2,6 +2,7 @@ import 'package:animated_icon/animated_icon.dart';
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
@@ -10,8 +11,10 @@ import 'package:lottie/lottie.dart';
 import 'package:overlayment/overlayment.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:uicons_pro/uicons_pro.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../core/app_color.dart';
+import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_expense_entity.dart';
@@ -22,7 +25,6 @@ import 'section_dialog_asset.dart';
 import 'section_dialog_budget.dart';
 import 'section_dialog_expense.dart';
 import 'section_dialog_goal.dart';
-import 'section_dialog_note.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -164,6 +166,7 @@ class HomeView extends GetView<HomeController> {
               selectedDayPredicate: (day) =>
                   controller.selectedDays.contains(day),
               eventLoader: controller.onCalenderLoadEvent,
+              calendarStartDay: pref.read<int>(kCalendarStartDay) ?? 1,
 
               /// custom
               calendarBuilders: CalendarBuilders(
@@ -207,28 +210,7 @@ class HomeView extends GetView<HomeController> {
                     'High Spendings!'.text.size(12).make(),
                     Spacer(),
                     CustomPopup(
-                      content: VStack(
-                        [
-                          '🔥 High Spendings'.text.bold.black
-                              .size(12)
-                              .make()
-                              .pOnly(bottom: 8),
-                          for (var e in controller.rpcSpenderDay) ...[
-                            '- ${e['date'].toString().reformatDate(from: yMd, to: 'dd MMM')} \t\t ${e['total'].toString().toInt()?.moneyFormat()}'
-                                .text //
-                                .black
-                                .size(11)
-                                .minFontSize(11)
-                                .make()
-                                .pOnly(top: 4)
-                                .onTap(
-                                  () => controller.onCalenderGoDate(
-                                    e['date'].toString().toDateEx(format: yMd),
-                                  ),
-                                ),
-                          ],
-                        ],
-                      ).w(150).scrollVertical(),
+                      content: highSpendingPopupContent(),
                       child: Container(
                         decoration: ExDecorator.box(
                           borderRadius: 90,
@@ -298,7 +280,7 @@ class HomeView extends GetView<HomeController> {
                       color: Color.fromARGB(255, 204, 211, 186),
                     ),
                     count: '${controller.notesList.length}',
-                    ontap: () => DialogNote.openList(),
+                    ontap: () => Get.toNamed(Routes.NOTES),
                   ).pOnly(bottom: 12),
                 ),
 
@@ -337,7 +319,7 @@ class HomeView extends GetView<HomeController> {
 
                 // :8:
                 buildTools(
-                  title: 'TESTER',
+                  title: 'Worksheet',
                   icon: Icon(
                     UIconsPro.solidRounded.data_transfer,
                     size: 14,
@@ -446,6 +428,79 @@ class HomeView extends GetView<HomeController> {
         ).pSymmetric(h: 12).expand(),
       ],
     ).expand();
+  }
+
+  Widget highSpendingPopupContent() {
+    final list = controller.rpcSpenderDay;
+    final visibleList = list.take(8).toList();
+
+    return VStack([
+      HStack([
+        Container(
+          width: 24,
+          height: 24,
+          alignment: Alignment.center,
+          decoration: ExDecorator.box(
+            borderRadius: 6,
+            borderColor: Colors.transparent,
+            fillColor: AppColor.red.withAlpha(28),
+          ),
+          child: Icon(
+            UIconsPro.solidRounded.sensor_fire,
+            size: 14,
+            color: AppColor.red,
+          ),
+        ).pOnly(right: 8),
+        VStack([
+          'High Spendings'.text.black.bold.size(12).make(),
+          '${list.length} peak days'.text.size(10).minFontSize(10).color(Vx.neutral500).make(),
+        ]).expand(),
+      ]).pOnly(bottom: 8),
+
+      if (list.isEmpty) ...[
+        'No high spending day yet'.text.size(11).color(Vx.neutral500).makeCentered().pSymmetric(v: 12),
+      ] else ...[
+        ...visibleList.asMap().entries.map((entry) {
+          final item = entry.value;
+          return highSpendingRow(
+            rank: entry.key + 1,
+            date: item['date'].toString(),
+            total: item['total'].toString().toInt() ?? 0,
+          ).pOnly(bottom: entry.key == visibleList.length - 1 ? 0 : 4);
+        }),
+      ],
+    ]).w(168).p8().scrollVertical();
+  }
+
+  Widget highSpendingRow({
+    required int rank,
+    required String date,
+    required int total,
+  }) {
+    return Container(
+      decoration: ExDecorator.box(
+        borderRadius: 6,
+        borderColor: Vx.neutral200,
+        fillColor: Vx.neutral100,
+      ),
+      child: HStack([
+        Container(
+          width: 20,
+          height: 20,
+          alignment: Alignment.center,
+          decoration: ExDecorator.box(
+            borderRadius: 90,
+            borderColor: Colors.transparent,
+            fillColor: total.getFlagColor().withAlpha(35),
+          ),
+          child: '$rank'.text.bold.size(9).color(total.getFlagColor()).make(),
+        ).pOnly(right: 6),
+        date.reformatDate(from: yMd, to: 'dd MMM').text.black.bold.size(11).make().expand(),
+        total.moneyFormatCompact().text.bold.size(10).minFontSize(9).color(total.getFlagColor()).make(),
+      ]).pSymmetric(h: 7, v: 5),
+    ).onInkTap(
+      () => controller.onCalenderGoDate(date.toDateEx(format: yMd)),
+    );
   }
 
   Widget buildTools({
@@ -951,6 +1006,81 @@ class HomeView extends GetView<HomeController> {
     ).pOnly(bottom: 12);
   }
 
+  Widget expenseImageThumbnail(SupaExpense item) {
+    if (item.imageUrl.isEmptyOrNull) return 0.heightBox;
+
+    return ExImageNoCacheView(
+      url: item.imageUrl!,
+      size: 48,
+      radius: 10,
+      errorBuilder: (_, _, _) => Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: AppColor.card.withAlpha(80),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(
+          Icons.image_not_supported_outlined,
+          size: 18,
+          color: AppColor.neutral,
+        ),
+      ),
+    ).pOnly(right: 12);
+  }
+
+  Widget expenseDetailText(String? detail, {required bool isTypeNotes}) {
+    if (detail.isEmptyOrNull) return 0.heightBox;
+
+    final text = detail ?? '';
+    final urlRegex = RegExp(r'(https?:\/\/[^\s]+|www\.[^\s]+)');
+    final baseStyle = TextStyle(
+      fontSize: 12,
+      color: isTypeNotes
+          ? Vx.white
+          : Get.isDarkMode
+          ? Vx.neutral300
+          : Vx.neutral800,
+    );
+    final linkStyle = baseStyle.copyWith(
+      color: AppColor.blue,
+      decoration: TextDecoration.underline,
+      decorationColor: AppColor.blue,
+    );
+
+    final spans = <InlineSpan>[];
+    var currentIndex = 0;
+
+    for (final match in urlRegex.allMatches(text)) {
+      if (match.start > currentIndex) {
+        spans.add(
+          TextSpan(
+            text: text.substring(currentIndex, match.start),
+            style: baseStyle,
+          ),
+        );
+      }
+
+      final rawUrl = match.group(0) ?? '';
+      final launchUrl = rawUrl.startsWith('www.') ? 'https://$rawUrl' : rawUrl;
+      spans.add(
+        TextSpan(
+          text: rawUrl,
+          style: linkStyle,
+          recognizer: TapGestureRecognizer()
+            ..onTap = () async => await launchUrlString(launchUrl),
+        ),
+      );
+      currentIndex = match.end;
+    }
+
+    if (currentIndex < text.length) {
+      spans.add(TextSpan(text: text.substring(currentIndex), style: baseStyle));
+    }
+
+    return RichText(text: TextSpan(children: spans)).pOnly(bottom: 8);
+  }
+
   Widget bodyItemBasicView() {
     return ListView.builder(
       itemCount: controller.expenseList.length,
@@ -971,6 +1101,7 @@ class HomeView extends GetView<HomeController> {
               ),
               child: Row(
                 children: [
+                  expenseImageThumbnail(item),
                   VStack([
                     /// note
                     HStack([
@@ -990,17 +1121,7 @@ class HomeView extends GetView<HomeController> {
                     ]).pOnly(bottom: 8),
 
                     /// detail
-                    item.detail.isNotEmptyAndNotNull
-                        ? '${item.detail}'
-                              //
-                              .text
-                              .size(12)
-                              .color(
-                                Get.isDarkMode ? Vx.neutral300 : Vx.neutral800,
-                              )
-                              .make()
-                              .pOnly(bottom: 8)
-                        : 0.heightBox,
+                    expenseDetailText(item.detail, isTypeNotes: isTypeNotes),
 
                     /// category
                     HStack([
@@ -1091,6 +1212,7 @@ class HomeView extends GetView<HomeController> {
               width: double.infinity,
               child: Row(
                 children: [
+                  expenseImageThumbnail(item),
                   VStack([
                     /// note
                     '${item.note}'.text.bold
@@ -1099,17 +1221,7 @@ class HomeView extends GetView<HomeController> {
                         .pOnly(bottom: 8),
 
                     /// detail
-                    item.detail.isNotEmptyAndNotNull
-                        ? '${item.detail}'
-                              //
-                              .text
-                              .size(12)
-                              .color(
-                                Get.isDarkMode ? Vx.neutral300 : Vx.neutral800,
-                              )
-                              .make()
-                              .pOnly(bottom: 8)
-                        : 0.heightBox,
+                    expenseDetailText(item.detail, isTypeNotes: isTypeNotes),
 
                     /// category
                     HStack([

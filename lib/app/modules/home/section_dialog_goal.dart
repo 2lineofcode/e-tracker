@@ -33,21 +33,21 @@ mixin DialogGoal {
       context: Get.context!,
       OverPanel(
         alignment: Alignment.centerRight,
-        width: 310,
+        width: Get.context!.isMobile ? Get.width * 0.92 : 340,
         backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
         animation: OverSlideAnimation(begin: Offset(1, 0), end: Offset(0, 0), durationMilliseconds: 100, reverseDurationMilliseconds: 100),
 
         child: VStack([
           // title
           HStack([
-            Icon(UIconsPro.solidRounded.location_crosshairs, size: 16).pOnly(right: 12),
-            'Goals'.text.bold.make().pSymmetric(h: 8, v: 2).color(AppColor.border).cornerRadius(4),
+            Icon(UIconsPro.solidRounded.location_crosshairs, size: 16).pOnly(right: 10),
+            'Goals'.text.bold.make().pSymmetric(h: 10, v: 3).color(AppColor.border).cornerRadius(6),
             Spacer(),
             IconButton(
               icon: Icon(UIconsPro.solidRounded.plus, size: 16),
               onPressed: () => openAddEdit(),
             ),
-          ]).pOnly(bottom: 8),
+          ]).pOnly(bottom: 12),
 
           // body
           Obx(() {
@@ -60,88 +60,197 @@ mixin DialogGoal {
               ]).centered();
             }
             return ListView.separated(
-              padding: EdgeInsets.zero,
+              padding: EdgeInsets.only(bottom: 12),
               itemCount: goals.length,
-              separatorBuilder: (context, index) => 12.heightBox,
+              separatorBuilder: (context, index) => 10.heightBox,
               itemBuilder: (context, index) {
                 final item = goals[index];
-                final percentage = ((item.amount ?? 0) / (item.target ?? 1)) * 100;
+                final amount = item.amount ?? 0;
+                final target = item.target ?? 0;
+                final percentage = target > 0 ? (amount / target) * 100 : 0.0;
+                final progressValue = percentage.isFinite ? percentage.clamp(0, 100).toDouble() : 0.0;
 
                 final now = DateTime.now();
                 final releaseDate = item.releaseDate?.toDateEx(format: yMd) ?? DateTime.now();
                 final diffDays = releaseDate.difference(now).inDays;
                 final moreMonths = diffDays ~/ 30;
                 final remainingDays = diffDays % 30;
-                String timeLeft = '';
-                if (moreMonths > 0) timeLeft += '$moreMonths month${moreMonths > 1 ? 's' : ''}';
-                if (remainingDays > 0) {
-                  if (timeLeft.isNotEmpty) timeLeft += ', ';
-                  timeLeft += '$remainingDays day${remainingDays > 1 ? 's' : ''}';
-                }
-                timeLeft = '$timeLeft left';
-
-                final remainingFromTarget = (item.target ?? 0) - (item.amount ?? 0);
+                final timeLeft = _formatTimeLeft(diffDays, moreMonths, remainingDays);
+                final remainingFromTarget = target - amount;
                 final monthsLeft = moreMonths > 0 ? moreMonths : 1;
                 final savingRecomend = monthsLeft == 0 ? remainingFromTarget : remainingFromTarget / monthsLeft;
                 final safeDaysLeft = diffDays > 0 ? diffDays : 1;
                 final dailySaving = remainingFromTarget > 0 ? remainingFromTarget / safeDaysLeft : 0;
 
-                return Container(
-                  decoration: ExDecorator.box(borderRadius: 12, borderColor: AppColor.border, fillColor: AppColor.box),
-
-                  child: VStack(
-                    [
-                      HStack(
-                        alignment: MainAxisAlignment.start,
-                        crossAlignment: CrossAxisAlignment.start,
-                        [
-                          Icon(UIconsPro.solidRounded.circle, size: 12).pOnly(right: 8, top: 4),
-
-                          VStack([
-                            HStack([
-                              '${item.title}'.text.size(12).bold.make(),
-                              Spacer(),
-                              '(${item.releaseDate?.reformatDate(from: yMd, to: 'dd MMM y')})'.text.size(11).minFontSize(11).color(AppColor.green).make(),
-                            ]),
-
-                            HStack([
-                              ExProgressBar(value: percentage.toInt(), color1: AppColor.primary, color2: Vx.neutral400).h(4).expand(),
-                              '${percentage.toInt()}%'.text.size(12).make().pOnly(left: 12),
-                            ]).pSymmetric(v: 4),
-
-                            HStack([
-                              '${item.amount?.moneyFormatCompact()} / ${item.target?.moneyFormatCompact()}'.text.size(11).minFontSize(11).color(AppColor.neutral).make(),
-                              Spacer(),
-                              '${remainingFromTarget.moneyFormatCompact()} Left'.text.size(11).minFontSize(11).color(AppColor.neutral).make(),
-                            ]).pOnly(bottom: 4),
-                          ]).expand(),
-                        ],
-                      ).pSymmetric(h: 8, v: 8),
-
-                      VStack([
-                        '$timeLeft'.text.size(11).minFontSize(11).color(AppColor.blue).bold.make(),
-                        HStack([
-                          'Better if you saving: '.text.size(11).minFontSize(11).make(),
-                          '${savingRecomend.moneyFormatCompact()} '.text.bold.size(11).minFontSize(11).color(AppColor.green).make(),
-                          'per month'.text.size(11).minFontSize(11).make(),
-                          Spacer(),
-                        ]),
-                        HStack([
-                          'Daily target: '.text.size(11).minFontSize(11).make(),
-                          '${dailySaving.moneyFormatCompact()} '.text.bold.size(11).minFontSize(11).color(AppColor.blue).make(),
-                          'per day'.text.size(11).minFontSize(11).make(),
-                          Spacer(),
-                        ]).pOnly(top: 2),
-                      ]).pSymmetric(v: 8, h: 12).color(AppColor.box).cornerRadius(8),
-                    ],
-                  ),
-                ).onInkTap(() => openAddEdit(goal: item));
+                return _goalTile(
+                  goal: item,
+                  percentage: percentage,
+                  progressValue: progressValue,
+                  remainingFromTarget: remainingFromTarget,
+                  timeLeft: timeLeft,
+                  savingRecomend: savingRecomend,
+                  dailySaving: dailySaving,
+                );
               },
             );
           }).expand(),
         ]).p12(),
       ),
     );
+  }
+
+  static Widget _goalTile({
+    required SupaGoals goal,
+    required double percentage,
+    required double progressValue,
+    required num remainingFromTarget,
+    required String timeLeft,
+    required num savingRecomend,
+    required num dailySaving,
+  }) {
+    final isCompleted = remainingFromTarget <= 0;
+    final percentLabel = '${percentage.isFinite ? percentage.clamp(0, 999).round() : 0}%';
+
+    return Container(
+      decoration: ExDecorator.box(
+        borderRadius: 8,
+        borderColor: AppColor.border,
+        fillColor: AppColor.box,
+      ),
+      child: VStack([
+        HStack(
+          crossAlignment: CrossAxisAlignment.start,
+          [
+            Container(
+              width: 34,
+              height: 34,
+              alignment: Alignment.center,
+              decoration: ExDecorator.box(
+                borderRadius: 8,
+                borderColor: Colors.transparent,
+                fillColor: AppColor.blue.withAlpha(24),
+              ),
+              child: Icon(
+                UIconsPro.solidRounded.location_crosshairs,
+                size: 17,
+                color: AppColor.blue,
+              ),
+            ).pOnly(right: 10, top: 2),
+            VStack([
+              HStack([
+                '${goal.title}'.text.bold.size(12).maxLines(2).ellipsis.make().expand(),
+                _goalBadge(percentLabel, isCompleted).pOnly(left: 8),
+              ]).pOnly(bottom: 4),
+              HStack([
+                '${goal.amount?.moneyFormatCompact()} / ${goal.target?.moneyFormatCompact()}'
+                    .text
+                    .size(11)
+                    .minFontSize(11)
+                    .color(AppColor.neutral)
+                    .make()
+                    .expand(),
+                '${goal.releaseDate?.reformatDate(from: yMd, to: 'dd MMM y')}'
+                    .text
+                    .size(10)
+                    .minFontSize(10)
+                    .color(AppColor.green)
+                    .make(),
+              ]),
+            ]).expand(),
+          ],
+        ).pOnly(bottom: 10),
+
+        ExProgressBar(
+          value: progressValue.toInt(),
+          color1: isCompleted ? AppColor.green : AppColor.primary,
+          color2: Vx.neutral400,
+          height: 5,
+        ).pOnly(bottom: 8),
+
+        HStack([
+          _goalPill(
+            isCompleted
+                ? 'Completed'
+                : '${remainingFromTarget.moneyFormatCompact()} left',
+            isCompleted ? AppColor.green : AppColor.neutral,
+          ),
+          Spacer(),
+          _goalPill(timeLeft, timeLeft == 'Overdue' ? AppColor.red : AppColor.blue),
+        ]).pOnly(bottom: 8),
+
+        Container(
+          decoration: ExDecorator.box(
+            borderRadius: 8,
+            borderColor: Colors.transparent,
+            fillColor: AppColor.card,
+          ),
+          child: HStack([
+            _goalMetric(
+              title: 'Monthly',
+              value: savingRecomend > 0 ? savingRecomend.moneyFormatCompact() : '-',
+              color: AppColor.green,
+            ).expand(),
+            Container(width: 1, height: 28, color: AppColor.border).pSymmetric(h: 10),
+            _goalMetric(
+              title: 'Daily',
+              value: dailySaving > 0 ? dailySaving.moneyFormatCompact() : '-',
+              color: AppColor.blue,
+            ).expand(),
+          ]).pSymmetric(h: 10, v: 8),
+        ),
+      ]).pSymmetric(h: 12, v: 10),
+    ).onInkTap(() => openAddEdit(goal: goal));
+  }
+
+  static Widget _goalBadge(String label, bool isCompleted) {
+    return label.text
+        .size(11)
+        .minFontSize(11)
+        .bold
+        .color(isCompleted ? AppColor.green : AppColor.textReverse)
+        .make()
+        .pSymmetric(h: 8, v: 3)
+        .box
+        .color(AppColor.card)
+        .make()
+        .cornerRadius(90);
+  }
+
+  static Widget _goalPill(String label, Color color) {
+    return label.text
+        .size(10)
+        .minFontSize(10)
+        .color(color)
+        .make()
+        .pSymmetric(h: 8, v: 3)
+        .box
+        .color(color.withAlpha(22))
+        .make()
+        .cornerRadius(90);
+  }
+
+  static Widget _goalMetric({
+    required String title,
+    required String value,
+    required Color color,
+  }) {
+    return VStack([
+      title.text.size(10).minFontSize(10).color(AppColor.neutral).make(),
+      value.text.bold.size(12).minFontSize(12).color(color).make(),
+    ]);
+  }
+
+  static String _formatTimeLeft(int diffDays, int moreMonths, int remainingDays) {
+    if (diffDays < 0) return 'Overdue';
+    if (diffDays == 0) return 'Due today';
+
+    var output = '';
+    if (moreMonths > 0) output += '$moreMonths month${moreMonths > 1 ? 's' : ''}';
+    if (remainingDays > 0) {
+      if (output.isNotEmpty) output += ', ';
+      output += '$remainingDays day${remainingDays > 1 ? 's' : ''}';
+    }
+    return '$output left';
   }
 
   static Future<void> openAddEdit({SupaGoals? goal}) async {

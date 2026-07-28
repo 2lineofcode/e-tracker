@@ -8,7 +8,14 @@ import 'const.dart';
 
 mixin AppTheme {
   /// * light
-  static final light = ThemeData.light(useMaterial3: true).copyWith(
+  static ThemeData get light => ThemeData.light(useMaterial3: true).copyWith(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColor.primary,
+      brightness: Brightness.light,
+    ),
+    scaffoldBackgroundColor: AppColor.scaffoldPrimary,
+    canvasColor: AppColor.scaffoldPrimary,
+    cardColor: AppColor.box,
     tabBarTheme: TabBarThemeData(
       indicatorColor: AppColor.noteColor,
       labelColor: AppColor.textReverse,
@@ -21,7 +28,14 @@ mixin AppTheme {
   );
 
   /// * dark
-  static final dark = ThemeData.dark(useMaterial3: true).copyWith(
+  static ThemeData get dark => ThemeData.dark(useMaterial3: true).copyWith(
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: AppColor.primary,
+      brightness: Brightness.dark,
+    ),
+    scaffoldBackgroundColor: AppColor.scaffoldPrimary,
+    canvasColor: AppColor.scaffoldPrimary,
+    cardColor: AppColor.box,
     tabBarTheme: TabBarThemeData(
       indicatorColor: AppColor.noteColor,
       labelColor: AppColor.textReverse,
@@ -36,12 +50,21 @@ mixin AppTheme {
   /// load theme
   static bool _isDarkMode() => pref.read(kIsDarkMode) ?? true;
 
-  static ThemeMode get currentTheme => _isDarkMode() ? ThemeMode.dark : ThemeMode.light;
+  static ThemeMode get currentTheme =>
+      _isDarkMode() ? ThemeMode.dark : ThemeMode.light;
+
+  static Future<void> refreshTheme() async {
+    Get.changeTheme(_isDarkMode() ? dark : light);
+    await 50.milliseconds.delay();
+    await Get.forceAppUpdate();
+    await 50.milliseconds.delay();
+    await Get.forceAppUpdate();
+  }
 
   static Future<void> switchTheme() async {
     Get.changeThemeMode(_isDarkMode() ? ThemeMode.light : ThemeMode.dark);
     await pref.write(kIsDarkMode, !_isDarkMode());
     await 600.milliseconds.delay();
-    await Get.forceAppUpdate();
+    await refreshTheme();
   }
 }

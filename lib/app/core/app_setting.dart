@@ -15,7 +15,10 @@ import 'package:window_manager/window_manager.dart';
 import '../../env.g.dart';
 import '../helpers/helpers.dart';
 import '../models/supa_user_profile_entity.dart';
+import '../modules/home/section_dialog_budget.dart';
+import '../routes/app_pages.dart';
 import 'app_api.dart';
+import 'app_color.dart';
 import 'const.dart';
 
 /// handy call sharedpref
@@ -53,6 +56,7 @@ class AppSettingService extends GetxService {
       kFlagSpender,
       kCurrencySymbol,
       kIsDarkMode,
+      kThemeColor,
     ].any((key) => !pref.hasData(key));
 
     if (needInit) {
@@ -73,9 +77,14 @@ class AppSettingService extends GetxService {
 
       await pref.write(kCurrencySymbol, 'Rp. ');
       await pref.write(kIsDarkMode, true);
+      await pref.write(kThemeColor, AppColor.defaultThemeColor);
       await pref.write(kFlagEco, profile.ecoDay ?? 50000);
       await pref.write(kFlagAverage, profile.averageDay ?? 100000);
       await pref.write(kFlagSpender, profile.spenderDay ?? 100000);
+    }
+
+    if (!pref.hasData(kCalendarStartDay)) {
+      await pref.write(kCalendarStartDay, 1);
     }
 
     logI('-- CONFIG LOADED --');
@@ -116,24 +125,44 @@ class AppSettingService extends GetxService {
   Future<void> setupHotkey() async {
     if (!isDesktop) return;
 
-    HotKey _hotKeyEsc = HotKey(
-      key: PhysicalKeyboardKey.escape,
-      modifiers: [],
-      scope: HotKeyScope.inapp,
-    );
+    logS('Shorcut for desktop initialized');
 
+    HotKey _hotKeyEsc = HotKey(key: PhysicalKeyboardKey.escape, modifiers: [], scope: HotKeyScope.inapp);
+    HotKey _hotKeyMetaN = HotKey(key: PhysicalKeyboardKey.keyN, modifiers: [ HotKeyModifier.meta ], scope: HotKeyScope.inapp);
+    HotKey _hotKeyMetaB = HotKey(key: PhysicalKeyboardKey.keyB, modifiers: [ HotKeyModifier.meta ], scope: HotKeyScope.inapp);
+    HotKey _hotKeyDot = HotKey(key: PhysicalKeyboardKey.period, modifiers: [], scope: HotKeyScope.inapp);
+    HotKey _hotKeyMetaComma = HotKey(key: PhysicalKeyboardKey.comma, modifiers: [ HotKeyModifier.meta ], scope: HotKeyScope.inapp);
+
+
+    // key ESC
     await hotKeyManager.register(
       _hotKeyEsc,
       keyUpHandler: (hotKey) {
         logD('hotKeyEsc Pressed');
         try {
-          if (Get.isDialogOpen!) {
-            Get.back();
-          }
-          if (Overlayment.count != 0) {
-            Overlayment.dismissLast();
-          }
+          if (Get.isDialogOpen!) { Get.back(); }
+          if (Overlayment.count != 0) { Overlayment.dismissLast(); }
+          Get.back();
         } catch (_) {}
+      },
+    );
+
+    // key META + ,
+    await hotKeyManager.register(_hotKeyMetaComma, keyUpHandler: (hotKey) => Get.toNamed(Routes.SETTINGS));
+
+    // key META + N
+    await hotKeyManager.register(_hotKeyMetaN, keyUpHandler: (hotKey) => Get.toNamed(Routes.NOTES));
+
+    // key META + B
+    await hotKeyManager.register(_hotKeyMetaB, keyUpHandler: (hotKey) => DialogBudget.openList());
+
+    // key .
+    await hotKeyManager.register(
+      _hotKeyDot,
+      keyUpHandler: (hotKey) {
+        if (Get.currentRoute == Routes.ROOT) {
+          Get.toNamed(Routes.CALCP);
+        }
       },
     );
   }

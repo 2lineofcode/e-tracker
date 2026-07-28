@@ -28,24 +28,63 @@ class CalcLine {
   bool get hasResult => value != null && error == null;
 }
 
+class CalcpTab {
+  const CalcpTab({
+    required this.name,
+    required this.content,
+  });
+
+  final String name;
+  final String content;
+
+  CalcpTab copyWith({
+    String? name,
+    String? content,
+  }) {
+    return CalcpTab(
+      name: name ?? this.name,
+      content: content ?? this.content,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'content': content,
+      };
+
+  factory CalcpTab.fromJson(Map<String, dynamic> json, int index) {
+    return CalcpTab(
+      name: json['name'] as String? ?? 'Calc ${index + 1}',
+      content: json['content'] as String? ?? '',
+    );
+  }
+}
+
 class CalcpController extends GetxController {
+  static const _legacyStorageKey = 'calcp';
+  static const _tabsStorageKey = 'calcp_tabs';
+  static const _activeTabStorageKey = 'calcp_active_tab';
+
   final textController = TextEditingController();
   final focusNode = FocusNode();
   final textScrollController = ScrollController();
   final overlayScrollController = ScrollController();
   final lines = <CalcLine>[].obs;
+  final tabs = <CalcpTab>[].obs;
+  final activeTab = 0.obs;
   final NumberFormat _numberFormat = NumberFormat.decimalPattern('id_ID');
 
-  final lastState = pref.read<String>('calcp').obs;
+  bool _isApplyingTab = false;
 
   @override
   void onInit() {
     super.onInit();
+    _loadTabs();
     textController.addListener(_handleInput);
     textScrollController.addListener(_syncScroll);
     focusNode.requestFocus();
 
-    textController.text = lastState.value ?? '';
+    _applyActiveTabText();
     _handleInput();
   }
 
@@ -57,6 +96,56 @@ class CalcpController extends GetxController {
     textScrollController.dispose();
     overlayScrollController.dispose();
     super.onClose();
+  }
+
+  void addTab() {
+    _saveActiveTabText();
+    tabs.add(CalcpTab(name: 'Calc ${tabs.length + 1}', content: ''));
+    activeTab.value = tabs.length - 1;
+    _persistTabs();
+    _applyActiveTabText();
+    focusNode.requestFocus();
+  }
+
+  void selectTab(int index) {
+    if (index == activeTab.value || index < 0 || index >= tabs.length) {
+      return;
+    }
+
+    _saveActiveTabText();
+    activeTab.value = index;
+    _persistTabs();
+    _applyActiveTabText();
+    focusNode.requestFocus();
+  }
+
+  void closeTab(int index) {
+    if (tabs.length <= 1 || index < 0 || index >= tabs.length) {
+      return;
+    }
+
+    _saveActiveTabText();
+    tabs.removeAt(index);
+
+    if (activeTab.value >= tabs.length) {
+      activeTab.value = tabs.length - 1;
+    } else if (index < activeTab.value) {
+      activeTab.value--;
+    }
+
+    _persistTabs();
+    _applyActiveTabText();
+    focusNode.requestFocus();
+  }
+
+  Future<void> renameTab(int index, String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty || index < 0 || index >= tabs.length) {
+      return;
+    }
+
+    tabs[index] = tabs[index].copyWith(name: trimmed);
+    await _persistTabs();
   }
 
   void _handleInput() {
@@ -74,7 +163,51 @@ class CalcpController extends GetxController {
     }
 
     lines.assignAll(parsed);
+    if (!_isApplyingTab) {
+      _saveActiveTabText();
+      _persistTabs();
+    }
     _syncScroll();
+  }
+
+  void _loadTabs() {
+    final stored = pref.read<List<dynamic>>(_tabsStorageKey);
+    final savedTabs = <CalcpTab>[];
+    if (stored is List) {
+      for (var i = 0; i < stored.length; i++) {
+        final item = stored[i];
+        if (item is Map) {
+          savedTabs.add(CalcpTab.fromJson(Map<String, dynamic>.from(item), i));
+        } else {
+          savedTabs.add(CalcpTab(name: 'Calc ${i + 1}', content: item?.toString() ?? ''));
+        }
+      }
+    }
+    final legacyContent = pref.read<String>(_legacyStorageKey);
+
+    tabs.assignAll(savedTabs.isNotEmpty ? savedTabs : [CalcpTab(name: 'Calc 1', content: legacyContent ?? '')]);
+
+    final savedIndex = pref.read<int>(_activeTabStorageKey) ?? 0;
+    activeTab.value = savedIndex.clamp(0, tabs.length - 1);
+  }
+
+  void _saveActiveTabText() {
+    if (tabs.isEmpty) {
+      tabs.add(const CalcpTab(name: 'Calc 1', content: ''));
+    }
+    tabs[activeTab.value] = tabs[activeTab.value].copyWith(content: textController.text);
+  }
+
+  Future<void> _persistTabs() async {
+    await pref.write(_tabsStorageKey, tabs.map((tab) => tab.toJson()).toList());
+    await pref.write(_activeTabStorageKey, activeTab.value);
+  }
+
+  void _applyActiveTabText() {
+    _isApplyingTab = true;
+    textController.text = tabs[activeTab.value].content;
+    textController.selection = TextSelection.collapsed(offset: textController.text.length);
+    _isApplyingTab = false;
   }
 
   void _syncScroll() {

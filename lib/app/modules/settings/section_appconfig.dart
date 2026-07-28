@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../core/app_api.dart';
 import '../../core/app_color.dart';
@@ -34,7 +35,11 @@ class SectionAppConfig extends GetView<SettingsController> {
   Widget boxAccount() {
     return Container(
       width: double.infinity,
-      decoration: ExDecorator.box(fillColor: AppColor.box, borderColor: AppColor.border, borderRadius: 4),
+      decoration: ExDecorator.box(
+        fillColor: AppColor.box,
+        borderColor: AppColor.border,
+        borderRadius: 4,
+      ),
       child: VStack(
         [
           HStack(
@@ -47,25 +52,46 @@ class SectionAppConfig extends GetView<SettingsController> {
             ],
           ),
           Obx(
-            () => controller.userProfile.value.id == null
-                ? CircularProgressIndicator.adaptive().p16()
-                : HStack([
-                    ExImageNoCacheView(
-                      url: db.storage.from('avatars').getPublicUrl('${db.auth.currentSession?.user.id}.png'),
-                      size: 64,
-                      radius: 90,
-                      errorBuilder: (p0, p1, p2) => ExAvatarView(source: '', name: controller.userProfile.value.fullName, size: 64),
-                    ),
-                    VStack([
-                      if (controller.userProfile.value.fullName.isEmptyOrNull) ...[
-                        'No Name'.text.neutral400.make(),
-                      ] else ...[
-                        '${controller.userProfile.value.fullName}'.text.bold.make(),
-                      ],
-                      '${db.auth.currentSession?.user.email}'.text.size(13).neutral400.make(),
-                      '${controller.userProfile.value.age} Y/o'.text.size(13).orange300.make(),
-                    ]).pSymmetric(h: 12),
-                  ]).pOnly(bottom: 24),
+            () {
+              final avatarUrl = db.storage
+                  .from('avatars')
+                  .getPublicUrl('${db.auth.currentSession?.user.id}.png');
+
+              return controller.userProfile.value.id == null
+                  ? CircularProgressIndicator.adaptive().p16()
+                  : HStack([
+                      ExImageNoCacheView(
+                        url: avatarUrl,
+                        size: 64,
+                        radius: 90,
+                        errorBuilder: (p0, p1, p2) => ExAvatarView(
+                          source: '',
+                          name: controller.userProfile.value.fullName,
+                          size: 64,
+                        ),
+                      ).onInkTap(() => launchUrlString(avatarUrl)),
+                      VStack([
+                        if (controller
+                            .userProfile
+                            .value
+                            .fullName
+                            .isEmptyOrNull) ...[
+                          'No Name'.text.neutral400.make(),
+                        ] else ...[
+                          '${controller.userProfile.value.fullName}'.text.bold
+                              .make(),
+                        ],
+                        '${db.auth.currentSession?.user.email}'.text
+                            .size(13)
+                            .neutral400
+                            .make(),
+                        '${controller.userProfile.value.age} Y/o'.text
+                            .size(13)
+                            .orange300
+                            .make(),
+                      ]).pSymmetric(h: 12),
+                    ]).pOnly(bottom: 24);
+            },
           ),
           ExButtonOutline(
             label: 'Logout',
@@ -84,7 +110,11 @@ class SectionAppConfig extends GetView<SettingsController> {
   Widget boxCommonConfig() {
     return Container(
       width: double.infinity,
-      decoration: ExDecorator.box(fillColor: AppColor.box, borderColor: AppColor.border, borderRadius: 4),
+      decoration: ExDecorator.box(
+        fillColor: AppColor.box,
+        borderColor: AppColor.border,
+        borderRadius: 4,
+      ),
       child: VStack(
         [
           HStack([
@@ -105,6 +135,47 @@ class SectionAppConfig extends GetView<SettingsController> {
             ],
           ).pOnly(bottom: 12),
 
+          /// theme color
+          HStack(
+            [
+              'Theme Color:'.text.make().w(200),
+              Obx(
+                () => Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: AppColor.themeColors.map((colorValue) {
+                    final color = Color(colorValue);
+                    final isSelected =
+                        controller.selectedThemeColor.value == colorValue;
+
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () async =>
+                          await controller.onThemeColorChange(colorValue),
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected
+                                ? AppColor.textReverse
+                                : AppColor.border,
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: isSelected
+                            ? Icon(Icons.check, size: 14, color: Vx.white)
+                            : null,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ).expand(),
+            ],
+          ).pOnly(bottom: 12),
+
           /// 2
           HStack(
             [
@@ -118,7 +189,13 @@ class SectionAppConfig extends GetView<SettingsController> {
                 ),
                 style: TextStyle(fontSize: 13),
                 inputFormatters: [
-                  CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+                  CurrencyTextInputFormatter(
+                    NumberFormat.simpleCurrency(
+                      locale: 'id_ID',
+                      name: 'Rp.',
+                      decimalDigits: 0,
+                    ),
+                  ),
                   LengthLimitingTextInputFormatter(16),
                 ],
               ).h(28).expand(),
@@ -139,12 +216,22 @@ class SectionAppConfig extends GetView<SettingsController> {
                 ),
                 style: TextStyle(fontSize: 13),
                 inputFormatters: [
-                  CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+                  CurrencyTextInputFormatter(
+                    NumberFormat.simpleCurrency(
+                      locale: 'id_ID',
+                      name: 'Rp.',
+                      decimalDigits: 0,
+                    ),
+                  ),
                   LengthLimitingTextInputFormatter(16),
                 ],
                 onChanged: (s) => controller.tfSpender.text = s,
               ).h(28).expand(),
-              Icon(Icons.circle, color: AppColor.orange, size: 8).pOnly(left: 8),
+              Icon(
+                Icons.circle,
+                color: AppColor.orange,
+                size: 8,
+              ).pOnly(left: 8),
             ],
           ).pOnly(bottom: 12),
 
@@ -161,12 +248,40 @@ class SectionAppConfig extends GetView<SettingsController> {
               ),
               style: TextStyle(fontSize: 13),
               inputFormatters: [
-                CurrencyTextInputFormatter(NumberFormat.simpleCurrency(locale: 'id_ID', name: 'Rp.', decimalDigits: 0)),
+                CurrencyTextInputFormatter(
+                  NumberFormat.simpleCurrency(
+                    locale: 'id_ID',
+                    name: 'Rp.',
+                    decimalDigits: 0,
+                  ),
+                ),
                 LengthLimitingTextInputFormatter(16),
               ],
             ).h(28).expand(),
             Icon(Icons.circle, color: AppColor.red, size: 8).pOnly(left: 8),
-          ]),
+          ]).pOnly(bottom: 12),
+
+          /// 5
+          HStack(
+            [
+              'Calendar Start Day:'.text.make().w(200),
+              TextField(
+                controller: controller.tfCalendarStartDay,
+                decoration: HelperDecoration.input(
+                  hint: '1',
+                  fillColor: Get.isDarkMode ? Colors.black : Colors.white,
+                ),
+                style: TextStyle(fontSize: 13),
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(2),
+                ],
+              ).h(28).expand(),
+              Icon(Icons.calendar_month, color: AppColor.blue, size: 14)
+                  .pOnly(left: 8),
+            ],
+          ),
 
           Divider(color: AppColor.divider).pSymmetric(v: 8),
           HStack(
@@ -180,11 +295,15 @@ class SectionAppConfig extends GetView<SettingsController> {
                 height: 38,
                 borderColor: AppColor.primary,
                 labelColor: AppColor.textReverse,
-                onPressed: () {
+                onPressed: () async {
                   controller.tfEco.text = 50000.moneyFormat();
                   controller.tfAverage.text = 100000.moneyFormat();
                   controller.tfSpender.text = 100000.moneyFormat();
                   controller.tfCurrencySymbol.text = 'Rp. ';
+                  controller.tfCalendarStartDay.text = '1';
+                  await controller.onThemeColorChange(
+                    AppColor.defaultThemeColor,
+                  );
                 },
               ),
               12.widthBox,

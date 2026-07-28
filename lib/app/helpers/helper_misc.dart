@@ -31,7 +31,9 @@ extension TimeAgoToString on DateTime {
     int days = difference.inDays;
     final diff = now.subtract(Duration(days: days));
     if (now.isBefore(selDate)) {
-      return '~';
+      final futureDays = selDate.difference(now).inDays;
+      if (futureDays == 1) return 'Tomorrow';
+      return '$futureDays days from now';
     } else {
       var output = diff.ago();
       if (days <= 0) output = 'Today';

@@ -43,7 +43,7 @@ if [ "$(uname)" == "Darwin" ]; then
     echo "🚀 Deploying to Firebase..."
 
     # deploy
-    firebase deploy
+    node "$(command -v firebase)" deploy --project e-tr4ck3r
 else
     echo "=== windows ==="
     # build for windows

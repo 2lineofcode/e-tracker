@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_assets_entity.dart';
@@ -27,7 +28,10 @@ class HomeController extends GetxController with StateMixin {
   /// calendar
   late PageController calenderPageController;
   final focusedDay = DateTime.now().obs;
-  final selectedDays = LinkedHashSet<DateTime>(equals: isSameDay, hashCode: hashDate);
+  final selectedDays = LinkedHashSet<DateTime>(
+    equals: isSameDay,
+    hashCode: hashDate,
+  );
 
   final events = <DateTime, List<String>>{}.obs;
 
@@ -81,7 +85,9 @@ class HomeController extends GetxController with StateMixin {
     await refreshBudgetsList();
     await getExpense();
     await getCount1Month(DateTime.now());
-    await onCalenderRefreshEvent(period: focusedDay.value.toStringEx(format: yM));
+    await onCalenderRefreshEvent(
+      period: focusedDay.value.toStringEx(format: yM),
+    );
     await loadAssetsSummary();
     await loadGoalsList();
     await loadNotesList();
@@ -104,7 +110,9 @@ class HomeController extends GetxController with StateMixin {
     try {
       final assets = await repo.getAssets();
       assetsList.assignAll(assets);
-      totalAssets.value = assets.fold<num>(0, (sum, e) => sum + (e.amount ?? 0)).toInt();
+      totalAssets.value = assets
+          .fold<num>(0, (sum, e) => sum + (e.amount ?? 0))
+          .toInt();
     } catch (e) {
       await HelperErrorLog.record(
         page: 'home',
@@ -159,7 +167,10 @@ class HomeController extends GetxController with StateMixin {
   }
 
   void _updateTotalBudgetAggregate() {
-    totalAllBudget.value = budgetsList.fold(0, (sum, value) => sum + (value.amount ?? 0));
+    totalAllBudget.value = budgetsList.fold(
+      0,
+      (sum, value) => sum + (value.amount ?? 0),
+    );
   }
 
   Future<void> refreshBudgetsList() async {
@@ -169,7 +180,11 @@ class HomeController extends GetxController with StateMixin {
       _updateTotalBudgetAggregate();
       update();
     } catch (e) {
-      await HelperErrorLog.record(page: 'home', action: 'refreshBudgetsList', stack: e.toString());
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'refreshBudgetsList',
+        stack: e.toString(),
+      );
     }
   }
 
@@ -201,11 +216,68 @@ class HomeController extends GetxController with StateMixin {
   }
 
   Future<void> onCalenderGoPrevMonth() async {
-    await calenderPageController.previousPage(duration: 300.milliseconds, curve: Curves.easeIn);
+    if (_calendarStartDay != 1) {
+      final current = focusedDay.value;
+      await onCalenderGoDate(_shiftFocusedMonth(current, -1));
+      await onCalenderRefreshEvent(
+        period: focusedDay.value.toStringEx(format: yM),
+      );
+      rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
+      return;
+    }
+
+    await calenderPageController.previousPage(
+      duration: 300.milliseconds,
+      curve: Curves.easeIn,
+    );
   }
 
   Future<void> onCalenderGoNextMonth() async {
-    await calenderPageController.nextPage(duration: 300.milliseconds, curve: Curves.easeIn);
+    if (_calendarStartDay != 1) {
+      final current = focusedDay.value;
+      await onCalenderGoDate(_shiftFocusedMonth(current, 1));
+      await onCalenderRefreshEvent(
+        period: focusedDay.value.toStringEx(format: yM),
+      );
+      rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
+      return;
+    }
+
+    await calenderPageController.nextPage(
+      duration: 300.milliseconds,
+      curve: Curves.easeIn,
+    );
+  }
+
+  int get _calendarStartDay => pref.read<int>(kCalendarStartDay) ?? 1;
+
+  DateTime _shiftFocusedMonth(DateTime dateTime, int monthOffset) {
+    final target = DateTime(dateTime.year, dateTime.month + monthOffset, 1);
+    final targetMonthDays = DateTime(target.year, target.month + 1, 0).day;
+    return DateTime(
+      target.year,
+      target.month,
+      dateTime.day.clamp(1, targetMonthDays),
+    );
+  }
+
+  List<String> _calendarEventPeriods(DateTime dateTime) {
+    final effectiveStartDay = _calendarStartDay.clamp(
+      1,
+      DateTime(dateTime.year, dateTime.month + 1, 0).day,
+    );
+
+    if (dateTime.day >= effectiveStartDay) {
+      return [
+        dateTime.toStringEx(format: yM),
+        DateTime(dateTime.year, dateTime.month + 1, 1).toStringEx(format: yM),
+      ];
+    }
+
+    return [
+      DateTime(dateTime.year, dateTime.month - 1, 1).toStringEx(format: yM),
+      dateTime.toStringEx(format: yM),
+    ];
   }
 
   Future<void> onCalenderPageChanged(DateTime fd) async {
@@ -216,28 +288,37 @@ class HomeController extends GetxController with StateMixin {
   }
 
   List<String> onCalenderLoadEvent(DateTime day) {
-    final kEvents = LinkedHashMap<DateTime, List<String>>(equals: isSameDay, hashCode: hashDate);
+    final kEvents = LinkedHashMap<DateTime, List<String>>(
+      equals: isSameDay,
+      hashCode: hashDate,
+    );
     kEvents.addAll(events);
     return kEvents[day] ?? [];
   }
 
   Future<void> onCalenderRefreshEvent({String period = ''}) async {
     events.clear();
-    await repo.getExpenseAll(period: period).then((res) {
-      // Membuat Map untuk mengelompokkan data berdasarkan tanggal
-      Map<DateTime, List<String>> groupedData = {};
+    final periodList = _calendarStartDay == 1
+        ? [period]
+        : _calendarEventPeriods(focusedDay.value);
 
-      // Iterasi melalui data dan mengelompokkannya
-      for (var item in res) {
-        var date = item.date!.toDateEx(format: yMd);
-        if (groupedData.containsKey(date)) {
-          groupedData[date]!.add('${item.amount}');
-        } else {
-          groupedData[date] = ['${item.amount}'];
+    for (final itemPeriod in periodList) {
+      await repo.getExpenseAll(period: itemPeriod).then((res) {
+        // Membuat Map untuk mengelompokkan data berdasarkan tanggal
+        Map<DateTime, List<String>> groupedData = {};
+
+        // Iterasi melalui data dan mengelompokkannya
+        for (var item in res) {
+          var date = item.date!.toDateEx(format: yMd);
+          if (groupedData.containsKey(date)) {
+            groupedData[date]!.add('${item.amount}');
+          } else {
+            groupedData[date] = ['${item.amount}'];
+          }
         }
-      }
-      events.addAll(groupedData);
-    });
+        events.addAll(groupedData);
+      });
+    }
 
     update();
   }
@@ -255,9 +336,15 @@ class HomeController extends GetxController with StateMixin {
         sum += e.defaultBudget ?? 0;
       }
       countMaxBudget.value = sum;
-      countRemainingBudget.value = sum > 0 ? (countOfMonth.value / sum * 100).toInt() : 0;
+      countRemainingBudget.value = sum > 0
+          ? (countOfMonth.value / sum * 100).toInt()
+          : 0;
     } catch (e) {
-      await HelperErrorLog.record(page: 'home', action: 'getCount1Month', stack: e.toString());
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'getCount1Month',
+        stack: e.toString(),
+      );
       countMaxBudget.value = 0;
       countRemainingBudget.value = 0;
     }
@@ -270,10 +357,17 @@ class HomeController extends GetxController with StateMixin {
       monthlyExpenseByGroup.refresh();
 
       _updateTotalBudgetAggregate();
-      totalSumAllBudget.value = monthlyExpenseByGroup.values.fold(0, (sum, value) => sum + value.toInt());
+      totalSumAllBudget.value = monthlyExpenseByGroup.values.fold(
+        0,
+        (sum, value) => sum + value.toInt(),
+      );
       update();
     } catch (e) {
-      await HelperErrorLog.record(page: 'home', action: 'loadMonthlyExpenseByGroup', stack: e.toString());
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'loadMonthlyExpenseByGroup',
+        stack: e.toString(),
+      );
       monthlyExpenseByGroup.clear();
     }
   }
@@ -317,17 +411,26 @@ class HomeController extends GetxController with StateMixin {
         } else {
           if (startDate != null && endDate != null) {
             isAdvanceSearch.value = true;
-            advanceSearchText.value = 'Showing data from "$startDate - $endDate"';
+            advanceSearchText.value =
+                'Showing data from "$startDate - $endDate"';
           } else {
             isAdvanceSearch.value = false;
             advanceSearchText.value = '';
           }
-          expenseList.value = await repo.findExpense(find, startDate: startDate, endDate: endDate);
+          expenseList.value = await repo.findExpense(
+            find,
+            startDate: startDate,
+            endDate: endDate,
+          );
         }
         isSearchMode.value = true;
       }
     } catch (e) {
-      await HelperErrorLog.record(page: 'home', action: 'getExpense', stack: e.toString());
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'getExpense',
+        stack: e.toString(),
+      );
       change(0, status: RxStatus.error('$e'));
     }
 
@@ -352,7 +455,10 @@ class HomeController extends GetxController with StateMixin {
   }
 
   void goSummary() {
-    Get.toNamed(Routes.SUMMARY, parameters: {'period': focusedDay.value.toStringEx(format: yM)});
+    Get.toNamed(
+      Routes.SUMMARY,
+      parameters: {'period': focusedDay.value.toStringEx(format: yM)},
+    );
   }
 
   void goSetting() {
@@ -363,16 +469,19 @@ class HomeController extends GetxController with StateMixin {
 
   bool get isFocusedCurrentMonth {
     final now = DateTime.now();
-    return focusedDay.value.year == now.year && focusedDay.value.month == now.month;
+    return focusedDay.value.year == now.year &&
+        focusedDay.value.month == now.month;
   }
 
   int get elapsedDaysForForecast {
-    if (isFocusedCurrentMonth) return DateTime.now().day.clamp(1, focusedMonthDays);
+    if (isFocusedCurrentMonth)
+      return DateTime.now().day.clamp(1, focusedMonthDays);
     return focusedMonthDays;
   }
 
   int get remainingDaysForForecast {
-    if (isFocusedCurrentMonth) return (focusedMonthDays - DateTime.now().day).clamp(0, focusedMonthDays);
+    if (isFocusedCurrentMonth)
+      return (focusedMonthDays - DateTime.now().day).clamp(0, focusedMonthDays);
     return 0;
   }
 
@@ -409,7 +518,9 @@ class HomeController extends GetxController with StateMixin {
   }
 
   List<MapEntry<ExpenseCategory, num>> get unbudgetedCategorySpending {
-    final budgetedCodes = budgetsList.map((budget) => resolveExpenseCategory(budget.categoryCode).code).toSet();
+    final budgetedCodes = budgetsList
+        .map((budget) => resolveExpenseCategory(budget.categoryCode).code)
+        .toSet();
     final result = <MapEntry<ExpenseCategory, num>>[];
 
     monthlyExpenseByGroup.forEach((code, total) {
@@ -469,35 +580,28 @@ class UpcomingRepeatTransaction {
     return due.difference(today).inDays;
   }
 
-  static UpcomingRepeatTransaction? fromCron(SupaCron cron, {required DateTime now}) {
-    final scheduleMatch = RegExp(r'^0\s+0\s+(\d{1,2})\s+\*\s+\*$').firstMatch(cron.schedule ?? '');
-    final dueDay = int.tryParse(scheduleMatch?.group(1) ?? '');
-    if (dueDay == null) return null;
+  static UpcomingRepeatTransaction? fromCron(
+    SupaCron cron, {
+    required DateTime now,
+  }) {
+    final schedule = SupaCronSchedule.parse(cron.schedule);
+    if (schedule == null) return null;
 
-    final valuesMatch = RegExp(r"VALUES\s*\('([^']*)',\s*'([^']*)',\s*(\d+)").firstMatch(cron.command ?? '');
+    final valuesMatch = RegExp(
+      r"values\s*\('([^']*)',\s*'([^']*)',\s*([0-9.]+)",
+      caseSensitive: false,
+    ).firstMatch(cron.command ?? '');
     if (valuesMatch == null) return null;
 
     final note = valuesMatch.group(1) ?? cron.jobname ?? '';
     final categoryRaw = (valuesMatch.group(2) ?? '').split('#').first.trim();
     final amount = num.tryParse(valuesMatch.group(3) ?? '0') ?? 0;
 
-    var dueDate = _safeDueDate(now.year, now.month, dueDay);
-    final today = DateTime(now.year, now.month, now.day);
-    if (dueDate.isBefore(today)) {
-      final nextMonth = DateTime(now.year, now.month + 1, 1);
-      dueDate = _safeDueDate(nextMonth.year, nextMonth.month, dueDay);
-    }
-
     return UpcomingRepeatTransaction(
       note: note,
       category: resolveExpenseCategory(categoryRaw),
       amount: amount,
-      dueDate: dueDate,
+      dueDate: schedule.nextRun(from: now),
     );
-  }
-
-  static DateTime _safeDueDate(int year, int month, int day) {
-    final maxDay = dayInMonth(DateTime(year, month, 1));
-    return DateTime(year, month, day.clamp(1, maxDay));
   }
 }

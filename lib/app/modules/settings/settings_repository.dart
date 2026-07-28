@@ -10,16 +10,25 @@ import '../../models/supa_user_profile_entity.dart';
 
 mixin SectionMenu {
   static const APP_CONFIG = 'App Config';
-  static const REPEAT_SETTING = 'Repeat Setting';
+  static const REPEAT_SETTING = 'Recurring';
   static const IMPORT_EXPORT = 'Import/Export';
 }
 
 class SettingsRepository {
   Future<List<Map<String, dynamic>>> getMenuList() async {
     return [
-      {'label': SectionMenu.APP_CONFIG, 'icon': UIconsPro.solidRounded.settings},
-      {'label': SectionMenu.REPEAT_SETTING, 'icon': UIconsPro.solidRounded.calendar_clock},
-      {'label': SectionMenu.IMPORT_EXPORT, 'icon': UIconsPro.solidRounded.file_export},
+      {
+        'label': SectionMenu.APP_CONFIG,
+        'icon': UIconsPro.solidRounded.settings,
+      },
+      {
+        'label': SectionMenu.REPEAT_SETTING,
+        'icon': UIconsPro.solidRounded.calendar_clock,
+      },
+      {
+        'label': SectionMenu.IMPORT_EXPORT,
+        'icon': UIconsPro.solidRounded.file_export,
+      },
     ];
   }
 
@@ -28,7 +37,10 @@ class SettingsRepository {
   /// ------------------------------------------------------------------------
   Future<int> countExpense() async {
     if (currentUserId == null) return 0;
-    final response = await db.from('expense').count().eq('user_id', currentUserId!);
+    final response = await db
+        .from('expense')
+        .count()
+        .eq('user_id', currentUserId!);
     return response;
   }
 
@@ -40,15 +52,18 @@ class SettingsRepository {
   /// ! storage
   /// ------------------------------------------------------------------------
   Future<List<FileObject>> getBackupList() async {
+    final email = db.auth.currentSession?.user.email;
+    if (email == null) return [];
+
     final response = await db.storage
         .from('backup')
         .list(
           searchOptions: SearchOptions(
-            search: '%${db.auth.currentSession!.user.email}%',
             sortBy: SortBy(column: 'created_at', order: 'desc'),
           ),
         );
-    return response;
+
+    return response.where((file) => file.name.startsWith('${email}_')).toList();
   }
 
   /// ------------------------------------------------------------------------
@@ -108,7 +123,9 @@ class SettingsRepository {
               return (data).map((e) => SupaExpense.fromJson(e)).toList();
             });
 
-    response.forEach((element) => totalExpense = totalExpense + element.amount!);
+    response.forEach(
+      (element) => totalExpense = totalExpense + element.amount!,
+    );
     return totalExpense;
   }
 }

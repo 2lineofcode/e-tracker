@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uicons_pro/uicons_pro.dart';
 
-import '../../core/app_setting.dart';
+import '../../core/app_color.dart';
 import '../../helpers/helpers.dart';
 import 'calcp_controller.dart';
 
@@ -31,16 +31,21 @@ class CalcpView extends GetView<CalcpController> {
         child: Column(
           children: [
             // ** head
-            HStack(
-              [
-                Spacer(),
+            Row(
+              children: [
+                Expanded(
+                  child: _CalcpTabBar(
+                    controller: controller,
+                    onRename: (index, currentName) => _promptRenameTab(context, index, currentName),
+                  ),
+                ),
                 IconButton(
                   icon: Icon(UIconsPro.solidRounded.cross_small, color: Get.isDarkMode ? Colors.white70: Colors.black54, size: 24),
                   color: Get.isDarkMode ? Colors.white70: Colors.black54,
                   onPressed: () => Get.back(),
                 ),
               ],
-            ).p12(),
+            ).pOnly(left: 12, top: 28, right: 12, bottom: 12),
 
             // ** body
             _EditorSurface(controller: controller).p(0).expand(),
@@ -58,6 +63,167 @@ class CalcpView extends GetView<CalcpController> {
               });
             }).pOnly(bottom: 12),
           ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _promptRenameTab(BuildContext context, int index, String currentName) async {
+    final nameController = TextEditingController(text: currentName);
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Rename tab'),
+          content: TextField(
+            controller: nameController,
+            autofocus: true,
+            maxLength: 40,
+            decoration: const InputDecoration(
+              labelText: 'Tab name',
+              counterText: '',
+            ),
+            onSubmitted: (value) {
+              final trimmed = value.trim();
+              if (trimmed.isEmpty) return;
+              Navigator.of(dialogContext).pop(trimmed);
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final trimmed = nameController.text.trim();
+                if (trimmed.isEmpty) return;
+                Navigator.of(dialogContext).pop(trimmed);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+    nameController.dispose();
+
+    if (name == null || name.trim().isEmpty) return;
+    await controller.renameTab(index, name);
+  }
+}
+
+class _CalcpTabBar extends StatelessWidget {
+  const _CalcpTabBar({
+    required this.controller,
+    required this.onRename,
+  });
+
+  final CalcpController controller;
+  final Future<void> Function(int index, String currentName) onRename;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      return SizedBox(
+        height: 34,
+        child: Row(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.tabs.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 6),
+                itemBuilder: (context, index) {
+                  final tab = controller.tabs[index];
+                  final isActive = controller.activeTab.value == index;
+                  return _CalcpTabItem(
+                    label: tab.name,
+                    isActive: isActive,
+                    canClose: controller.tabs.length > 1,
+                    onTap: () => controller.selectTab(index),
+                    onDoubleTap: () => onRename(index, tab.name),
+                    onClose: () => controller.closeTab(index),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 6),
+            IconButton(
+              visualDensity: VisualDensity.compact,
+              constraints: const BoxConstraints.tightFor(width: 34, height: 34),
+              padding: EdgeInsets.zero,
+              tooltip: 'Add tab',
+              icon: Icon(UIconsPro.solidRounded.plus, size: 15, color: Get.isDarkMode ? Colors.white70 : Colors.black54),
+              onPressed: controller.addTab,
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _CalcpTabItem extends StatelessWidget {
+  const _CalcpTabItem({
+    required this.label,
+    required this.isActive,
+    required this.canClose,
+    required this.onTap,
+    required this.onDoubleTap,
+    required this.onClose,
+  });
+
+  final String label;
+  final bool isActive;
+  final bool canClose;
+  final VoidCallback onTap;
+  final VoidCallback onDoubleTap;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = isActive
+        ? AppColor.textReverse
+        : Get.isDarkMode
+            ? Colors.white60
+            : Colors.black54;
+
+    return GestureDetector(
+      onDoubleTap: onDoubleTap,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          width: canClose ? 108 : 86,
+          height: 34,
+          padding: const EdgeInsets.only(left: 10, right: 6),
+          decoration: BoxDecoration(
+            color: isActive ? AppColor.primary.withAlpha(110) : AppColor.box,
+            border: Border.all(color: isActive ? AppColor.primary.withAlpha(180) : AppColor.border),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: CalcpView._codeTextStyle.copyWith(color: textColor, fontSize: 12, height: 1),
+                ),
+              ),
+              if (canClose)
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints.tightFor(width: 24, height: 24),
+                  padding: EdgeInsets.zero,
+                  tooltip: 'Close tab',
+                  icon: Icon(UIconsPro.solidRounded.cross_small, size: 15, color: textColor.withAlpha(180)),
+                  onPressed: onClose,
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -97,9 +263,6 @@ class _EditorSurface extends StatelessWidget {
           cursorWidth: 1,
           style: CalcpView._codeTextStyle.copyWith(color: Colors.transparent, wordSpacing: 0.2, letterSpacing: -0.05),
           decoration: const InputDecoration(border: InputBorder.none, contentPadding: textPadding),
-          onChanged: (v) {
-            pref.write('calcp', v);
-          },
         ),
         IgnorePointer(
           child: Obx(() {

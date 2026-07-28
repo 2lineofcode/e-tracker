@@ -53,6 +53,7 @@ class MyLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       key: drawerKey,
+      backgroundColor: AppColor.scaffoldPrimary,
 
       /// drawer -> Mobile
       drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
@@ -65,7 +66,8 @@ class MyLayout extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             /// row 1 -> Desktop
-            if (!context.isMobile) sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
+            if (!context.isMobile)
+              sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
 
             /// row 2
             VStack(
@@ -147,7 +149,9 @@ class MyLayout extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(color: footerColor ?? AppColor.footerPrimary),
       child: Padding(
-        padding: !kIsWeb && Platform.isIOS ? EdgeInsets.only(bottom: 20, right: 8, left: 8) : EdgeInsets.all(0),
+        padding: !kIsWeb && Platform.isIOS
+            ? EdgeInsets.only(bottom: 20, right: 8, left: 8)
+            : EdgeInsets.all(0),
         child: footerContent,
       ),
     );

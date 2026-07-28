@@ -11,6 +11,7 @@ class SupaExpense {
   String? date;
   String? userId;
   String? detail;
+  String? imageUrl;
 
   SupaExpense({
     this.id,
@@ -21,6 +22,7 @@ class SupaExpense {
     this.date,
     this.userId,
     this.detail,
+    this.imageUrl,
   });
 
   SupaExpense.fromJson(Map<String, dynamic> json) {
@@ -29,9 +31,10 @@ class SupaExpense {
     categoryName = _sanitizeCategory(json['category_name']);
     note = json['note'];
     amount = json['amount'];
-    date = json['date'];
+    date = _sanitizeDate(json['date']);
     userId = json['user_id'];
     detail = json['detail'];
+    imageUrl = json['image_url'];
   }
 
   Map<String, dynamic> toJson() {
@@ -44,6 +47,7 @@ class SupaExpense {
     data['date'] = date;
     data['user_id'] = userId;
     data['detail'] = detail;
+    data['image_url'] = imageUrl;
     return data;
   }
 
@@ -60,4 +64,12 @@ String _sanitizeCategory(dynamic source) {
   final hashIndex = raw.indexOf('#');
   if (hashIndex == -1) return raw;
   return raw.substring(0, hashIndex);
+}
+
+String _sanitizeDate(dynamic source) {
+  final raw = source?.toString() ?? '';
+  if (RegExp(r'^\d{8}$').hasMatch(raw)) {
+    return '${raw.substring(0, 4)}-${raw.substring(4, 6)}-${raw.substring(6, 8)}';
+  }
+  return raw;
 }

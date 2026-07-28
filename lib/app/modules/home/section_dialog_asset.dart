@@ -32,21 +32,21 @@ mixin DialogAsset {
       context: Get.context!,
       OverPanel(
         alignment: Alignment.centerRight,
-        width: 300,
+        width: Get.context!.isMobile ? Get.width * 0.92 : 340,
         backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
         animation: OverSlideAnimation(begin: Offset(1, 0), end: Offset(0, 0), durationMilliseconds: 100, reverseDurationMilliseconds: 100),
 
         child: VStack([
           // title
           HStack([
-            Icon(UIconsPro.solidRounded.plant_seed_invest, size: 16).pOnly(right: 12),
-            'Assets'.text.bold.make().pSymmetric(h: 8, v: 2).color(AppColor.border).cornerRadius(4),
+            Icon(UIconsPro.solidRounded.plant_seed_invest, size: 16).pOnly(right: 10),
+            'Assets'.text.bold.make().pSymmetric(h: 10, v: 3).color(AppColor.border).cornerRadius(6),
             Spacer(),
             IconButton(
               icon: Icon(UIconsPro.solidRounded.plus, size: 16),
               onPressed: () => openAddEdit(),
             ),
-          ]).pOnly(bottom: 8),
+          ]).pOnly(bottom: 12),
 
           // body
           Obx(() {
@@ -59,40 +59,103 @@ mixin DialogAsset {
               ]).centered();
             }
             return ListView.separated(
-              padding: EdgeInsets.zero,
+              padding: EdgeInsets.only(bottom: 12),
               itemCount: assets.length,
-              separatorBuilder: (context, index) => 12.heightBox,
+              separatorBuilder: (context, index) => 10.heightBox,
               itemBuilder: (context, index) {
                 final item = assets[index];
 
-                return Container(
-                  decoration: ExDecorator.box(borderRadius: 12, borderColor: AppColor.border, fillColor: AppColor.box),
-                  child: HStack([
-                    Icon(UIconsPro.solidRounded.circle, size: 12).pOnly(right: 8),
-                    VStack([
-                      '${item.title}'.text.size(12).bold.make(),
-                      '${item.updatedAt?.reformatDate(to: 'dd MMM yyyy')}'.text.size(10).minFontSize(10).color(AppColor.neutral).make(),
-                    ]).expand(),
-                    '${item.amount?.moneyFormat()}'.text.size(12).make(),
-                  ]).pSymmetric(h: 8, v: 8),
-                ).onInkTap(() => openAddEdit(asset: item));
+                return _assetTile(item);
               },
             );
           }).expand(),
 
           // xx
-          Container(
-            decoration: ExDecorator.box(borderRadius: 90, borderColor: AppColor.border, fillColor: AppColor.primary),
-            child: VStack([
-              Obx(
-                () => HStack([
-                  'Total Assets:'.text.bold.size(12).color(AppColor.textOnBackground).make().expand(),
-                  '${_controller.totalAssets.value.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).size(12).make(),
-                ]).pOnly(bottom: 8),
-              ),
-            ]).pOnly(top: 8, left: 12, right: 12),
-          ),
+          _assetTotalBar(_controller),
         ]).p12(),
+      ),
+    );
+  }
+
+  static Widget _assetTile(SupaAssets asset) {
+    return Container(
+      decoration: ExDecorator.box(
+        borderRadius: 8,
+        borderColor: AppColor.border,
+        fillColor: AppColor.box,
+      ),
+      child: HStack(
+        crossAlignment: CrossAxisAlignment.start,
+        [
+          Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: ExDecorator.box(
+              borderRadius: 8,
+              borderColor: Colors.transparent,
+              fillColor: AppColor.green.withAlpha(24),
+            ),
+            child: Icon(
+              UIconsPro.solidRounded.plant_seed_invest,
+              size: 17,
+              color: AppColor.green,
+            ),
+          ).pOnly(right: 10, top: 2),
+          VStack([
+            '${asset.title}'.text.bold.size(12).maxLines(2).ellipsis.make().pOnly(bottom: 6),
+            HStack([
+              _assetPill(
+                'Updated ${asset.updatedAt?.reformatDate(to: 'dd MMM yyyy')}',
+                AppColor.neutral,
+              ).expand(),
+            ]),
+          ]).expand(),
+          10.widthBox,
+          '${asset.amount?.moneyFormat()}'
+              .text
+              .bold
+              .size(12)
+              .minFontSize(10)
+              .color(AppColor.green)
+              .make()
+              .pSymmetric(h: 8, v: 4)
+              .box
+              .color(AppColor.green.withAlpha(22))
+              .make()
+              .cornerRadius(90),
+        ],
+      ).pSymmetric(h: 12, v: 10),
+    ).onInkTap(() => openAddEdit(asset: asset));
+  }
+
+  static Widget _assetPill(String label, Color color) {
+    return label.text
+        .size(10)
+        .minFontSize(10)
+        .maxLines(1)
+        .ellipsis
+        .color(color)
+        .make()
+        .pSymmetric(h: 8, v: 3)
+        .box
+        .color(color.withAlpha(22))
+        .make()
+        .cornerRadius(90);
+  }
+
+  static Widget _assetTotalBar(HomeController controller) {
+    return Container(
+      decoration: ExDecorator.box(
+        borderRadius: 8,
+        borderColor: Colors.transparent,
+        fillColor: AppColor.primary,
+      ),
+      child: Obx(
+        () => HStack([
+          'Total Assets'.text.bold.size(12).color(AppColor.textOnBackground).make().expand(),
+          '${controller.totalAssets.value.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).size(12).make(),
+        ]).pSymmetric(h: 14, v: 10),
       ),
     );
   }

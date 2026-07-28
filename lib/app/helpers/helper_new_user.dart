@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:ex_kit/ex.dart';
@@ -38,9 +37,13 @@ mixin HelperNewUser {
       await Get.offAllNamed(Routes.LOGIN);
       return;
     }
-    final userProfile = await db.from('profiles').select().eq('id', currentUserId!).withConverter<List<SupaUserProfile>>((data) {
-      return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
-    });
+    final userProfile = await db
+        .from('profiles')
+        .select()
+        .eq('id', currentUserId!)
+        .withConverter<List<SupaUserProfile>>((data) {
+          return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
+        });
 
     if (userProfile.isEmptyOrNull) {
       await Get.offAllNamed(Routes.LOGIN);
@@ -61,38 +64,68 @@ mixin HelperNewUser {
         width: 300,
         alignment: Alignment.centerRight,
         child: VStack([
-          Obx(() => 'Hi ${name.value}👋'.text.size(16).bold.make().pOnly(bottom: 12)),
+          Obx(
+            () => 'Hi ${name.value}👋'.text
+                .size(16)
+                .bold
+                .make()
+                .pOnly(bottom: 12),
+          ),
 
           Obx(() {
             if (isReplacePhoto.isTrue) {
               return Container(
                 decoration: ExDecorator.box(borderRadius: 90),
-                child: Image.memory(imgReplace.value).wh(64, 64).cornerRadius(90),
+                child: Image.memory(
+                  imgReplace.value,
+                ).wh(64, 64).cornerRadius(90),
               ).centered().pOnly(bottom: 16);
             } else {
               return ExImageNoCacheView(
-                url: db.storage.from('avatars').getPublicUrl('$currentUserId.png'),
+                url: db.storage
+                    .from('avatars')
+                    .getPublicUrl('$currentUserId.png'),
                 size: 64,
                 radius: 90,
-                errorBuilder: (p0, p1, p2) => ExAvatarView(source: '', name: tfFullName.text, size: 64),
+                errorBuilder: (p0, p1, p2) =>
+                    ExAvatarView(source: '', name: tfFullName.text, size: 64),
               ).centered().pOnly(bottom: 16);
             }
           }),
           ExButtonElevated(
             onPressed: () async {
               // filepicker select file and upload to supabase storage
-              await FilePicker.pickFiles(type: FileType.image, allowMultiple: false).then((img) async {
+              await FilePicker.pickFiles(
+                type: FileType.image,
+                allowMultiple: false,
+                withData: true,
+              ).then((img) async {
                 if (img != null) {
+                  final bytes = img.files.first.bytes;
+                  if (bytes == null) return;
+
                   isReplacePhoto.value = true;
 
-                  final file = File(img.paths.first ?? '');
                   final fileName = '$currentUserId.png';
-                  imgReplace.value = file.readAsBytesSync();
+                  imgReplace.value = bytes;
 
-                  await db.storage.from('avatars').upload(fileName, file, fileOptions: FileOptions(upsert: true, cacheControl: '1')).then((response) async {
-                    tfAvatar.value = db.storage.from('avatars').getPublicUrl(fileName);
-                    log('tfAvatar: $tfAvatar');
-                  });
+                  await db.storage
+                      .from('avatars')
+                      .uploadBinary(
+                        fileName,
+                        bytes,
+                        fileOptions: FileOptions(
+                          upsert: true,
+                          cacheControl: '1',
+                          contentType: 'image/png',
+                        ),
+                      )
+                      .then((response) async {
+                        tfAvatar.value = db.storage
+                            .from('avatars')
+                            .getPublicUrl(fileName);
+                        log('tfAvatar: $tfAvatar');
+                      });
                 }
               });
             },
@@ -113,7 +146,9 @@ mixin HelperNewUser {
           Divider().pSymmetric(v: 16),
 
           ///
-          '"${DateTime.now().toStringEx(format: 'dd MMM y')}" This is the day that we hope you commit to start tracking your fucking expenses! 🔥'.text.make(),
+          '"${DateTime.now().toStringEx(format: 'dd MMM y')}" This is the day that we hope you commit to start tracking your fucking expenses! 🔥'
+              .text
+              .make(),
 
           /// opt1
           Obx(
@@ -122,7 +157,10 @@ mixin HelperNewUser {
               child: Container(
                 decoration: ExDecorator.box(),
                 child: VStack([
-                  'do you wants to record this as reminder?'.text.size(12).makeCentered().pOnly(bottom: 8),
+                  'do you wants to record this as reminder?'.text
+                      .size(12)
+                      .makeCentered()
+                      .pOnly(bottom: 8),
                   HStack([
                     ExButtonElevated(
                       label: 'Yes',
@@ -137,7 +175,8 @@ mixin HelperNewUser {
                           categoryName: 'expense:misc:notes',
                           amount: 0,
                           note: 'Hi!',
-                          detail: 'This is the day you commit to starting record your fucking expenses! 🔥',
+                          detail:
+                              'This is the day you commit to starting record your fucking expenses! 🔥',
                         );
                         await db.from('expense').insert(expsenses.toJson());
                         await Get.find<HomeController>().getExpense();

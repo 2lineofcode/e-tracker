@@ -8,14 +8,16 @@ import '../modules/filtering/filtering_binding.dart';
 import '../modules/filtering/filtering_view.dart';
 import '../modules/home/home_binding.dart';
 import '../modules/home/home_view.dart';
+import '../modules/notes/notes_binding.dart';
+import '../modules/notes/notes_view.dart';
 import '../modules/settings/settings_binding.dart';
 import '../modules/settings/settings_view.dart';
 import '../modules/sql_editor/sql_editor_binding.dart';
 import '../modules/sql_editor/sql_editor_view.dart';
 import '../modules/summary/summary_binding.dart';
 import '../modules/summary/summary_view.dart';
-import '../modules/tester/tester_binding.dart';
-import '../modules/tester/tester_view.dart';
+import '../modules/worksheet/worksheet_binding.dart';
+import '../modules/worksheet/worksheet_view.dart';
 import 'app_middleware.dart';
 
 part 'app_routes.dart';
@@ -79,8 +81,14 @@ class AppPages {
     ),
     GetPage(
       name: Routes.TESTER,
-      page: () => const TesterView(),
+      page: () => const WorksheetView(),
       binding: TesterBinding(),
+    ),
+    GetPage(
+      name: Routes.NOTES,
+      page: () => const NotesView(),
+      binding: NotesBinding(),
+      middlewares: [AppMiddleware()],
     ),
   ];
 }

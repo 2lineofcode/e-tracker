@@ -7,6 +7,7 @@ import 'package:uicons_pro/uicons_pro.dart';
 import '../../core/app_color.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_category_entity.dart';
+import '../../models/supa_cron_entity.dart';
 import 'settings_controller.dart';
 
 class SectionRepeat extends GetView<SettingsController> {
@@ -17,7 +18,7 @@ class SectionRepeat extends GetView<SettingsController> {
     return VStack(
       [
         HStack([
-          'Repeat Transaction'.text.bold.make(),
+          'Recurring Transactions'.text.bold.make(),
           Spacer(),
           IconButton(
             icon: Icon(Icons.add),
@@ -36,29 +37,41 @@ class SectionRepeat extends GetView<SettingsController> {
                     final command = item.command ?? '';
 
                     // Use regex to extract all values at once
-                    final valuesRegex = RegExp(r"VALUES\s*\('([^']*)',\s*'([^']*)',\s*(\d+)");
+                    final valuesRegex = RegExp(
+                      r"values\s*\('([^']*)',\s*'([^']*)',\s*([0-9.]+)",
+                      caseSensitive: false,
+                    );
                     final match = valuesRegex.firstMatch(command);
 
                     final note = match?.group(1) ?? '';
                     final categoryFull = match?.group(2) ?? '';
                     final categoryName = categoryFull.split('#').first.trim();
                     final amount = num.tryParse(match?.group(3) ?? '0') ?? 0;
-                    final dueDate = item.schedule.allBetween('0 0 ', ' * *');
-
-                    final now = DateTime.now();
-                    final dateA = DateTime(now.year, now.month, now.day);
-                    final dateB = DateTime(now.year, now.month, int.parse(dueDate));
-                    final remainingDays = dateB.difference(dateA).inDays;
+                    final schedule = SupaCronSchedule.parse(item.schedule);
+                    final dueDate = schedule?.dueDay.toString() ?? '-';
+                    final remainingDays = schedule?.remainingDays() ?? 0;
+                    final scheduleLabel = schedule?.label ?? 'Custom schedule';
 
                     return Container(
-                      decoration: ExDecorator.box(borderRadius: 12, fillColor: AppColor.box, borderColor: AppColor.border),
+                      decoration: ExDecorator.box(
+                        borderRadius: 12,
+                        fillColor: AppColor.box,
+                        borderColor: AppColor.border,
+                      ),
                       child: HStack(
                         [
                           /// body
                           VStack([
                             HStack([
-                              Icon(UIconsPro.solidRounded.calendar_day, size: 11, color: AppColor.red).pOnly(right: 8),
-                              'Every month, date $dueDate '.text.size(11).minFontSize(11).make(),
+                              Icon(
+                                UIconsPro.solidRounded.calendar_day,
+                                size: 11,
+                                color: AppColor.red,
+                              ).pOnly(right: 8),
+                              '$scheduleLabel, date $dueDate '.text
+                                  .size(11)
+                                  .minFontSize(11)
+                                  .make(),
                             ]).pOnly(bottom: 8),
 
                             HStack([
@@ -68,12 +81,36 @@ class SectionRepeat extends GetView<SettingsController> {
 
                             HStack(
                               [
-                                Icon(resolveExpenseCategory(categoryName).icon, size: 12, color: resolveExpenseCategory(categoryName).color).pOnly(right: 8),
-                                '${resolveExpenseCategory(categoryName).label}'.text.size(11).minFontSize(11).color(resolveExpenseCategory(categoryName).color).make().expand(),
+                                Icon(
+                                  resolveExpenseCategory(categoryName).icon,
+                                  size: 12,
+                                  color: resolveExpenseCategory(
+                                    categoryName,
+                                  ).color,
+                                ).pOnly(right: 8),
+                                '${resolveExpenseCategory(categoryName).label}'
+                                    .text
+                                    .size(11)
+                                    .minFontSize(11)
+                                    .color(
+                                      resolveExpenseCategory(
+                                        categoryName,
+                                      ).color,
+                                    )
+                                    .make()
+                                    .expand(),
                                 if (remainingDays.isNegative) ...[
-                                  'Next month'.text.green300.size(11).minFontSize(11).make(),
+                                  'Next month'.text.green300
+                                      .size(11)
+                                      .minFontSize(11)
+                                      .make(),
                                 ] else ...[
-                                  'Remaining $remainingDays more days'.text.orange300.size(11).minFontSize(11).make(),
+                                  'Remaining $remainingDays more days'
+                                      .text
+                                      .orange300
+                                      .size(11)
+                                      .minFontSize(11)
+                                      .make(),
                                 ],
                               ],
                             ),
@@ -86,9 +123,13 @@ class SectionRepeat extends GetView<SettingsController> {
                   },
                 ).expand()
               : ExUiErrorOrEmpty(
-                  illustration: LottieBuilder.asset('assets/lottie/empty.json', width: 150, reverse: true),
+                  illustration: LottieBuilder.asset(
+                    'assets/lottie/empty.json',
+                    width: 150,
+                    reverse: true,
+                  ),
                   title: 'No Data',
-                  message: 'You can add new Repeat Transaction by tap `+`',
+                  message: 'You can add a recurring transaction by tapping `+`',
                 ).expand(),
         ),
       ],

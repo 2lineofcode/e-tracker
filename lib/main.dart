@@ -22,9 +22,7 @@ Future<void> main() async {
   final sw = Stopwatch()..start();
 
   // shortcut
-  if (isDesktop) {
-    await hotKeyManager.unregisterAll();
-  }
+  if (isDesktop) { await hotKeyManager.unregisterAll(); }
 
   /// gemini
   Gemini.init(apiKey: Env.geminiApiKey);

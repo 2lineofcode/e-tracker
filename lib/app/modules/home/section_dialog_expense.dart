@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex_kit/ex.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -10,7 +11,9 @@ import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:overlayment/overlayment.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uicons_pro/uicons_pro.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/v4.dart';
 
 import '../../core/app_api.dart';
@@ -20,6 +23,7 @@ import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
+import '../widgets/widget_image_no_cache_view.dart';
 import 'home_controller.dart';
 import 'home_repository.dart';
 
@@ -36,6 +40,237 @@ import 'home_repository.dart';
 /// It is designed to be shared and can be used in multiple pages.
 /// The class includes methods for handling dialog categories.
 mixin DialogExpense {
+  static const _expenseImageBucket = 'expense-images';
+
+  static String _contentTypeFromName(String fileName) {
+    final ext = fileName.split('.').last.toLowerCase();
+    return switch (ext) {
+      'jpg' || 'jpeg' => 'image/jpeg',
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      'gif' => 'image/gif',
+      _ => 'image/jpeg',
+    };
+  }
+
+  static Future<String?> _uploadExpenseImage({
+    required String expenseId,
+    required Rx<Uint8List?> previewBytes,
+  }) async {
+    try {
+      final result = await FilePicker.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+        withData: true,
+      );
+      if (result == null || result.files.isEmpty) return null;
+
+      final file = result.files.first;
+      final bytes = file.bytes;
+      if (bytes == null) {
+        await HelperToast.warn('Failed to read selected image');
+        return null;
+      }
+
+      final ext = file.extension?.toLowerCase() ?? 'jpg';
+      final fileName =
+          '${db.auth.currentSession?.user.id ?? currentUserId}/$expenseId.$ext';
+      previewBytes.value = bytes;
+
+      await db.storage
+          .from(_expenseImageBucket)
+          .uploadBinary(
+            fileName,
+            bytes,
+            fileOptions: FileOptions(
+              upsert: true,
+              cacheControl: '1',
+              contentType: _contentTypeFromName(file.name),
+            ),
+          );
+
+      return db.storage.from(_expenseImageBucket).getPublicUrl(fileName);
+    } catch (e) {
+      if (e is StorageException) {
+        await HelperToast.error('${e.message}\nMax 5MB');
+      } else {
+        await HelperErrorLog.record(
+          page: 'section_dialog_input',
+          action: '_uploadExpenseImage',
+          stack: e.toString(),
+        );
+        await HelperToast.error('Failed to upload image');
+      }
+      return null;
+    }
+  }
+
+  static String? _expenseImagePathFromUrl(String imageUrl) {
+    if (imageUrl.isEmptyOrNull) return null;
+
+    final uri = Uri.tryParse(imageUrl);
+    if (uri == null) return null;
+
+    final bucketIndex = uri.pathSegments.indexOf(_expenseImageBucket);
+    if (bucketIndex == -1 || bucketIndex == uri.pathSegments.length - 1) {
+      return null;
+    }
+
+    return uri.pathSegments
+        .skip(bucketIndex + 1)
+        .map(Uri.decodeComponent)
+        .join('/');
+  }
+
+  static Future<void> _deleteExpenseImagesFromStorage(
+    List<String> imageUrls,
+  ) async {
+    final paths = imageUrls
+        .map(_expenseImagePathFromUrl)
+        .whereType<String>()
+        .toSet()
+        .toList();
+    if (paths.isEmpty) return;
+
+    try {
+      await db.storage.from(_expenseImageBucket).remove(paths);
+    } catch (e) {
+      await HelperErrorLog.record(
+        page: 'section_dialog_input',
+        action: '_deleteExpenseImagesFromStorage',
+        stack: e.toString(),
+      );
+      await HelperToast.warn('Expense saved, but failed to delete old image');
+    }
+  }
+
+  static void _openExpenseImagePreview({
+    required String imageUrl,
+    required Uint8List? previewBytes,
+  }) async {
+    if (imageUrl.isNotEmptyAndNotNull) {
+      await launchUrlString(imageUrl);
+      return;
+    }
+
+    if (previewBytes == null) return;
+
+    await showDialog(
+      context: Get.context!,
+      barrierColor: Colors.black87,
+      builder: (_) => Dialog.fullscreen(
+        backgroundColor: Colors.transparent,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 4,
+                child: Image.memory(previewBytes, fit: BoxFit.contain),
+              ),
+            ),
+            Positioned(
+              top: 16,
+              right: 16,
+              child: IconButton(
+                icon: Icon(Icons.close, color: Vx.white, size: 24),
+                onPressed: () => Get.back(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget _expenseImagePicker({
+    required SupaExpense expense,
+    required RxString imageUrl,
+    required Rx<Uint8List?> previewBytes,
+    required RxList<String> imageUrlsToDelete,
+  }) {
+    return Obx(() {
+      final hasImage =
+          previewBytes.value != null || imageUrl.value.isNotEmptyAndNotNull;
+
+      void queueDelete(String url) {
+        if (url.isEmptyOrNull || imageUrlsToDelete.contains(url)) return;
+        imageUrlsToDelete.add(url);
+      }
+
+      return VStack([
+        if (hasImage) ...[
+          ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: previewBytes.value != null
+                    ? Image.memory(
+                        previewBytes.value!,
+                        width: double.infinity,
+                        height: 120,
+                        fit: BoxFit.cover,
+                      )
+                    : ExImageNoCacheView(
+                        url: imageUrl.value,
+                        width: double.infinity,
+                        height: 120,
+                        radius: 6,
+                      ),
+              )
+              .onInkTap(
+                () => _openExpenseImagePreview(
+                  imageUrl: imageUrl.value,
+                  previewBytes: previewBytes.value,
+                ),
+              )
+              .pOnly(bottom: 10),
+        ],
+        HStack([
+          ExButtonElevated(
+            height: 32,
+            onPressed: () async {
+              final previousImageUrl = imageUrl.value;
+              final uploadedUrl = await _uploadExpenseImage(
+                expenseId: expense.id ?? UuidV4().generate(),
+                previewBytes: previewBytes,
+              );
+              if (uploadedUrl.isNotEmptyAndNotNull) {
+                queueDelete(previousImageUrl);
+                imageUrl.value = uploadedUrl!;
+              }
+            },
+            child: HStack([
+              Icon(
+                Icons.image_outlined,
+                size: 13,
+                color: AppColor.textReverse,
+              ).pOnly(right: 6),
+              (hasImage ? 'Change Image' : 'Upload Image').text
+                  .size(11)
+                  .minFontSize(11)
+                  .make(),
+            ]).centered(),
+          ).expand(),
+          if (hasImage) ...[
+            8.widthBox,
+            ExButtonElevated(
+              height: 32,
+              onPressed: () {
+                queueDelete(imageUrl.value);
+                imageUrl.value = '';
+                previewBytes.value = null;
+              },
+              child: Icon(
+                CupertinoIcons.trash,
+                size: 13,
+                color: AppColor.red,
+              ),
+            ).w(42),
+          ],
+        ]),
+      ]).pOnly(top: 14, bottom: 22);
+    });
+  }
+
   /// ------------------------------------------------------------------------
   /// Manual Input
   /// ------------------------------------------------------------------------
@@ -84,6 +319,9 @@ mixin DialogExpense {
     final _tfAmount = TextEditingController(
       text: expense != null ? expense.amount!.moneyFormat() : '',
     );
+    final _imageUrl = (expense?.imageUrl ?? '').obs;
+    final _imagePreview = Rx<Uint8List?>(null);
+    final _imageUrlsToDelete = <String>[].obs;
 
     /// flag
     final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull
@@ -95,6 +333,8 @@ mixin DialogExpense {
         : false.obs;
     ExBottomSheet.basic(
       title: '${expense != null ? 'Edit Expense' : 'Add Expense'}',
+      backgroundColor: AppColor.appbarPrimary,
+      barrierColor: Colors.black54,
       content: VStack(
         [
           if (expense != null) ...[
@@ -184,22 +424,28 @@ mixin DialogExpense {
                 group.items.map((element) {
                   return DropdownMenuItem<String>(
                     value: element.code,
-                    child: HStack([
-                      Icon(
-                        element.icon ?? Icons.circle_outlined,
-                        size: 16,
-                        color: element.color,
-                      ).pOnly(right: 8),
-                      Text(
-                        '${element.label}',
-                        overflow: TextOverflow.ellipsis,
-                      ).w(250),
-                    ]),
+                    child: Row(
+                      children: [
+                        Icon(
+                          element.icon ?? Icons.circle_outlined,
+                          size: 16,
+                          color: element.color,
+                        ).pOnly(right: 8),
+                        Expanded(
+                          child: Text(
+                            '${element.label}',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 }),
               );
             }
             return DropdownButtonFormField<String>(
+              isExpanded: true,
               initialValue: _tfCategory.value,
               style: TextStyle(fontSize: 12, color: AppColor.textReverse),
               decoration: HelperDecoration.input(
@@ -291,12 +537,23 @@ mixin DialogExpense {
                     _tfAmount.text,
                     expense: expense,
                     tfDate: _tfDate.text,
+                    imageUrl: _imageUrl.value,
+                    imageUrlsToDelete: _imageUrlsToDelete.toList(),
                     customCallback: customCallback,
                   ),
                 },
               ).h(32),
             ),
           ),
+
+          if (expense != null) ...[
+            _expenseImagePicker(
+              expense: expense,
+              imageUrl: _imageUrl,
+              previewBytes: _imagePreview,
+              imageUrlsToDelete: _imageUrlsToDelete,
+            ),
+          ],
 
           Divider().pSymmetric(v: 12),
 
@@ -329,6 +586,8 @@ mixin DialogExpense {
                     _tfAmount.text,
                     expense: expense,
                     tfDate: _tfDate.text,
+                    imageUrl: _imageUrl.value,
+                    imageUrlsToDelete: _imageUrlsToDelete.toList(),
                     customCallback: customCallback,
                   );
                 },
@@ -376,6 +635,9 @@ mixin DialogExpense {
     final _tfAmount = TextEditingController(
       text: expense != null ? expense.amount!.moneyFormat() : '',
     );
+    final _imageUrl = (expense?.imageUrl ?? '').obs;
+    final _imagePreview = Rx<Uint8List?>(null);
+    final _imageUrlsToDelete = <String>[].obs;
 
     /// flag
     final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull
@@ -568,6 +830,15 @@ mixin DialogExpense {
                   ).h(32),
                 ),
               ),
+
+              if (expense != null) ...[
+                _expenseImagePicker(
+                  expense: expense,
+                  imageUrl: _imageUrl,
+                  previewBytes: _imagePreview,
+                  imageUrlsToDelete: _imageUrlsToDelete,
+                ),
+              ],
             ]).pSymmetric(h: 8).p12(),
 
             Divider(),
@@ -602,6 +873,8 @@ mixin DialogExpense {
                     _tfAmount.text,
                     expense: expense,
                     tfDate: _tfDate.text,
+                    imageUrl: _imageUrl.value,
+                    imageUrlsToDelete: _imageUrlsToDelete.toList(),
                     customCallback: customCallback,
                   );
                 },
@@ -637,6 +910,10 @@ mixin DialogExpense {
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
             style: TextStyle(fontSize: 13, color: AppColor.textReverse),
             onSubmitted: (s) async {
+              if (s.trim().isEmpty) {
+                await HelperToast.warn('Please enter some text');
+                return;
+              }
               Get.back();
               await _processAIInput(s);
             },
@@ -646,6 +923,10 @@ mixin DialogExpense {
           CupertinoDialogAction(
             child: Text('Submit', style: TextStyle(fontSize: 13)),
             onPressed: () async {
+              if (_tfText.text.trim().isEmpty) {
+                await HelperToast.warn('Please enter some text');
+                return;
+              }
               Get.back();
               await _processAIInput(_tfText.text);
             },
@@ -670,6 +951,8 @@ mixin DialogExpense {
 
       ExBottomSheet.basic(
         title: 'Add Expense',
+        backgroundColor: AppColor.appbarPrimary,
+        barrierColor: Colors.black54,
         content: ConstrainedBox(
           constraints: BoxConstraints(
             maxHeight: kIsWeb
@@ -702,6 +985,10 @@ mixin DialogExpense {
                     ),
                     style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                     onSubmitted: (s) async {
+                      if (s.trim().isEmpty) {
+                        await HelperToast.warn('Please enter some text');
+                        return;
+                      }
                       Get.back();
                       await _processAIInput(s);
                     },
@@ -752,6 +1039,10 @@ mixin DialogExpense {
                     label: 'Submit',
                     labelSize: 13,
                     onPressed: () async {
+                      if (_tfText.text.trim().isEmpty) {
+                        await HelperToast.warn('Please enter some text');
+                        return;
+                      }
                       Get.back();
                       await _processAIInput(_tfText.text);
                     },
@@ -857,6 +1148,8 @@ mixin DialogExpense {
     String tfAmount, {
     SupaExpense? expense,
     String? tfDate,
+    String? imageUrl,
+    List<String> imageUrlsToDelete = const [],
     Function? customCallback,
   }) async {
     final _controller = Get.find<HomeController>();
@@ -878,6 +1171,7 @@ mixin DialogExpense {
       categoryName: tfCategory,
       note: '${tfNote.toTitleCase}',
       detail: tfDescription ?? '',
+      imageUrl: imageUrl ?? expense?.imageUrl,
     );
 
     if (resolveExpenseCategory(newExpense.categoryName).code ==
@@ -906,6 +1200,7 @@ mixin DialogExpense {
           await _persistExpense(
             newExpense,
             isEdit: expense != null,
+            imageUrlsToDelete: imageUrlsToDelete,
             customCallback: customCallback,
           );
         },
@@ -916,6 +1211,7 @@ mixin DialogExpense {
     await _persistExpense(
       newExpense,
       isEdit: expense != null,
+      imageUrlsToDelete: imageUrlsToDelete,
       customCallback: customCallback,
     );
   }
@@ -923,6 +1219,7 @@ mixin DialogExpense {
   static Future<void> _persistExpense(
     SupaExpense newExpense, {
     required bool isEdit,
+    List<String> imageUrlsToDelete = const [],
     Function? customCallback,
   }) async {
     final _controller = Get.find<HomeController>();
@@ -934,6 +1231,8 @@ mixin DialogExpense {
       isEdit
           ? await _repo.editExpense(newExpense)
           : await _repo.addExpense(newExpense);
+
+      await _deleteExpenseImagesFromStorage(imageUrlsToDelete);
 
       /// refresh data after insert
       await _controller.getExpense(

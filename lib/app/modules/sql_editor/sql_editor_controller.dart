@@ -3,40 +3,38 @@ import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:postgres/postgres.dart';
 import 'package:re_editor/re_editor.dart';
-import 'package:uuid/uuid.dart';
 
-import '../../core/app_api.dart';
 import '../../core/app_setting.dart';
 import 'sql_editor_repository.dart';
 
-enum SqlTemplate { select, update, delete }
-
-class SavedSqlTemplate {
-  const SavedSqlTemplate({
-    required this.id,
+class SqlEditorTab {
+  const SqlEditorTab({
     required this.name,
     required this.sql,
-    required this.createdAt,
   });
 
-  final String id;
   final String name;
   final String sql;
-  final DateTime createdAt;
+
+  SqlEditorTab copyWith({
+    String? name,
+    String? sql,
+  }) {
+    return SqlEditorTab(
+      name: name ?? this.name,
+      sql: sql ?? this.sql,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
         'name': name,
         'sql': sql,
-        'createdAt': createdAt.toIso8601String(),
       };
 
-  factory SavedSqlTemplate.fromJson(Map<String, dynamic> json) {
-    return SavedSqlTemplate(
-      id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? 'Untitled',
+  factory SqlEditorTab.fromJson(Map<String, dynamic> json) {
+    return SqlEditorTab(
+      name: json['name'] as String? ?? 'Query',
       sql: json['sql'] as String? ?? '',
-      createdAt: DateTime.tryParse(json['createdAt'] as String? ?? '') ?? DateTime.now(),
     );
   }
 }
@@ -45,9 +43,10 @@ class SqlEditorController extends GetxController {
   SqlEditorController({SqlEditorRepository? repository}) : _repository = repository ?? SqlEditorRepository();
 
   final SqlEditorRepository _repository;
-  final _uuid = const Uuid();
 
   late final CodeLineEditingController queryController;
+  final tabs = <SqlEditorTab>[].obs;
+  final activeTab = 0.obs;
   final isRunning = false.obs;
   final lastRunAt = Rxn<DateTime>();
   final result = Rxn<SqlExecutionResult>();
@@ -61,18 +60,70 @@ class SqlEditorController extends GetxController {
   static final _selectRegex = RegExp(r'^\s*select\b', caseSensitive: false);
   static final _limitRegex = RegExp(r'\blimit\b', caseSensitive: false);
 
-  final savedTemplates = <SavedSqlTemplate>[].obs;
-
   static const _seedQueryKey = '_seedQuery';
-  static const _templatesStorageKey = '_sqlSavedTemplates';
+  static const _tabsStorageKey = '_sqlEditorTabs';
+  static const _activeTabStorageKey = '_sqlEditorActiveTab';
 
-  final _seedQuery = pref.read<String>(_seedQueryKey) ?? '';
+  bool _isApplyingTab = false;
 
   @override
   void onInit() {
     super.onInit();
-    queryController = CodeLineEditingController.fromText(_seedQuery.trim());
-    _loadSavedTemplates();
+    _loadTabs();
+    queryController = CodeLineEditingController.fromText(tabs[activeTab.value].sql.trim());
+  }
+
+  void addTab() {
+    _saveActiveTabSql(queryController.text);
+    tabs.add(SqlEditorTab(name: 'Query ${tabs.length + 1}', sql: ''));
+    activeTab.value = tabs.length - 1;
+    _persistTabs();
+    _applyActiveTabSql();
+  }
+
+  void selectTab(int index) {
+    if (index == activeTab.value || index < 0 || index >= tabs.length) {
+      return;
+    }
+
+    _saveActiveTabSql(queryController.text);
+    activeTab.value = index;
+    _persistTabs();
+    _applyActiveTabSql();
+  }
+
+  void closeTab(int index) {
+    if (tabs.length <= 1 || index < 0 || index >= tabs.length) {
+      return;
+    }
+
+    _saveActiveTabSql(queryController.text);
+    tabs.removeAt(index);
+
+    if (activeTab.value >= tabs.length) {
+      activeTab.value = tabs.length - 1;
+    } else if (index < activeTab.value) {
+      activeTab.value--;
+    }
+
+    _persistTabs();
+    _applyActiveTabSql();
+  }
+
+  Future<void> renameTab(int index, String name) async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty || index < 0 || index >= tabs.length) {
+      return;
+    }
+
+    tabs[index] = tabs[index].copyWith(name: trimmed);
+    await _persistTabs();
+  }
+
+  void updateActiveTabSql(String sql) {
+    if (_isApplyingTab) return;
+    _saveActiveTabSql(sql);
+    _persistTabs();
   }
 
   Future<void> runQuery() async {
@@ -149,64 +200,41 @@ class SqlEditorController extends GetxController {
     return result;
   }
 
-  void applyTemplate(SqlTemplate template) {
-    final snippet = switch (template) {
-      SqlTemplate.select => ''' select date, note, category_name, amount from expense limit 100; ''',
-      SqlTemplate.update => ''' update from expense set category_name = '' where note ilike '%%' ''',
-      SqlTemplate.delete => ''' delete from expense where id = '<expense_id>' and user_id = '${currentUserId ?? ''}'; ''',
-    };
-
-    queryController.text += '\n--- $template \n ${snippet.trimRight()}';
-  }
-
-  Future<void> saveTemplate({required String name, required String sql}) async {
-    final trimmedName = name.trim();
-    final trimmedSql = sql.trim();
-    if (trimmedName.isEmpty || trimmedSql.isEmpty) {
-      return;
-    }
-    final template = SavedSqlTemplate(
-      id: _uuid.v4(),
-      name: trimmedName,
-      sql: trimmedSql,
-      createdAt: DateTime.now(),
-    );
-    savedTemplates.removeWhere((element) => element.sql.trim() == trimmedSql && element.name == trimmedName);
-    savedTemplates.insert(0, template);
-    await _persistTemplates();
-  }
-
-  void applySavedTemplate(SavedSqlTemplate template) {
-    queryController.text = template.sql;
-  }
-
-  Future<void> deleteTemplate(String id) async {
-    savedTemplates.removeWhere((element) => element.id == id);
-    await _persistTemplates();
-  }
-
-  void _loadSavedTemplates() {
-    final stored = pref.read<List<dynamic>>(_templatesStorageKey);
-    if (stored is! List || stored.isEmpty) {
-      return;
-    }
-    final templates = <SavedSqlTemplate>[];
-    for (final entry in stored) {
-      if (entry is Map) {
-        templates.add(SavedSqlTemplate.fromJson(Map<String, dynamic>.from(entry)));
+  void _loadTabs() {
+    final stored = pref.read<List<dynamic>>(_tabsStorageKey);
+    final loadedTabs = <SqlEditorTab>[];
+    if (stored is List) {
+      for (final entry in stored) {
+        if (entry is Map) {
+          loadedTabs.add(SqlEditorTab.fromJson(Map<String, dynamic>.from(entry)));
+        }
       }
     }
-    if (templates.isNotEmpty) {
-      templates.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      savedTemplates.assignAll(templates);
-    }
+
+    final legacyQuery = pref.read<String>(_seedQueryKey) ?? '';
+    tabs.assignAll(loadedTabs.isNotEmpty ? loadedTabs : [SqlEditorTab(name: 'Query 1', sql: legacyQuery)]);
+
+    final savedIndex = pref.read<int>(_activeTabStorageKey) ?? 0;
+    activeTab.value = savedIndex.clamp(0, tabs.length - 1);
   }
 
-  Future<void> _persistTemplates() {
-    return pref.write(
-      _templatesStorageKey,
-      savedTemplates.map((e) => e.toJson()).toList(),
-    );
+  void _saveActiveTabSql(String sql) {
+    if (tabs.isEmpty) {
+      tabs.add(const SqlEditorTab(name: 'Query 1', sql: ''));
+    }
+    tabs[activeTab.value] = tabs[activeTab.value].copyWith(sql: sql);
+  }
+
+  Future<void> _persistTabs() async {
+    await pref.write(_tabsStorageKey, tabs.map((tab) => tab.toJson()).toList());
+    await pref.write(_activeTabStorageKey, activeTab.value);
+    await pref.write(_seedQueryKey, tabs[activeTab.value].sql);
+  }
+
+  void _applyActiveTabSql() {
+    _isApplyingTab = true;
+    queryController.text = tabs[activeTab.value].sql;
+    _isApplyingTab = false;
   }
 
   @override
