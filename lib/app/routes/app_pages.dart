@@ -16,8 +16,6 @@ import '../modules/sql_editor/sql_editor_binding.dart';
 import '../modules/sql_editor/sql_editor_view.dart';
 import '../modules/summary/summary_binding.dart';
 import '../modules/summary/summary_view.dart';
-import '../modules/worksheet/worksheet_binding.dart';
-import '../modules/worksheet/worksheet_view.dart';
 import 'app_middleware.dart';
 
 part 'app_routes.dart';
@@ -78,11 +76,6 @@ class AppPages {
       name: Routes.CALCP,
       page: () => const CalcpView(),
       binding: CalcpBinding(),
-    ),
-    GetPage(
-      name: Routes.TESTER,
-      page: () => const WorksheetView(),
-      binding: TesterBinding(),
     ),
     GetPage(
       name: Routes.NOTES,

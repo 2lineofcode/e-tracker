@@ -1,17 +1,121 @@
 import 'package:ex_kit/ex.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../env.g.dart';
 import '../../core/app_api.dart';
 import '../../helpers/helpers.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
 import '../../models/supa_category_entity.dart';
 import '../../models/supa_cron_entity.dart';
+import '../../models/supa_error_log_entity.dart';
 import '../../models/supa_expense_entity.dart';
+import '../../models/supa_notes_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 
 class SummaryRepository {
+  String get _userId {
+    final userId = currentUserId;
+    if (userId == null) throw StateError('User not authenticated');
+    return userId;
+  }
+
+  static List<String> expenseSearchKeywords(String query) {
+    const ignoredWords = {
+      'aku',
+      'saya',
+      'gue',
+      'kalo',
+      'kalau',
+      'kapan',
+      'when',
+      'tanggal',
+      'tahun',
+      'bulan',
+      'berapa',
+      'ditotal',
+      'total',
+      'udah',
+      'sudah',
+      'habis',
+      'uang',
+      'untuk',
+      'all',
+      'time',
+      'selama',
+      'sepanjang',
+      'semua',
+      'apa',
+      'aja',
+      'pernah',
+      'terakhir',
+      'pertama',
+      'beli',
+      'membeli',
+      'dibeli',
+      'belanja',
+      'bayar',
+      'membayar',
+      'transaksi',
+      'pengeluaran',
+      'expense',
+      'purchase',
+      'payment',
+      'yang',
+      'dan',
+      'di',
+      'ke',
+      'dari',
+    };
+    return query
+        .toLowerCase()
+        .split(RegExp(r'\s+'))
+        .map((word) => word.replaceAll(RegExp('[^a-z0-9]'), ''))
+        .where((word) => word.length >= 3 && !ignoredWords.contains(word))
+        .take(3)
+        .toList();
+  }
+
+  Future<List<SupaExpense>> getAllExpenses({
+    String? query,
+    String? startDate,
+    String? endDate,
+  }) async {
+    if (currentUserId == null) return [];
+
+    const pageSize = 1000;
+    final expenses = <SupaExpense>[];
+    final keywords = query == null ? null : expenseSearchKeywords(query);
+    if (query != null && (keywords == null || keywords.isEmpty)) return [];
+    var offset = 0;
+
+    while (true) {
+      var request = db
+          .from('expense')
+          .select()
+          .eq('user_id', currentUserId!);
+      if (startDate != null) request = request.gte('date', startDate);
+      if (endDate != null) request = request.lte('date', endDate);
+      for (final keyword in keywords ?? <String>[]) {
+        request = request.or(
+          'note.ilike.%$keyword%,detail.ilike.%$keyword%,category_name.ilike.%$keyword%',
+        );
+      }
+
+      final response = await request
+          .order('date')
+          .order('id')
+          .range(offset, offset + pageSize - 1)
+          .withConverter<List<SupaExpense>>(
+            (data) => data.map((e) => SupaExpense.fromJson(e)).toList(),
+          );
+      logD(
+        'Agent expense page loaded: offset=$offset, rows=${response.length}',
+      );
+      expenses.addAll(response);
+      if (response.length < pageSize) return expenses;
+      offset += response.length;
+    }
+  }
+
   Future<List<SupaExpense>> getExpenses({required String year, String? month}) async {
     if (currentUserId == null) return [];
     final fixYM = '$year${month != null ? '-${month.reformatDate(from: 'MMMM', to: 'MM')}' : ''}';
@@ -46,19 +150,74 @@ class SummaryRepository {
     return response;
   }
 
+  Future<List<SupaNotes>> getNotes() async {
+    if (currentUserId == null) return [];
+    return await db
+        .from('notes')
+        .select()
+        .eq('user_id', currentUserId!)
+        .order('updated_at', ascending: false)
+        .limit(100)
+        .withConverter<List<SupaNotes>>(
+          (data) => data.map((e) => SupaNotes.fromJson(e)).toList(),
+        );
+  }
+
+  Future<List<SupaErrorLog>> getErrorLogs() async {
+    final email = db.auth.currentSession?.user.email;
+    if (email == null) return [];
+    return await db
+        .from('error_log')
+        .select('id, created_at, page, action, stack')
+        .eq('user_email', email)
+        .order('created_at', ascending: false)
+        .limit(100)
+        .withConverter<List<SupaErrorLog>>(
+          (data) => data.map((e) => SupaErrorLog.fromJson(e)).toList(),
+        );
+  }
+
+  Future<List<Map<String, dynamic>>> getMemories() async {
+    return await db
+        .from('agent_memory')
+        .select('id, key, value, created_at, updated_at')
+        .eq('user_id', _userId)
+        .order('updated_at', ascending: false)
+        .limit(100);
+  }
+
+  Future<Map<String, dynamic>> saveMemory(String key, String value) async {
+    return await db
+        .from('agent_memory')
+        .upsert(
+          {
+            'user_id': _userId,
+            'key': key,
+            'value': value,
+            'updated_at': DateTime.now().toIso8601String(),
+          },
+          onConflict: 'user_id,key',
+        )
+        .select('id, key, value, created_at, updated_at')
+        .single();
+  }
+
+  Future<bool> deleteMemory(String key) async {
+    final deleted = await db
+        .from('agent_memory')
+        .delete()
+        .eq('user_id', _userId)
+        .eq('key', key)
+        .select('id')
+        .maybeSingle();
+    return deleted != null;
+  }
 
   Future<List<SupaCron>> getCron() async {
-    final sb = SupabaseClient(Env.supabaseUrl, Env.supabaseServiceRole);
-    final res =
-        await sb //
-            .schema('cron')
-            .from('job')
-            .select()
-            .or('command.ilike.%${db.auth.currentSession?.user.id}%')
-            .withConverter<List<SupaCron>>((data) {
-              return (data).map((e) => SupaCron.fromJson(e)).toList();
-            });
-    return res;
+    if (currentUserId == null) return [];
+    return await db.rpc('get_expense_cron').withConverter<List<SupaCron>>((data) {
+      return (data as List).map((e) => SupaCron.fromJson(e)).toList();
+    });
   }
 
   /// ------------------------------------------------------------------------
@@ -106,7 +265,7 @@ class SummaryRepository {
               return (data).map((e) => SupaUserProfile.fromJson(e)).toList();
             });
 
-    int o = response[0].income?.moneyUnformat() ?? 0;
-    return o;
+    if (response.isEmpty) return 0;
+    return response.first.income?.moneyUnformat() ?? 0;
   }
 }

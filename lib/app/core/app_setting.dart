@@ -3,28 +3,20 @@ import 'dart:io';
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:groq/groq.dart';
-import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:overlayment/overlayment.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../env.g.dart';
 import '../helpers/helpers.dart';
 import '../models/supa_user_profile_entity.dart';
-import '../modules/home/section_dialog_budget.dart';
-import '../routes/app_pages.dart';
 import 'app_api.dart';
 import 'app_color.dart';
 import 'const.dart';
 
 /// handy call sharedpref
 final pref = GetStorage(kStorageKey);
-
-final gemini = Gemini.instance;
 
 final groq = Groq(
   apiKey: Env.groqApiKey,
@@ -36,7 +28,6 @@ class AppSettingService extends GetxService {
   Future<void> onInit() async {
     await setupDesktop();
     await setupAppPref();
-    await setupHotkey();
     super.onInit();
   }
 
@@ -119,51 +110,4 @@ class AppSettingService extends GetxService {
     });
   }
 
-  // ────────────────────────────────────────────────────────────────
-  // ⵌ hotkey
-  // ────────────────────────────────────────────────────────────────
-  Future<void> setupHotkey() async {
-    if (!isDesktop) return;
-
-    logS('Shorcut for desktop initialized');
-
-    HotKey _hotKeyEsc = HotKey(key: PhysicalKeyboardKey.escape, modifiers: [], scope: HotKeyScope.inapp);
-    HotKey _hotKeyMetaN = HotKey(key: PhysicalKeyboardKey.keyN, modifiers: [ HotKeyModifier.meta ], scope: HotKeyScope.inapp);
-    HotKey _hotKeyMetaB = HotKey(key: PhysicalKeyboardKey.keyB, modifiers: [ HotKeyModifier.meta ], scope: HotKeyScope.inapp);
-    HotKey _hotKeyDot = HotKey(key: PhysicalKeyboardKey.period, modifiers: [], scope: HotKeyScope.inapp);
-    HotKey _hotKeyMetaComma = HotKey(key: PhysicalKeyboardKey.comma, modifiers: [ HotKeyModifier.meta ], scope: HotKeyScope.inapp);
-
-
-    // key ESC
-    await hotKeyManager.register(
-      _hotKeyEsc,
-      keyUpHandler: (hotKey) {
-        logD('hotKeyEsc Pressed');
-        try {
-          if (Get.isDialogOpen!) { Get.back(); }
-          if (Overlayment.count != 0) { Overlayment.dismissLast(); }
-          Get.back();
-        } catch (_) {}
-      },
-    );
-
-    // key META + ,
-    await hotKeyManager.register(_hotKeyMetaComma, keyUpHandler: (hotKey) => Get.toNamed(Routes.SETTINGS));
-
-    // key META + N
-    await hotKeyManager.register(_hotKeyMetaN, keyUpHandler: (hotKey) => Get.toNamed(Routes.NOTES));
-
-    // key META + B
-    await hotKeyManager.register(_hotKeyMetaB, keyUpHandler: (hotKey) => DialogBudget.openList());
-
-    // key .
-    await hotKeyManager.register(
-      _hotKeyDot,
-      keyUpHandler: (hotKey) {
-        if (Get.currentRoute == Routes.ROOT) {
-          Get.toNamed(Routes.CALCP);
-        }
-      },
-    );
-  }
 }

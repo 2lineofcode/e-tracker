@@ -14,31 +14,44 @@ class SectionIEmport extends GetView<SettingsController> {
   @override
   Widget build(BuildContext context) {
     return VStack([
-      /// analytics
       analytics(),
-
       16.heightBox,
-
-      /// import export
       importExport(),
-
       16.heightBox,
-
-      /// cloud backup
+      dangerZone(),
+      16.heightBox,
       cloudBackup(),
-    ]).pSymmetric(h: 8).scrollVertical();
+    ]).scrollVertical();
   }
 
   Widget analytics() {
     return Obx(
       () => Container(
         width: double.infinity,
-        decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.border, fillColor: AppColor.box),
+        decoration: ExDecorator.box(
+          borderRadius: 12,
+          borderColor: AppColor.border,
+          fillColor: AppColor.box,
+        ),
         child: VStack([
-          '📈 Analytics'.text.bold.make().pOnly(bottom: 8),
-          'Total Data Expense: ${controller.countExpense.value} | ${controller.sumAllExpense.value.moneyFormat()}'.text.size(11).make(),
-          'Total Data Category: ${controller.countCategory.value}'.text.size(11).make(),
-        ]).p12(),
+          HStack([
+            Icon(
+              Icons.analytics_outlined,
+              size: 18,
+              color: AppColor.primary,
+            ).pOnly(right: 8),
+            'Analytics'.text.size(14).bold.make(),
+          ]).pOnly(bottom: 14),
+          '${controller.sumAllExpense.value.moneyFormat()}'.text
+              .size(18)
+              .bold
+              .make(),
+          '${controller.countExpense.value} expenses • ${controller.countCategory.value} categories'
+              .text
+              .size(11)
+              .color(AppColor.neutral)
+              .make(),
+        ]).p16(),
       ),
     );
   }
@@ -46,79 +59,88 @@ class SectionIEmport extends GetView<SettingsController> {
   Widget importExport() {
     return Container(
       width: double.infinity,
-      decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.border, fillColor: AppColor.box),
+      decoration: ExDecorator.box(
+        borderRadius: 12,
+        borderColor: AppColor.border,
+        fillColor: AppColor.box,
+      ),
       child: VStack(
         [
-          // 1
-          HStack(
-            [
-              'Import From CSV'.text.make().expand(),
-              ExButtonOutline(
-                label: 'Select File',
-                labelSize: 12,
-                height: 38,
-                borderColor: AppColor.primary,
-                labelColor: AppColor.textReverse,
-                onPressed: () async => await HelperImportExport.importFromCSV(),
-              ),
-            ],
-          ).pOnly(bottom: 12),
-
-          // 2
-          HStack([
-            'Export As CSV'.text.make().expand(),
-            IconButton(
-              onPressed: () async => await HelperImportExport.exportToCSV(),
-              icon: Icon(Icons.arrow_forward_ios_rounded, size: 14),
-            ),
-          ]).pOnly(bottom: 12),
-
-          HStack([
-            VStack([
-              'Export Full Backup'.text.make(),
-              'Expense, budgets, assets, goals, notes'.text.size(10).minFontSize(10).color(AppColor.neutral).make(),
-            ]).expand(),
-            IconButton(
-              onPressed: () async => await HelperImportExport.exportFullBackupBundle(),
-              icon: Icon(Icons.archive_outlined, size: 16),
-            ),
-          ]).pOnly(bottom: 12),
-
-          // 3
-          buttonDelete(
-            title: 'Delete All Data',
-            subtitle: 'to confirm delete all data',
-            btnLabel: 'Delete Data',
-            action: () async => await HelperImportExport.deleteAllData(),
-          ).pOnly(bottom: 12),
-
-          // 4
-          buttonDelete(
-            title: 'Delete Account',
-            subtitle: 'to confirm delete account',
-            btnLabel: 'Delete Account',
-            action: () async => await HelperImportExport.deleteAccount(),
-          ).pOnly(bottom: 12),
+          'Data'.text.size(14).bold.make().pOnly(bottom: 8),
+          actionRow(
+            icon: Icons.upload_file_outlined,
+            title: 'Import CSV',
+            onTap: () async => await HelperImportExport.importFromCSV(),
+          ),
+          Divider(height: 1),
+          actionRow(
+            icon: Icons.download_outlined,
+            title: 'Export CSV',
+            onTap: () async => await HelperImportExport.exportToCSV(),
+          ),
+          Divider(height: 1),
+          actionRow(
+            icon: Icons.archive_outlined,
+            title: 'Full Backup',
+            onTap: () async =>
+                await HelperImportExport.exportFullBackupBundle(),
+          ),
         ],
-      ).p12(),
+      ).p16(),
+    );
+  }
+
+  Widget actionRow({
+    required IconData icon,
+    required String title,
+    required Future<void> Function() onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: onTap,
+      child: HStack([
+        Icon(icon, size: 18, color: AppColor.neutral).pOnly(right: 12),
+        title.text.size(12).make().expand(),
+        Icon(Icons.chevron_right_rounded, size: 18, color: AppColor.neutral),
+      ]).pSymmetric(v: 13),
+    );
+  }
+
+  Widget dangerZone() {
+    return Container(
+      width: double.infinity,
+      decoration: ExDecorator.box(
+        borderRadius: 12,
+        borderColor: AppColor.red.withAlpha(100),
+        fillColor: AppColor.box,
+      ),
+      child: VStack([
+        'Danger Zone'.text.size(14).bold.color(AppColor.red).make(),
+        12.heightBox,
+        buttonDelete(
+          title: 'Delete Data',
+          action: () async => await HelperImportExport.deleteAllData(),
+        ).pOnly(bottom: 10),
+        buttonDelete(
+          title: 'Delete Account',
+          action: () async => await HelperImportExport.deleteAccount(),
+        ),
+      ]).p16(),
     );
   }
 
   Widget buttonDelete({
     required String title,
-    required String subtitle,
-    required String btnLabel,
-    Color? btnColor,
     required Function() action,
   }) {
     return HStack(
       [
         title.text.make().expand(),
         ExButtonOutline(
-          label: btnLabel,
+          label: 'Delete',
           labelSize: 12,
           height: 38,
-          borderColor: btnColor ?? Vx.red400,
+          borderColor: Vx.red400,
           labelColor: Vx.red400,
           onPressed: () async {
             final tf = TextEditingController();
@@ -128,12 +150,11 @@ class SectionIEmport extends GetView<SettingsController> {
               title: title,
               content: VStack(
                 [
-                  Text(subtitle).centered(),
                   RichText(
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: 'Please Type ',
+                          text: 'Type ',
                           style: TextStyle(color: AppColor.textReverse),
                         ),
                         TextSpan(
@@ -180,13 +201,16 @@ class SectionIEmport extends GetView<SettingsController> {
   Widget cloudBackup() {
     return Obx(
       () => controller.backupList.isNotEmpty
-          /// has data
           ? Container(
-              decoration: ExDecorator.box(borderRadius: 4, borderColor: AppColor.border, fillColor: AppColor.box),
+              decoration: ExDecorator.box(
+                borderRadius: 12,
+                borderColor: AppColor.border,
+                fillColor: AppColor.box,
+              ),
               child: VStack(
                 [
                   HStack([
-                    'Cloud Sync'.text.make().expand(),
+                    'Cloud Sync'.text.size(14).bold.make().expand(),
                     ExButtonLoading(
                       height: 33,
                       width: 80,
@@ -201,7 +225,7 @@ class SectionIEmport extends GetView<SettingsController> {
                   ]).pOnly(bottom: 12),
                   ListView.separated(
                     itemCount: controller.backupList.length,
-                    separatorBuilder: (c, i) => Divider(),
+                    separatorBuilder: (c, i) => 8.heightBox,
                     shrinkWrap: true,
                     physics: NeverScrollableScrollPhysics(),
                     itemBuilder: (context, index) {
@@ -211,48 +235,62 @@ class SectionIEmport extends GetView<SettingsController> {
                       return ListTile(
                         title: '$fileName'.text.size(11).make(),
                         subtitle: '${item.updatedAt?.reformatDate(to: 'd MMM y HH:mm', addHours: 7)} • ${formatFileSize(item.metadata!['size'])}'.text.size(10).minFontSize(10).make(),
+                        tileColor: AppColor.card,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 2,
+                        ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                          side: BorderSide(color: AppColor.card, width: 1),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         trailing: IconButton(
-                          icon: Icon(CupertinoIcons.arrow_turn_up_left),
+                          tooltip: 'Restore',
+                          icon: Icon(
+                            CupertinoIcons.arrow_turn_up_left,
+                            size: 18,
+                          ),
                           onPressed: () => controller.onDownloadBackup(item),
                         ),
                       );
                     },
                   ),
 
-                  /// delete old data
                   if (controller.backupList.length > 1) ...[
-                    ExButtonElevated(
-                      label: 'Delete Old Data',
+                    ExButtonOutline(
+                      label: 'Delete Old',
                       labelSize: 12,
+                      borderColor: AppColor.red,
+                      labelColor: AppColor.red,
                       onPressed: () => controller.onDeleteOldCloudData(),
-                    ).p12().centered(),
+                    ).pOnly(top: 12).centered(),
                   ],
                 ],
-              ).p12(),
+              ).p16(),
             )
-          /// empty
-          : VStack([
-              Divider().pSymmetric(v: 16),
-              'Cloud Sync'.text.make().pOnly(bottom: 12),
-              ExUiErrorOrEmpty(
-                child: VStack(
-                  [
-                    'No Data Backup'.text.size(13).bold.makeCentered(),
-                    ''.text.size(11).minFontSize(11).makeCentered(),
-                    ExButtonElevated(
-                      label: 'Backup Now',
-                      labelSize: 11,
-                      height: 33,
-                      onPressed: () => controller.onUploadBackup(),
-                    ).centered().pOnly(top: 8),
-                  ],
-                ),
-              ).h(150),
-            ]),
+          : Container(
+              width: double.infinity,
+              decoration: ExDecorator.box(
+                borderRadius: 12,
+                borderColor: AppColor.border,
+                fillColor: AppColor.box,
+              ),
+              child: VStack([
+                'Cloud Sync'.text.size(14).bold.make(),
+                ExUiErrorOrEmpty(
+                  child: VStack(
+                    [
+                      'No Backup'.text.size(13).bold.makeCentered(),
+                      ExButtonElevated(
+                        label: 'Backup Now',
+                        labelSize: 11,
+                        height: 33,
+                        onPressed: () => controller.onUploadBackup(),
+                      ).centered().pOnly(top: 8),
+                    ],
+                  ),
+                ).h(130),
+              ]).p16(),
+            ),
     );
   }
 }

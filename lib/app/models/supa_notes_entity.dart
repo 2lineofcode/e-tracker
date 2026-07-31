@@ -5,6 +5,7 @@ class SupaNotes {
   String? userId;
   String? title;
   String? content;
+  bool isPinned;
 
   SupaNotes({
     this.id,
@@ -13,9 +14,11 @@ class SupaNotes {
     this.userId,
     this.title,
     this.content,
+    this.isPinned = false,
   });
 
-  SupaNotes.fromJson(Map<String, dynamic> json) {
+  SupaNotes.fromJson(Map<String, dynamic> json)
+      : isPinned = json['is_pinned'] == true {
     id = json['id'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
@@ -32,6 +35,7 @@ class SupaNotes {
     data['user_id'] = userId;
     data['title'] = title;
     data['content'] = content;
+    data['is_pinned'] = isPinned;
     return data;
   }
 }

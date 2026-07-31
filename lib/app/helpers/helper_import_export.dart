@@ -10,7 +10,6 @@ import 'package:get/get.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/v4.dart';
 
-import '../../env.g.dart';
 import '../core/app_api.dart';
 import '../models/supa_category_entity.dart';
 import '../models/supa_expense_entity.dart';
@@ -265,17 +264,69 @@ mixin HelperImportExport {
     }
   }
 
+  static Future<List<FileObject>> _listAllStorageFiles(
+    String bucket, {
+    String? path,
+  }) async {
+    const pageSize = 100;
+    final files = <FileObject>[];
+    while (true) {
+      final page = await db.storage.from(bucket).list(
+        path: path,
+        searchOptions: SearchOptions(
+          limit: pageSize,
+          offset: files.length,
+        ),
+      );
+      files.addAll(page);
+      if (page.length < pageSize) return files;
+    }
+  }
+
+  static Future<void> _removeStorageFiles(
+    String bucket,
+    List<String> paths,
+  ) async {
+    const batchSize = 1000;
+    for (var offset = 0; offset < paths.length; offset += batchSize) {
+      final end = offset + batchSize < paths.length
+          ? offset + batchSize
+          : paths.length;
+      await db.storage.from(bucket).remove(paths.sublist(offset, end));
+    }
+  }
+
   /// delete account
   static Future<void> deleteAccount() async {
-    final dbAdmin = SupabaseClient(Env.supabaseUrl, Env.supabaseServiceRole);
+    final userId = currentUserId;
+    if (userId == null) return;
+    final userEmail = db.auth.currentSession?.user.email;
 
     ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
     try {
-      await deleteAllData(withRefresh: false);
+      final backups = await _listAllStorageFiles('backup');
+      final backupPaths = backups
+          .where(
+            (file) =>
+                file.owner == userId ||
+                (userEmail != null &&
+                    file.name.startsWith('${userEmail}_')),
+          )
+          .map((file) => file.name)
+          .toList();
+      await _removeStorageFiles('backup', backupPaths);
 
-      if (currentUserId == null) return;
-      await db.storage.from('avatars').remove(['$currentUserId.png']);
-      await dbAdmin.auth.admin.deleteUser(currentUserId!);
+      final expenseImages = await _listAllStorageFiles(
+        'expense-images',
+        path: userId,
+      );
+      final expenseImagePaths = expenseImages
+          .map((file) => '$userId/${file.name}')
+          .toList();
+      await _removeStorageFiles('expense-images', expenseImagePaths);
+
+      await db.storage.from('avatars').remove(['$userId.png']);
+      await db.rpc('delete_own_account');
       await Get.find<SettingsController>().onLogout();
       ExLoading.dismiss();
     } catch (e) {

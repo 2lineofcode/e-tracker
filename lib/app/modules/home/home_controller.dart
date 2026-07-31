@@ -59,6 +59,7 @@ class HomeController extends GetxController with StateMixin {
   final userProfile = SupaUserProfile().obs;
   final expenseList = <SupaExpense>[].obs;
   final tfSearchExpense = TextEditingController().obs;
+  final searchFocusNode = FocusNode();
 
   /// count
   final countOfDay = 0.0.obs;
@@ -95,7 +96,7 @@ class HomeController extends GetxController with StateMixin {
 
     rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
     userProfile.value = await repo.getUserProfile().then((value) => value[0]);
-    await HomeRT.initRealtime();
+    await HomeRT.initExpenseRT();
     update();
     super.onInit();
   }
@@ -406,22 +407,65 @@ class HomeController extends GetxController with StateMixin {
         expenseList.value = await repo.getExpense(date);
         isSearchMode.value = false;
       } else {
-        if (find.startsWith(RegExp(r'[0-9]'))) {
-          expenseList.value = await repo.findExpenseByDateRange(find);
-        } else {
-          if (startDate != null && endDate != null) {
-            isAdvanceSearch.value = true;
-            advanceSearchText.value =
-                'Showing data from "$startDate - $endDate"';
-          } else {
-            isAdvanceSearch.value = false;
-            advanceSearchText.value = '';
-          }
+        final query = find.trim();
+        isAdvanceSearch.value = false;
+        advanceSearchText.value = '';
+
+        if (startDate != null &&
+            endDate != null &&
+            !query.startsWith('#') &&
+            !query.startsWith(r'$')) {
+          isAdvanceSearch.value = true;
+          advanceSearchText.value =
+              'Showing data from "$startDate - $endDate"';
+          final textQuery =
+              query.startsWith('@') || query.startsWith('?')
+                  ? query.substring(1).trim()
+                  : query;
           expenseList.value = await repo.findExpense(
-            find,
+            textQuery,
             startDate: startDate,
             endDate: endDate,
           );
+        } else if (query.startsWith('@')) {
+          expenseList.value = await repo.findExpenseByCategory(
+            query.substring(1).trim(),
+          );
+        } else if (query.startsWith('#')) {
+          final dateQuery = query.substring(1).trim().toLowerCase();
+          if (dateQuery == 'today') {
+            expenseList.value = await repo.getExpense(
+              DateTime.now().toStringEx(format: yMd),
+            );
+          } else if (dateQuery == 'month') {
+            final now = DateTime.now();
+            final firstDay = DateTime(now.year, now.month, 1);
+            final lastDay = DateTime(now.year, now.month + 1, 0);
+            expenseList.value = await repo.findExpenseByDateRange(
+              '${firstDay.toStringEx(format: yMd)} ${lastDay.toStringEx(format: yMd)}',
+            );
+          } else if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(dateQuery)) {
+            expenseList.value = await repo.getExpense(dateQuery);
+          } else if (dateQuery.isEmpty) {
+            expenseList.clear();
+          } else {
+            expenseList.value = await repo.findExpenseByDateRange(dateQuery);
+          }
+        } else if (query.startsWith(r'$')) {
+          final amount = num.tryParse(
+            query.substring(1).replaceAll(RegExp(r'[^0-9]'), ''),
+          );
+          expenseList.value = amount == null
+              ? []
+              : await repo.findExpenseByMinimumAmount(amount);
+        } else if (query.startsWith('?')) {
+          expenseList.value = await repo.findExpenseText(
+            query.substring(1).trim(),
+          );
+        } else if (query.startsWith(RegExp(r'[0-9]'))) {
+          expenseList.value = await repo.findExpenseByDateRange(query);
+        } else {
+          expenseList.value = await repo.findExpense(query);
         }
         isSearchMode.value = true;
       }
@@ -556,6 +600,8 @@ class HomeController extends GetxController with StateMixin {
   @override
   void onClose() {
     unawaited(HomeRT.dispose());
+    tfSearchExpense.value.dispose();
+    searchFocusNode.dispose();
     super.onClose();
   }
 }

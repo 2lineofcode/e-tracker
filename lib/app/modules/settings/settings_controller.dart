@@ -97,7 +97,16 @@ class SettingsController extends GetxController with StateMixin {
 
   void onEditProfile() {
     final tfFullName = TextEditingController(text: userProfile.value.fullName);
-    final tfAge = TextEditingController(text: userProfile.value.age);
+    final tfUsername = TextEditingController(text: userProfile.value.username);
+    final tfEmail = TextEditingController(
+      text: db.auth.currentSession?.user.email,
+    );
+    final tfBirthYear = TextEditingController(
+      text: userProfile.value.birthYearInput,
+    );
+    final tfPaymentDay = TextEditingController(
+      text: '${userProfile.value.paymentDay ?? 28}',
+    );
     final tfIncome = TextEditingController(text: userProfile.value.income);
     final tfBalance = TextEditingController(text: userProfile.value.balance);
     final tfAvatar = userProfile.value.avatarUrl.obs;
@@ -110,9 +119,9 @@ class SettingsController extends GetxController with StateMixin {
       context: Get.context!,
       OverPanel(
         alignment: Alignment.centerRight,
-        width: 300,
+        width: 340,
         child: VStack([
-          'Edit Profile'.text.bold.makeCentered().pOnly(bottom: 24),
+          'Edit Profile'.text.size(16).bold.make().pOnly(bottom: 24),
           Obx(() {
             if (isReplacePhoto.isTrue) {
               return Container(
@@ -155,17 +164,11 @@ class SettingsController extends GetxController with StateMixin {
             onPressed: () async {
               // filepicker select file and upload to supabase storage
               try {
-                await FilePicker.pickFiles(
+                await FilePicker.pickFile(
                   type: FileType.image,
-                  allowMultiple: false,
-                  withData: true,
                 ).then((img) async {
                   if (img != null) {
-                    final bytes = img.files.first.bytes;
-                    if (bytes == null) {
-                      errorMsg.value = 'Failed to read selected image';
-                      return;
-                    }
+                    final bytes = await img.readAsBytes();
 
                     isReplacePhoto.value = true;
 
@@ -211,7 +214,7 @@ class SettingsController extends GetxController with StateMixin {
           TextField(
             controller: tfFullName,
             decoration: HelperDecoration.input(
-              hint: 'Jhon Doe',
+              hint: 'John Doe',
               prefixIcon: 'Full Name'.text
                   .size(13)
                   .bold
@@ -221,16 +224,66 @@ class SettingsController extends GetxController with StateMixin {
             style: TextStyle(fontSize: 13),
           ).h(33).pOnly(bottom: 12),
           TextField(
-            controller: tfAge,
+            controller: tfBirthYear,
             decoration: HelperDecoration.input(
-              hint: '29',
-              prefixIcon: 'Age'.text
+              hint: '1995',
+              prefixIcon: 'Birth Year'.text
                   .size(13)
                   .bold
                   .make()
                   .pOnly(top: 8, left: 8, right: 16),
             ),
             style: TextStyle(fontSize: 13),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(4),
+            ],
+          ).h(33).pOnly(bottom: 12),
+          TextField(
+            controller: tfUsername,
+            decoration: HelperDecoration.input(
+              hint: 'aditya',
+              prefixIcon: 'Username'.text
+                  .size(13)
+                  .bold
+                  .make()
+                  .pOnly(top: 8, left: 8, right: 16),
+            ),
+            style: TextStyle(fontSize: 13),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9_.]')),
+              LengthLimitingTextInputFormatter(30),
+            ],
+          ).h(33).pOnly(bottom: 12),
+          TextField(
+            enabled: false,
+            controller: tfEmail,
+            decoration: HelperDecoration.input(
+              prefixIcon: 'Email'.text
+                  .size(13)
+                  .bold
+                  .make()
+                  .pOnly(top: 8, left: 8, right: 16),
+            ),
+            style: TextStyle(fontSize: 13),
+          ).h(33).pOnly(bottom: 12),
+          TextField(
+            controller: tfPaymentDay,
+            decoration: HelperDecoration.input(
+              hint: '28',
+              prefixIcon: 'Pay Day'.text
+                  .size(13)
+                  .bold
+                  .make()
+                  .pOnly(top: 8, left: 8, right: 16),
+            ),
+            style: TextStyle(fontSize: 13),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(2),
+            ],
           ).h(33).pOnly(bottom: 12),
           TextField(
             controller: tfIncome,
@@ -278,30 +331,49 @@ class SettingsController extends GetxController with StateMixin {
             ],
             keyboardType: TextInputType.number,
           ).h(33).pOnly(bottom: 12),
-          HStack([
-            Spacer(),
-            'Last Updated: ${userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y HH:mm')}'
-                .text
-                .size(12)
-                .neutral500
-                .make(),
-          ]),
+          'Updated ${userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y, HH:mm') ?? '-'}'
+              .text
+              .size(10)
+              .color(AppColor.neutral)
+              .make()
+              .objectCenterRight(),
           Divider().pSymmetric(v: 16),
           ExButtonElevated(
             width: double.infinity,
             label: 'Save',
             onPressed: () async {
+              final birthYear = int.tryParse(tfBirthYear.text);
+              if (birthYear == null ||
+                  birthYear < 1900 ||
+                  birthYear > DateTime.now().year) {
+                await HelperToast.error('Enter a valid birth year');
+                return;
+              }
+
+              final username = tfUsername.text.trim();
+              if (username.isNotEmpty && username.length < 3) {
+                await HelperToast.error('Username must be at least 3 characters');
+                return;
+              }
+
+              final paymentDay = int.tryParse(tfPaymentDay.text);
+              if (paymentDay == null || paymentDay < 1 || paymentDay > 31) {
+                await HelperToast.error('Enter a valid pay day');
+                return;
+              }
+
               final editProfile = SupaUserProfile(
                 id: userProfile.value.id,
+                username: username.isEmpty ? null : username,
                 fullName: tfFullName.text,
-                age: tfAge.text,
+                age: tfBirthYear.text,
                 avatarUrl: tfAvatar.value,
                 income: tfIncome.text,
                 balance: tfBalance.text,
                 ecoDay: userProfile.value.ecoDay,
                 averageDay: userProfile.value.averageDay,
                 spenderDay: userProfile.value.spenderDay,
-                paymentDay: userProfile.value.paymentDay,
+                paymentDay: paymentDay,
                 updatedAt: DateTime.now().toStringEx(),
               );
               await Overlayment.dismissAll();
@@ -502,6 +574,26 @@ class SettingsController extends GetxController with StateMixin {
       paddingSymmetric: Get.context!.isMobile ? 90 : 250,
       child: CupertinoActivityIndicator(),
     );
+    final userId = currentUserId;
+    if (userId != null) {
+      final chatPrefix = '$kAgentChatMessages:$userId';
+      final legacyChatPrefix = '$kLegacyAgentChatMessages:$userId';
+      final chatKeys = pref
+          .getKeys<Iterable<String>>()
+          .where(
+            (key) =>
+                key == chatPrefix ||
+                key.startsWith('$chatPrefix:') ||
+                key == legacyChatPrefix ||
+                key.startsWith('$legacyChatPrefix:'),
+          )
+          .toList();
+      for (final key in chatKeys) {
+        await pref.remove(key);
+      }
+    }
+    await pref.remove(kAgentChatMessages);
+    await pref.remove(kLegacyAgentChatMessages);
     await db.auth.signOut();
     await Get.delete<HomeController>();
     await Get.offAllNamed(Routes.LOGIN);
@@ -516,18 +608,7 @@ class SettingsController extends GetxController with StateMixin {
     int repeatMonths = 1,
   }) async {
     try {
-      final cleanNote = note
-          .toLowerCase()
-          .replaceAll(RegExp(r'[^a-z0-9\s]'), '') // Remove special chars
-          .trim()
-          .replaceAll(RegExp(r'\s+'), '_') // Spaces to underscore
-          .substring(0, note.length > 30 ? 30 : note.length); // Max 30 chars
-
-      // Add timestamp suffix for uniqueness
-      final timestamp = DateTime.now().millisecondsSinceEpoch
-          .toString()
-          .substring(7); // Last 6 digits
-      final jobName = '${cleanNote}_$timestamp';
+      final jobName = cronJobName(note);
 
       // Call database function
       final params = <String, dynamic>{
@@ -558,6 +639,20 @@ class SettingsController extends GetxController with StateMixin {
       );
       logE(e);
     }
+  }
+
+  @visibleForTesting
+  static String cronJobName(String note, {int? timestamp}) {
+    final normalizedNote = note
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
+        .trim()
+        .replaceAll(RegExp(r'\s+'), '_');
+    final shortenedNote = normalizedNote.length > 30
+        ? normalizedNote.substring(0, 30)
+        : normalizedNote;
+    final cleanNote = shortenedNote.replaceFirst(RegExp(r'_+$'), '');
+    return '${cleanNote.isEmpty ? 'expense' : cleanNote}_${timestamp ?? DateTime.now().millisecondsSinceEpoch}';
   }
 
   /// Delete cron job by job name

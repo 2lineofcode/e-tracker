@@ -18,25 +18,22 @@ class SectionRepeat extends GetView<SettingsController> {
     return VStack(
       [
         HStack([
-          'Recurring Transactions'.text.bold.make(),
+          'Recurring Transactions'.text.size(15).bold.make(),
           Spacer(),
-          IconButton(
-            icon: Icon(Icons.add),
+          IconButton.outlined(
+            tooltip: 'Add recurring',
+            icon: Icon(Icons.add_rounded, size: 18),
             onPressed: () => controller.onShowAddCronDialog(),
           ),
-        ]).pOnly(bottom: 16),
+        ]).pOnly(bottom: 18),
         Obx(
           () => controller.cronList.isNotEmpty
               ? ListView.separated(
                   itemCount: controller.cronList.length,
-                  separatorBuilder: (context, index) => 8.heightBox,
+                  separatorBuilder: (context, index) => 10.heightBox,
                   itemBuilder: (context, index) {
                     final item = controller.cronList[index];
-
-                    // Parse data from cron job command
                     final command = item.command ?? '';
-
-                    // Use regex to extract all values at once
                     final valuesRegex = RegExp(
                       r"values\s*\('([^']*)',\s*'([^']*)',\s*([0-9.]+)",
                       caseSensitive: false,
@@ -51,6 +48,12 @@ class SectionRepeat extends GetView<SettingsController> {
                     final dueDate = schedule?.dueDay.toString() ?? '-';
                     final remainingDays = schedule?.remainingDays() ?? 0;
                     final scheduleLabel = schedule?.label ?? 'Custom schedule';
+                    final category = resolveExpenseCategory(categoryName);
+                    final remainingLabel = remainingDays.isNegative
+                        ? 'Next month'
+                        : remainingDays == 0
+                            ? 'Today'
+                            : '$remainingDays days';
 
                     return Container(
                       decoration: ExDecorator.box(
@@ -60,63 +63,60 @@ class SectionRepeat extends GetView<SettingsController> {
                       ),
                       child: HStack(
                         [
-                          /// body
                           VStack([
-                            HStack([
-                              Icon(
-                                UIconsPro.solidRounded.calendar_day,
-                                size: 11,
-                                color: AppColor.red,
-                              ).pOnly(right: 8),
-                              '$scheduleLabel, date $dueDate '.text
-                                  .size(11)
-                                  .minFontSize(11)
-                                  .make(),
-                            ]).pOnly(bottom: 8),
+                            Container(
+                              decoration: ExDecorator.box(
+                                borderRadius: 20,
+                                fillColor: AppColor.card,
+                                borderColor: Colors.transparent,
+                              ),
+                              child: HStack([
+                                Icon(
+                                  UIconsPro.solidRounded.calendar_day,
+                                  size: 10,
+                                  color: AppColor.red,
+                                ).pOnly(right: 7),
+                                '$scheduleLabel • $dueDate'.text
+                                    .size(10)
+                                    .make(),
+                              ]).pSymmetric(h: 9, v: 5),
+                            ).pOnly(bottom: 10),
 
                             HStack([
-                              '$note'.text.size(13).bold.make().expand(),
-                              '${amount.moneyFormat()}'.text.bold.make(),
-                            ]).pOnly(bottom: 8),
+                              '$note'.text.size(14).bold.make().expand(),
+                              '${amount.moneyFormat()}'.text
+                                  .size(14)
+                                  .bold
+                                  .make(),
+                            ]).pOnly(bottom: 10),
 
                             HStack(
                               [
                                 Icon(
-                                  resolveExpenseCategory(categoryName).icon,
+                                  category.icon,
                                   size: 12,
-                                  color: resolveExpenseCategory(
-                                    categoryName,
-                                  ).color,
+                                  color: category.color,
                                 ).pOnly(right: 8),
-                                '${resolveExpenseCategory(categoryName).label}'
+                                '${category.label}'
                                     .text
                                     .size(11)
                                     .minFontSize(11)
-                                    .color(
-                                      resolveExpenseCategory(
-                                        categoryName,
-                                      ).color,
-                                    )
+                                    .color(category.color)
                                     .make()
                                     .expand(),
-                                if (remainingDays.isNegative) ...[
-                                  'Next month'.text.green300
-                                      .size(11)
-                                      .minFontSize(11)
-                                      .make(),
-                                ] else ...[
-                                  'Remaining $remainingDays more days'
-                                      .text
-                                      .orange300
-                                      .size(11)
-                                      .minFontSize(11)
-                                      .make(),
-                                ],
+                                '$remainingLabel'.text
+                                    .color(
+                                      remainingDays.isNegative
+                                          ? AppColor.green
+                                          : AppColor.orange,
+                                    )
+                                    .size(11)
+                                    .make(),
                               ],
                             ),
                           ]).expand(),
                         ],
-                      ).p12(),
+                      ).p16(),
                     ).onInkTap(() {
                       controller.onShowCronInfo(item);
                     });
@@ -129,7 +129,7 @@ class SectionRepeat extends GetView<SettingsController> {
                     reverse: true,
                   ),
                   title: 'No Data',
-                  message: 'You can add a recurring transaction by tapping `+`',
+                  message: 'Tap + to add',
                 ).expand(),
         ),
       ],

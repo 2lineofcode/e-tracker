@@ -1,7 +1,5 @@
 import 'package:ex_kit/ex.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../env.g.dart';
 import '../../core/app_api.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
@@ -97,6 +95,60 @@ class HomeRepository {
     return response;
   }
 
+  Future<List<SupaExpense>> findExpenseByCategory(String name) async {
+    if (currentUserId == null || name.isEmpty) return [];
+
+    final query = name.toLowerCase();
+    final matches = expenseCategoryList.where((category) {
+      return category.code.toLowerCase().contains(query) ||
+          category.label.toLowerCase().contains(query) ||
+          category.groupLabel.toLowerCase().contains(query);
+    }).toList();
+    final filters = matches.isEmpty
+        ? ['category_name.ilike.%$name%']
+        : matches
+            .map((category) => 'category_name.ilike.%${category.code}%')
+            .toList();
+
+    return await db
+        .from('expense')
+        .select()
+        .eq('user_id', currentUserId!)
+        .or(filters.join(','))
+        .order('date')
+        .withConverter<List<SupaExpense>>((data) {
+          return (data).map((e) => SupaExpense.fromJson(e)).toList();
+        });
+  }
+
+  Future<List<SupaExpense>> findExpenseText(String text) async {
+    if (currentUserId == null || text.isEmpty) return [];
+
+    return await db
+        .from('expense')
+        .select()
+        .eq('user_id', currentUserId!)
+        .or('note.ilike.%$text%,detail.ilike.%$text%')
+        .order('date')
+        .withConverter<List<SupaExpense>>((data) {
+          return (data).map((e) => SupaExpense.fromJson(e)).toList();
+        });
+  }
+
+  Future<List<SupaExpense>> findExpenseByMinimumAmount(num amount) async {
+    if (currentUserId == null) return [];
+
+    return await db
+        .from('expense')
+        .select()
+        .eq('user_id', currentUserId!)
+        .gte('amount', amount)
+        .order('date')
+        .withConverter<List<SupaExpense>>((data) {
+          return (data).map((e) => SupaExpense.fromJson(e)).toList();
+        });
+  }
+
   // find list by date
   Future<List<SupaExpense>> findExpenseByDateRange(String date) async {
     if (currentUserId == null) return [];
@@ -159,6 +211,12 @@ class HomeRepository {
             .from('expense')
             .insert(entity.toJson());
     return response;
+  }
+
+  Future<void> addExpenses(List<SupaExpense> entities) async {
+    await db
+        .from('expense')
+        .insert(entities.map((entity) => entity.toJson()).toList());
   }
 
   Future<void> editExpense(SupaExpense entity) async {
@@ -474,14 +532,8 @@ class HomeRepository {
 
   Future<List<SupaCron>> getCron() async {
     if (currentUserId == null) return [];
-    final sb = SupabaseClient(Env.supabaseUrl, Env.supabaseServiceRole);
-    return await sb
-        .schema('cron')
-        .from('job')
-        .select()
-        .or('command.ilike.%$currentUserId%')
-        .withConverter<List<SupaCron>>((data) {
-          return (data).map((e) => SupaCron.fromJson(e)).toList();
-        });
+    return await db.rpc('get_expense_cron').withConverter<List<SupaCron>>((data) {
+      return (data as List).map((e) => SupaCron.fromJson(e)).toList();
+    });
   }
 }

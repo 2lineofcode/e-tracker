@@ -23,7 +23,7 @@ class SectionAppConfig extends GetView<SettingsController> {
     return controller.obx(
       (state) => VStack([
         boxAccount(),
-        16.heightBox,
+        20.heightBox,
         boxCommonConfig(),
       ]).scrollVertical(),
       onLoading: ExUiLoading(
@@ -38,19 +38,26 @@ class SectionAppConfig extends GetView<SettingsController> {
       decoration: ExDecorator.box(
         fillColor: AppColor.box,
         borderColor: AppColor.border,
-        borderRadius: 4,
+        borderRadius: 12,
       ),
       child: VStack(
         [
           HStack(
             [
-              'Account'.text.bold.make().expand(),
-              IconButton(
+              VStack([
+                'Account'.text.size(15).bold.make(),
+                'Manage your profile and session'.text
+                    .size(11)
+                    .color(AppColor.neutral)
+                    .make(),
+              ]).expand(),
+              IconButton.outlined(
+                tooltip: 'Edit profile',
                 onPressed: () => controller.onEditProfile(),
-                icon: Icon(Icons.edit, size: 18),
+                icon: Icon(Icons.edit_outlined, size: 16),
               ),
             ],
-          ),
+          ).pOnly(bottom: 18),
           Obx(
             () {
               final avatarUrl = db.storage
@@ -59,52 +66,66 @@ class SectionAppConfig extends GetView<SettingsController> {
 
               return controller.userProfile.value.id == null
                   ? CircularProgressIndicator.adaptive().p16()
-                  : HStack([
-                      ExImageNoCacheView(
-                        url: avatarUrl,
-                        size: 64,
-                        radius: 90,
-                        errorBuilder: (p0, p1, p2) => ExAvatarView(
-                          source: '',
-                          name: controller.userProfile.value.fullName,
-                          size: 64,
-                        ),
-                      ).onInkTap(() => launchUrlString(avatarUrl)),
-                      VStack([
-                        if (controller
-                            .userProfile
-                            .value
-                            .fullName
-                            .isEmptyOrNull) ...[
-                          'No Name'.text.neutral400.make(),
-                        ] else ...[
-                          '${controller.userProfile.value.fullName}'.text.bold
-                              .make(),
-                        ],
-                        '${db.auth.currentSession?.user.email}'.text
-                            .size(13)
-                            .neutral400
-                            .make(),
-                        '${controller.userProfile.value.age} Y/o'.text
-                            .size(13)
-                            .orange300
-                            .make(),
-                      ]).pSymmetric(h: 12),
-                    ]).pOnly(bottom: 24);
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        final profile = HStack([
+                          ExImageNoCacheView(
+                            url: avatarUrl,
+                            size: 64,
+                            radius: 90,
+                            errorBuilder: (p0, p1, p2) => ExAvatarView(
+                              source: '',
+                              name: controller.userProfile.value.fullName,
+                              size: 64,
+                            ),
+                          ).onInkTap(() => launchUrlString(avatarUrl)),
+                          VStack([
+                            if (controller.userProfile.value.fullName.isEmptyOrNull)
+                              'No Name'.text.color(AppColor.neutral).make()
+                            else
+                              '${controller.userProfile.value.fullName}'.text
+                                  .size(14)
+                                  .bold
+                                  .make(),
+                            '${db.auth.currentSession?.user.email}'.text
+                                .size(12)
+                                .color(AppColor.neutral)
+                                .make(),
+                            '${controller.userProfile.value.calculatedAge ?? '-'} years old'
+                                .text
+                                .size(11)
+                                .color(AppColor.orange)
+                                .make(),
+                          ]).pOnly(left: 14),
+                        ]);
+
+                        if (constraints.maxWidth < 440) {
+                          return VStack([
+                            profile,
+                            18.heightBox,
+                            logoutButton(),
+                          ]);
+                        }
+
+                        return HStack([
+                          profile.expand(),
+                          logoutButton().w(120),
+                        ]);
+                      },
+                    );
             },
           ),
-          ExButtonOutline(
-            label: 'Logout',
-            labelSize: 12,
-            height: 38,
-            width: double.infinity,
-            borderColor: AppColor.primary,
-            labelColor: AppColor.textReverse,
-            onPressed: () => controller.onLogout(),
-          ),
         ],
-      ).p12(),
+      ).p16(),
     );
+  }
+
+  Widget logoutButton() {
+    return OutlinedButton.icon(
+      onPressed: () => controller.onLogout(),
+      icon: Icon(Icons.logout_rounded, size: 15),
+      label: 'Logout'.text.size(12).make(),
+    ).h(38);
   }
 
   Widget boxCommonConfig() {
@@ -113,188 +134,138 @@ class SectionAppConfig extends GetView<SettingsController> {
       decoration: ExDecorator.box(
         fillColor: AppColor.box,
         borderColor: AppColor.border,
-        borderRadius: 4,
+        borderRadius: 12,
       ),
       child: VStack(
         [
-          HStack([
-            'App Config'.text.bold.make(),
-          ]).pOnly(bottom: 12),
+          'Preferences'.text.size(15).bold.make(),
+          'Customize how the app looks and categorizes daily spending'.text
+              .size(11)
+              .color(AppColor.neutral)
+              .make()
+              .pOnly(bottom: 20),
 
-          /// 1
-          HStack(
-            [
-              'Dark Mode:'.text.make().w(200),
-              Spacer(),
-              Switch.adaptive(
-                value: pref.read<bool>(kIsDarkMode) ?? true,
-                onChanged: (s) async {
-                  await AppTheme.switchTheme();
-                },
-              ),
-            ],
-          ).pOnly(bottom: 12),
-
-          /// theme color
-          HStack(
-            [
-              'Theme Color:'.text.make().w(200),
-              Obx(
-                () => Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: AppColor.themeColors.map((colorValue) {
-                    final color = Color(colorValue);
-                    final isSelected =
-                        controller.selectedThemeColor.value == colorValue;
-
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: () async =>
-                          await controller.onThemeColorChange(colorValue),
-                      child: Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected
-                                ? AppColor.textReverse
-                                : AppColor.border,
-                            width: isSelected ? 2 : 1,
-                          ),
-                        ),
-                        child: isSelected
-                            ? Icon(Icons.check, size: 14, color: Vx.white)
-                            : null,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ).expand(),
-            ],
-          ).pOnly(bottom: 12),
-
-          /// 2
-          HStack(
-            [
-              'Max Flag Eco Day:'.text.make().w(200),
-              TextField(
-                controller: controller.tfEco,
-                decoration: HelperDecoration.input(
-                  hint: '≤ 50.000',
-                  prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
-                  fillColor: Get.isDarkMode ? Colors.black : Colors.white,
-                ),
-                style: TextStyle(fontSize: 13),
-                inputFormatters: [
-                  CurrencyTextInputFormatter(
-                    NumberFormat.simpleCurrency(
-                      locale: 'id_ID',
-                      name: 'Rp.',
-                      decimalDigits: 0,
-                    ),
-                  ),
-                  LengthLimitingTextInputFormatter(16),
-                ],
-              ).h(28).expand(),
-              Icon(Icons.circle, color: AppColor.green, size: 8).pOnly(left: 8),
-            ],
-          ).pOnly(bottom: 12),
-
-          /// 3
-          HStack(
-            [
-              'Max Flag Average Day:'.text.make().w(200),
-              TextField(
-                controller: controller.tfAverage,
-                decoration: HelperDecoration.input(
-                  hint: '≤ 100.000',
-                  prefixIcon: '≤ '.text.make().pOnly(left: 12, top: 4),
-                  fillColor: Get.isDarkMode ? Colors.black : Colors.white,
-                ),
-                style: TextStyle(fontSize: 13),
-                inputFormatters: [
-                  CurrencyTextInputFormatter(
-                    NumberFormat.simpleCurrency(
-                      locale: 'id_ID',
-                      name: 'Rp.',
-                      decimalDigits: 0,
-                    ),
-                  ),
-                  LengthLimitingTextInputFormatter(16),
-                ],
-                onChanged: (s) => controller.tfSpender.text = s,
-              ).h(28).expand(),
-              Icon(
-                Icons.circle,
-                color: AppColor.orange,
-                size: 8,
-              ).pOnly(left: 8),
-            ],
-          ).pOnly(bottom: 12),
-
-          /// 4
-          HStack([
-            'Max Flag Spender Day:'.text.make().w(200),
-            TextField(
-              enabled: false,
-              controller: controller.tfSpender,
-              decoration: HelperDecoration.input(
-                hint: '> 100.000',
-                prefixIcon: '> '.text.make().pOnly(left: 12, top: 4),
-                fillColor: Get.isDarkMode ? Colors.black : Colors.white,
-              ),
-              style: TextStyle(fontSize: 13),
-              inputFormatters: [
-                CurrencyTextInputFormatter(
-                  NumberFormat.simpleCurrency(
-                    locale: 'id_ID',
-                    name: 'Rp.',
-                    decimalDigits: 0,
-                  ),
-                ),
-                LengthLimitingTextInputFormatter(16),
-              ],
-            ).h(28).expand(),
-            Icon(Icons.circle, color: AppColor.red, size: 8).pOnly(left: 8),
-          ]).pOnly(bottom: 12),
-
-          /// 5
-          HStack(
-            [
-              'Calendar Start Day:'.text.make().w(200),
-              TextField(
-                controller: controller.tfCalendarStartDay,
-                decoration: HelperDecoration.input(
-                  hint: '1',
-                  fillColor: Get.isDarkMode ? Colors.black : Colors.white,
-                ),
-                style: TextStyle(fontSize: 13),
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(2),
-                ],
-              ).h(28).expand(),
-              Icon(Icons.calendar_month, color: AppColor.blue, size: 14)
-                  .pOnly(left: 8),
-            ],
+          settingRow(
+            title: 'Dark mode',
+            subtitle: 'Use a darker color scheme',
+            child: Switch.adaptive(
+              value: pref.read<bool>(kIsDarkMode) ?? true,
+              onChanged: (s) async => await AppTheme.switchTheme(),
+            ),
           ),
 
-          Divider(color: AppColor.divider).pSymmetric(v: 8),
-          HStack(
-            [
-              // '📁'.text.make().onTap(() => controller.onGoAppPath()),
-              Spacer(),
+          settingRow(
+            title: 'Theme color',
+            subtitle: 'Choose your accent color',
+            child: Obx(
+              () => Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
+                children: AppColor.themeColors.map((colorValue) {
+                  final color = Color(colorValue);
+                  final isSelected =
+                      controller.selectedThemeColor.value == colorValue;
 
-              ExButtonOutline(
-                label: 'Reset to default',
-                labelSize: 11,
-                height: 38,
-                borderColor: AppColor.primary,
-                labelColor: AppColor.textReverse,
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () async =>
+                        await controller.onThemeColorChange(colorValue),
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColor.textReverse
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: isSelected
+                          ? Icon(
+                              Icons.check_rounded,
+                              size: 15,
+                              color: Colors.white,
+                            )
+                          : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+
+          Divider(color: AppColor.divider).pSymmetric(v: 10),
+          'Spending flags'.text.size(13).bold.make(),
+          'Set the daily limits used by your expense summary'.text
+              .size(11)
+              .color(AppColor.neutral)
+              .make()
+              .pOnly(bottom: 16),
+
+          settingRow(
+            title: 'Eco day',
+            subtitle: 'Spending at or below this amount',
+            indicatorColor: AppColor.green,
+            child: configInput(
+              controller: controller.tfEco,
+              hint: 'Rp.50.000',
+              prefix: '≤',
+              formatCurrency: true,
+            ),
+          ),
+          settingRow(
+            title: 'Average day',
+            subtitle: 'Upper limit for average spending',
+            indicatorColor: AppColor.orange,
+            child: configInput(
+              controller: controller.tfAverage,
+              hint: 'Rp.100.000',
+              prefix: '≤',
+              formatCurrency: true,
+              onChanged: (s) => controller.tfSpender.text = s,
+            ),
+          ),
+          settingRow(
+            title: 'Spender day',
+            subtitle: 'Anything above the average limit',
+            indicatorColor: AppColor.red,
+            child: configInput(
+              controller: controller.tfSpender,
+              hint: 'Rp.100.000',
+              prefix: '>',
+              enabled: false,
+              formatCurrency: true,
+            ),
+          ),
+          settingRow(
+            title: 'Calendar start day',
+            subtitle: 'Day used to begin each monthly period',
+            child: configInput(
+              controller: controller.tfCalendarStartDay,
+              hint: '1',
+              suffix: Icon(
+                Icons.calendar_month_outlined,
+                color: AppColor.blue,
+                size: 16,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(2),
+              ],
+            ),
+          ),
+
+          Divider(color: AppColor.divider).pSymmetric(v: 10),
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              OutlinedButton(
                 onPressed: () async {
                   controller.tfEco.text = 50000.moneyFormat();
                   controller.tfAverage.text = 100000.moneyFormat();
@@ -305,20 +276,95 @@ class SectionAppConfig extends GetView<SettingsController> {
                     AppColor.defaultThemeColor,
                   );
                 },
-              ),
-              12.widthBox,
-              ExButtonOutline(
-                label: 'Apply',
-                labelSize: 11,
-                height: 38,
-                borderColor: AppColor.primary,
-                labelColor: AppColor.textReverse,
+                child: 'Reset to default'.text.size(11).make(),
+              ).h(38),
+              FilledButton(
                 onPressed: () async => await controller.onSaveConfig(),
-              ),
+                child: 'Apply changes'.text.size(11).make(),
+              ).h(38),
             ],
-          ),
+          ).objectCenterRight(),
         ],
-      ).p12(),
+      ).p20(),
     );
+  }
+
+  Widget settingRow({
+    required String title,
+    required String subtitle,
+    required Widget child,
+    Color? indicatorColor,
+  }) {
+    final label = HStack([
+      if (indicatorColor != null)
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: indicatorColor,
+            shape: BoxShape.circle,
+          ),
+        ).pOnly(right: 10),
+      VStack([
+        title.text.size(12).bold.make(),
+        subtitle.text.size(10).color(AppColor.neutral).make(),
+      ]).expand(),
+    ]);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < 500) {
+          return VStack([
+            label,
+            10.heightBox,
+            child,
+          ]).pOnly(bottom: 18);
+        }
+
+        return HStack([
+          label.expand(),
+          child.w(220),
+        ]).pOnly(bottom: 16);
+      },
+    );
+  }
+
+  Widget configInput({
+    required TextEditingController controller,
+    required String hint,
+    String? prefix,
+    Widget? suffix,
+    bool enabled = true,
+    bool formatCurrency = false,
+    ValueChanged<String>? onChanged,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return TextField(
+      enabled: enabled,
+      controller: controller,
+      decoration: HelperDecoration.input(
+        hint: hint,
+        prefixIcon:
+            prefix?.text.size(12).bold.make().pOnly(left: 12, top: 5),
+        suffixIcon: suffix,
+        fillColor: AppColor.textFieldPrimary,
+      ),
+      style: TextStyle(fontSize: 12),
+      keyboardType: TextInputType.number,
+      inputFormatters: inputFormatters ??
+          (formatCurrency
+              ? [
+                  CurrencyTextInputFormatter(
+                    NumberFormat.simpleCurrency(
+                      locale: 'id_ID',
+                      name: 'Rp.',
+                      decimalDigits: 0,
+                    ),
+                  ),
+                  LengthLimitingTextInputFormatter(16),
+                ]
+              : null),
+      onChanged: onChanged,
+    ).h(36);
   }
 }

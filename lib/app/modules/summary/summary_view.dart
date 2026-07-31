@@ -33,70 +33,83 @@ class SummaryView extends GetView<SummaryController> {
     return Obx(
       () => HStack(
         [
-          IconButton(
+          _navButton(
+            label: 'Overview',
+            index: 1,
             icon: Image.asset(
               'assets/icons/ic_pig.png',
               height: 18,
               width: 18,
               color: menu.value == 1
-                  ? Get.isDarkMode
-                        ? Vx.white
-                        : AppColor.primary
+                  ? AppColor.textOnBackground
                   : Vx.neutral500,
             ),
-            onPressed: () => menu.value = 1,
           ),
-          IconButton(
+          _navButton(
+            label: 'Daily',
+            index: 2,
             icon: Icon(
               CupertinoIcons.chart_bar_alt_fill,
               size: 18,
               color: menu.value == 2
-                  ? Get.isDarkMode
-                        ? Vx.white
-                        : AppColor.primary
+                  ? AppColor.textOnBackground
                   : Vx.neutral500,
             ),
-            onPressed: () => menu.value = 2,
           ),
-          IconButton(
+          _navButton(
+            label: 'Categories',
+            index: 3,
             icon: Icon(
               CupertinoIcons.chart_pie_fill,
               size: 18,
               color: menu.value == 3
-                  ? Get.isDarkMode
-                        ? Vx.white
-                        : AppColor.primary
+                  ? AppColor.textOnBackground
                   : Vx.neutral500,
             ),
-            onPressed: () => menu.value = 3,
           ),
-          IconButton(
+          _navButton(
+            label: 'Notes',
+            index: 4,
             icon: Image.asset(
               'assets/icons/ic_overview.png',
               height: 18,
               width: 18,
               color: menu.value == 4
-                  ? Get.isDarkMode
-                        ? Vx.white
-                        : AppColor.primary
+                  ? AppColor.textOnBackground
                   : Vx.neutral500,
             ),
-            onPressed: () => menu.value = 4,
           ),
-          IconButton(
+          _navButton(
+            label: 'AI Insights',
+            index: 5,
             icon: Icon(
               CupertinoIcons.chat_bubble_fill,
               size: 18,
               color: menu.value == 5
-                  ? Get.isDarkMode
-                        ? Vx.white
-                        : AppColor.primary
+                  ? AppColor.textOnBackground
                   : Vx.neutral500,
             ),
-            onPressed: () => menu.value = 5,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _navButton({
+    required String label,
+    required int index,
+    required Widget icon,
+  }) {
+    final selected = controller.menuSelected.value == index;
+    return IconButton(
+      tooltip: label,
+      style: IconButton.styleFrom(
+        backgroundColor: selected
+            ? AppColor.sideMenuSelected
+            : Colors.transparent,
+      ),
+      icon: icon,
+      onPressed: () => controller.menuSelected.value = index,
     );
   }
 
@@ -148,18 +161,40 @@ class SummaryView extends GetView<SummaryController> {
             final total = item.total.toString().toInt() ?? 0;
             return Obx(
               () {
+                final isSelected =
+                    period == controller.monthSelected.value &&
+                    controller.isShowAllYear.isFalse;
                 return Container(
                   decoration: ExDecorator.box(
-                    fillColor: period == controller.monthSelected.value ? AppColor.sideMenuSelected : Colors.transparent,
+                    fillColor: isSelected
+                        ? AppColor.sideMenuSelected
+                        : Colors.transparent,
                     borderColor: Colors.transparent,
                   ),
                   child: HStack(
                     [
-                      '$period'.text.size(11).make().pOnly(right: 8),
+                      '$period'.text.size(11).make(),
+                      Spacer(),
                       if (total != 0) ...[
                         Container(
-                          color: AppColor.primary,
-                          child: '${total.moneyFormatCompact()}'.text.color(AppColor.textOnBackground).size(9).minFontSize(9).bold.make().pSymmetric(h: 6, v: 2),
+                          decoration: ExDecorator.box(
+                            borderRadius: 90,
+                            fillColor: isSelected
+                                ? AppColor.primary
+                                : AppColor.primary.withAlpha(70),
+                            borderColor: AppColor.primary.withAlpha(140),
+                          ),
+                          child: '${total.moneyFormatCompact()}'.text
+                              .color(
+                                isSelected
+                                    ? AppColor.textOnBackground
+                                    : AppColor.textReverse,
+                              )
+                              .size(9)
+                              .minFontSize(9)
+                              .bold
+                              .make()
+                              .pSymmetric(h: 6, v: 2),
                         ).cornerRadius(90),
                       ],
                     ],
@@ -232,7 +267,10 @@ class SummaryView extends GetView<SummaryController> {
       ],
       Spacer(),
       Obx(
-        () => '${controller.countOnly1Year.value.moneyFormat()}'.text.bold.make().onTap(() {
+        () => HStack([
+          'Year Total'.text.size(10).neutral500.make().pOnly(right: 8),
+          '${controller.countOnly1Year.value.moneyFormat()}'.text.bold.make(),
+        ]).onTap(() {
           controller.onShowAllYear();
         }),
       ),

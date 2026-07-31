@@ -1,6 +1,5 @@
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -18,22 +17,48 @@ class ViewPieChart extends GetView<SummaryController> {
     return controller.obx(
       (state) {
         final groups = _groupSummaries();
+        final total = groups.fold<num>(
+          0,
+          (sum, group) => sum + group.total,
+        );
         return VStack(
           [
-            'Period: ${controller.monthSelected} ${controller.yearSelected}'.text.bold.make().pOnly(bottom: 16),
+            (controller.isShowAllYear.isTrue
+                    ? '${controller.yearSelected}'
+                    : '${controller.monthSelected} ${controller.yearSelected}')
+                .text
+                .bold
+                .make()
+                .pOnly(bottom: 8),
 
             if (groups.isNotEmpty) ...[
               SfCircularChart(
-                series: setupChartDataSeries(groups),
+                margin: EdgeInsets.zero,
+                annotations: [
+                  CircularChartAnnotation(
+                    widget: VStack([
+                      'Total'.text
+                          .size(9)
+                          .minFontSize(9)
+                          .color(AppColor.neutral)
+                          .makeCentered(),
+                      total.moneyFormatCompact().text
+                          .size(13)
+                          .bold
+                          .makeCentered(),
+                    ]),
+                  ),
+                ],
+                series: setupChartDataSeries(groups, total),
                 tooltipBehavior: setupTooltip(),
-              ).w(double.infinity),
+              ).wh(double.infinity, 270),
 
-              _buildGroupTable(groups),
+              _buildGroupList(groups, total),
             ] else ...[
               ExUiErrorOrEmpty(
                 bgColor: AppColor.emptyStatePrimary,
-                title: 'No data to see',
-                message: 'You dont have any transaction on this period',
+                title: 'No data yet',
+                message: '',
               ).h(530),
             ],
           ],
@@ -46,106 +71,140 @@ class ViewPieChart extends GetView<SummaryController> {
   TooltipBehavior setupTooltip() {
     return TooltipBehavior(
       enable: true,
-      format: 'point.x : point.y %',
       shouldAlwaysShow: false,
-      decimalPlaces: 2,
+      canShowMarker: false,
+      color: AppColor.textReverse,
+      elevation: 0,
       builder: (data, point, series, pointIndex, seriesIndex) {
         data as PieChartDataModel;
-        final usage = data.usePercentage != null ? ' (${data.usePercentage}%)' : '';
         return Text(
-          '${data.name}: ${data.summary.total.moneyFormat()}$usage',
+          '${data.name}\n${data.summary.total.moneyFormat()}',
           style: TextStyle(
+            fontWeight: FontWeight.w600,
             fontSize: 11,
-            color: Get.isDarkMode ? Colors.black : Colors.white,
+            color: AppColor.scaffoldPrimary,
           ),
         ).p8();
       },
     );
   }
 
-  /// Returns the pie series with smart data labels.
-  List<PieSeries<PieChartDataModel, String>> setupChartDataSeries(
+  List<DoughnutSeries<PieChartDataModel, String>> setupChartDataSeries(
     List<GroupSpendSummary> groups,
+    num total,
   ) {
     final data = groups.map((summary) => PieChartDataModel(summary)).toList();
 
-    return <PieSeries<PieChartDataModel, String>>[
-      PieSeries<PieChartDataModel, String>(
+    return <DoughnutSeries<PieChartDataModel, String>>[
+      DoughnutSeries<PieChartDataModel, String>(
         dataSource: data,
         xValueMapper: (data, _) => data.name,
         yValueMapper: (data, _) => data.total,
-        dataLabelMapper: (data, _) => data.name,
-        radius: '55%',
+        dataLabelMapper: (data, _) =>
+            data.total / total >= 0.05 ? data.name : '',
+        radius: '72%',
+        innerRadius: '58%',
         pointColorMapper: (datum, index) => datum.color,
-        animationDuration: 500,
+        animationDuration: 350,
+        onPointTap: (details) {
+          final index = details.pointIndex;
+          if (index == null || index >= groups.length) return;
+          controller.goAdvanceFilter(groups[index].primaryCategoryCode);
+        },
         dataLabelSettings: DataLabelSettings(
           isVisible: true,
           labelIntersectAction: LabelIntersectAction.hide,
           showZeroValue: false,
           labelPosition: ChartDataLabelPosition.outside,
+          textStyle: TextStyle(
+            color: AppColor.textReverse,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
           connectorLineSettings: ConnectorLineSettings(
             type: ConnectorType.curve,
+            color: AppColor.neutral,
+            width: 1,
           ),
         ),
       ),
     ];
   }
 
-  Widget _buildGroupTable(List<GroupSpendSummary> groups) {
-    return Table(
-      border: TableBorder.all(color: Vx.neutral600),
-      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-      columnWidths: {
-        0: FlexColumnWidth(2),
-        1: FlexColumnWidth(1),
-      },
-      children: [
-        TableRow(
-          decoration: BoxDecoration(color: AppColor.tableHeader),
-          children: [
-            'Group'.text.bold.make().p12(),
-            'Total'.text.align(TextAlign.end).bold.make().p12(),
-          ],
-        ),
-        for (final summary in groups)
-          TableRow(
-            children: [
-              TableCell(
-                child:
-                    HStack(
-                      [
-                        CustomPopup(
-                          content: VStack([
-                            if (summary.maxBudget != null) ...[
-                              'Usage ${summary.usePercentage ?? 0}%'.text.black.make(),
-                              'Remaining ${summary.remainingBudget?.moneyFormat() ?? 'Rp. 0'} / ${summary.maxBudget?.moneyFormat() ?? 'Rp. 0'}'.text.black.make(),
-                            ] else ...[
-                              'No Budget'.text.black.make(),
-                            ],
-                          ]),
-                          child: Icon(
-                            summary.leadCategory.icon ?? Icons.circle_outlined,
-                            size: 14,
-                            color: summary.leadCategory.color,
-                          ).pOnly(right: 8),
-                        ),
-                        VStack([
-                          '${summary.label}'.text.ellipsis.make(),
-                          if (summary.usePercentage != null) 'Usage ${summary.usePercentage}%'.text.size(10).neutral500.make(),
-                        ]).expand(),
-                      ],
-                    ).p8().onTap(
-                      () => controller.goAdvanceFilter(
-                        summary.primaryCategoryCode,
-                      ),
-                    ),
-              ),
-              TableCell(
-                child: summary.total.moneyFormat().text.align(TextAlign.end).make().p8(),
-              ),
-            ],
+  Widget _buildGroupList(List<GroupSpendSummary> groups, num total) {
+    return Container(
+      decoration: ExDecorator.box(
+        borderRadius: 8,
+        borderColor: AppColor.border,
+        fillColor: AppColor.box,
+      ),
+      child: VStack([
+        for (var index = 0; index < groups.length; index++) ...[
+          _buildGroupRow(groups[index], total),
+          if (index < groups.length - 1)
+            Divider(height: 1, color: AppColor.border),
+        ],
+      ]),
+    );
+  }
+
+  Widget _buildGroupRow(GroupSpendSummary summary, num total) {
+    final share = total > 0 ? (summary.total / total * 100).round() : 0;
+    final usage = summary.usePercentage;
+    final usageColor = usage == null
+        ? AppColor.neutral
+        : usage >= 100
+        ? AppColor.red
+        : usage >= 80
+        ? AppColor.orange
+        : AppColor.green;
+
+    return VStack([
+      HStack([
+        Container(
+          decoration: BoxDecoration(
+            color: summary.leadCategory.color?.withAlpha(30),
+            borderRadius: BorderRadius.circular(7),
           ),
+          child: Icon(
+            summary.leadCategory.icon ?? Icons.circle_outlined,
+            size: 15,
+            color: summary.leadCategory.color,
+          ).centered(),
+        ).wh(30, 30).pOnly(right: 10),
+        VStack([
+          summary.label.text.bold.size(11).ellipsis.make(),
+          if (usage != null)
+            'Budget $usage%'.text
+                .size(9)
+                .minFontSize(9)
+                .color(usageColor)
+                .make(),
+        ]).expand(),
+        '$share%'.text
+            .size(9)
+            .minFontSize(9)
+            .color(AppColor.neutral)
+            .make()
+            .pOnly(right: 10),
+        summary.total.moneyFormat().text.bold.size(11).make(),
+        Icon(Icons.chevron_right, size: 15, color: AppColor.neutral)
+            .pOnly(left: 6),
+      ]),
+      if (usage != null) ...[
+        8.heightBox,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(90),
+          child: LinearProgressIndicator(
+            value: (usage / 100).clamp(0, 1).toDouble(),
+            minHeight: 3,
+            color: usageColor,
+            backgroundColor: AppColor.border.withAlpha(70),
+          ),
+        ),
       ],
+    ]).p12().onInkTap(
+      () => controller.goAdvanceFilter(summary.primaryCategoryCode),
     );
   }
 
@@ -196,6 +255,7 @@ class ViewPieChart extends GetView<SummaryController> {
       );
     }
 
+    result.sort((a, b) => b.total.compareTo(a.total));
     return result;
   }
 }

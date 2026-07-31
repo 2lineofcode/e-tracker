@@ -81,10 +81,10 @@ class ViewOverview extends GetView<SummaryController> {
   }
 
   Widget headerPerMonth() {
-    final dailySafe = _dailySafeAllowance();
-    final projectedSpend = _projectedSpend();
+    final dailySafe = controller.dailySafeAllowance;
+    final projectedSpend = controller.projectedPeriodSpend;
     final projectedDelta = controller.countBudget.value - projectedSpend;
-    final isCurrentMonth = _isCurrentSelectedMonth();
+    final isCurrentMonth = controller.isCurrentSelectedMonth;
 
     if (controller.countBudget.value.isZero) {
       return GlassContainer(
@@ -192,25 +192,25 @@ class ViewOverview extends GetView<SummaryController> {
               label: isCurrentMonth ? 'Daily Safe' : 'Daily Avg',
               value: isCurrentMonth
                   ? dailySafe.moneyFormatCompact()
-                  : _dailyAverageSpend().moneyFormatCompact(),
+                  : controller.dailyAverageSpend.moneyFormatCompact(),
               color: dailySafe > 0 || !isCurrentMonth
                   ? AppColor.green
                   : AppColor.red,
             ).expand(),
-            8.widthBox,
+            Container(
+              width: 1,
+              height: 28,
+              color: AppColor.border,
+            ).pSymmetric(h: 12),
             _headerMiniMetric(
-              label: 'Projected',
+              label: isCurrentMonth ? 'Projected' : 'Period total',
               value: projectedSpend.moneyFormatCompact(),
               color: projectedDelta >= 0 ? AppColor.green : AppColor.red,
             ).expand(),
           ]).pOnly(bottom: 8),
-          if (DateTime.now().month ==
-                  controller.monthSelected.value
-                      .toDateEx(format: 'MMMM')
-                      .month &&
-              DateTime.now().year == controller.yearSelected.value.toInt()) ...[
+          if (isCurrentMonth) ...[
             HStack([
-              '${_remainingDaysInSelectedMonth()} Day Remaining'.text
+              '${controller.dayRemaining.value} Day Remaining'.text
                   .color(AppColor.textReverse)
                   .size(12)
                   .makeCentered(),
@@ -227,22 +227,16 @@ class ViewOverview extends GetView<SummaryController> {
                 controller.menuSelected.value = 5;
                 await 100.milliseconds.delay();
                 controller.chatInputController.text =
-                    'sisa uangku ${controller.countRemainingBudget.value.moneyFormat()} sampai tanggal 28 (gajian). baiknya pengeluaranku perhari-nya berapa? jawab singkat aja';
-                // await 100.milliseconds.delay();
-                // await controller.sendMessage();
+                    'jelasin budget pace periode ini dan kasih batas pengeluaran harian yang aman. jawab singkat aja';
               }),
             ]).pOnly(top: 8),
           ] else ...[
             HStack([
-              if (controller.countPercentage.value.toDouble() < 20) ...[
-                'Look Invalid! '.text.color(AppColor.red).size(12).make(),
-              ] else ...[
-                'Surplus ${controller.surplus.value.moneyFormat()}'.text
-                    .color(AppColor.blue)
-                    .size(12)
-                    .makeCentered()
-                    .tooltip("it's base on (spend vs your income)"),
-              ],
+              '${projectedDelta.abs().moneyFormatCompact()} ${projectedDelta >= 0 ? 'under' : 'over'} current budget plan'
+                  .text
+                  .color(projectedDelta >= 0 ? AppColor.green : AppColor.red)
+                  .size(12)
+                  .makeCentered(),
               Spacer(),
               'AI Insights'.text.underline.size(12).make().onTap(() {
                 controller.menuSelected.value = 5;
@@ -297,22 +291,15 @@ class ViewOverview extends GetView<SummaryController> {
     required String value,
     required Color color,
   }) {
-    return Container(
-      decoration: ExDecorator.box(
-        borderRadius: 8,
-        borderColor: Colors.white.withAlpha(35),
-        fillColor: Colors.black.withAlpha(35),
-      ),
-      child: VStack([
-        label.text
-            .size(10)
-            .minFontSize(10)
-            .color(Vx.neutral300)
-            .make()
-            .pOnly(bottom: 2),
-        value.text.bold.size(12).minFontSize(12).color(color).make(),
-      ]).pSymmetric(h: 8, v: 6),
-    );
+    return VStack([
+      label.text
+          .size(10)
+          .minFontSize(10)
+          .color(Vx.neutral300)
+          .make()
+          .pOnly(bottom: 2),
+      value.text.bold.size(12).minFontSize(12).color(color).make(),
+    ]).pSymmetric(h: 4, v: 4);
   }
 
   Widget _quickInsightStrip() {
@@ -328,67 +315,81 @@ class ViewOverview extends GetView<SummaryController> {
         borderColor: AppColor.border,
         borderRadius: 8,
       ),
-      child: VStack([
-        HStack([
-          Icon(
-            Icons.tips_and_updates_rounded,
-            size: 14,
+      child: HStack([
+        Container(
+          decoration: BoxDecoration(
             color: AppColor.primary,
-          ).pOnly(right: 8),
-          'Quick Signals'.text.bold.size(12).make().expand(),
-          'Ask AI'.text.underline.size(11).minFontSize(11).make().onTap(() {
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.tips_and_updates_rounded,
+            size: 13,
+            color: AppColor.textOnBackground,
+          ).centered(),
+        ).wh(26, 26).pOnly(right: 8),
+        VStack([
+          'Top Category'.text
+              .size(9)
+              .minFontSize(9)
+              .color(AppColor.neutral)
+              .make(),
+          (topCategory?.resolvedCategory.label ?? '-').text
+              .bold
+              .size(11)
+              .maxLines(1)
+              .ellipsis
+              .color(AppColor.textReverse)
+              .make(),
+        ]).expand(),
+        _signalPill(
+          value: '$risks risk',
+          color: risks > 0 ? AppColor.red : AppColor.green,
+        ),
+        6.widthBox,
+        _signalPill(
+          value: '$unbudgeted no budget',
+          color: unbudgeted > 0 ? AppColor.orange : AppColor.green,
+        ),
+        8.widthBox,
+        IconButton(
+          tooltip: 'Ask AI',
+          visualDensity: VisualDensity.compact,
+          style: IconButton.styleFrom(
+            backgroundColor: AppColor.primary,
+            minimumSize: Size(28, 28),
+            maximumSize: Size(28, 28),
+            padding: EdgeInsets.zero,
+          ),
+          icon: Icon(
+            Icons.auto_awesome_rounded,
+            size: 14,
+            color: AppColor.textOnBackground,
+          ),
+          onPressed: () {
             controller.menuSelected.value = 5;
-          }),
-        ]).pOnly(bottom: 8),
-        HStack([
-          _signalPill(
-            label: 'Top',
-            value: topCategory?.resolvedCategory.label ?? '-',
-            color: topCategory?.resolvedCategory.color ?? AppColor.neutral,
-          ).expand(),
-          8.widthBox,
-          _signalPill(
-            label: 'Risk',
-            value: '$risks budget',
-            color: risks > 0 ? AppColor.red : AppColor.green,
-          ).expand(),
-          8.widthBox,
-          _signalPill(
-            label: 'No Budget',
-            value: '$unbudgeted cat',
-            color: unbudgeted > 0 ? AppColor.orange : AppColor.green,
-          ).expand(),
-        ]),
-      ]).p12(),
-    ).pOnly(bottom: 16);
+          },
+        ),
+      ]).pSymmetric(h: 10, v: 6),
+    ).pOnly(bottom: 12);
   }
 
   Widget _signalPill({
-    required String label,
     required String value,
-    required Color? color,
+    required Color color,
   }) {
     return Container(
       decoration: ExDecorator.box(
-        borderRadius: 6,
-        borderColor: AppColor.border,
-        fillColor: AppColor.box,
+        borderRadius: 90,
+        borderColor: color.withAlpha(80),
+        fillColor: color.withAlpha(20),
       ),
-      child: VStack([
-        label.text
-            .size(10)
-            .minFontSize(10)
-            .color(AppColor.neutral)
-            .make()
-            .pOnly(bottom: 2),
-        value.text.bold
-            .size(11)
-            .minFontSize(11)
-            .maxLines(1)
-            .ellipsis
-            .color(color)
-            .make(),
-      ]).p8(),
+      child: value.text.bold
+          .size(9)
+          .minFontSize(9)
+          .maxLines(1)
+          .color(color)
+          .make()
+          .pSymmetric(h: 7, v: 4),
     );
   }
 
@@ -418,15 +419,15 @@ class ViewOverview extends GetView<SummaryController> {
   }
 
   num? _groupBudgetTotal(
-    List<CategorySpendSummary> items,
+    List<ExpenseCategory> categories,
     Map<String, num> budgetsByCategory,
   ) {
     if (budgetsByCategory.isEmpty) return null;
     num totalBudget = 0;
     var hasBudget = false;
 
-    for (final item in items) {
-      final amount = budgetsByCategory[item.categoryCode] ?? 0;
+    for (final category in categories) {
+      final amount = budgetsByCategory[category.code] ?? 0;
       if (amount > 0) {
         totalBudget += amount;
         hasBudget = true;
@@ -439,7 +440,6 @@ class ViewOverview extends GetView<SummaryController> {
   List<Widget> _buildYearlySections() {
     final data = _categorySummaryByCode();
     final sections = <Widget>[];
-    final budgetsByCategory = _budgetsByCategoryCode();
 
     for (final group in expenseCategoryGroups) {
       final groupItems = group.items
@@ -454,7 +454,6 @@ class ViewOverview extends GetView<SummaryController> {
         _buildGroupCard(
           title: group.label,
           total: groupItems.fold<num>(0, (sum, item) => sum + item.total),
-          budget: _groupBudgetTotal(groupItems, budgetsByCategory),
           body: VStack([
             ...groupItems.map((item) {
               final resolved = item.resolvedCategory;
@@ -508,7 +507,7 @@ class ViewOverview extends GetView<SummaryController> {
         _buildGroupCard(
           title: group.label,
           total: groupItems.fold<num>(0, (sum, item) => sum + item.total),
-          budget: _groupBudgetTotal(groupItems, budgetsByCategory),
+          budget: _groupBudgetTotal(group.items, budgetsByCategory),
           body: VStack([
             ...groupItems.map((item) => _buildMonthlyCategoryRow(item)),
           ]),
@@ -555,33 +554,16 @@ class ViewOverview extends GetView<SummaryController> {
                 color2: Vx.neutral400,
               ).wh(200, 4).pOnly(right: 12).expand(),
 
-              HStack([
-                Spacer(),
-                '('.text.size(10).minFontSize(10).make(),
-                '${total.moneyFormatCompact()}'.text
-                    .size(10)
-                    .minFontSize(10)
-                    .color(
-                      (total / budget * 100).toInt() < 100
-                          ? AppColor.green
-                          : AppColor.red,
-                    )
-                    .make(),
-                ' / ${budget.moneyFormatCompact()}'.text
-                    .size(10)
-                    .minFontSize(10)
-                    .make(),
-                ')'.text.size(10).minFontSize(10).make().pOnly(right: 8),
-                '${(total / budget * 100).toStringAsFixed(2)}%'.text
-                    .size(10)
-                    .minFontSize(10)
-                    .color(
-                      (total / budget * 100).toInt() < 100
-                          ? AppColor.green
-                          : AppColor.red,
-                    )
-                    .make(),
-              ]).w(140),
+              '${total.moneyFormatCompact()} / ${budget.moneyFormatCompact()} · ${(total / budget * 100).round()}%'
+                  .text
+                  .size(10)
+                  .minFontSize(10)
+                  .color(
+                    (total / budget * 100).toInt() < 100
+                        ? AppColor.green
+                        : AppColor.red,
+                  )
+                  .make(),
             ]).pOnly(top: 8),
           ],
 
@@ -589,25 +571,20 @@ class ViewOverview extends GetView<SummaryController> {
           body,
           ?footer,
         ],
-      ).p16(),
-    ).pOnly(bottom: 16);
+      ).p12(),
+    ).pOnly(bottom: 12);
   }
 
   Widget _buildMonthlyCategoryRow(CategorySpendSummary item) {
     final category = item.resolvedCategory;
-
-    final _home = Get.find<HomeController>();
-    final budgets = _home.budgetsList.firstWhereOrNull(
-      (b) => b.categoryCode == category.code,
-    );
-    final spent = _home.monthlyExpenseByGroup[category.code] ?? 0;
-    final budgetAmount = budgets?.amount ?? 0;
+    final spent = item.total;
+    final budgetAmount = item.maxBudget ?? 0;
     final percent = budgetAmount > 0
         ? (spent.toDouble() / budgetAmount) * 100
         : 0.0;
     final percentLabel =
         '${(percent.isFinite ? percent.clamp(0, 999).round() : 0)}%';
-    final hasBudget = percent > 0;
+    final hasBudget = budgetAmount > 0;
 
     return VStack(
       [
@@ -634,6 +611,13 @@ class ViewOverview extends GetView<SummaryController> {
               '($percentLabel)'.text
                   .size(10)
                   .minFontSize(10)
+                  .color(
+                    percent >= 100
+                        ? AppColor.red
+                        : percent >= 80
+                        ? AppColor.orange
+                        : AppColor.green,
+                  )
                   .make()
                   .pOnly(left: 3),
             ] else ...[
@@ -649,84 +633,17 @@ class ViewOverview extends GetView<SummaryController> {
     ).pOnly(bottom: 12).onTap(() => controller.goAdvanceFilter(category.code));
   }
 
-  bool _isCurrentSelectedMonth() {
-    final now = DateTime.now();
-    final selectedMonth = controller.monthSelected.value
-        .toDateEx(format: 'MMMM')
-        .month;
-    final selectedYear = controller.yearSelected.value.toInt() ?? now.year;
-    return now.month == selectedMonth && now.year == selectedYear;
-  }
-
-  int _daysInSelectedMonth() {
-    final selectedMonth = controller.monthSelected.value
-        .toDateEx(format: 'MMMM')
-        .month;
-    final selectedYear =
-        controller.yearSelected.value.toInt() ?? DateTime.now().year;
-    return dayInMonth(DateTime(selectedYear, selectedMonth, 1));
-  }
-
-  int _elapsedDaysInSelectedMonth() {
-    if (_isCurrentSelectedMonth())
-      return DateTime.now().day.clamp(1, _daysInSelectedMonth());
-    return _daysInSelectedMonth();
-  }
-
-  int _remainingDaysInSelectedMonth() {
-    if (!_isCurrentSelectedMonth()) return 0;
-    return (_daysInSelectedMonth() - DateTime.now().day).clamp(
-      0,
-      _daysInSelectedMonth(),
-    );
-  }
-
-  num _dailyAverageSpend() {
-    final elapsed = _elapsedDaysInSelectedMonth();
-    if (elapsed <= 0) return 0;
-    return controller.countOnly1Month.value / elapsed;
-  }
-
-  num _projectedSpend() {
-    final elapsed = _elapsedDaysInSelectedMonth();
-    if (elapsed <= 0) return controller.countOnly1Month.value;
-    return controller.countOnly1Month.value / elapsed * _daysInSelectedMonth();
-  }
-
-  num _dailySafeAllowance() {
-    final remainingDays = _remainingDaysInSelectedMonth();
-    if (remainingDays <= 0) return 0;
-    final remainingBudget = controller.countRemainingBudget.value;
-    if (remainingBudget <= 0) return 0;
-    return remainingBudget / remainingDays;
-  }
-
   int _budgetRiskCount() {
-    if (!Get.isRegistered<HomeController>()) return 0;
-    final home = Get.find<HomeController>();
-    var count = 0;
-    for (final budget in home.budgetsList) {
-      final category = resolveExpenseCategory(budget.categoryCode);
-      final budgetAmount = budget.amount ?? 0;
-      final spent = home.monthlyExpenseByGroup[category.code] ?? 0;
-      if (budgetAmount > 0 && spent / budgetAmount >= 0.8) count++;
-    }
-    return count;
+    return controller.categorySummaries
+        .where((item) => (item.usePercentage ?? 0) >= 80)
+        .length;
   }
 
   int _unbudgetedCategoryCount() {
-    if (!Get.isRegistered<HomeController>()) return 0;
-    final home = Get.find<HomeController>();
-    final budgetedCodes = home.budgetsList
-        .map((budget) => resolveExpenseCategory(budget.categoryCode).code)
-        .toSet();
-    var count = 0;
-    home.monthlyExpenseByGroup.forEach((code, total) {
-      final category = resolveExpenseCategory(code);
-      if (total <= 0) return;
-      if (category.code == 'expense:misc:notes') return;
-      if (!budgetedCodes.contains(category.code)) count++;
-    });
-    return count;
+    return controller.categorySummaries.where((item) {
+      return item.total > 0 &&
+          item.categoryCode != 'expense:misc:notes' &&
+          item.maxBudget == null;
+    }).length;
   }
 }

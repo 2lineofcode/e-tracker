@@ -13,6 +13,7 @@ This file provides guidance to agents when working with code in this repository.
 - **Follow Existing Pattern**: If the codebase has a specific pattern (indentation, bracket style, naming convention), follow it exactly
 - **Keep It Simple**: Avoid over-engineering. If it can be done in 10 lines, don't make it 50
 - **Readability First**: Write code that's easy for humans to read, not just "works"
+- **Minimal UI Copy**: Avoid subtitles, helper text, descriptions, and redundant labels unless explicitly requested or required
 - **remove compile file**: if you compile code, please remove, example `__pycache__`
 
 ### **Documentation**
@@ -33,6 +34,8 @@ This file provides guidance to agents when working with code in this repository.
 
 - Read the file content first before editing
 - When in doubt, ask before executing
+- **QA On Request Only**: Do not perform QA unless explicitly requested
+- **Flutter Build/Run On Request Only**: Do not run `flutter build` or `flutter run` or `flutter pub *` unless explicitly requested
 
 ### **Language Separation**
 

@@ -11,6 +11,8 @@ mixin HelperErrorLog {
     required String action,
     required String stack,
   }) async {
+    if (db.auth.currentSession == null) return;
+
     final errObj = SupaErrorLog(
       id: UuidV4().generate(),
       createdAt: DateTime.now().toStringEx(),
@@ -19,6 +21,10 @@ mixin HelperErrorLog {
       action: action,
       stack: stack,
     );
-    await db.from('error_log').insert(errObj.toJson());
+    try {
+      await db.from('error_log').insert(errObj.toJson());
+    } catch (e) {
+      logW('Remote error log skipped: $e');
+    }
   }
 }

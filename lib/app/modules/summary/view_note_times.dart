@@ -13,67 +13,164 @@ class ViewNoteTimes extends GetView<SummaryController> {
 
   @override
   Widget build(BuildContext context) {
-    final item = controller.rpcSumNoteTimes;
     return controller.obx(
-      (state) => VStack(
-        [
-          'Period: ${controller.monthSelected} ${controller.yearSelected}'.text.bold.make().pOnly(bottom: 16),
-          if (controller.rpcSumNoteTimes.isNotEmpty) ...[
-            /// header
-            Container(
-              decoration: BoxDecoration(
-                color: AppColor.tableHeader,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
-                border: Border.all(color: Vx.neutral600),
-              ),
-              child: HStack([
-                'Note'.text.make().w(205),
-                Icon(Icons.south_rounded, size: 16),
-                Spacer(),
-                'Total'.text.align(TextAlign.end).make().expand(),
-              ]).p12(),
-            ),
+      (state) {
+        final items = controller.rpcSumNoteTimes;
+        final occurrences = items.fold<int>(
+          0,
+          (sum, item) => sum + (item.times ?? 0),
+        );
+        final total = items.fold<int>(
+          0,
+          (sum, item) => sum + (item.total ?? 0),
+        );
+        final maxTimes = items.fold<int>(
+          1,
+          (max, item) => (item.times ?? 0) > max ? item.times! : max,
+        );
 
-            /// detail
-            SingleChildScrollView(
-              child: Table(
-                border: TableBorder.all(color: Vx.neutral600),
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                columnWidths: {
-                  0: FixedColumnWidth(200),
-                  1: FixedColumnWidth(50),
-                },
-                children: [
-                  // detail
-                  for (var i = 0; i < item.length; i++) ...[
-                    TableRow(
-                      children: [
-                        TableCell(
-                          child: '${item[i].note}'.text.make().p8().onTap(
-                            () async {
-                              await Clipboard.setData(ClipboardData(text: '${item[i].note}'));
-                              await HelperToast.info('Copied "${item[i].note}" to clipboard');
-                            },
-                          ),
-                        ),
-                        TableCell(child: '${item[i].times}'.text.align(TextAlign.center).make().p8()),
-                        TableCell(child: '${item[i].total?.moneyFormat()}'.text.align(TextAlign.end).make().p8()),
-                      ],
+        return VStack(
+          [
+            (controller.isShowAllYear.isTrue
+                    ? '${controller.yearSelected}'
+                    : '${controller.monthSelected} ${controller.yearSelected}')
+                .text
+                .bold
+                .make()
+                .pOnly(bottom: 12),
+            if (items.isNotEmpty) ...[
+              Container(
+                decoration: ExDecorator.box(
+                  borderRadius: 8,
+                  borderColor: AppColor.border,
+                  fillColor: AppColor.card,
+                ),
+                child: HStack([
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColor.primary,
+                      shape: BoxShape.circle,
                     ),
-                  ],
-                ],
-              ),
-            ).expand(),
-          ] else ...[
-            ExUiErrorOrEmpty(
-              bgColor: AppColor.emptyStatePrimary,
-              title: 'No data to see',
-              message: 'You dont have any transaction on this period',
-            ).expand(),
+                    child: Icon(
+                      Icons.notes_rounded,
+                      size: 13,
+                      color: AppColor.textOnBackground,
+                    ).centered(),
+                  ).wh(26, 26).pOnly(right: 8),
+                  '${items.length} notes'.text.size(10).make(),
+                  ' · '.text.size(10).color(AppColor.neutral).make(),
+                  '$occurrences entries'.text.size(10).make(),
+                  Spacer(),
+                  total.moneyFormat().text.size(11).bold.make(),
+                ]).pSymmetric(h: 12, v: 10),
+              ).pOnly(bottom: 12),
+              Container(
+                decoration: ExDecorator.box(
+                  borderRadius: 8,
+                  borderColor: AppColor.border,
+                  fillColor: AppColor.box,
+                ),
+                child: ListView.separated(
+                  padding: EdgeInsets.zero,
+                  itemCount: items.length,
+                  separatorBuilder: (context, index) =>
+                      Divider(height: 1, color: AppColor.border),
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    return _noteRow(
+                      index: index,
+                      note: item.note ?? '-',
+                      times: item.times ?? 0,
+                      total: item.total ?? 0,
+                      maxTimes: maxTimes,
+                    );
+                  },
+                ),
+              ).expand(),
+            ] else ...[
+              ExUiErrorOrEmpty(
+                bgColor: AppColor.emptyStatePrimary,
+                title: 'No data yet',
+                message: '',
+              ).expand(),
+            ],
           ],
-        ],
-      ).p12(),
+        ).p12();
+      },
       onLoading: MyShimmerSummary(),
     );
+  }
+
+  Widget _noteRow({
+    required int index,
+    required String note,
+    required int times,
+    required int total,
+    required int maxTimes,
+  }) {
+    final progress = maxTimes > 0 ? times / maxTimes : 0.0;
+    final isTop = index < 3;
+
+    return VStack([
+      HStack([
+        Container(
+          decoration: BoxDecoration(
+            color: isTop
+                ? AppColor.primary
+                : AppColor.primary.withAlpha(35),
+            shape: BoxShape.circle,
+          ),
+          child: '${index + 1}'.text
+              .size(9)
+              .bold
+              .color(
+                isTop
+                    ? AppColor.textOnBackground
+                    : AppColor.textReverse,
+              )
+              .makeCentered(),
+        ).wh(26, 26).pOnly(right: 10),
+        note.text.bold.size(11).maxLines(1).ellipsis.make().expand(),
+        '${times}x'.text
+            .size(9)
+            .minFontSize(9)
+            .color(AppColor.textOnBackground)
+            .make()
+            .pSymmetric(h: 6, v: 2)
+            .color(AppColor.primary)
+            .cornerRadius(90)
+            .pOnly(left: 8),
+        total.moneyFormat().text
+            .size(11)
+            .bold
+            .make()
+            .pOnly(left: 12),
+        IconButton(
+          tooltip: 'Copy',
+          visualDensity: VisualDensity.compact,
+          style: IconButton.styleFrom(
+            minimumSize: Size(28, 28),
+            maximumSize: Size(28, 28),
+            padding: EdgeInsets.zero,
+          ),
+          icon: Icon(Icons.copy_rounded, size: 14, color: AppColor.neutral),
+          onPressed: () => _copyNote(note),
+        ),
+      ]),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(90),
+        child: LinearProgressIndicator(
+          value: progress.clamp(0, 1).toDouble(),
+          minHeight: 3,
+          color: AppColor.textOnBackground.withAlpha(180),
+          backgroundColor: AppColor.border.withAlpha(90),
+        ),
+      ).pOnly(left: 36),
+    ]).pSymmetric(h: 10, v: 7).onInkTap(() => _copyNote(note));
+  }
+
+  Future<void> _copyNote(String note) async {
+    await Clipboard.setData(ClipboardData(text: note));
+    await HelperToast.info('Copied "$note"');
   }
 }

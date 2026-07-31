@@ -16,3 +16,5 @@ const kCalendarStartDay = 'kCalendarStartDay';
 const kCurrentLanguage = 'kCurrentLanguage';
 const kBibitToken = 'kBibitToken';
 const kBibitRefreshToken = 'kBibitRefreshToken';
+const kAgentChatMessages = 'kAgentChatMessages';
+const kLegacyAgentChatMessages = 'kAgnesChatMessages';

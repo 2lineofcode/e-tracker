@@ -1,7 +1,6 @@
 import 'package:animated_icon/animated_icon.dart';
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
@@ -45,47 +44,285 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget appBarTitle() {
-    return TextField(
-      controller: controller.tfSearchExpense.value,
-      style: TextStyle(fontSize: 13),
-      decoration: HelperDecoration.input(
-        fillColor: Get.isDarkMode ? AppColor.card : null,
-        prefixIcon: CustomPopup(
-          content: VStack([
-            ''.richText
-                .withTextSpanChildren([
-                  'Search Features:\n'.textSpan.size(13).bold.make(),
-                  '\n- by "Note", example: "Nasi Padang"'.textSpan.make(),
-                  '\n- by "Category", example: "Food"'.textSpan.make(),
-                  '\n- by "Days", example: "7"'.textSpan.make(),
-                  '\n- by "Date Range", example: "2023-01-01 2023-01-07"'
-                      .textSpan
-                      .make(),
-                ])
-                .black
-                .size(11)
-                .minFontSize(11)
-                .make(),
-          ]),
-          child: Icon(
-            UIconsPro.regularRounded.search,
-            size: 13,
-            color: AppColor.textReverse,
-          ).pOnly(top: 0),
-        ),
-        hint: 'Search: Note, Category, Days, Date Range...',
-        suffix:
-            Icon(
-              UIconsPro.solidRounded.cross_small,
-              size: 12,
-              color: AppColor.textReverse,
-            ).pOnly(top: 0).onInkTap(() async {
-              controller.tfSearchExpense.value.clear();
-              await controller.getExpense();
-            }),
+    return LayoutBuilder(
+      builder: (context, constraints) => RawAutocomplete<_SearchOption>(
+        textEditingController: controller.tfSearchExpense.value,
+        focusNode: controller.searchFocusNode,
+        displayStringForOption: (option) => option.input,
+        optionsBuilder: (value) => searchOptions(value.text),
+        onSelected: (option) {
+          if (option.submit) {
+            controller.getExpense(find: option.query);
+          } else {
+            controller.searchFocusNode.requestFocus();
+          }
+        },
+        optionsViewBuilder: (context, onSelected, options) {
+          return Align(
+            alignment: Alignment.topLeft,
+            child: Material(
+              color: AppColor.appbarPrimary,
+              elevation: 12,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(color: AppColor.border),
+              ),
+              child: SizedBox(
+                width: constraints.maxWidth,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxHeight: 280),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.symmetric(vertical: 6),
+                    itemCount: options.length,
+                    itemBuilder: (context, index) {
+                      final option = options.elementAt(index);
+                      return InkWell(
+                        onTap: () => onSelected(option),
+                        child: HStack([
+                          Icon(
+                            option.icon,
+                            size: 14,
+                            color: option.color,
+                          ).pOnly(right: 10),
+                          option.label.text
+                              .size(12)
+                              .ellipsis
+                              .make()
+                              .expand(),
+                          if (option.suffix != null)
+                            '${option.suffix}'.text
+                                .size(11)
+                                .color(AppColor.neutral)
+                                .make(),
+                        ]).pSymmetric(h: 12, v: 10),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+        fieldViewBuilder: (
+          context,
+          textController,
+          focusNode,
+          onFieldSubmitted,
+        ) {
+          return ValueListenableBuilder<TextEditingValue>(
+            valueListenable: textController,
+            builder: (context, value, child) => TextField(
+              controller: textController,
+              focusNode: focusNode,
+              style: TextStyle(fontSize: 13),
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Get.isDarkMode ? AppColor.card : Colors.white,
+                hintText: '@ Category · # Date · \$ Min · ? Note',
+                hintStyle: TextStyle(fontSize: 12, color: AppColor.neutral),
+                prefixIcon: Icon(
+                  UIconsPro.regularRounded.search,
+                  size: 15,
+                  color: AppColor.neutral,
+                ),
+                prefixIconConstraints: BoxConstraints(minWidth: 40),
+                suffixIcon: value.text.isEmpty
+                    ? null
+                    : IconButton(
+                        tooltip: 'Clear',
+                        icon: Icon(
+                          UIconsPro.solidRounded.cross_small,
+                          size: 14,
+                        ),
+                        onPressed: () async {
+                          textController.clear();
+                          await controller.getExpense();
+                          focusNode.requestFocus();
+                        },
+                      ),
+                suffixIconConstraints: BoxConstraints(minWidth: 38),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppColor.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppColor.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: AppColor.primary),
+                ),
+              ),
+              onSubmitted: (value) {
+                if (searchOptions(value).isNotEmpty) {
+                  onFieldSubmitted();
+                } else {
+                  submitSearch(value);
+                }
+              },
+            ).h(38),
+          );
+        },
       ),
-      onSubmitted: (s) => controller.getExpense(find: s.isNotEmpty ? s : null),
-    ).wh(double.infinity, 30);
+    );
+  }
+
+  // ignore: library_private_types_in_public_api
+  Iterable<_SearchOption> searchOptions(String value) {
+    final text = value.trimLeft();
+    if (text.isEmpty) {
+      return [
+        _SearchOption.command(
+          label: 'Category',
+          input: '@',
+          icon: CupertinoIcons.square_grid_2x2,
+          color: AppColor.primary,
+        ),
+        _SearchOption.command(
+          label: 'Date',
+          input: '#',
+          icon: CupertinoIcons.calendar,
+          color: AppColor.blue,
+        ),
+        _SearchOption.command(
+          label: 'Amount ≥',
+          input: r'$',
+          icon: CupertinoIcons.money_dollar_circle,
+          color: AppColor.green,
+        ),
+        _SearchOption.command(
+          label: 'Note',
+          input: '?',
+          icon: CupertinoIcons.text_quote,
+          color: AppColor.orange,
+        ),
+      ];
+    }
+
+    if (text.startsWith('@')) {
+      final query = text.substring(1).toLowerCase();
+      return controller.categoryList
+          .where((category) {
+            return category.label.toLowerCase().contains(query) ||
+                category.groupLabel.toLowerCase().contains(query) ||
+                category.code.toLowerCase().contains(query);
+          })
+          .map(
+            (category) => _SearchOption(
+              label: category.label,
+              input: '@${category.label}',
+              query: '@${category.code}',
+              icon: category.icon,
+              color: category.color,
+              suffix: '@',
+            ),
+          );
+    }
+
+    if (text.startsWith('#')) {
+      final query = text.substring(1).toLowerCase();
+      return [
+        _SearchOption(
+          label: 'Today',
+          input: '#today',
+          query: '#today',
+          icon: CupertinoIcons.today,
+          color: AppColor.blue,
+          suffix: '#today',
+        ),
+        _SearchOption(
+          label: '7 days',
+          input: '#7',
+          query: '#7',
+          icon: CupertinoIcons.calendar,
+          color: AppColor.orange,
+          suffix: '#7',
+        ),
+        _SearchOption(
+          label: '30 days',
+          input: '#30',
+          query: '#30',
+          icon: CupertinoIcons.calendar,
+          color: AppColor.orange,
+          suffix: '#30',
+        ),
+        _SearchOption(
+          label: 'This month',
+          input: '#month',
+          query: '#month',
+          icon: CupertinoIcons.calendar_today,
+          color: AppColor.green,
+          suffix: '#month',
+        ),
+      ].where((option) {
+        return option.label.toLowerCase().contains(query) ||
+            option.input.substring(1).contains(query);
+      });
+    }
+
+    if (text.startsWith(r'$')) {
+      final query = text.substring(1).replaceAll(RegExp(r'[^0-9]'), '');
+      return [10000, 50000, 100000, 500000, 1000000]
+          .where((amount) => '$amount'.startsWith(query))
+          .map(
+            (amount) => _SearchOption(
+              label: '≥ ${amount.moneyFormat()}',
+              input: '\$$amount',
+              query: '\$$amount',
+              icon: CupertinoIcons.money_dollar_circle,
+              color: AppColor.green,
+              suffix: '\$$amount',
+            ),
+          );
+    }
+
+    if (text.startsWith('?')) {
+      final query = text.substring(1).toLowerCase();
+      final notes = controller.expenseList
+          .map((expense) => expense.note?.trim() ?? '')
+          .where(
+            (note) =>
+                note.isNotEmpty && note.toLowerCase().contains(query),
+          )
+          .toSet();
+
+      if (notes.isEmpty) {
+        if (query.isNotEmpty) return const [];
+        return [
+          _SearchOption.command(
+            label: 'Type note or detail',
+            input: text,
+            icon: CupertinoIcons.text_quote,
+            color: AppColor.orange,
+          ),
+        ];
+      }
+
+      return notes.map(
+        (note) => _SearchOption(
+          label: note,
+          input: '?$note',
+          query: '?$note',
+          icon: CupertinoIcons.text_quote,
+          color: AppColor.orange,
+          suffix: '?',
+        ),
+      );
+    }
+
+    return const [];
+  }
+
+  Future<void> submitSearch(String value) async {
+    final query = value.trim();
+    await controller.getExpense(find: query.isEmpty ? null : query);
   }
 
   Widget appBarLeading() {
@@ -316,18 +553,6 @@ class HomeView extends GetView<HomeController> {
                                 'abehbatre',
                           ),
                 ),
-
-                // :8:
-                buildTools(
-                  title: 'Worksheet',
-                  icon: Icon(
-                    UIconsPro.solidRounded.data_transfer,
-                    size: 14,
-                    color: Color.fromARGB(255, 252, 252, 252),
-                  ),
-                  count: 'Open',
-                  ontap: () => Get.toNamed(Routes.TESTER),
-                ).pOnly(bottom: 12).hide(isVisible: kDebugMode),
 
                 // :summary:
                 Container(
@@ -988,11 +1213,13 @@ class HomeView extends GetView<HomeController> {
               'Search For: `${controller.tfSearchExpense.value.text}`'.text.bold
                   .make(),
               Spacer(),
-              'Filter'.text.size(8).underline.make().onInkTap(() {
-                DialogExpense.openAdvenceFilter(
-                  controller.tfSearchExpense.value.text,
-                );
-              }),
+              if (!searchText.startsWith('#') &&
+                  !searchText.startsWith(r'$'))
+                'Filter'.text.size(8).underline.make().onInkTap(() {
+                  DialogExpense.openAdvenceFilter(
+                    controller.tfSearchExpense.value.text,
+                  );
+                }),
             ],
           ).p8(),
         ).pOnly(bottom: 8),
@@ -1363,7 +1590,7 @@ class HomeView extends GetView<HomeController> {
       Obx(
         () => CustomPopup(
           content: VStack([
-            '${controller.userProfile.value.fullName} (${controller.userProfile.value.age})'
+            '${controller.userProfile.value.fullName} (${controller.userProfile.value.calculatedAge ?? '-'})'
                 .text
                 .size(12)
                 .black
@@ -1421,4 +1648,32 @@ class HomeView extends GetView<HomeController> {
           : 0.heightBox,
     );
   }
+}
+
+class _SearchOption {
+  const _SearchOption({
+    required this.label,
+    required this.input,
+    required this.query,
+    required this.icon,
+    required this.color,
+    this.suffix,
+  }) : submit = true;
+
+  const _SearchOption.command({
+    required this.label,
+    required this.input,
+    required this.icon,
+    required this.color,
+  }) : query = '',
+       suffix = input,
+       submit = false;
+
+  final String label;
+  final String input;
+  final String query;
+  final IconData? icon;
+  final Color? color;
+  final String? suffix;
+  final bool submit;
 }

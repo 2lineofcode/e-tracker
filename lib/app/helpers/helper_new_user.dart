@@ -1,8 +1,8 @@
-import 'dart:typed_data';
 
 import 'package:ex_kit/ex.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:overlayment/overlayment.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -15,6 +15,7 @@ import '../modules/home/home_controller.dart';
 import '../modules/widgets/widget_image_no_cache_view.dart';
 import '../routes/app_pages.dart';
 import 'helper_decoration.dart';
+import 'helper_toast.dart';
 
 mixin HelperNewUser {
   static Future<void> gettingStart() async {
@@ -52,7 +53,9 @@ mixin HelperNewUser {
 
     final tfFullName = TextEditingController(text: userProfile[0].fullName);
     final name = '${userProfile[0].fullName ?? ''}'.obs;
-    final tfAge = TextEditingController(text: userProfile[0].age);
+    final tfBirthYear = TextEditingController(
+      text: userProfile[0].birthYearInput,
+    );
     final tfAvatar = userProfile[0].avatarUrl.obs;
 
     final isReplacePhoto = false.obs;
@@ -95,14 +98,11 @@ mixin HelperNewUser {
           ExButtonElevated(
             onPressed: () async {
               // filepicker select file and upload to supabase storage
-              await FilePicker.pickFiles(
+              await FilePicker.pickFile(
                 type: FileType.image,
-                allowMultiple: false,
-                withData: true,
               ).then((img) async {
                 if (img != null) {
-                  final bytes = img.files.first.bytes;
-                  if (bytes == null) return;
+                  final bytes = await img.readAsBytes();
 
                   isReplacePhoto.value = true;
 
@@ -139,9 +139,14 @@ mixin HelperNewUser {
             onChanged: (value) => name.value = value,
           ).h(33).pOnly(bottom: 12),
           TextField(
-            controller: tfAge,
-            decoration: HelperDecoration.input(hint: 'Age'),
+            controller: tfBirthYear,
+            decoration: HelperDecoration.input(hint: 'Birth Year'),
             style: TextStyle(fontSize: 13),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(4),
+            ],
           ).h(33),
           Divider().pSymmetric(v: 16),
 
@@ -199,11 +204,19 @@ mixin HelperNewUser {
             width: double.infinity,
             label: 'Save',
             onPressed: () async {
+              final birthYear = int.tryParse(tfBirthYear.text);
+              if (birthYear == null ||
+                  birthYear < 1900 ||
+                  birthYear > DateTime.now().year) {
+                await HelperToast.error('Enter a valid birth year');
+                return;
+              }
+
               await Overlayment.dismissAll();
               final editProfile = SupaUserProfile(
                 id: userProfile[0].id ?? '',
                 fullName: tfFullName.text,
-                age: tfAge.text,
+                age: tfBirthYear.text,
                 avatarUrl: tfAvatar.value,
                 updatedAt: DateTime.now().toStringEx(),
               );

@@ -48,6 +48,18 @@ class SupaUserProfile {
     paymentDay = json['pay_day'] ?? 28;
   }
 
+  int? get calculatedAge {
+    final value = int.tryParse(age ?? '');
+    if (value == null) return null;
+    return value >= 1900 ? DateTime.now().year - value : value;
+  }
+
+  String get birthYearInput {
+    final value = int.tryParse(age ?? '');
+    if (value == null) return '';
+    return '${value >= 1900 ? value : DateTime.now().year - value}';
+  }
+
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
     data['id'] = id;

@@ -18,10 +18,23 @@ class SettingsView extends GetView<SettingsController> {
   Widget build(BuildContext context) {
     return MyLayout(
       drawerKey: drawerKeySetting,
-      appBarTitle: 'Settings'.text.size(11).bold.make(),
+      appBarTitle: 'Settings'.text.size(15).bold.make(),
       appBarAction: appBarAction(),
       sideMenuContent: sideMenuContent(),
-      bodyContent: Obx(() => bodyContent().p8()),
+      sideMenuWidth: 220,
+      bodyContent: LayoutBuilder(
+        builder: (context, constraints) => Obx(
+          () => Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 820),
+              child: bodyContent(),
+            ),
+          ).pSymmetric(
+            h: constraints.maxWidth < 600 ? 12 : 24,
+            v: 16,
+          ),
+        ),
+      ),
       footerContent: footerContent(),
     );
   }
@@ -30,30 +43,61 @@ class SettingsView extends GetView<SettingsController> {
 
   Widget sideMenuContent() {
     return Obx(
-      () => ListView.builder(
-        physics: NeverScrollableScrollPhysics(),
-        itemCount: controller.menuList.length,
-        itemBuilder: (context, index) {
-          final item = controller.menuList[index];
-          return Obx(
-            () => InkWell(
-              onTap: () => controller.onMenuChange(item['label']),
-              child: Container(
-                decoration: ExDecorator.box(
-                  fillColor: item['label'] == controller.menuSelected.value ? AppColor.sideMenuSelected : Colors.transparent,
-                  borderColor: Colors.transparent,
+      () => VStack([
+        'PREFERENCES'.text
+            .size(10)
+            .color(AppColor.neutral)
+            .letterSpacing(1.2)
+            .make()
+            .pSymmetric(h: 16)
+            .pOnly(bottom: 10),
+        ListView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: controller.menuList.length,
+          itemBuilder: (context, index) {
+            final item = controller.menuList[index];
+
+            return Obx(() {
+              final isSelected =
+                  item['label'] == controller.menuSelected.value;
+
+              return InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => controller.onMenuChange(item['label']),
+                child: Container(
+                  decoration: ExDecorator.box(
+                    borderRadius: 8,
+                    fillColor: isSelected
+                        ? AppColor.sideMenuSelected
+                        : Colors.transparent,
+                    borderColor: Colors.transparent,
+                  ),
+                  child: HStack(
+                    [
+                      Icon(
+                        item['icon'],
+                        color: isSelected
+                            ? AppColor.textReverse
+                            : AppColor.neutral,
+                        size: 16,
+                      ).pOnly(right: 12),
+                      '${item['label']}'.text
+                          .size(12)
+                          .color(
+                            isSelected
+                                ? AppColor.textReverse
+                                : AppColor.neutral,
+                          )
+                          .make(),
+                    ],
+                  ).pSymmetric(h: 12, v: 11),
                 ),
-                child: HStack(
-                  [
-                    Icon(item['icon'], color: AppColor.textReverse, size: 14).pOnly(right: 8),
-                    '${item['label']}'.text.size(11).make(),
-                  ],
-                ).p8(),
-              ).pSymmetric(h: 10).pOnly(bottom: 8),
-            ),
-          );
-        },
-      ).pOnly(top: 16).expand(),
+              ).pSymmetric(h: 10).pOnly(bottom: 4);
+            });
+          },
+        ),
+      ]).pOnly(top: 20).expand(),
     );
   }
 
@@ -83,7 +127,11 @@ class SettingsView extends GetView<SettingsController> {
         () {
           switch (controller.menuSelected.value) {
             case SectionMenu.APP_CONFIG:
-              return 'Version: ${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'.text.size(12).make();
+              return 'v${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'
+                  .text
+                  .size(11)
+                  .color(AppColor.neutral)
+                  .make();
             default:
               return Container();
           }

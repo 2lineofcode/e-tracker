@@ -22,34 +22,66 @@ class ViewBarChart extends GetView<SummaryController> {
     return controller.obx(
       (state) => VStack(
         [
-          'Period: ${controller.monthSelected} ${controller.yearSelected}'.text.bold.make().pOnly(bottom: 16),
-          if (controller.expenses.length > 1) ...[
+          HStack([
+            (controller.isShowAllYear.isTrue
+                    ? '${controller.yearSelected}'
+                    : '${controller.monthSelected} ${controller.yearSelected}')
+                .text
+                .bold
+                .make()
+                .expand(),
+            _legend(AppColor.green, 'Safe'),
+            8.widthBox,
+            _legend(AppColor.orange, 'Average'),
+            8.widthBox,
+            _legend(AppColor.red, 'High'),
+          ]).pOnly(bottom: 16),
+          if (controller.expenses.isNotEmpty) ...[
             /// chart
             _Chart(
               dataExpense: controller.expenses,
-            ).wh(double.infinity, 200).pOnly(bottom: 24),
+            ).wh(double.infinity, 220).pOnly(bottom: 16),
 
             /// list high spendings
             if (controller.highSpender.isNotEmpty) ...[
               Container(
                 decoration: ExDecorator.box(
-                  borderRadius: 4,
+                  borderRadius: 8,
                   borderColor: AppColor.border,
+                  fillColor: AppColor.box,
                 ),
                 child: VStack(
                   [
-                    '🔥 High Spendings! (${controller.highSpender.length})'.text.bold.make().pOnly(bottom: 12),
+                    HStack([
+                      Icon(
+                        Icons.local_fire_department_rounded,
+                        size: 16,
+                        color: AppColor.red,
+                      ).pOnly(right: 8),
+                      'High Spending'.text.bold.make(),
+                      Spacer(),
+                      '${controller.highSpender.length}'.text
+                          .size(10)
+                          .bold
+                          .color(AppColor.textOnBackground)
+                          .make()
+                          .pSymmetric(h: 8, v: 3)
+                          .color(AppColor.primary)
+                          .cornerRadius(90),
+                    ]).p12(),
+                    Divider(height: 1, color: AppColor.border),
                     ListView.separated(
                       shrinkWrap: true,
                       itemCount: controller.highSpender.length,
-                      separatorBuilder: (context, index) => 8.heightBox,
+                      separatorBuilder: (context, index) =>
+                          Divider(height: 1, color: AppColor.border),
                       itemBuilder: (context, index) {
                         final item = controller.highSpender[index];
                         return itemListHighSpender(item);
                       },
                     ).expand(),
                   ],
-                ).p12(),
+                ),
               ).expand(),
             ],
           ]
@@ -57,8 +89,8 @@ class ViewBarChart extends GetView<SummaryController> {
           else ...[
             ExUiErrorOrEmpty(
               bgColor: AppColor.emptyStatePrimary,
-              title: 'No data to see',
-              message: 'You dont have enough data transaction on this period',
+              title: 'No data yet',
+              message: '',
             ).expand(),
           ],
         ],
@@ -67,18 +99,28 @@ class ViewBarChart extends GetView<SummaryController> {
     );
   }
 
+  Widget _legend(Color color, String label) {
+    return HStack([
+      Container(color: color).wh(7, 7).cornerRadius(90).pOnly(right: 4),
+      label.text.size(9).minFontSize(9).color(AppColor.neutral).make(),
+    ]);
+  }
+
   Widget itemListHighSpender(SupaExpense item) {
-    return Container(
-      decoration: ExDecorator.box(
-        borderRadius: 12,
-        borderColor: AppColor.border,
-        fillColor: AppColor.box,
-      ),
-      child: ListTile(
-        title: '${item.date?.reformatDate(from: yMd)}'.text.size(12).make(),
-        trailing: '${item.amount?.moneyFormat()}'.text.make(),
-      ).onInkTap(() => openDetail(item)),
-    );
+    return HStack([
+      Container(color: item.amount?.getFlagColor() ?? AppColor.neutral)
+          .wh(3, 24)
+          .cornerRadius(90)
+          .pOnly(right: 10),
+      '${item.date?.reformatDate(from: yMd, to: 'dd MMM yyyy')}'
+          .text
+          .size(11)
+          .make()
+          .expand(),
+      '${item.amount?.moneyFormat()}'.text.size(11).bold.make(),
+      Icon(Icons.chevron_right, size: 15, color: AppColor.neutral)
+          .pOnly(left: 6),
+    ]).pSymmetric(h: 12, v: 10).onInkTap(() => openDetail(item));
   }
 }
 
@@ -89,69 +131,198 @@ class _Chart extends GetView<SummaryController> {
 
   @override
   Widget build(BuildContext context) {
-    final newData = dataExpense.reversed.toList();
-    return GetBuilder<SummaryController>(
-      init: SummaryController(),
-      initState: (_) {},
-      builder: (_) {
-        return BarChart(
-          BarChartData(
-            gridData: FlGridData(),
-            titlesData: FlTitlesData(show: false),
-            borderData: FlBorderData(show: false),
-            barGroups: [
-              for (int i = 0; i < newData.length; i++) ...[
-                BarChartGroupData(
-                  x: i,
-                  barRods: [
-                    BarChartRodData(
-                      fromY: newData[i].amount?.toDouble() ?? 0,
-                      toY: 0,
-                      color: newData[i].amount!.getFlagColor(),
-                      width: controller.isShowAllYear.isTrue ? 1 : 6,
-                      borderRadius: BorderRadius.zero,
-                    ),
-                  ],
-                ),
-              ],
-            ],
-            barTouchData: BarTouchData(
-              touchTooltipData: lineTooltip(dataExpense),
-              touchCallback: (event, response) {
-                if (response != null && response.spot != null && event is FlTapUpEvent) {
-                  final item = dataExpense.reversed.toList()[response.spot!.touchedBarGroupIndex];
-                  openDetail(item);
-                }
-              },
-
-              mouseCursorResolver: (event, response) {
-                return response == null || response.spot == null ? MouseCursor.defer : SystemMouseCursors.click;
+    final points = _chartPoints();
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        minY: 0,
+        gridData: FlGridData(
+          drawVerticalLine: false,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: AppColor.border.withAlpha(90),
+            strokeWidth: 1,
+          ),
+        ),
+        titlesData: FlTitlesData(
+          topTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          rightTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 42,
+              getTitlesWidget: (value, meta) {
+                if (value == 0) return SizedBox.shrink();
+                return SideTitleWidget(
+                  meta: meta,
+                  space: 6,
+                  child: value.moneyFormatCompact().text
+                      .size(9)
+                      .minFontSize(9)
+                      .color(AppColor.neutral)
+                      .make(),
+                );
               },
             ),
           ),
-        );
-      },
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 24,
+              interval: 1,
+              getTitlesWidget: (value, meta) {
+                final index = value.toInt() - 1;
+                if (index < 0 || index >= points.length) {
+                  return SizedBox.shrink();
+                }
+                final point = points[index];
+                final show = controller.isShowAllYear.isTrue ||
+                    point.x == 1 ||
+                    point.x % 5 == 0 ||
+                    point.x == points.length;
+                if (!show) return SizedBox.shrink();
+                return SideTitleWidget(
+                  meta: meta,
+                  space: 6,
+                  child: point.shortLabel.text
+                      .size(9)
+                      .minFontSize(9)
+                      .color(AppColor.neutral)
+                      .make(),
+                );
+              },
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        barGroups: [
+          for (final point in points)
+            BarChartGroupData(
+              x: point.x,
+              barRods: [
+                BarChartRodData(
+                  toY: point.amount.toDouble(),
+                  color: point.amount > 0
+                      ? point.amount.getFlagColor()
+                      : Colors.transparent,
+                  width: controller.isShowAllYear.isTrue ? 12 : 5,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(3),
+                  ),
+                ),
+              ],
+            ),
+        ],
+        barTouchData: BarTouchData(
+          touchTooltipData: _tooltip(points),
+          touchCallback: (event, response) {
+            if (response?.spot == null || event is! FlTapUpEvent) return;
+            final point = points[response!.spot!.touchedBarGroupIndex];
+            if (point.amount <= 0) return;
+            if (controller.isShowAllYear.isTrue) {
+              controller.onMonthChange(point.label);
+            } else if (point.date != null) {
+              openDetail(
+                SupaExpense(
+                  date: point.date!.toStringEx(format: yMd),
+                  amount: point.amount,
+                ),
+              );
+            }
+          },
+          mouseCursorResolver: (event, response) {
+            if (response?.spot == null) return MouseCursor.defer;
+            final point = points[response!.spot!.touchedBarGroupIndex];
+            return point.amount > 0
+                ? SystemMouseCursors.click
+                : MouseCursor.defer;
+          },
+        ),
+      ),
     );
   }
 
-  BarTouchTooltipData lineTooltip(List<SupaExpense> chart) {
-    final fixChart = chart.reversed.toList();
+  List<_ChartPoint> _chartPoints() {
+    final values = <int, num>{};
+    for (final expense in dataExpense) {
+      final date = DateTime.tryParse(expense.date ?? '');
+      if (date == null) continue;
+      final index = controller.isShowAllYear.isTrue ? date.month : date.day;
+      values[index] = (values[index] ?? 0) + (expense.amount ?? 0);
+    }
+
+    if (controller.isShowAllYear.isTrue) {
+      return List.generate(12, (index) {
+        final month = DateTime(2000, index + 1).toStringEx(format: 'MMMM');
+        return _ChartPoint(
+          x: index + 1,
+          label: month,
+          shortLabel: month.substring(0, 3),
+          amount: values[index + 1] ?? 0,
+        );
+      });
+    }
+
+    final year = controller.yearSelected.value.toInt() ?? DateTime.now().year;
+    final month = controller.monthSelected.value
+            .reformatDate(from: 'MMMM', to: 'MM')
+            .toInt() ??
+        DateTime.now().month;
+    final days = DateTime(year, month + 1, 0).day;
+    return List.generate(days, (index) {
+      final day = index + 1;
+      return _ChartPoint(
+        x: day,
+        label: '$day',
+        shortLabel: '$day',
+        amount: values[day] ?? 0,
+        date: DateTime(year, month, day),
+      );
+    });
+  }
+
+  BarTouchTooltipData _tooltip(List<_ChartPoint> points) {
     return BarTouchTooltipData(
       fitInsideHorizontally: true,
       fitInsideVertically: true,
       tooltipHorizontalAlignment: FLHorizontalAlignment.center,
       direction: TooltipDirection.top,
+      getTooltipColor: (group) => AppColor.textReverse,
       getTooltipItem: (group, groupIndex, rod, rodIndex) {
-        final amount = fixChart[groupIndex].amount?.moneyFormat();
-        final date = fixChart[groupIndex].date?.reformatDate(
-          from: 'yyyy-MM-dd',
+        final point = points[groupIndex];
+        if (point.amount <= 0) return null;
+        final period = point.date?.toStringEx(format: 'dd MMM yyyy') ??
+            '${point.label} ${controller.yearSelected.value}';
+        return BarTooltipItem(
+          '$period\n${point.amount.moneyFormat()}',
+          TextStyle(
+            color: AppColor.scaffoldPrimary,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
         );
-        final output = '$date\n $amount';
-        final textStyle = TextStyle(color: Vx.black, fontSize: 11);
-        return BarTooltipItem('$output', textStyle);
       },
     );
   }
+}
+
+class _ChartPoint {
+  const _ChartPoint({
+    required this.x,
+    required this.label,
+    required this.shortLabel,
+    required this.amount,
+    this.date,
+  });
+
+  final int x;
+  final String label;
+  final String shortLabel;
+  final num amount;
+  final DateTime? date;
 }
 
 Future<void> openDetail(SupaExpense item) async {
@@ -172,7 +343,7 @@ Future<void> openDetail(SupaExpense item) async {
         reverseDurationMilliseconds: 100,
       ),
       child: VStack([
-        'Detail Expense for ${item.date?.reformatDate(from: yMd)}'.text.bold.make().pSymmetric(v: 12),
+        '# ${item.date?.reformatDate(from: yMd)}'.text.bold.make().pSymmetric(v: 12),
         12.heightBox,
         ListView.separated(
           itemCount: expense.length,

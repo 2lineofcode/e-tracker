@@ -58,19 +58,12 @@ mixin DialogExpense {
     required Rx<Uint8List?> previewBytes,
   }) async {
     try {
-      final result = await FilePicker.pickFiles(
+      final file = await FilePicker.pickFile(
         type: FileType.image,
-        allowMultiple: false,
-        withData: true,
       );
-      if (result == null || result.files.isEmpty) return null;
+      if (file == null) return null;
 
-      final file = result.files.first;
-      final bytes = file.bytes;
-      if (bytes == null) {
-        await HelperToast.warn('Failed to read selected image');
-        return null;
-      }
+      final bytes = await file.readAsBytes();
 
       final ext = file.extension?.toLowerCase() ?? 'jpg';
       final fileName =
