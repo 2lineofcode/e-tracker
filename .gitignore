@@ -50,13 +50,18 @@ app.*.map.json
 *.lock
 *.sql
 supabase/**
+!supabase/
+!supabase/.gitignore
+!supabase/config.toml
+!supabase/migrations/
+!supabase/migrations/*.sql
 devtools_options.yaml
 macos/Flutter/GeneratedPluginRegistrant.swift
 
 linux/flutter/ephemeral/*
 
 #### env ####
-# .env*
+.env
 env.g.dart
 # Local Netlify folder
 .netlify
