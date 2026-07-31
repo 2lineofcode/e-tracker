@@ -64,27 +64,27 @@ class _NotesHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return HStack([
       IconButton(
-        tooltip: 'Back',
+        tooltip: 'Kembali',
         icon: Icon(CupertinoIcons.arrow_left, size: 20),
         onPressed: controller.isSaving.value
             ? null
             : () => controller.confirmDiscardChanges(() => Get.back()),
       ),
       Icon(UIconsPro.solidRounded.notebook, size: 15).pOnly(left: 4, right: 10),
-      'Notes'.text.size(12).bold.make(),
+      'Note'.text.size(12).bold.make(),
       Obx(() {
         if (controller.isSaving.value) {
-          return 'Saving...'.text.size(10).color(AppColor.neutral).make().pOnly(left: 10);
+          return 'Menyimpan...'.text.size(10).color(AppColor.neutral).make().pOnly(left: 10);
         }
         if (controller.hasDirtyChange.value) {
-          return 'Unsaved'.text.size(10).color(AppColor.orangeLight).make().pOnly(left: 10);
+          return 'Belum disimpan'.text.size(10).color(AppColor.orangeLight).make().pOnly(left: 10);
         }
         return SizedBox.shrink();
       }),
       Spacer(),
       Obx(
         () => IconButton(
-          tooltip: controller.isPreviewMode.value ? 'Edit' : 'Preview',
+          tooltip: controller.isPreviewMode.value ? 'Ubah' : 'Lihat hasil',
           icon: Icon(
             controller.isPreviewMode.value ? UIconsPro.solidRounded.pen_nib : UIconsPro.solidRounded.eye,
             size: 16,
@@ -96,7 +96,7 @@ class _NotesHeader extends StatelessWidget {
         final note = controller.selectedNote.value;
         if (note == null) return SizedBox.shrink();
         return IconButton(
-          tooltip: note.isPinned ? 'Unpin' : 'Pin',
+          tooltip: note.isPinned ? 'Lepas pin' : 'Pin',
           icon: Icon(
             note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
             size: 16,
@@ -110,15 +110,15 @@ class _NotesHeader extends StatelessWidget {
       Obx(() {
         if (controller.selectedNote.value == null) return SizedBox.shrink();
         return IconButton(
-          tooltip: 'Delete',
+          tooltip: 'Hapus',
           icon: Icon(UIconsPro.solidRounded.trash, size: 16, color: AppColor.red),
           onPressed: controller.isSaving.value
               ? null
               : () {
                   ExAlert.confirm(
-                    title: 'Delete this note?',
-                    message: 'This cannot be undone.',
-                    btnYesText: 'Delete',
+                    title: 'Hapus note ini?',
+                    message: 'Note yang dihapus nggak bisa dikembalikan.',
+                    btnYesText: 'Hapus',
                     onYes: () async {
                       Get.back();
                       await controller.deleteSelectedNote();
@@ -129,7 +129,7 @@ class _NotesHeader extends StatelessWidget {
       }),
       Obx(
         () => IconButton(
-          tooltip: 'Save',
+          tooltip: 'Simpan',
           icon: controller.isSaving.value
               ? CupertinoActivityIndicator(radius: 8)
               : Icon(UIconsPro.solidRounded.disk, size: 16),
@@ -157,9 +157,9 @@ class _NotesSidePanel extends StatelessWidget {
           decoration: HelperDecoration.input(
             fillColor: Get.isDarkMode ? AppColor.card : null,
             prefixIcon: Icon(UIconsPro.regularRounded.search, size: 13),
-            hint: 'Search notes...',
+            hint: 'Cari note...',
             suffix: Tooltip(
-              message: 'Clear search',
+              message: 'Hapus pencarian',
               child:
                   Icon(
                     UIconsPro.solidRounded.cross_small,
@@ -171,7 +171,7 @@ class _NotesSidePanel extends StatelessWidget {
         ).h(34).expand(),
         8.widthBox,
         Tooltip(
-          message: 'New note',
+          message: 'Note baru',
           child: Container(
             decoration: ExDecorator.box(
               borderRadius: 8,
@@ -189,7 +189,7 @@ class _NotesSidePanel extends StatelessWidget {
           return VStack([
             Icon(Icons.note_alt_outlined, size: 54, color: Vx.neutral400).centered(),
             8.heightBox,
-            'No notes found'.text.size(12).color(Vx.neutral400).makeCentered(),
+            'Note nggak ditemukan'.text.size(12).color(Vx.neutral400).makeCentered(),
           ]).centered().expand();
         }
 
@@ -201,7 +201,7 @@ class _NotesSidePanel extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 12),
           children: [
             if (pinnedNotes.isNotEmpty) ...[
-              'PINNED'.text
+              'DI-PIN'.text
                   .size(9)
                   .bold
                   .color(AppColor.neutral)
@@ -210,7 +210,7 @@ class _NotesSidePanel extends StatelessWidget {
               ...pinnedNotes.map(_buildNoteTile),
             ],
             if (notes.isNotEmpty) ...[
-              'NOTES'.text
+              'NOTE'.text
                   .size(9)
                   .bold
                   .color(AppColor.neutral)
@@ -257,7 +257,7 @@ class _NoteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final title = (note.title ?? '').trim().isEmpty ? 'Untitled note' : note.title ?? '';
+    final title = (note.title ?? '').trim().isEmpty ? 'Note tanpa judul' : note.title ?? '';
 
     return Container(
       decoration: ExDecorator.box(
@@ -269,7 +269,7 @@ class _NoteTile extends StatelessWidget {
         HStack([
           title.text.size(12).bold.maxLines(1).ellipsis.make().expand(),
           IconButton(
-            tooltip: note.isPinned ? 'Unpin' : 'Pin',
+            tooltip: note.isPinned ? 'Lepas pin' : 'Pin',
             icon: Icon(
               note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
               size: 13,
@@ -307,7 +307,7 @@ class _NoteEditorPanel extends StatelessWidget {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             border: InputBorder.none,
-            hintText: 'Untitled note',
+            hintText: 'Note tanpa judul',
             hintStyle: TextStyle(color: AppColor.neutral),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
@@ -339,12 +339,12 @@ class _NoteFooter extends StatelessWidget {
       animation: controller.fleatherController,
       builder: (context, child) => HStack([
         Spacer(),
-        'chars:${controller.characterCount}'.text
+        'karakter:${controller.characterCount}'.text
             .size(10)
             .color(AppColor.neutral)
             .make(),
         12.widthBox,
-        'word:${controller.wordCount}'.text
+        'kata:${controller.wordCount}'.text
             .size(10)
             .color(AppColor.neutral)
             .make(),
@@ -484,7 +484,7 @@ class _FleatherNoteEditor extends StatelessWidget {
                       left: 14,
                       top: 16,
                       child: IgnorePointer(
-                        child: 'Write your note...'.text
+                        child: 'Tulis note kamu...'.text
                             .size(13)
                             .color(AppColor.neutral)
                             .make(),
@@ -522,9 +522,9 @@ class _FleatherNoteEditor extends StatelessWidget {
             : (rows) => controller.updateTable(tableId, rows),
         onDelete: () {
           ExAlert.confirm(
-            title: 'Delete table?',
-            message: 'This cannot be undone.',
-            btnYesText: 'Delete',
+            title: 'Hapus tabel?',
+            message: 'Tabel yang dihapus nggak bisa dikembalikan.',
+            btnYesText: 'Hapus',
             onYes: () {
               Get.back();
               controller.deleteTable(node.documentOffset, tableId);
@@ -547,7 +547,7 @@ class _FleatherNoteEditor extends StatelessWidget {
       child: HStack([
         Icon(Icons.attachment, size: 13, color: AppColor.neutral),
         8.widthBox,
-        '${node.value.type} attachment'.text
+        'Lampiran ${node.value.type}'.text
             .size(11)
             .color(AppColor.neutral)
             .make(),
@@ -580,28 +580,28 @@ class _FleatherEditorToolbar extends StatelessWidget {
           ),
           _ToolbarDivider(),
           _FormatButton(
-            tooltip: 'Bold',
+            tooltip: 'Tebal',
             icon: Icons.format_bold,
             attribute: ParchmentAttribute.bold,
             editor: editor,
             focusNode: controller.editorFocusNode,
           ),
           _FormatButton(
-            tooltip: 'Italic',
+            tooltip: 'Miring',
             icon: Icons.format_italic,
             attribute: ParchmentAttribute.italic,
             editor: editor,
             focusNode: controller.editorFocusNode,
           ),
           _FormatButton(
-            tooltip: 'Underline',
+            tooltip: 'Garis bawah',
             icon: Icons.format_underline,
             attribute: ParchmentAttribute.underline,
             editor: editor,
             focusNode: controller.editorFocusNode,
           ),
           _FormatButton(
-            tooltip: 'Strikethrough',
+            tooltip: 'Coret',
             icon: Icons.format_strikethrough,
             attribute: ParchmentAttribute.strikethrough,
             editor: editor,
@@ -609,35 +609,35 @@ class _FleatherEditorToolbar extends StatelessWidget {
           ),
           _ToolbarDivider(),
           _FormatButton(
-            tooltip: 'Bullet list',
+            tooltip: 'Daftar poin',
             icon: Icons.format_list_bulleted,
             attribute: ParchmentAttribute.block.bulletList,
             editor: editor,
             focusNode: controller.editorFocusNode,
           ),
           _FormatButton(
-            tooltip: 'Numbered list',
+            tooltip: 'Daftar nomor',
             icon: Icons.format_list_numbered,
             attribute: ParchmentAttribute.block.numberList,
             editor: editor,
             focusNode: controller.editorFocusNode,
           ),
           _FormatButton(
-            tooltip: 'Checklist',
+            tooltip: 'Daftar centang',
             icon: Icons.checklist,
             attribute: ParchmentAttribute.block.checkList,
             editor: editor,
             focusNode: controller.editorFocusNode,
           ),
           _FormatButton(
-            tooltip: 'Quote',
+            tooltip: 'Kutipan',
             icon: Icons.format_quote,
             attribute: ParchmentAttribute.block.quote,
             editor: editor,
             focusNode: controller.editorFocusNode,
           ),
           _FormatButton(
-            tooltip: 'Code block',
+            tooltip: 'Blok kode',
             icon: Icons.code,
             attribute: ParchmentAttribute.block.code,
             editor: editor,
@@ -647,7 +647,7 @@ class _FleatherEditorToolbar extends StatelessWidget {
           AnimatedBuilder(
             animation: editor,
             builder: (context, child) => _ToolbarButton(
-              tooltip: 'Add link',
+              tooltip: 'Tambah link',
               icon: Icons.link,
               onPressed: editor.selection.isCollapsed
                   ? null
@@ -661,7 +661,7 @@ class _FleatherEditorToolbar extends StatelessWidget {
           AnimatedBuilder(
             animation: editor,
             builder: (context, child) => _ToolbarButton(
-              tooltip: 'Undo',
+              tooltip: 'Urungkan',
               icon: Icons.undo,
               onPressed: editor.canUndo ? editor.undo : null,
             ),
@@ -669,7 +669,7 @@ class _FleatherEditorToolbar extends StatelessWidget {
           AnimatedBuilder(
             animation: editor,
             builder: (context, child) => _ToolbarButton(
-              tooltip: 'Redo',
+              tooltip: 'Ulangi',
               icon: Icons.redo,
               onPressed: editor.canRedo ? editor.redo : null,
             ),
@@ -687,7 +687,7 @@ class _FleatherEditorToolbar extends StatelessWidget {
     final link = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Add link'),
+        title: Text('Tambah link'),
         content: TextField(
           controller: input,
           autofocus: true,
@@ -697,11 +697,11 @@ class _FleatherEditorToolbar extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: Text('Batal'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, input.text.trim()),
-            child: Text('Add'),
+            child: Text('Tambah'),
           ),
         ],
       ),
@@ -728,14 +728,14 @@ class _HeadingButton extends StatelessWidget {
       width: 28,
       height: 28,
       child: PopupMenuButton<int>(
-        tooltip: 'Text style',
+        tooltip: 'Gaya teks',
         padding: EdgeInsets.zero,
         icon: Icon(Icons.title, size: 15),
         itemBuilder: (context) => [
           PopupMenuItem(value: 0, child: Text('Normal')),
-          PopupMenuItem(value: 1, child: Text('Heading 1')),
-          PopupMenuItem(value: 2, child: Text('Heading 2')),
-          PopupMenuItem(value: 3, child: Text('Heading 3')),
+          PopupMenuItem(value: 1, child: Text('Judul 1')),
+          PopupMenuItem(value: 2, child: Text('Judul 2')),
+          PopupMenuItem(value: 3, child: Text('Judul 3')),
         ],
         onSelected: (value) {
           final attribute = switch (value) {
@@ -851,7 +851,7 @@ class _TableInsertButton extends StatelessWidget {
       width: 28,
       height: 28,
       child: PopupMenuButton<(int, int)>(
-        tooltip: 'Insert table',
+        tooltip: 'Sisipkan tabel',
         padding: EdgeInsets.zero,
         icon: Icon(Icons.table_chart_outlined, size: 14),
         itemBuilder: (context) => [
@@ -928,31 +928,31 @@ class _NoteTableWidgetState extends State<_NoteTableWidget> {
                 .make(),
             Spacer(),
             _TableActionButton(
-              tooltip: 'Remove row',
-              label: 'Row −',
+              tooltip: 'Hapus baris',
+              label: 'Baris −',
               onPressed: _rows.length == 1 ? null : () => _changeRows(-1),
             ),
             _TableActionButton(
-              tooltip: 'Add row',
-              label: 'Row +',
+              tooltip: 'Tambah baris',
+              label: 'Baris +',
               onPressed: _rows.length == 20 ? null : () => _changeRows(1),
             ),
             _TableActionButton(
-              tooltip: 'Remove column',
-              label: 'Column −',
+              tooltip: 'Hapus kolom',
+              label: 'Kolom −',
               onPressed: _rows.first.length == 1
                   ? null
                   : () => _changeColumns(-1),
             ),
             _TableActionButton(
-              tooltip: 'Add column',
-              label: 'Column +',
+              tooltip: 'Tambah kolom',
+              label: 'Kolom +',
               onPressed: _rows.first.length == 20
                   ? null
                   : () => _changeColumns(1),
             ),
             IconButton(
-              tooltip: 'Delete table',
+              tooltip: 'Hapus tabel',
               icon: Icon(Icons.delete_outline, size: 14, color: AppColor.red),
               style: IconButton.styleFrom(
                 minimumSize: Size(28, 28),

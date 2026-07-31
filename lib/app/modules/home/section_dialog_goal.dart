@@ -34,14 +34,14 @@ mixin DialogGoal {
       OverPanel(
         alignment: Alignment.centerRight,
         width: Get.context!.isMobile ? Get.width * 0.92 : 340,
-        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
         animation: OverSlideAnimation(begin: Offset(1, 0), end: Offset(0, 0), durationMilliseconds: 100, reverseDurationMilliseconds: 100),
 
         child: VStack([
           // title
           HStack([
             Icon(UIconsPro.solidRounded.location_crosshairs, size: 16).pOnly(right: 10),
-            'Goals'.text.bold.make().pSymmetric(h: 10, v: 3).color(AppColor.border).cornerRadius(6),
+            'Goal'.text.bold.make().pSymmetric(h: 10, v: 3).color(AppColor.border).cornerRadius(6),
             Spacer(),
             IconButton(
               icon: Icon(UIconsPro.solidRounded.plus, size: 16),
@@ -56,7 +56,7 @@ mixin DialogGoal {
               return VStack([
                 Icon(Icons.indeterminate_check_box, size: 64, color: Vx.neutral400).centered(),
                 12.heightBox,
-                'No goals yet'.text.size(12).color(Vx.neutral400).makeCentered().pSymmetric(v: 12),
+                'Belum ada goal'.text.size(12).color(Vx.neutral400).makeCentered().pSymmetric(v: 12),
               ]).centered();
             }
             return ListView.separated(
@@ -170,12 +170,12 @@ mixin DialogGoal {
         HStack([
           _goalPill(
             isCompleted
-                ? 'Completed'
-                : '${remainingFromTarget.moneyFormatCompact()} left',
+                ? 'Tercapai'
+                : 'Sisa ${remainingFromTarget.moneyFormatCompact()}',
             isCompleted ? AppColor.green : AppColor.neutral,
           ),
           Spacer(),
-          _goalPill(timeLeft, timeLeft == 'Overdue' ? AppColor.red : AppColor.blue),
+          _goalPill(timeLeft, timeLeft == 'Terlambat' ? AppColor.red : AppColor.blue),
         ]).pOnly(bottom: 8),
 
         Container(
@@ -186,13 +186,13 @@ mixin DialogGoal {
           ),
           child: HStack([
             _goalMetric(
-              title: 'Monthly',
+              title: 'Per bulan',
               value: savingRecomend > 0 ? savingRecomend.moneyFormatCompact() : '-',
               color: AppColor.green,
             ).expand(),
             Container(width: 1, height: 28, color: AppColor.border).pSymmetric(h: 10),
             _goalMetric(
-              title: 'Daily',
+              title: 'Per hari',
               value: dailySaving > 0 ? dailySaving.moneyFormatCompact() : '-',
               color: AppColor.blue,
             ).expand(),
@@ -241,16 +241,16 @@ mixin DialogGoal {
   }
 
   static String _formatTimeLeft(int diffDays, int moreMonths, int remainingDays) {
-    if (diffDays < 0) return 'Overdue';
-    if (diffDays == 0) return 'Due today';
+    if (diffDays < 0) return 'Terlambat';
+    if (diffDays == 0) return 'Jatuh tempo hari ini';
 
     var output = '';
-    if (moreMonths > 0) output += '$moreMonths month${moreMonths > 1 ? 's' : ''}';
+    if (moreMonths > 0) output += '$moreMonths bulan';
     if (remainingDays > 0) {
       if (output.isNotEmpty) output += ', ';
-      output += '$remainingDays day${remainingDays > 1 ? 's' : ''}';
+      output += '$remainingDays hari';
     }
-    return '$output left';
+    return '$output lagi';
   }
 
   static Future<void> openAddEdit({SupaGoals? goal}) async {
@@ -269,12 +269,11 @@ mixin DialogGoal {
         width: 270,
         alignment: Alignment.center,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColor.appbarPrimary),
-        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
         animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
         actions: OverlayActions(
           onReady: () async => _fnTitle.requestFocus(),
           onClose: (_) async {
-            await Overlayment.dismissLast();
             await 100.milliseconds.delay();
             await openList();
           },
@@ -285,7 +284,7 @@ mixin DialogGoal {
               HStack(
                 [
                   Icon(UIconsPro.solidRounded.location_crosshairs, size: 16).pOnly(right: 12),
-                  '${goal != null ? 'Edit Goal' : 'New Goal'}'.text.bold.make(),
+                  '${goal != null ? 'Edit goal' : 'Tambah goal'}'.text.bold.make(),
                   Spacer(),
                   IconButton(
                     icon: Icon(UIconsPro.solidRounded.cross, size: 14),
@@ -298,14 +297,14 @@ mixin DialogGoal {
               CupertinoTextField(
                 controller: _tfReleaseDate,
                 readOnly: true,
-                placeholder: 'Due Date',
+                placeholder: 'Tanggal goal',
                 decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
                 placeholderStyle: TextStyle(fontSize: 13, color: AppColor.neutral),
                 prefix: Icon(UIconsPro.solidRounded.calendar_heart, size: 13, color: AppColor.textReverse).pOnly(left: 12, right: 4),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                 onTap: () => HelperOverlay.openDatePicker(
-                  title: 'Due Date',
-                  btnOKText: 'Pick Date',
+                  title: 'Tanggal goal',
+                  btnOKText: 'Pilih tanggal',
                   initialDate: goal?.releaseDate?.toDateEx(format: yMd),
                   minDate: DateTime.now(),
                   maxDate: DateTime.now().add((365 * 30).days),
@@ -318,7 +317,7 @@ mixin DialogGoal {
                 controller: _tfTitle,
                 focusNode: _fnTitle,
                 autofocus: true,
-                placeholder: 'Ex: Nikah',
+                placeholder: 'Contoh: Nikah',
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                 decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
@@ -330,7 +329,7 @@ mixin DialogGoal {
               /// field amount
               CupertinoTextField(
                 controller: _tfAmount,
-                placeholder: 'Saldo Sekarang',
+                placeholder: 'Saldo sekarang',
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                 decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
@@ -347,7 +346,7 @@ mixin DialogGoal {
               /// field target
               CupertinoTextField(
                 controller: _tfTarget,
-                placeholder: 'Saldo Target',
+                placeholder: 'Saldo goal',
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                 decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
@@ -368,7 +367,7 @@ mixin DialogGoal {
             [
               if (goal != null) ...[
                 ExButtonText(
-                  child: Text('Delete', style: TextStyle(fontSize: 13, color: AppColor.red)),
+                  child: Text('Hapus', style: TextStyle(fontSize: 13, color: AppColor.red)),
                   onPressed: () async {
                     await _controller.repo.deleteGoals(goal.id ?? '');
                     await _controller.loadGoalsList();
@@ -378,7 +377,7 @@ mixin DialogGoal {
                 Container(height: 24, width: 0.5, color: Vx.neutral700).pSymmetric(h: 8),
               ],
               ExButtonText(
-                child: Text('Submit', style: TextStyle(fontSize: 13)),
+                child: Text('Simpan', style: TextStyle(fontSize: 13)),
                 onPressed: () async {
                   final newGoal = SupaGoals(
                     id: goal?.id ?? UuidV4().generate(),

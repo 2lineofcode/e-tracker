@@ -31,6 +31,15 @@ import '../home/home_controller.dart';
 import '../widgets/widgets.dart';
 import 'settings_repository.dart';
 
+String repeatScheduleLabel(SupaCronSchedule? schedule) {
+  if (schedule == null) return 'Jadwal khusus';
+  return switch (schedule.repeatMonths) {
+    1 => 'Setiap bulan',
+    12 => 'Setiap tahun',
+    _ => 'Setiap ${schedule.repeatMonths} bulan',
+  };
+}
+
 class SettingsController extends GetxController with StateMixin {
   // repo
   final repo = Get.find<SettingsRepository>();
@@ -114,6 +123,12 @@ class SettingsController extends GetxController with StateMixin {
     final isReplacePhoto = false.obs;
     final imgReplace = Uint8List(0).obs;
     final errorMsg = ''.obs;
+    Widget fieldLabel(String label) => Container(
+      width: 112,
+      alignment: Alignment.centerLeft,
+      padding: EdgeInsets.only(left: 12),
+      child: label.text.size(12).semiBold.make(),
+    );
 
     Overlayment.show(
       context: Get.context!,
@@ -121,7 +136,7 @@ class SettingsController extends GetxController with StateMixin {
         alignment: Alignment.centerRight,
         width: 340,
         child: VStack([
-          'Edit Profile'.text.size(16).bold.make().pOnly(bottom: 24),
+          'Edit profil'.text.size(16).bold.make().pOnly(bottom: 24),
           Obx(() {
             if (isReplacePhoto.isTrue) {
               return Container(
@@ -197,7 +212,7 @@ class SettingsController extends GetxController with StateMixin {
                 });
               } catch (e) {
                 if (e is StorageException) {
-                  errorMsg.value = '${e.message}\nMax 5MB';
+                  errorMsg.value = '${e.message}\nMaks. 5 MB';
                 } else {
                   await HelperErrorLog.record(
                     page: 'settings',
@@ -209,29 +224,21 @@ class SettingsController extends GetxController with StateMixin {
               }
             },
             height: 33,
-            child: 'Change Photo'.text.size(11).minFontSize(11).make(),
+            child: 'Ganti foto'.text.size(11).minFontSize(11).make(),
           ).centered().pOnly(bottom: 16),
           TextField(
             controller: tfFullName,
             decoration: HelperDecoration.input(
-              hint: 'John Doe',
-              prefixIcon: 'Full Name'.text
-                  .size(13)
-                  .bold
-                  .make()
-                  .pOnly(top: 8, left: 8, right: 16),
+              hint: 'Budi Santoso',
+              prefixIcon: fieldLabel('Nama lengkap'),
             ),
             style: TextStyle(fontSize: 13),
-          ).h(33).pOnly(bottom: 12),
+          ).h(36).pOnly(bottom: 10),
           TextField(
             controller: tfBirthYear,
             decoration: HelperDecoration.input(
               hint: '1995',
-              prefixIcon: 'Birth Year'.text
-                  .size(13)
-                  .bold
-                  .make()
-                  .pOnly(top: 8, left: 8, right: 16),
+              prefixIcon: fieldLabel('Tahun lahir'),
             ),
             style: TextStyle(fontSize: 13),
             keyboardType: TextInputType.number,
@@ -239,44 +246,32 @@ class SettingsController extends GetxController with StateMixin {
               FilteringTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(4),
             ],
-          ).h(33).pOnly(bottom: 12),
+          ).h(36).pOnly(bottom: 10),
           TextField(
             controller: tfUsername,
             decoration: HelperDecoration.input(
               hint: 'aditya',
-              prefixIcon: 'Username'.text
-                  .size(13)
-                  .bold
-                  .make()
-                  .pOnly(top: 8, left: 8, right: 16),
+              prefixIcon: fieldLabel('Username'),
             ),
             style: TextStyle(fontSize: 13),
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9_.]')),
               LengthLimitingTextInputFormatter(30),
             ],
-          ).h(33).pOnly(bottom: 12),
+          ).h(36).pOnly(bottom: 10),
           TextField(
             enabled: false,
             controller: tfEmail,
             decoration: HelperDecoration.input(
-              prefixIcon: 'Email'.text
-                  .size(13)
-                  .bold
-                  .make()
-                  .pOnly(top: 8, left: 8, right: 16),
+              prefixIcon: fieldLabel('Email'),
             ),
             style: TextStyle(fontSize: 13),
-          ).h(33).pOnly(bottom: 12),
+          ).h(36).pOnly(bottom: 10),
           TextField(
             controller: tfPaymentDay,
             decoration: HelperDecoration.input(
               hint: '28',
-              prefixIcon: 'Pay Day'.text
-                  .size(13)
-                  .bold
-                  .make()
-                  .pOnly(top: 8, left: 8, right: 16),
+              prefixIcon: fieldLabel('Tanggal gajian'),
             ),
             style: TextStyle(fontSize: 13),
             keyboardType: TextInputType.number,
@@ -284,16 +279,12 @@ class SettingsController extends GetxController with StateMixin {
               FilteringTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(2),
             ],
-          ).h(33).pOnly(bottom: 12),
+          ).h(36).pOnly(bottom: 10),
           TextField(
             controller: tfIncome,
             decoration: HelperDecoration.input(
               hint: 'Rp.1.234.567',
-              prefixIcon: 'Income'.text
-                  .size(13)
-                  .bold
-                  .make()
-                  .pOnly(top: 8, left: 8, right: 16),
+              prefixIcon: fieldLabel('Penghasilan'),
             ),
             style: TextStyle(fontSize: 13),
             inputFormatters: [
@@ -307,16 +298,12 @@ class SettingsController extends GetxController with StateMixin {
               LengthLimitingTextInputFormatter(16),
             ],
             keyboardType: TextInputType.number,
-          ).h(33).pOnly(bottom: 12),
+          ).h(36).pOnly(bottom: 10),
           TextField(
             controller: tfBalance,
             decoration: HelperDecoration.input(
               hint: 'Rp.1.234.567',
-              prefixIcon: 'Balance'.text
-                  .size(13)
-                  .bold
-                  .make()
-                  .pOnly(top: 8, left: 8, right: 16),
+              prefixIcon: fieldLabel('Saldo'),
             ),
             style: TextStyle(fontSize: 13),
             inputFormatters: [
@@ -330,8 +317,8 @@ class SettingsController extends GetxController with StateMixin {
               LengthLimitingTextInputFormatter(16),
             ],
             keyboardType: TextInputType.number,
-          ).h(33).pOnly(bottom: 12),
-          'Updated ${userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y, HH:mm') ?? '-'}'
+          ).h(36).pOnly(bottom: 10),
+          'Diperbarui ${userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y, HH:mm') ?? '-'}'
               .text
               .size(10)
               .color(AppColor.neutral)
@@ -340,25 +327,25 @@ class SettingsController extends GetxController with StateMixin {
           Divider().pSymmetric(v: 16),
           ExButtonElevated(
             width: double.infinity,
-            label: 'Save',
+            label: 'Simpan',
             onPressed: () async {
               final birthYear = int.tryParse(tfBirthYear.text);
               if (birthYear == null ||
                   birthYear < 1900 ||
                   birthYear > DateTime.now().year) {
-                await HelperToast.error('Enter a valid birth year');
+                await HelperToast.error('Tahun lahirnya belum valid');
                 return;
               }
 
               final username = tfUsername.text.trim();
               if (username.isNotEmpty && username.length < 3) {
-                await HelperToast.error('Username must be at least 3 characters');
+                await HelperToast.error('Username minimal 3 karakter');
                 return;
               }
 
               final paymentDay = int.tryParse(tfPaymentDay.text);
               if (paymentDay == null || paymentDay < 1 || paymentDay > 31) {
-                await HelperToast.error('Enter a valid pay day');
+                await HelperToast.error('Tanggal gajian harus 1-31');
                 return;
               }
 
@@ -418,7 +405,7 @@ class SettingsController extends GetxController with StateMixin {
               .then((response) async {
                 file.deleteSync();
                 await onInit();
-                await HelperToast.success('Syncronization Done');
+                await HelperToast.success('Backup selesai');
               })
               .catchError((e) {
                 HelperErrorLog.record(
@@ -453,8 +440,8 @@ class SettingsController extends GetxController with StateMixin {
     final filename =
         '${fileObj.name.replaceAll('${db.auth.currentSession?.user.email}_', '')}';
     ExAlert.confirm(
-      title: 'Confirm Apply Migration',
-      message: 'Are you sure want to apply migration from\n"$filename"?',
+      title: 'Pulihkan backup',
+      message: 'Data pengeluaran saat ini akan diganti dengan\n"$filename". Lanjut?',
       onYes: () async {
         Get.back();
         await db.storage
@@ -475,7 +462,7 @@ class SettingsController extends GetxController with StateMixin {
                   file.deleteSync();
                   await onInit();
                   await HelperToast.success(
-                    'Success Apply Migration "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}"',
+                    'Backup "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}" berhasil dipulihkan',
                   );
                 },
               );
@@ -502,10 +489,10 @@ class SettingsController extends GetxController with StateMixin {
       });
 
     ExAlert.confirm(
-      title: 'Delete Old Data',
+      title: 'Hapus backup lama',
       message:
           '''
-        ${listToDelete.length} data will be deleted
+        ${listToDelete.length} backup akan dihapus
         ${listToDelete.map((word) => '- $word').join('\n').replaceAll('${db.auth.currentSession?.user.email}_etracker_', '')}
       '''
               .trim(),
@@ -524,7 +511,7 @@ class SettingsController extends GetxController with StateMixin {
 
   Future<void> onSaveConfig() async {
     if (tfAverage.text.moneyUnformat()! < tfEco.text.moneyUnformat()!) {
-      ExSnackbar.danger('"average" must > "eco"');
+      ExSnackbar.danger('Batas hari biasa harus lebih besar dari hari hemat');
       return;
     }
 
@@ -532,7 +519,7 @@ class SettingsController extends GetxController with StateMixin {
     if (calendarStartDay == null ||
         calendarStartDay < 1 ||
         calendarStartDay > 31) {
-      ExSnackbar.danger('"calendar start day" must be 1-31');
+      ExSnackbar.danger('Tanggal awal periode harus 1-31');
       return;
     }
 
@@ -552,7 +539,7 @@ class SettingsController extends GetxController with StateMixin {
     await Get.find<AppSettingService>().setupAppPref();
     await Get.forceAppUpdate();
     ExLoading.dismiss();
-    await HelperToast.success('Config Saved');
+    await HelperToast.success('Pengaturan disimpan');
   }
 
   Future<void> onThemeColorChange(int colorValue) async {
@@ -666,7 +653,7 @@ class SettingsController extends GetxController with StateMixin {
         action: 'deleteCron',
         stack: e.toString(),
       );
-      ExAlert.error(message: 'Error: $e');
+      ExAlert.error(message: 'Gagal: $e');
       logE(e);
     }
   }
@@ -681,12 +668,12 @@ class SettingsController extends GetxController with StateMixin {
     final tfAmount = TextEditingController();
     final tfDate = TextEditingController();
     final repeatMonths = 1.obs;
-    final tfRepeat = TextEditingController(text: 'Every month');
+    final tfRepeat = TextEditingController(text: 'Setiap bulan');
     final repeatOptions = {
-      1: 'Every month',
-      3: 'Every 3 months',
-      6: 'Every 6 months',
-      12: 'Every year',
+      1: 'Setiap bulan',
+      3: 'Setiap 3 bulan',
+      6: 'Setiap 6 bulan',
+      12: 'Setiap tahun',
     };
 
     Overlayment.show(
@@ -694,7 +681,7 @@ class SettingsController extends GetxController with StateMixin {
       OverPanel(
         alignment: Alignment.center,
         width: 300,
-        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
         animation: OverScaleAnimation(
           durationMilliseconds: 100,
           reverseDurationMilliseconds: 100,
@@ -702,7 +689,7 @@ class SettingsController extends GetxController with StateMixin {
 
         child: VStack([
           HStack([
-            'Add Cron'.text.bold.make(),
+            'Tambah transaksi rutin'.text.bold.make(),
             Spacer(),
             IconButton(
               icon: Icon(UIconsPro.solidRounded.cross, size: 14),
@@ -714,7 +701,7 @@ class SettingsController extends GetxController with StateMixin {
           CupertinoTextField(
             controller: tfDate,
             autofocus: true,
-            placeholder: 'Date of month (1-31)',
+            placeholder: 'Tanggal (1-31)',
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
             decoration: BoxDecoration(
               color: Get.isDarkMode ? Vx.black : Vx.white,
@@ -730,7 +717,7 @@ class SettingsController extends GetxController with StateMixin {
             maxLength: 2,
           ).h(33).pOnly(bottom: 4),
 
-          'Day of month (1-31)'.text
+          'Tanggal transaksi tiap bulan (1-31)'.text
               .size(9)
               .minFontSize(9)
               .neutral500
@@ -741,7 +728,7 @@ class SettingsController extends GetxController with StateMixin {
           CupertinoTextField(
             controller: tfRepeat,
             readOnly: true,
-            placeholder: 'Repeat interval',
+            placeholder: 'Jadwal pengulangan',
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
             style: TextStyle(fontSize: 12, color: AppColor.textReverse),
             decoration: BoxDecoration(
@@ -763,7 +750,7 @@ class SettingsController extends GetxController with StateMixin {
               options: repeatOptions,
               callback: (value) {
                 repeatMonths.value = value;
-                tfRepeat.text = repeatOptions[value] ?? 'Every month';
+                tfRepeat.text = repeatOptions[value] ?? 'Setiap bulan';
               },
             ),
           ).h(33).pOnly(bottom: 12),
@@ -772,7 +759,7 @@ class SettingsController extends GetxController with StateMixin {
           CupertinoTextField(
             controller: tfNote,
             autofocus: true,
-            placeholder: 'e.g. Netflix Subscription',
+            placeholder: 'Contoh: Langganan Netflix',
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
             decoration: BoxDecoration(
               color: Get.isDarkMode ? Vx.black : Vx.white,
@@ -791,7 +778,7 @@ class SettingsController extends GetxController with StateMixin {
             () => CupertinoTextField(
               controller: tfCategory,
               readOnly: true,
-              placeholder: 'Select Category',
+              placeholder: 'Pilih kategori',
               decoration: BoxDecoration(
                 color: Get.isDarkMode ? Vx.black : Vx.white,
                 borderRadius: BorderRadius.circular(4),
@@ -848,25 +835,25 @@ class SettingsController extends GetxController with StateMixin {
           // Buttons
           HStack([
             ExButtonText(
-              label: 'Save',
+              label: 'Simpan',
               onPressed: () async {
                 // Validation
                 if (tfNote.text.isEmpty) {
-                  ExSnackbar.danger('Note is required');
+                  ExSnackbar.danger('Note wajib diisi');
                   return;
                 }
                 if (tfAmount.text.isEmpty) {
-                  ExSnackbar.danger('Amount is required');
+                  ExSnackbar.danger('Nominal wajib diisi');
                   return;
                 }
                 if (tfDate.text.isEmpty) {
-                  ExSnackbar.danger('Day is required');
+                  ExSnackbar.danger('Tanggal wajib diisi');
                   return;
                 }
 
                 final day = int.tryParse(tfDate.text);
                 if (day == null || day < 1 || day > 31) {
-                  ExSnackbar.danger('Day must be between 1-31');
+                  ExSnackbar.danger('Tanggal harus 1-31');
                   return;
                 }
 
@@ -909,7 +896,7 @@ class SettingsController extends GetxController with StateMixin {
         ),
         child: VStack([
           HStack([
-            'Repeat Interval'.text.bold.make().expand(),
+            'Jadwal pengulangan'.text.bold.make().expand(),
             IconButton(
               icon: Icon(UIconsPro.solidRounded.cross, size: 14),
               onPressed: () => Overlayment.dismissLast(),
@@ -968,14 +955,14 @@ class SettingsController extends GetxController with StateMixin {
     final schedule = SupaCronSchedule.parse(item.schedule);
     final dueDate = schedule?.dueDay.toString() ?? '-';
     final remainingDays = schedule?.remainingDays() ?? 0;
-    final scheduleLabel = schedule?.label ?? 'Custom schedule';
+    final scheduleLabel = repeatScheduleLabel(schedule);
 
     Overlayment.show(
       context: Get.context!,
       OverPanel(
         alignment: Alignment.center,
         width: 300,
-        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
         animation: OverScaleAnimation(
           durationMilliseconds: 100,
           reverseDurationMilliseconds: 100,
@@ -986,7 +973,7 @@ class SettingsController extends GetxController with StateMixin {
         ),
         child: VStack([
           HStack([
-            'Info'.text.bold.size(16).make(),
+            'Detail transaksi rutin'.text.bold.size(16).make(),
             Spacer(),
             IconButton(
               icon: Icon(UIconsPro.solidRounded.cross, size: 16),
@@ -1003,7 +990,7 @@ class SettingsController extends GetxController with StateMixin {
 
           // Category
           VStack([
-            'Category'.text.size(11).neutral500.make(),
+            'Kategori'.text.size(11).neutral500.make(),
             4.heightBox,
             '🏷️ ${resolveExpenseCategory(categoryName).label}'.text
                 .size(13)
@@ -1012,30 +999,30 @@ class SettingsController extends GetxController with StateMixin {
 
           // Amount
           VStack([
-            'Amount'.text.size(11).neutral500.make(),
+            'Nominal'.text.size(11).neutral500.make(),
             4.heightBox,
             '💰 ${amount.moneyFormat()}'.text.size(13).bold.make(),
           ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
 
           // Schedule
           VStack([
-            'Schedule'.text.size(11).neutral500.make(),
+            'Jadwal'.text.size(11).neutral500.make(),
             4.heightBox,
-            '🗓️ $scheduleLabel, date $dueDate at 00:00'.text.size(13).make(),
+            '🗓️ $scheduleLabel, tanggal $dueDate pukul 00.00'.text.size(13).make(),
           ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
 
           // Next Run
           VStack([
-            'Next Run'.text.size(11).neutral500.make(),
+            'Jadwal berikutnya'.text.size(11).neutral500.make(),
             4.heightBox,
             if (remainingDays.isNegative) ...[
-              '⏰ Next month (${remainingDays.abs()} days ago)'.text.green300
+              '⏰ Bulan depan (lewat ${remainingDays.abs()} hari)'.text.green300
                   .size(13)
                   .make(),
             ] else if (remainingDays == 0) ...[
-              '⏰ Today!'.text.orange300.size(13).bold.make(),
+              '⏰ Hari ini!'.text.orange300.size(13).bold.make(),
             ] else ...[
-              '⏰ In $remainingDays days'.text.orange300.size(13).make(),
+              '⏰ $remainingDays hari lagi'.text.orange300.size(13).make(),
             ],
           ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
 
@@ -1044,7 +1031,7 @@ class SettingsController extends GetxController with StateMixin {
           // Buttons
           HStack([
             ExButtonText(
-              child: 'Delete'.text.color(AppColor.red).size(12).make(),
+              child: 'Hapus'.text.color(AppColor.red).size(12).make(),
               onPressed: () async {
                 await deleteCron(item.jobname ?? '');
                 await Overlayment.dismissAll();

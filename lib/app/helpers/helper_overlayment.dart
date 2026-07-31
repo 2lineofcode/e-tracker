@@ -43,9 +43,9 @@ mixin HelperOverlay {
 
   static Future<void> openDatePicker({
     required Function(DateTime) callback,
-    String title = 'Select Date',
-    String btnOKText = 'Select',
-    String btnCancelText = 'Cancel',
+    String title = 'Pilih tanggal',
+    String btnOKText = 'Pilih',
+    String btnCancelText = 'Batal',
     DateTime? initialDate,
     DateTime? minDate,
     DateTime? maxDate,
@@ -74,7 +74,7 @@ mixin HelperOverlay {
         alignment: Alignment.center,
         height: Get.height * 0.7,
         width: Get.context!.isMobile ? Get.width - 48 : 320,
-        // backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(24), color: AppColor.appbarPrimary),
         animation: OverFadeAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
         child: StatefulBuilder(
@@ -155,8 +155,8 @@ mixin HelperOverlay {
   }
 
   static Future<void> openCategoryPicker({
-    String title = 'Select Category',
-    String btnOKText = 'Select',
+    String title = 'Pilih kategori',
+    String btnOKText = 'Pilih',
     required Function(String) callback,
   }) async {
     final searchController = TextEditingController();
@@ -178,7 +178,7 @@ mixin HelperOverlay {
         height: Get.height * 0.6,
         width: 270,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColor.appbarPrimary),
-        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
         animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
         actions: OverlayActions(onReady: () async => searchFocusNode.requestFocus()),
         child: StatefulBuilder(
@@ -265,7 +265,7 @@ mixin HelperOverlay {
                       focusNode: searchFocusNode,
                       autofocus: true,
                       decoration: InputDecoration(
-                        hintText: 'Search category…',
+                        hintText: 'Cari kategori…',
                         prefixIcon: const Icon(Icons.search, size: 18),
                         isDense: true,
                         filled: true,
@@ -284,7 +284,7 @@ mixin HelperOverlay {
                                 Icon(Icons.search_off_rounded, size: 48, color: theme.disabledColor),
                                 const SizedBox(height: 12),
                                 Text(
-                                  'No categories found',
+                                  'Kategori nggak ditemukan',
                                   style: textTheme.bodyMedium?.copyWith(color: theme.disabledColor),
                                 ),
                               ],

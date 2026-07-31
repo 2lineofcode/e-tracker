@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../core/app_api.dart';
 import '../../core/app_color.dart';
@@ -27,7 +26,7 @@ class SectionAppConfig extends GetView<SettingsController> {
         boxCommonConfig(),
       ]).scrollVertical(),
       onLoading: ExUiLoading(
-        message: 'Getting your data...'.text.makeCentered(),
+        message: 'Lagi ambil data...'.text.makeCentered(),
       ),
     );
   }
@@ -45,14 +44,14 @@ class SectionAppConfig extends GetView<SettingsController> {
           HStack(
             [
               VStack([
-                'Account'.text.size(15).bold.make(),
-                'Manage your profile and session'.text
+                'Akun'.text.size(15).bold.make(),
+                'Kelola profil dan sesi akun'.text
                     .size(11)
                     .color(AppColor.neutral)
                     .make(),
               ]).expand(),
               IconButton.outlined(
-                tooltip: 'Edit profile',
+                tooltip: 'Edit profil',
                 onPressed: () => controller.onEditProfile(),
                 icon: Icon(Icons.edit_outlined, size: 16),
               ),
@@ -73,15 +72,16 @@ class SectionAppConfig extends GetView<SettingsController> {
                             url: avatarUrl,
                             size: 64,
                             radius: 90,
+                            boxFit: BoxFit.cover,
                             errorBuilder: (p0, p1, p2) => ExAvatarView(
                               source: '',
                               name: controller.userProfile.value.fullName,
                               size: 64,
                             ),
-                          ).onInkTap(() => launchUrlString(avatarUrl)),
+                          ).onInkTap(() => ExImagePreview.showUrl(avatarUrl)),
                           VStack([
                             if (controller.userProfile.value.fullName.isEmptyOrNull)
-                              'No Name'.text.color(AppColor.neutral).make()
+                              'Belum ada nama'.text.color(AppColor.neutral).make()
                             else
                               '${controller.userProfile.value.fullName}'.text
                                   .size(14)
@@ -91,7 +91,7 @@ class SectionAppConfig extends GetView<SettingsController> {
                                 .size(12)
                                 .color(AppColor.neutral)
                                 .make(),
-                            '${controller.userProfile.value.calculatedAge ?? '-'} years old'
+                            '${controller.userProfile.value.calculatedAge ?? '-'} tahun'
                                 .text
                                 .size(11)
                                 .color(AppColor.orange)
@@ -124,7 +124,7 @@ class SectionAppConfig extends GetView<SettingsController> {
     return OutlinedButton.icon(
       onPressed: () => controller.onLogout(),
       icon: Icon(Icons.logout_rounded, size: 15),
-      label: 'Logout'.text.size(12).make(),
+      label: 'Keluar'.text.size(12).make(),
     ).h(38);
   }
 
@@ -138,16 +138,16 @@ class SectionAppConfig extends GetView<SettingsController> {
       ),
       child: VStack(
         [
-          'Preferences'.text.size(15).bold.make(),
-          'Customize how the app looks and categorizes daily spending'.text
+          'Preferensi'.text.size(15).bold.make(),
+          'Atur tampilan dan batas pengeluaran harian'.text
               .size(11)
               .color(AppColor.neutral)
               .make()
               .pOnly(bottom: 20),
 
           settingRow(
-            title: 'Dark mode',
-            subtitle: 'Use a darker color scheme',
+            title: 'Mode gelap',
+            subtitle: 'Pakai tampilan gelap',
             child: Switch.adaptive(
               value: pref.read<bool>(kIsDarkMode) ?? true,
               onChanged: (s) async => await AppTheme.switchTheme(),
@@ -155,8 +155,8 @@ class SectionAppConfig extends GetView<SettingsController> {
           ),
 
           settingRow(
-            title: 'Theme color',
-            subtitle: 'Choose your accent color',
+            title: 'Warna tema',
+            subtitle: 'Pilih warna aksen',
             child: Obx(
               () => Wrap(
                 alignment: WrapAlignment.end,
@@ -166,6 +166,11 @@ class SectionAppConfig extends GetView<SettingsController> {
                   final color = Color(colorValue);
                   final isSelected =
                       controller.selectedThemeColor.value == colorValue;
+                  final checkColor =
+                      ThemeData.estimateBrightnessForColor(color) ==
+                          Brightness.light
+                      ? Colors.black
+                      : Colors.white;
 
                   return InkWell(
                     borderRadius: BorderRadius.circular(16),
@@ -188,7 +193,7 @@ class SectionAppConfig extends GetView<SettingsController> {
                           ? Icon(
                               Icons.check_rounded,
                               size: 15,
-                              color: Colors.white,
+                              color: checkColor,
                             )
                           : null,
                     ),
@@ -199,16 +204,16 @@ class SectionAppConfig extends GetView<SettingsController> {
           ),
 
           Divider(color: AppColor.divider).pSymmetric(v: 10),
-          'Spending flags'.text.size(13).bold.make(),
-          'Set the daily limits used by your expense summary'.text
+          'Penanda pengeluaran'.text.size(13).bold.make(),
+          'Atur batas pengeluaran harian'.text
               .size(11)
               .color(AppColor.neutral)
               .make()
               .pOnly(bottom: 16),
 
           settingRow(
-            title: 'Eco day',
-            subtitle: 'Spending at or below this amount',
+            title: 'Hari hemat',
+            subtitle: 'Pengeluaran sampai nominal ini',
             indicatorColor: AppColor.green,
             child: configInput(
               controller: controller.tfEco,
@@ -218,8 +223,8 @@ class SectionAppConfig extends GetView<SettingsController> {
             ),
           ),
           settingRow(
-            title: 'Average day',
-            subtitle: 'Upper limit for average spending',
+            title: 'Hari biasa',
+            subtitle: 'Batas atas pengeluaran normal',
             indicatorColor: AppColor.orange,
             child: configInput(
               controller: controller.tfAverage,
@@ -230,8 +235,8 @@ class SectionAppConfig extends GetView<SettingsController> {
             ),
           ),
           settingRow(
-            title: 'Spender day',
-            subtitle: 'Anything above the average limit',
+            title: 'Hari boros',
+            subtitle: 'Pengeluaran di atas batas normal',
             indicatorColor: AppColor.red,
             child: configInput(
               controller: controller.tfSpender,
@@ -242,8 +247,8 @@ class SectionAppConfig extends GetView<SettingsController> {
             ),
           ),
           settingRow(
-            title: 'Calendar start day',
-            subtitle: 'Day used to begin each monthly period',
+            title: 'Tanggal awal periode',
+            subtitle: 'Mulai periode bulanan dari tanggal ini',
             child: configInput(
               controller: controller.tfCalendarStartDay,
               hint: '1',
@@ -276,11 +281,11 @@ class SectionAppConfig extends GetView<SettingsController> {
                     AppColor.defaultThemeColor,
                   );
                 },
-                child: 'Reset to default'.text.size(11).make(),
+                child: 'Atur ulang'.text.size(11).make(),
               ).h(38),
               FilledButton(
                 onPressed: () async => await controller.onSaveConfig(),
-                child: 'Apply changes'.text.size(11).make(),
+                child: 'Simpan'.text.size(11).make(),
               ).h(38),
             ],
           ).objectCenterRight(),

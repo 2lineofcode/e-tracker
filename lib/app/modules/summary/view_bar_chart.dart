@@ -30,11 +30,11 @@ class ViewBarChart extends GetView<SummaryController> {
                 .bold
                 .make()
                 .expand(),
-            _legend(AppColor.green, 'Safe'),
+            _legend(AppColor.green, 'Hemat'),
             8.widthBox,
-            _legend(AppColor.orange, 'Average'),
+            _legend(AppColor.orange, 'Normal'),
             8.widthBox,
-            _legend(AppColor.red, 'High'),
+            _legend(AppColor.red, 'Boros'),
           ]).pOnly(bottom: 16),
           if (controller.expenses.isNotEmpty) ...[
             /// chart
@@ -58,7 +58,7 @@ class ViewBarChart extends GetView<SummaryController> {
                         size: 16,
                         color: AppColor.red,
                       ).pOnly(right: 8),
-                      'High Spending'.text.bold.make(),
+                      'Pengeluaran tinggi'.text.bold.make(),
                       Spacer(),
                       '${controller.highSpender.length}'.text
                           .size(10)
@@ -89,7 +89,7 @@ class ViewBarChart extends GetView<SummaryController> {
           else ...[
             ExUiErrorOrEmpty(
               bgColor: AppColor.emptyStatePrimary,
-              title: 'No data yet',
+              title: 'Belum ada data',
               message: '',
             ).expand(),
           ],
@@ -335,7 +335,7 @@ Future<void> openDetail(SupaExpense item) async {
     OverPanel(
       alignment: Alignment.centerRight,
       width: 300,
-      backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+      backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
       animation: OverSlideAnimation(
         begin: Offset(1, 0),
         end: Offset(0, 0),

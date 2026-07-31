@@ -63,6 +63,7 @@ linux/flutter/ephemeral/*
 #### env ####
 .env
 env.g.dart
+!.env.example
 # Local Netlify folder
 .netlify
 netlify.*

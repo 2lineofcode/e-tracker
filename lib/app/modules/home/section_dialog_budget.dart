@@ -29,7 +29,7 @@ mixin DialogBudget {
       OverPanel(
         alignment: Alignment.centerRight,
         width: Get.context!.isMobile ? Get.width * 0.92 : 340,
-        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
         animation: OverSlideAnimation(
           begin: Offset(1, 0),
           end: Offset(0, 0),
@@ -44,7 +44,7 @@ mixin DialogBudget {
               UIconsPro.solidRounded.piggy_bank_budget,
               size: 16,
             ).pOnly(right: 10),
-            'Budgets'.text.bold.make().pSymmetric(h: 10, v: 3).color(AppColor.border).cornerRadius(6),
+            'Budget'.text.bold.make().pSymmetric(h: 10, v: 3).color(AppColor.border).cornerRadius(6),
             Spacer(),
             IconButton(
               icon: Icon(UIconsPro.solidRounded.plus, size: 16),
@@ -65,7 +65,7 @@ mixin DialogBudget {
                     color: Vx.neutral400,
                   ).centered(),
                   12.heightBox,
-                  'No budget yet'.text.size(12).color(Vx.neutral400).makeCentered().pSymmetric(v: 12),
+                  'Belum ada budget'.text.size(12).color(Vx.neutral400).makeCentered().pSymmetric(v: 12),
                 ]).centered();
               }
               return ListView.separated(
@@ -150,7 +150,7 @@ mixin DialogBudget {
                 '${category.label}'.text.bold.size(12).maxLines(2).ellipsis.make().expand(),
                 _percentBadge(percentLabel, isOverBudget).pOnly(left: 8),
               ]).pOnly(bottom: 4),
-              '${spent.moneyFormatCompact()} / ${budgetAmount.moneyFormatCompact()} Used'
+              '${spent.moneyFormatCompact()} / ${budgetAmount.moneyFormatCompact()} terpakai'
                   .text
                   .size(11)
                   .minFontSize(11)
@@ -170,14 +170,14 @@ mixin DialogBudget {
         HStack([
           _statusPill(
             remaining >= 0
-                ? 'Remaining ${remaining.moneyFormatCompact()}'
-                : 'Over ${remaining.abs().moneyFormatCompact()}',
+                ? 'Sisa ${remaining.moneyFormatCompact()}'
+                : 'Lebih ${remaining.abs().moneyFormatCompact()}',
             remaining >= 0 ? AppColor.green : AppColor.red,
           ),
           Spacer(),
           if (isWarning)
             _statusPill(
-              isOverBudget ? 'Over budget' : 'Watch pace',
+              isOverBudget ? 'Lewat budget' : 'Mulai tinggi',
               AppColor.red,
             ),
         ]),
@@ -220,7 +220,7 @@ mixin DialogBudget {
         fillColor: AppColor.primary,
       ),
       child: HStack([
-        'Total Budgets'.text.bold.size(12).color(AppColor.textOnBackground).make().expand(),
+        'Total budget'.text.bold.size(12).color(AppColor.textOnBackground).make().expand(),
         Obx(() {
           final totalBudgetRaw = controller.totalAllBudget.value;
           final totalBudget = totalBudgetRaw.isFinite ? totalBudgetRaw : 0;
@@ -246,12 +246,11 @@ mixin DialogBudget {
         width: 270,
         alignment: Alignment.center,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColor.appbarPrimary),
-        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
         animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
         actions: OverlayActions(
           onReady: () async => _fnAmount.requestFocus(),
           onClose: (_) async {
-            await Overlayment.dismissLast();
             await 100.milliseconds.delay();
             await openList();
           },
@@ -262,7 +261,7 @@ mixin DialogBudget {
               HStack(
                 [
                   Icon(UIconsPro.solidRounded.piggy_bank_budget, size: 16).pOnly(right: 12),
-                  '${budget != null ? 'Edit Budget' : 'New Budget'}'.text.bold.make(),
+                  '${budget != null ? 'Edit budget' : 'Tambah budget'}'.text.bold.make(),
                   Spacer(),
                   IconButton(
                     icon: Icon(UIconsPro.solidRounded.cross, size: 14),
@@ -276,7 +275,7 @@ mixin DialogBudget {
                 () => CupertinoTextField(
                   controller: _tfCategory,
                   readOnly: true,
-                  placeholder: 'Select Category',
+                  placeholder: 'Pilih kategori',
                   decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
                   placeholderStyle: TextStyle(fontSize: 13, color: AppColor.neutral),
                   prefix: Icon(resolveExpenseCategory(_tfCategoryCode.value).icon, size: 13, color: resolveExpenseCategory(_tfCategoryCode.value).color).pOnly(left: 12, right: 4),
@@ -314,7 +313,7 @@ mixin DialogBudget {
             [
               if (budget != null) ...[
                 ExButtonText(
-                  child: Text('Delete', style: TextStyle(fontSize: 13, color: AppColor.red)),
+                  child: Text('Hapus', style: TextStyle(fontSize: 13, color: AppColor.red)),
                   onPressed: () async {
                     await _controller.repo.deleteBudgets(budget.id ?? '');
                     await _controller.refreshBudgetsList();
@@ -325,7 +324,7 @@ mixin DialogBudget {
               ],
 
               ExButtonText(
-                child: Text('Submit', style: TextStyle(fontSize: 13)),
+                child: Text('Simpan', style: TextStyle(fontSize: 13)),
                 onPressed: () async {
                   final newBudget = SupaBudgets(
                     id: budget?.id ?? UuidV4().generate(),

@@ -74,13 +74,13 @@ class CalcpView extends GetView<CalcpController> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Rename tab'),
+          title: const Text('Ganti nama tab'),
           content: TextField(
             controller: nameController,
             autofocus: true,
             maxLength: 40,
             decoration: const InputDecoration(
-              labelText: 'Tab name',
+              labelText: 'Nama tab',
               counterText: '',
             ),
             onSubmitted: (value) {
@@ -92,7 +92,7 @@ class CalcpView extends GetView<CalcpController> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
+              child: const Text('Batal'),
             ),
             FilledButton(
               onPressed: () {
@@ -100,7 +100,7 @@ class CalcpView extends GetView<CalcpController> {
                 if (trimmed.isEmpty) return;
                 Navigator.of(dialogContext).pop(trimmed);
               },
-              child: const Text('Save'),
+              child: const Text('Simpan'),
             ),
           ],
         );
@@ -153,7 +153,7 @@ class _CalcpTabBar extends StatelessWidget {
               visualDensity: VisualDensity.compact,
               constraints: const BoxConstraints.tightFor(width: 34, height: 34),
               padding: EdgeInsets.zero,
-              tooltip: 'Add tab',
+              tooltip: 'Tambah tab',
               icon: Icon(UIconsPro.solidRounded.plus, size: 15, color: Get.isDarkMode ? Colors.white70 : Colors.black54),
               onPressed: controller.addTab,
             ),
@@ -218,7 +218,7 @@ class _CalcpTabItem extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   constraints: const BoxConstraints.tightFor(width: 24, height: 24),
                   padding: EdgeInsets.zero,
-                  tooltip: 'Close tab',
+                  tooltip: 'Tutup tab',
                   icon: Icon(UIconsPro.solidRounded.cross_small, size: 15, color: textColor.withAlpha(180)),
                   onPressed: onClose,
                 ),

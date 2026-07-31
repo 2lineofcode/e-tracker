@@ -115,11 +115,11 @@ extension ExpenseFlagTextExt on num {
 
     if (this == 0) return 'Note';
     if (this <= eco) {
-      return 'Eco';
+      return 'Hemat';
     } else if (this <= average) {
-      return 'Average';
+      return 'Biasa';
     } else {
-      return 'Spender';
+      return 'Boros';
     }
   }
 }

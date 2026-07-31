@@ -20,7 +20,7 @@ class SummaryView extends GetView<SummaryController> {
   Widget build(BuildContext context) {
     return MyLayout(
       drawerKey: drawerKeySummary,
-      appBarTitle: 'Analytics'.text.size(11).bold.make(),
+      appBarTitle: 'Ringkasan'.text.size(11).bold.make(),
       appBarAction: appBarAction(),
       sideMenuContent: sideMenuContent(),
       bodyContent: bodyContent(),
@@ -34,7 +34,7 @@ class SummaryView extends GetView<SummaryController> {
       () => HStack(
         [
           _navButton(
-            label: 'Overview',
+            label: 'Ringkasan',
             index: 1,
             icon: Image.asset(
               'assets/icons/ic_pig.png',
@@ -46,7 +46,7 @@ class SummaryView extends GetView<SummaryController> {
             ),
           ),
           _navButton(
-            label: 'Daily',
+            label: 'Harian',
             index: 2,
             icon: Icon(
               CupertinoIcons.chart_bar_alt_fill,
@@ -57,7 +57,7 @@ class SummaryView extends GetView<SummaryController> {
             ),
           ),
           _navButton(
-            label: 'Categories',
+            label: 'Kategori',
             index: 3,
             icon: Icon(
               CupertinoIcons.chart_pie_fill,
@@ -68,7 +68,7 @@ class SummaryView extends GetView<SummaryController> {
             ),
           ),
           _navButton(
-            label: 'Notes',
+            label: 'Note',
             index: 4,
             icon: Image.asset(
               'assets/icons/ic_overview.png',
@@ -80,7 +80,7 @@ class SummaryView extends GetView<SummaryController> {
             ),
           ),
           _navButton(
-            label: 'AI Insights',
+            label: 'Insight AI',
             index: 5,
             icon: Icon(
               CupertinoIcons.chat_bubble_fill,
@@ -128,7 +128,7 @@ class SummaryView extends GetView<SummaryController> {
                   fillColor: controller.isShowAllYear.isTrue ? AppColor.primary : Colors.transparent,
                   borderColor: controller.isShowAllYear.isTrue ? AppColor.primary : AppColor.border,
                 ),
-                child: 'All Year'.text.size(11).minFontSize(11).color(controller.isShowAllYear.isTrue ? AppColor.textOnBackground : null).make().pSymmetric(h: 8, v: 4),
+                child: 'Setahun'.text.size(11).minFontSize(11).color(controller.isShowAllYear.isTrue ? AppColor.textOnBackground : null).make().pSymmetric(h: 8, v: 4),
               ).pOnly(left: 4),
             ),
           ),
@@ -268,7 +268,7 @@ class SummaryView extends GetView<SummaryController> {
       Spacer(),
       Obx(
         () => HStack([
-          'Year Total'.text.size(10).neutral500.make().pOnly(right: 8),
+          'Total setahun'.text.size(10).neutral500.make().pOnly(right: 8),
           '${controller.countOnly1Year.value.moneyFormat()}'.text.bold.make(),
         ]).onTap(() {
           controller.onShowAllYear();

@@ -50,7 +50,7 @@ class ViewOverview extends GetView<SummaryController> {
       ),
       child: VStack(
         [
-          'Total Expense ${controller.yearSelected}'.text
+          'Total pengeluaran ${controller.yearSelected}'.text
               .size(12)
               .make()
               .pOnly(bottom: 8),
@@ -73,7 +73,7 @@ class ViewOverview extends GetView<SummaryController> {
       child: Obx(() {
         final sections = _buildYearlySections();
         if (sections.isEmpty) {
-          return 'No data yet'.text.size(12).neutral500.makeCentered().p16();
+          return 'Belum ada data'.text.size(12).neutral500.makeCentered().p16();
         }
         return ListView(children: sections);
       }).p12(),
@@ -100,7 +100,7 @@ class ViewOverview extends GetView<SummaryController> {
           colors: [Vx.pink500, AppColor.primary],
         ),
         child: VStack([
-          'Total Expense ${controller.monthSelected.value.reformatDate(from: 'MMMM', to: 'MMM')} ${controller.yearSelected.value}:'
+          'Total pengeluaran ${controller.monthSelected.value.reformatDate(from: 'MMMM', to: 'MMM')} ${controller.yearSelected.value}:'
               .text
               .make()
               .pOnly(bottom: 8),
@@ -125,7 +125,7 @@ class ViewOverview extends GetView<SummaryController> {
           /// col1
           HStack(
             [
-              'Remaining Budget'.text.size(11).make().pOnly(right: 8),
+              'Sisa budget'.text.size(11).make().pOnly(right: 8),
               Container(
                 color: AppColor.primary,
                 child:
@@ -161,7 +161,7 @@ class ViewOverview extends GetView<SummaryController> {
           /// col3
           HStack(
             [
-              'Used: ${controller.countPercentage.value.toDoubleStringAsFixed()}%'
+              'Terpakai: ${controller.countPercentage.value.toDoubleStringAsFixed()}%'
                   .text
                   .size(11)
                   .minFontSize(11)
@@ -189,7 +189,7 @@ class ViewOverview extends GetView<SummaryController> {
           Divider(),
           HStack([
             _headerMiniMetric(
-              label: isCurrentMonth ? 'Daily Safe' : 'Daily Avg',
+              label: isCurrentMonth ? 'Aman harian' : 'Rata-rata harian',
               value: isCurrentMonth
                   ? dailySafe.moneyFormatCompact()
                   : controller.dailyAverageSpend.moneyFormatCompact(),
@@ -203,27 +203,27 @@ class ViewOverview extends GetView<SummaryController> {
               color: AppColor.border,
             ).pSymmetric(h: 12),
             _headerMiniMetric(
-              label: isCurrentMonth ? 'Projected' : 'Period total',
+              label: isCurrentMonth ? 'Proyeksi' : 'Total periode',
               value: projectedSpend.moneyFormatCompact(),
               color: projectedDelta >= 0 ? AppColor.green : AppColor.red,
             ).expand(),
           ]).pOnly(bottom: 8),
           if (isCurrentMonth) ...[
             HStack([
-              '${controller.dayRemaining.value} Day Remaining'.text
+              '${controller.dayRemaining.value} hari tersisa'.text
                   .color(AppColor.textReverse)
                   .size(12)
                   .makeCentered(),
               ' · '.text.size(12).make(),
               (projectedDelta >= 0
-                      ? 'On pace ${projectedDelta.moneyFormatCompact()}'
-                      : 'Over pace ${projectedDelta.abs().moneyFormatCompact()}')
+                      ? 'Masih aman ${projectedDelta.moneyFormatCompact()}'
+                      : 'Lebih ${projectedDelta.abs().moneyFormatCompact()}')
                   .text
                   .size(12)
                   .color(projectedDelta >= 0 ? AppColor.green : AppColor.red)
                   .make(),
               Spacer(),
-              'AI Insights'.text.underline.size(12).make().onTap(() async {
+              'Insight AI'.text.underline.size(12).make().onTap(() async {
                 controller.menuSelected.value = 5;
                 await 100.milliseconds.delay();
                 controller.chatInputController.text =
@@ -232,13 +232,13 @@ class ViewOverview extends GetView<SummaryController> {
             ]).pOnly(top: 8),
           ] else ...[
             HStack([
-              '${projectedDelta.abs().moneyFormatCompact()} ${projectedDelta >= 0 ? 'under' : 'over'} current budget plan'
+              '${projectedDelta.abs().moneyFormatCompact()} ${projectedDelta >= 0 ? 'di bawah' : 'di atas'} rencana budget'
                   .text
                   .color(projectedDelta >= 0 ? AppColor.green : AppColor.red)
                   .size(12)
                   .makeCentered(),
               Spacer(),
-              'AI Insights'.text.underline.size(12).make().onTap(() {
+              'Insight AI'.text.underline.size(12).make().onTap(() {
                 controller.menuSelected.value = 5;
               }),
             ]).pOnly(top: 8),
@@ -264,7 +264,7 @@ class ViewOverview extends GetView<SummaryController> {
                     () {
                       final sections = _buildMonthlySections();
                       if (sections.isEmpty) {
-                        return 'No data yet'.text
+                        return 'Belum ada data'.text
                             .size(12)
                             .neutral500
                             .makeCentered()
@@ -328,7 +328,7 @@ class ViewOverview extends GetView<SummaryController> {
           ).centered(),
         ).wh(26, 26).pOnly(right: 8),
         VStack([
-          'Top Category'.text
+          'Kategori terbesar'.text
               .size(9)
               .minFontSize(9)
               .color(AppColor.neutral)
@@ -342,17 +342,17 @@ class ViewOverview extends GetView<SummaryController> {
               .make(),
         ]).expand(),
         _signalPill(
-          value: '$risks risk',
+          value: '$risks risiko',
           color: risks > 0 ? AppColor.red : AppColor.green,
         ),
         6.widthBox,
         _signalPill(
-          value: '$unbudgeted no budget',
+          value: '$unbudgeted belum dianggarkan',
           color: unbudgeted > 0 ? AppColor.orange : AppColor.green,
         ),
         8.widthBox,
         IconButton(
-          tooltip: 'Ask AI',
+          tooltip: 'Tanya AI',
           visualDensity: VisualDensity.compact,
           style: IconButton.styleFrom(
             backgroundColor: AppColor.primary,
@@ -626,7 +626,7 @@ class ViewOverview extends GetView<SummaryController> {
           ],
         ).tooltip(
           hasBudget
-              ? 'Usage: $percentLabel | Remaining: ${(budgetAmount - spent).moneyFormat()}'
+              ? 'Terpakai: $percentLabel | Sisa: ${(budgetAmount - spent).moneyFormat()}'
               : '',
         ),
       ],

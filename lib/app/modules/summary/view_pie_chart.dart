@@ -57,7 +57,7 @@ class ViewPieChart extends GetView<SummaryController> {
             ] else ...[
               ExUiErrorOrEmpty(
                 bgColor: AppColor.emptyStatePrimary,
-                title: 'No data yet',
+                title: 'Belum ada data',
                 message: '',
               ).h(530),
             ],

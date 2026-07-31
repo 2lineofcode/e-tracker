@@ -43,7 +43,7 @@ class FilteringController extends GetxController with StateMixin {
     endDate.value = Get.arguments[2];
 
     categoryList.assignAll([
-      const ExpenseCategory(code: 'All', label: 'All', groupLabel: 'All'),
+      const ExpenseCategory(code: 'All', label: 'Semua', groupLabel: 'Semua'),
       ...expenseCategoryList,
     ]);
 

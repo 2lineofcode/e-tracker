@@ -54,19 +54,27 @@ class HomeRepository {
 
     if (currentUserId == null) return [];
 
+    String containsFilter(String value) {
+      final escaped = value.replaceAll(r'\', r'\\').replaceAll('"', r'\"');
+      return '"%$escaped%"';
+    }
+
     final categoryMatch = resolveExpenseCategory(name);
-    final filters = <String>['note.ilike.%$name%', 'detail.ilike.%$name%'];
+    final filters = <String>[
+      'note.ilike.${containsFilter(name)}',
+      'detail.ilike.${containsFilter(name)}',
+    ];
 
     if (categoryMatch != unknownExpenseCategory) {
-      filters.add('category_name.ilike.%${categoryMatch.code}%');
-      filters.add('category_name.ilike.%${categoryMatch.label}%');
+      filters.add('category_name.ilike.${containsFilter(categoryMatch.code)}');
+      filters.add('category_name.ilike.${containsFilter(categoryMatch.label)}');
     } else {
-      filters.add('category_name.ilike.%$name%');
+      filters.add('category_name.ilike.${containsFilter(name)}');
     }
 
     final filterString = filters.join(',');
 
-    if (startDate == null && endDate == null) {
+    if (startDate == null || endDate == null) {
       response =
           await db //
               .from('expense')
@@ -78,15 +86,14 @@ class HomeRepository {
                 return (data).map((e) => SupaExpense.fromJson(e)).toList();
               });
     } else {
-      startDate = startDate?.toDateEx(format: yMd).subtract(1.days).toStringEx(format: yMd);
-      print('findExpense: $name | sd = $startDate | ed = $endDate');
       response =
           await db //
               .from('expense')
               .select()
               .eq('user_id', currentUserId!)
               .or(filterString)
-              .or('date.gte.$startDate% and date.lte.$endDate%')
+              .gte('date', startDate)
+              .lte('date', endDate)
               .order('date')
               .withConverter<List<SupaExpense>>((data) {
                 return (data).map((e) => SupaExpense.fromJson(e)).toList();
@@ -135,14 +142,23 @@ class HomeRepository {
         });
   }
 
-  Future<List<SupaExpense>> findExpenseByMinimumAmount(num amount) async {
+  Future<List<SupaExpense>> findExpenseByMinimumAmount(
+    num amount, {
+    String? startDate,
+    String? endDate,
+  }) async {
     if (currentUserId == null) return [];
 
-    return await db
+    var query = db
         .from('expense')
         .select()
         .eq('user_id', currentUserId!)
-        .gte('amount', amount)
+        .gte('amount', amount);
+
+    if (startDate != null) query = query.gte('date', startDate);
+    if (endDate != null) query = query.lte('date', endDate);
+
+    return await query
         .order('date')
         .withConverter<List<SupaExpense>>((data) {
           return (data).map((e) => SupaExpense.fromJson(e)).toList();
@@ -344,14 +360,14 @@ class HomeRepository {
   Future<void> addBudgets(SupaBudgets entity) async {
     if (currentUserId == null) return;
     if (await checkDuplicateBudgets(entity.categoryCode ?? '')) {
-      await HelperToast.warn('Budget already exist');
+      await HelperToast.warn('Budget kategori ini sudah ada');
       return;
     }
     final response =
         await db //
             .from('budgets')
             .upsert(entity.toJson());
-    await HelperToast.success('Budget saved');
+    await HelperToast.success('Budget disimpan');
     return response;
   }
 

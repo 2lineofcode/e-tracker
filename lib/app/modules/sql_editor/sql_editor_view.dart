@@ -38,9 +38,9 @@ class SqlEditorView extends GetView<SqlEditorController> {
     CodeKeywordPrompt(word: 'profiles'),
 
     // category_name
-    CodeFieldPrompt(word: 'expense:basic:groceries', type: 'Belanja Bulanan (Groceries)'),
-    CodeFieldPrompt(word: 'expense:basic:food', type: 'Makan (Restaurants, Gofood)'),
-    CodeFieldPrompt(word: 'expense:basic:snacks-coffee', type: 'Jajan (Snacks, Coffee)'),
+    CodeFieldPrompt(word: 'expense:basic:groceries', type: 'Belanja Bulanan'),
+    CodeFieldPrompt(word: 'expense:basic:food', type: 'Makan (Restoran, GoFood)'),
+    CodeFieldPrompt(word: 'expense:basic:snacks-coffee', type: 'Jajan (Camilan, Kopi)'),
     CodeFieldPrompt(word: 'expense:basic:smoke', type: 'Rokok / Vape'),
     CodeFieldPrompt(word: 'expense:basic:housing-rent', type: 'Sewa / Cicilan Rumah'),
     CodeFieldPrompt(word: 'expense:basic:housing-needs', type: 'Kebutuhan Rumah Tangga (Listrik, Air, Laundry, dll)'),
@@ -54,11 +54,11 @@ class SqlEditorView extends GetView<SqlEditorController> {
     CodeFieldPrompt(word: 'expense:personal:education', type: 'Pendidikan / Kursus'),
     CodeFieldPrompt(word: 'expense:personal:books', type: 'Buku & Majalah'),
     CodeFieldPrompt(word: 'expense:entertainment:movies-streaming', type: 'Nonton Bioskop / Streaming'),
-    CodeFieldPrompt(word: 'expense:entertainment:travel', type: 'Liburan & Traveling'),
+    CodeFieldPrompt(word: 'expense:entertainment:travel', type: 'Liburan & Jalan-jalan'),
     CodeFieldPrompt(word: 'expense:entertainment:hobbies', type: 'Hobi'),
-    CodeFieldPrompt(word: 'expense:entertainment:social', type: 'Hangout, Sosial, Dating'),
+    CodeFieldPrompt(word: 'expense:entertainment:social', type: 'Nongkrong, Sosial, Kencan'),
     CodeFieldPrompt(word: 'expense:entertainment:games', type: 'Game'),
-    CodeFieldPrompt(word: 'expense:bill:subscription', type: 'Bill / Subscription'),
+    CodeFieldPrompt(word: 'expense:bill:subscription', type: 'Tagihan / Langganan'),
     CodeFieldPrompt(word: 'expense:bill:insurance', type: 'Asuransi'),
     CodeFieldPrompt(word: 'expense:bill:tax', type: 'Pajak'),
     CodeFieldPrompt(word: 'expense:misc:gifts-donations', type: 'Hadiah & Donasi'),
@@ -66,7 +66,7 @@ class SqlEditorView extends GetView<SqlEditorController> {
     CodeFieldPrompt(word: 'expense:misc:electronics', type: 'Elektronik & Gadget'),
     CodeFieldPrompt(word: 'expense:misc:medical', type: 'Kesehatan & Dokter'),
     CodeFieldPrompt(word: 'expense:misc:family', type: 'Keluarga'),
-    CodeFieldPrompt(word: 'expense:unknown', type: 'Unknown'),
+    CodeFieldPrompt(word: 'expense:unknown', type: 'Belum diketahui'),
 
     // basic
     CodeKeywordPrompt(word: 'select'),
@@ -168,14 +168,14 @@ class SqlEditorView extends GetView<SqlEditorController> {
       builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: _surface,
-          title: const Text('Rename tab', style: TextStyle(color: Colors.white)),
+          title: const Text('Ganti nama tab', style: TextStyle(color: Colors.white)),
           content: TextField(
             controller: nameController,
             autofocus: true,
             maxLength: 40,
             style: const TextStyle(color: Colors.white),
             decoration: const InputDecoration(
-              labelText: 'Tab name',
+              labelText: 'Nama tab',
               labelStyle: TextStyle(color: Colors.white70),
               counterText: '',
               enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.white24)),
@@ -190,7 +190,7 @@ class SqlEditorView extends GetView<SqlEditorController> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
+              child: const Text('Batal'),
             ),
             FilledButton(
               onPressed: () {
@@ -198,7 +198,7 @@ class SqlEditorView extends GetView<SqlEditorController> {
                 if (trimmed.isEmpty) return;
                 Navigator.of(dialogContext).pop(trimmed);
               },
-              child: const Text('Save'),
+              child: const Text('Simpan'),
             ),
           ],
         );
@@ -243,9 +243,9 @@ class SqlEditorView extends GetView<SqlEditorController> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          _tag('Get uuid', labelStyle: TextStyle(fontSize: 8, color: Vx.neutral500)).onInkTap(() {
+          _tag('Ambil UUID', labelStyle: TextStyle(fontSize: 8, color: Vx.neutral500)).onInkTap(() {
             Clipboard.setData(ClipboardData(text: '${currentUserId ?? ''}'));
-            HelperToast.info('copied "${currentUserId ?? ''}"', duration: 500.milliseconds);
+            HelperToast.info('"${currentUserId ?? ''}" disalin', duration: 500.milliseconds);
           }),
           const Spacer(),
           _runButton(),
@@ -360,7 +360,7 @@ class SqlEditorView extends GetView<SqlEditorController> {
                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
               )
             : const Icon(Icons.play_arrow_rounded, size: 14),
-        label: const Text('Run', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)).tooltip('⌘+⏎'),
+        label: const Text('Jalankan', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)).tooltip('⌘+⏎'),
       ),
     );
   }
@@ -390,15 +390,15 @@ class SqlEditorView extends GetView<SqlEditorController> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
-          _resultsTab('Results', isActive: true),
+          _resultsTab('Hasil', isActive: true),
           const Spacer(),
           Obx(
             () {
               final time = controller.lastRunAt.value;
               final duration = controller.lastDuration;
-              var label = 'Query not run yet';
+              var label = 'Query belum dijalankan';
               if (time != null) {
-                label = 'Last run ${DateFormat.Hms().format(time)}';
+                label = 'Terakhir dijalankan ${DateFormat.Hms().format(time)}';
                 if (duration != null) {
                   label += ' · ${duration.inMilliseconds} ms';
                 }
@@ -437,14 +437,14 @@ class SqlEditorView extends GetView<SqlEditorController> {
           content = _buildErrorBanner(error);
         } else if (current == null) {
           content = _buildResultsPlaceholder(
-            'Run a query to see results here.',
+            'Jalankan query untuk melihat hasilnya.',
           );
         } else if (current.hasRows) {
           content = _buildDataTable(current);
         } else {
           final affected = controller.affectedRows;
           content = _buildResultsPlaceholder(
-            affected == 0 ? 'Query executed successfully. No rows returned.' : 'Query executed successfully. $affected rows affected.',
+            affected == 0 ? 'Query berhasil dijalankan. Nggak ada baris hasil.' : 'Query berhasil dijalankan. $affected baris terpengaruh.',
           );
         }
 
@@ -666,7 +666,7 @@ class SqlEditorView extends GetView<SqlEditorController> {
 
   void _copyToClipboard(String value) {
     Clipboard.setData(ClipboardData(text: value));
-    HelperToast.info('copied "$value"', duration: 500.milliseconds);
+    HelperToast.info('"$value" disalin', duration: 500.milliseconds);
   }
 
   Widget _buildResultsFooter() {
@@ -678,10 +678,10 @@ class SqlEditorView extends GetView<SqlEditorController> {
         final affected = controller.affectedRows;
 
         final chips = <String>[
-          '$rows rows',
-          if (columns > 0) '$columns columns',
+          '$rows baris',
+          if (columns > 0) '$columns kolom',
           if (duration != null) '${duration.inMilliseconds} ms',
-          if (affected > 0) '$affected affected',
+          if (affected > 0) '$affected terpengaruh',
         ];
 
         return Padding(
@@ -692,7 +692,7 @@ class SqlEditorView extends GetView<SqlEditorController> {
               const SizedBox(width: 12),
               if (chips.isEmpty)
                 Text(
-                  'Awaiting query...',
+                  'Menunggu query...',
                   style: TextStyle(color: _mutedText, fontSize: 12),
                 ),
               if (chips.isNotEmpty)
@@ -775,7 +775,7 @@ class _SqlTabBar extends StatelessWidget {
               visualDensity: VisualDensity.compact,
               constraints: const BoxConstraints.tightFor(width: 34, height: 34),
               padding: EdgeInsets.zero,
-              tooltip: 'Add tab',
+              tooltip: 'Tambah tab',
               icon: Icon(UIconsPro.solidRounded.plus, size: 16, color: mutedText),
               onPressed: controller.addTab,
             ),
@@ -849,7 +849,7 @@ class _SqlTabItem extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   constraints: const BoxConstraints.tightFor(width: 24, height: 24),
                   padding: EdgeInsets.zero,
-                  tooltip: 'Close tab',
+                  tooltip: 'Tutup tab',
                   icon: Icon(UIconsPro.solidRounded.cross_small, size: 15, color: textColor.withAlpha(180)),
                   onPressed: onClose,
                 ),

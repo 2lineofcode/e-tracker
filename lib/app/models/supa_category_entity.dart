@@ -40,21 +40,21 @@ List<ExpenseCategoryGroup> expenseCategoryGroups = [
     items: [
       ExpenseCategory(
         code: 'expense:basic:groceries',
-        label: 'Belanja Bulanan (Groceries)',
+        label: 'Belanja Bulanan',
         groupLabel: 'Kebutuhan Pokok',
         icon: UIconsPro.solidRounded.shopping_basket,
         color: Color(0xFFE9A26A),
       ),
       ExpenseCategory(
         code: 'expense:basic:food',
-        label: 'Makan (Restaurants, Gofood)',
+        label: 'Makan (Restoran, GoFood)',
         groupLabel: 'Kebutuhan Pokok',
         icon: UIconsPro.solidRounded.restaurant,
         color: Color(0xFFD08C60),
       ),
       ExpenseCategory(
         code: 'expense:basic:snacks-coffee',
-        label: 'Jajan (Snacks, Coffee)',
+        label: 'Jajan (Camilan, Kopi)',
         groupLabel: 'Kebutuhan Pokok',
         icon: UIconsPro.solidRounded.coffee,
         color: Color(0xFFF28482),
@@ -118,40 +118,40 @@ List<ExpenseCategoryGroup> expenseCategoryGroups = [
   ),
   
   ExpenseCategoryGroup(
-    label: 'Personal & Shopping',
+    label: 'Pribadi & Belanja',
     items: [
       ExpenseCategory(
         code: 'expense:personal:apparel',
         label: 'Pakaian & Aksesoris',
-        groupLabel: 'Personal & Shopping',
+        groupLabel: 'Pribadi & Belanja',
         icon: UIconsPro.solidRounded.shirt,
         color: Color(0xFFE26D5C),
       ),
       ExpenseCategory(
         code: 'expense:personal:care',
         label: 'Perawatan Diri (Skincare, Potong Rambut, dll)',
-        groupLabel: 'Personal & Shopping',
+        groupLabel: 'Pribadi & Belanja',
         icon: UIconsPro.solidRounded.spa,
         color: Color(0xFFE5989B),
       ),
       ExpenseCategory(
         code: 'expense:personal:health-supplements',
         label: 'Obat & Suplemen',
-        groupLabel: 'Personal & Shopping',
+        groupLabel: 'Pribadi & Belanja',
         icon: UIconsPro.solidRounded.pills,
         color: Color(0xFF81B29A),
       ),
       ExpenseCategory(
         code: 'expense:personal:education',
         label: 'Pendidikan / Kursus',
-        groupLabel: 'Personal & Shopping',
+        groupLabel: 'Pribadi & Belanja',
         icon: UIconsPro.solidRounded.graduation_cap,
         color: Color(0xFF9A8C98),
       ),
       ExpenseCategory(
         code: 'expense:personal:books',
         label: 'Buku & Majalah',
-        groupLabel: 'Personal & Shopping',
+        groupLabel: 'Pribadi & Belanja',
         icon: UIconsPro.solidRounded.books,
         color: Color(0xFF77628C),
       ),
@@ -170,7 +170,7 @@ List<ExpenseCategoryGroup> expenseCategoryGroups = [
       ),
       ExpenseCategory(
         code: 'expense:entertainment:travel',
-        label: 'Liburan & Traveling',
+        label: 'Liburan & Jalan-jalan',
         groupLabel: 'Hiburan',
         icon: UIconsPro.solidRounded.airplane_journey,
         color: Color(0xFF0096C7),
@@ -184,7 +184,7 @@ List<ExpenseCategoryGroup> expenseCategoryGroups = [
       ),
       ExpenseCategory(
         code: 'expense:entertainment:social',
-        label: 'Hangout, Sosial, Dating',
+        label: 'Nongkrong, Sosial, Kencan',
         groupLabel: 'Hiburan',
         icon: UIconsPro.solidRounded.users,
         color: Color(0xFF64DFDF),
@@ -204,7 +204,7 @@ List<ExpenseCategoryGroup> expenseCategoryGroups = [
     items: [
       ExpenseCategory(
         code: 'expense:bill:subscription',
-        label: 'Bill / Subscription',
+        label: 'Tagihan / Langganan',
         groupLabel: 'Tagihan',
         icon: UIconsPro.solidRounded.expense_bill,
         color: Color(0xFFEF476F),
@@ -266,7 +266,7 @@ List<ExpenseCategoryGroup> expenseCategoryGroups = [
       ),
       ExpenseCategory(
         code: 'notes',
-        label: 'Notes',
+        label: 'Note',
         groupLabel: 'Lain-lain',
         icon: UIconsPro.solidRounded.note,
         color: Color(0xFFE9EDC9),
@@ -275,12 +275,12 @@ List<ExpenseCategoryGroup> expenseCategoryGroups = [
   ),
   
   ExpenseCategoryGroup(
-    label: 'Unknown',
+    label: 'Belum diketahui',
     items: [
       ExpenseCategory(
         code: 'expense:unknown',
-        label: 'Unknown',
-        groupLabel: 'Unknown',
+        label: 'Belum diketahui',
+        groupLabel: 'Belum diketahui',
         icon: UIconsPro.solidRounded.question,
         color: Color(0xFFEAEDC9),
       ),
@@ -299,13 +299,22 @@ final Map<String, ExpenseCategory> expenseCategoryByCode = {
 /// Lookup map by normalized label for backwards compatibility.
 final Map<String, ExpenseCategory> expenseCategoryByLabel = {
   for (final item in expenseCategoryList) item.label.toLowerCase(): item,
+  'belanja bulanan (groceries)': expenseCategoryByCode['expense:basic:groceries']!,
+  'makan (restaurants, gofood)': expenseCategoryByCode['expense:basic:food']!,
+  'jajan (snacks, coffee)': expenseCategoryByCode['expense:basic:snacks-coffee']!,
+  'liburan & traveling': expenseCategoryByCode['expense:entertainment:travel']!,
+  'hangout, sosial, dating': expenseCategoryByCode['expense:entertainment:social']!,
+  'bill / subscription': expenseCategoryByCode['expense:bill:subscription']!,
+  'notes': expenseCategoryByCode['notes']!,
+  'catatan': expenseCategoryByCode['notes']!,
+  'unknown': expenseCategoryByCode['expense:unknown']!,
 };
 
 /// Provides a safe fallback for unknown category codes.
 final ExpenseCategory _unknownExpenseCategory = ExpenseCategory(
   code: 'expense:unknown',
-  label: 'Unknown',
-  groupLabel: 'Unknown',
+  label: 'Belum diketahui',
+  groupLabel: 'Belum diketahui',
   icon: UIconsPro.solidRounded.question_square,
   color: Color(0xFF9AA5B1),
   isSystem: true,

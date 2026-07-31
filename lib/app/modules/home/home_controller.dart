@@ -413,20 +413,32 @@ class HomeController extends GetxController with StateMixin {
 
         if (startDate != null &&
             endDate != null &&
-            !query.startsWith('#') &&
-            !query.startsWith(r'$')) {
+            !query.startsWith('#')) {
           isAdvanceSearch.value = true;
           advanceSearchText.value =
-              'Showing data from "$startDate - $endDate"';
-          final textQuery =
-              query.startsWith('@') || query.startsWith('?')
-                  ? query.substring(1).trim()
-                  : query;
-          expenseList.value = await repo.findExpense(
-            textQuery,
-            startDate: startDate,
-            endDate: endDate,
-          );
+              'Data dari $startDate sampai $endDate';
+          if (query.startsWith(r'$')) {
+            final amount = num.tryParse(
+              query.substring(1).replaceAll(RegExp(r'[^0-9]'), ''),
+            );
+            expenseList.value = amount == null
+                ? []
+                : await repo.findExpenseByMinimumAmount(
+                    amount,
+                    startDate: startDate,
+                    endDate: endDate,
+                  );
+          } else {
+            final textQuery =
+                query.startsWith('@') || query.startsWith('?')
+                    ? query.substring(1).trim()
+                    : query;
+            expenseList.value = await repo.findExpense(
+              textQuery,
+              startDate: startDate,
+              endDate: endDate,
+            );
+          }
         } else if (query.startsWith('@')) {
           expenseList.value = await repo.findExpenseByCategory(
             query.substring(1).trim(),
@@ -470,6 +482,7 @@ class HomeController extends GetxController with StateMixin {
         isSearchMode.value = true;
       }
     } catch (e) {
+      expenseList.clear();
       await HelperErrorLog.record(
         page: 'home',
         action: 'getExpense',

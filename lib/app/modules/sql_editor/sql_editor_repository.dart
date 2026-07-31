@@ -34,11 +34,11 @@ class SqlEditorRepository {
   Future<SqlExecutionResult> run(String sql) async {
     final normalized = sql.trim();
     if (normalized.isEmpty) {
-      throw ArgumentError('SQL query cannot be empty');
+      throw ArgumentError('Query SQL nggak boleh kosong');
     }
     if (_connectionString.isEmpty) {
       throw StateError(
-        'Connection string is missing. Provide SQL_EDITOR_DB_URL at build time.',
+        'Connection string belum diatur. Isi SQL_EDITOR_DB_URL saat build.',
       );
     }
 
@@ -77,14 +77,14 @@ class SqlEditorRepository {
     final uri = Uri.parse(_connectionString);
     if (uri.scheme != 'postgres' && uri.scheme != 'postgresql') {
       throw ArgumentError(
-        'Unsupported connection string scheme "${uri.scheme}". '
-        'Use postgres:// or postgresql://.',
+        'Skema connection string "${uri.scheme}" nggak didukung. '
+        'Pakai postgres:// atau postgresql://.',
       );
     }
 
     final userInfo = uri.userInfo;
     if (userInfo.isEmpty) {
-      throw ArgumentError('Connection string must include credentials.');
+      throw ArgumentError('Connection string harus menyertakan credentials.');
     }
     final separator = userInfo.indexOf(':');
     final username = separator == -1 ? userInfo : userInfo.substring(0, separator);

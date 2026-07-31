@@ -29,7 +29,7 @@ class FilteringView extends GetView<FilteringController> {
   Widget build(BuildContext context) {
     return MyLayout(
       drawerKey: drawerKeyFiltering,
-      appBarTitle: 'Advance Filter'.text.size(11).bold.make(),
+      appBarTitle: 'Filter lanjutan'.text.size(11).bold.make(),
       sideMenuContent: sideMenuContent(),
       bodyContent: bodyContent(),
       footerContent: footerContent(),
@@ -41,7 +41,7 @@ class FilteringView extends GetView<FilteringController> {
       [
         if (Get.context!.isMobile) 24.heightBox,
         Obx(
-          () => ' 📦 CATEGORY (${controller.categoryList.length})'.text.bold.make().pSymmetric(h: 8, v: 8),
+          () => ' 📦 KATEGORI (${controller.categoryList.length})'.text.bold.make().pSymmetric(h: 8, v: 8),
         ),
         12.heightBox,
         Obx(
@@ -141,13 +141,13 @@ class FilteringView extends GetView<FilteringController> {
           ),
           child: VStack(
             [
-              'Filter Settings'.text.bold.make().pOnly(bottom: 12),
+              'Pengaturan filter'.text.bold.make().pOnly(bottom: 12),
               Obx(
                 () => HStack([
                   'Filter: '.text.size(12).make(),
                   (() {
                     final code = controller.categorySelected.value;
-                    if (code == 'All' || code == '*') return 'All'.text.size(12).make();
+                    if (code == 'All' || code == '*') return 'Semua'.text.size(12).make();
                     return resolveExpenseCategory(
                       code,
                     ).label.text.size(12).make();
@@ -156,7 +156,7 @@ class FilteringView extends GetView<FilteringController> {
               ),
               8.heightBox,
               HStack([
-                'Period: '.text.size(12).make(),
+                'Periode: '.text.size(12).make(),
 
                 // start date
                 MyMonthYearPicker(
@@ -169,7 +169,7 @@ class FilteringView extends GetView<FilteringController> {
                   },
                 ),
 
-                ' to '.text.size(12).make(),
+                ' sampai '.text.size(12).make(),
 
                 // end date
                 MyMonthYearPicker(
@@ -226,12 +226,12 @@ class FilteringView extends GetView<FilteringController> {
               width: 150,
               reverse: true,
             ),
-            title: 'No Data',
+            title: 'Belum ada data',
           ).expand(),
           onError: (e) => ExUiErrorOrEmpty(
             illustration: Icon(CupertinoIcons.wifi_slash),
-            title: 'Offline?',
-            message: 'No Internet',
+            title: 'Lagi offline?',
+            message: 'Nggak ada koneksi internet',
           ).expand(),
         ),
       ],
@@ -298,7 +298,7 @@ class FilteringView extends GetView<FilteringController> {
         return Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Color(0xFF19151F),
+            color: AppColor.card,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(4),
               topRight: Radius.circular(4),

@@ -1,23 +1,17 @@
 {
   "hosting": {
+    "site": "ditdhew",
     "public": "build/web",
     "ignore": [
-      "**/node_modules/**",
-      ".dart_tool/**",
-      ".env*",
-      ".firebase/**",
-      ".flutter-plugins-dependencies",
-      ".flutter-plugins",
-      ".vscode/**",
-      "android",
       "firebase.json",
-      "ios",
-      "linux",
-      "macos",
-      "windows"
+      "**/.*",
+      "**/node_modules/**"
     ],
-    "frameworksBackend": {
-      "region": "us-central1"
-    }
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
   }
 }

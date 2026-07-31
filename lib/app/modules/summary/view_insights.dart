@@ -141,7 +141,7 @@ class ViewInsights extends GetView<SummaryController> {
             ),
           ).pOnly(right: 10),
           VStack([
-            'Ditdhew'.text.bold.size(14).make(),
+            'ditdhewAI'.text.bold.size(14).make(),
             _selectedPeriod().text
                 .size(10)
                 .minFontSize(10)
@@ -149,7 +149,7 @@ class ViewInsights extends GetView<SummaryController> {
                 .make(),
           ]).expand(),
           IconButton(
-            tooltip: 'View JSON',
+            tooltip: 'Lihat JSON',
             onPressed: _showChatJson,
             icon: Icon(Icons.data_object_rounded, size: 18),
           ),
@@ -157,8 +157,8 @@ class ViewInsights extends GetView<SummaryController> {
             4.widthBox,
             IconButton(
               tooltip: controller.isAIAnalysisRunning.isTrue
-                  ? 'Wait until Ditdhew finishes'
-                  : 'Clear conversation',
+                  ? 'Tunggu ditdhewAI selesai'
+                  : 'Hapus percakapan',
               onPressed: controller.isAIAnalysisRunning.isTrue
                   ? null
                   : controller.clearChat,
@@ -221,8 +221,8 @@ class ViewInsights extends GetView<SummaryController> {
                   controller: controller.chatInputController,
                   focusNode: controller.chatInputFocusNode,
                   placeholder: isRunning
-                      ? 'Ditdhew is working...'
-                      : 'Ask Ditdhew...',
+                      ? 'ditdhewAI lagi bekerja...'
+                      : 'Tanya ditdhewAI...',
                   placeholderStyle: TextStyle(
                     color: AppColor.neutral,
                     fontSize: 12,
@@ -241,7 +241,7 @@ class ViewInsights extends GetView<SummaryController> {
                 ),
               ).expand(),
               IconButton(
-                tooltip: 'Attach file',
+                tooltip: 'Lampirkan file',
                 onPressed: isRunning || isLoadingFile
                     ? null
                     : controller.pickChatAttachment,
@@ -255,7 +255,7 @@ class ViewInsights extends GetView<SummaryController> {
                 color: AppColor.neutral,
               ),
               Tooltip(
-                message: isRunning ? 'Waiting for Ditdhew' : 'Send message',
+                message: isRunning ? 'Menunggu ditdhewAI' : 'Kirim pesan',
                 child: IconButton(
                   onPressed: canSend ? controller.sendMessage : null,
                   icon: isRunning
@@ -397,7 +397,7 @@ class ViewInsights extends GetView<SummaryController> {
   void _showChatJson() {
     Get.dialog(
       AlertDialog(
-        title: Text('Session JSON', style: TextStyle(fontSize: 16)),
+        title: Text('JSON sesi', style: TextStyle(fontSize: 16)),
         content: SizedBox(
           width: 720,
           height: 480,
@@ -408,7 +408,7 @@ class ViewInsights extends GetView<SummaryController> {
         actions: [
           TextButton(
             onPressed: Get.back,
-            child: Text('Close'),
+            child: Text('Tutup'),
           ),
         ],
       ),
@@ -456,7 +456,7 @@ class ViewInsights extends GetView<SummaryController> {
                 .make(),
           ]),
           (controller.selectedPeriodTotal <= 0
-                  ? 'Try another period.'
+                  ? 'Coba periode lain.'
                   : controller.periodDecisionBody.split('.').first)
               .text
               .size(10)
@@ -489,7 +489,7 @@ class ViewInsights extends GetView<SummaryController> {
         ? ''
         : ' (${trendPercentage > 0 ? '+' : ''}${trendPercentage.toStringAsFixed(0)}%)';
     final remainingBudget =
-        '${controller.countRemainingBudget.value >= 0 ? 'Remaining' : 'Over'} ${controller.countRemainingBudget.value.abs().moneyFormatCompact()}';
+        '${controller.countRemainingBudget.value >= 0 ? 'Sisa' : 'Lebih'} ${controller.countRemainingBudget.value.abs().moneyFormatCompact()}';
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(14, 12, 14, 14),
       child: VStack([
@@ -504,21 +504,21 @@ class ViewInsights extends GetView<SummaryController> {
               children: [
                 _summaryMetric(
                   width: width,
-                  label: 'Spent',
+                  label: 'Pengeluaran',
                   value: total.moneyFormatCompact(),
                   icon: Icons.payments_outlined,
                 ),
                 _summaryMetric(
                   width: width,
-                  label: 'Active days',
+                  label: 'Hari aktif',
                   value: '$daysWithExpense',
                   icon: Icons.calendar_today_outlined,
                 ),
                 _summaryMetric(
                   width: width,
                   label: showSafeDaily
-                      ? 'Safe / day'
-                      : 'Avg / day',
+                      ? 'Aman / hari'
+                      : 'Rata-rata / hari',
                   value: (showSafeDaily
                           ? controller.dailySafeAllowance
                           : controller.dailyAverageSpend)
@@ -537,10 +537,10 @@ class ViewInsights extends GetView<SummaryController> {
                 : AppColor.primary,
             title: controller.isCurrentSelectedMonth
                 ? 'Budget'
-                : 'Budget used',
+                : 'Budget terpakai',
             value: controller.countBudget.value > 0
                 ? '${controller.budgetPacePercentage.toStringAsFixed(0)}% · $remainingBudget'
-                : 'No budget',
+                : 'Belum ada budget',
             onTapPrompt: controller.countBudget.value > 0
                 ? 'kasih rencana spending dari sisa budget. jawab singkat dan actionable.'
                 : null,
@@ -548,9 +548,9 @@ class ViewInsights extends GetView<SummaryController> {
         _insightCard(
           icon: topCategory?.resolvedCategory.icon ?? Icons.category_rounded,
           iconColor: topCategory?.resolvedCategory.color ?? AppColor.blue,
-          title: 'Top category',
+          title: 'Kategori terbesar',
           value: topCategory == null
-              ? 'No category'
+              ? 'Belum ada kategori'
               : '${topCategory.resolvedCategory.label} · ${topCategory.total.moneyFormatCompact()}',
           onTapPrompt: topCategory == null
               ? null
@@ -559,9 +559,9 @@ class ViewInsights extends GetView<SummaryController> {
         _insightCard(
           icon: Icons.repeat_rounded,
           iconColor: AppColor.orangeLight,
-          title: 'Repeated',
+          title: 'Berulang',
           value: topNote == null
-              ? 'None'
+              ? 'Belum ada'
               : '${topNote.note ?? '-'} · ${topNote.times}x · ${(topNote.total ?? 0).moneyFormatCompact()}',
           onTapPrompt: topNote == null
               ? null
@@ -570,10 +570,10 @@ class ViewInsights extends GetView<SummaryController> {
         _insightCard(
           icon: Icons.local_fire_department_rounded,
           iconColor: AppColor.red,
-          title: 'High spending',
+          title: 'Pengeluaran tinggi',
           value: controller.highSpender.isEmpty
-              ? 'None'
-              : '${controller.highSpender.length} days · ${controller.highSpender.first.amount?.moneyFormatCompact()} peak',
+              ? 'Belum ada'
+              : '${controller.highSpender.length} hari · puncak ${controller.highSpender.first.amount?.moneyFormatCompact()}',
           onTapPrompt: controller.highSpender.isEmpty
               ? null
               : 'hari apa aja yang bikin spending tinggi dan apa yang bisa dikurangi?',
@@ -590,7 +590,7 @@ class ViewInsights extends GetView<SummaryController> {
                 : trendDelta < 0
                 ? AppColor.green
                 : AppColor.neutral,
-            title: 'vs ${controller.previousPeriodLabel}',
+            title: 'dibanding ${controller.previousPeriodLabel}',
             value:
                 '${trendDelta > 0 ? '+' : trendDelta < 0 ? '-' : ''}${trendDelta.abs().moneyFormatCompact()}$trendPercentageLabel',
             onTapPrompt:
@@ -601,15 +601,15 @@ class ViewInsights extends GetView<SummaryController> {
           runSpacing: 8,
           children: [
             _promptChip(
-              'Save more',
+              'Lebih hemat',
               'buatkan rencana hemat dari data pengeluaran dan budget. jawab bullet singkat.',
             ),
             _promptChip(
-              'Cut spending',
+              'Kurangi pengeluaran',
               'top pengeluaran apa yang paling realistis dipotong? kasih 3 rekomendasi.',
             ),
             _promptChip(
-              'Explain',
+              'Jelaskan',
               'jelasin kondisi finansial secara singkat, fokus ke risk dan next action.',
             ),
           ],
@@ -913,7 +913,7 @@ class ViewInsights extends GetView<SummaryController> {
                         width: 26,
                         height: 26,
                         child: IconButton(
-                          tooltip: 'Copy response',
+                          tooltip: 'Salin jawaban',
                           padding: EdgeInsets.zero,
                           onPressed: () {
                             Clipboard.setData(ClipboardData(text: message));

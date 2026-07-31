@@ -18,10 +18,10 @@ class SectionRepeat extends GetView<SettingsController> {
     return VStack(
       [
         HStack([
-          'Recurring Transactions'.text.size(15).bold.make(),
+          'Transaksi rutin'.text.size(15).bold.make(),
           Spacer(),
           IconButton.outlined(
-            tooltip: 'Add recurring',
+            tooltip: 'Tambah transaksi rutin',
             icon: Icon(Icons.add_rounded, size: 18),
             onPressed: () => controller.onShowAddCronDialog(),
           ),
@@ -47,13 +47,13 @@ class SectionRepeat extends GetView<SettingsController> {
                     final schedule = SupaCronSchedule.parse(item.schedule);
                     final dueDate = schedule?.dueDay.toString() ?? '-';
                     final remainingDays = schedule?.remainingDays() ?? 0;
-                    final scheduleLabel = schedule?.label ?? 'Custom schedule';
+                    final scheduleLabel = repeatScheduleLabel(schedule);
                     final category = resolveExpenseCategory(categoryName);
                     final remainingLabel = remainingDays.isNegative
-                        ? 'Next month'
+                        ? 'Bulan depan'
                         : remainingDays == 0
-                            ? 'Today'
-                            : '$remainingDays days';
+                            ? 'Hari ini'
+                            : '$remainingDays hari lagi';
 
                     return Container(
                       decoration: ExDecorator.box(
@@ -128,8 +128,8 @@ class SectionRepeat extends GetView<SettingsController> {
                     width: 150,
                     reverse: true,
                   ),
-                  title: 'No Data',
-                  message: 'Tap + to add',
+                  title: 'Belum ada transaksi rutin',
+                  message: 'Tekan + untuk menambah',
                 ).expand(),
         ),
       ],

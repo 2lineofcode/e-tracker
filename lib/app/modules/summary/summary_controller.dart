@@ -90,7 +90,7 @@ OUTPUT FORMAT:
 ''';
 
   String get agentSystemPrompt => '''
-You are Ditdhew, a general assistant with controlled access to the user's expense tracker data. Today is ${DateTime.now().toStringEx(format: yMd)}.
+You are ditdhewAI, a general assistant with controlled access to the user's expense tracker data. Today is ${DateTime.now().toStringEx(format: yMd)}.
 The selected dashboard period is ${isShowAllYear.isTrue ? yearSelected.value : '${monthSelected.value} ${yearSelected.value}'}.
 
 BEHAVIOR:
@@ -491,50 +491,50 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
 
   String get previousPeriodLabel {
     if (isShowAllYear.isTrue) {
-      return '${_selectedYear - 1}${_isCurrentSelectedYear ? ' YTD' : ''}';
+      return '${_selectedYear - 1}${_isCurrentSelectedYear ? ' sampai hari ini' : ''}';
     }
     final previous = DateTime(_selectedYear, _selectedMonth - 1);
     final label = previous.toStringEx(format: 'MMMM yyyy');
-    return '$label${isCurrentSelectedMonth ? ' (same days)' : ''}';
+    return '$label${isCurrentSelectedMonth ? ' (jumlah hari sama)' : ''}';
   }
 
   String get periodDecisionTitle {
-    if (selectedPeriodTotal <= 0) return 'No spending data yet';
+    if (selectedPeriodTotal <= 0) return 'Belum ada data pengeluaran';
     if (isCurrentSelectedMonth && countBudget.value > 0) {
       return projectedPeriodSpend > countBudget.value
-          ? 'At risk of overspending'
-          : 'On track';
+          ? 'Berisiko melebihi budget'
+          : 'Masih aman';
     }
     final delta = periodTrendDelta;
-    if (delta == null || delta == 0) return 'Spending is stable';
-    return delta > 0 ? 'Spending is up' : 'Spending is down';
+    if (delta == null || delta == 0) return 'Pengeluaran tetap stabil';
+    return delta > 0 ? 'Pengeluaran naik' : 'Pengeluaran turun';
   }
 
   String get periodDecisionBody {
     if (selectedPeriodTotal <= 0) {
-      return 'No transactions found for this period. Ask Ditdhew about another period or all history.';
+      return 'Belum ada transaksi di periode ini. Coba tanya ditdhewAI soal periode lain atau seluruh riwayat.';
     }
 
     final topCategory = categorySummaries.isEmpty
         ? ''
-        : ' Largest driver: ${categorySummaries.first.resolvedCategory.label} at ${categorySummaries.first.total.moneyFormatCompact()}.';
+        : ' Pengeluaran terbesar: ${categorySummaries.first.resolvedCategory.label} sebesar ${categorySummaries.first.total.moneyFormatCompact()}.';
     if (isCurrentSelectedMonth && countBudget.value > 0) {
       final delta = countBudget.value - projectedPeriodSpend;
-      return 'Projected ${projectedPeriodSpend.moneyFormatCompact()} by month end, ${delta >= 0 ? '${delta.moneyFormatCompact()} under' : '${delta.abs().moneyFormatCompact()} over'} budget.$topCategory';
+      return 'Proyeksi akhir bulan ${projectedPeriodSpend.moneyFormatCompact()}, ${delta >= 0 ? '${delta.moneyFormatCompact()} di bawah' : '${delta.abs().moneyFormatCompact()} di atas'} budget.$topCategory';
     }
 
     final delta = periodTrendDelta;
     final percentage = periodTrendPercentage;
     if (delta != null) {
       if (delta == 0) {
-        return 'Same spend as $previousPeriodLabel.$topCategory';
+        return 'Pengeluaran sama dengan $previousPeriodLabel.$topCategory';
       }
       final percentageLabel = percentage == null
           ? ''
           : ' (${percentage.abs().toStringAsFixed(0)}%)';
-      return '${delta.abs().moneyFormatCompact()}$percentageLabel ${delta >= 0 ? 'higher' : 'lower'} than $previousPeriodLabel.$topCategory';
+      return '${delta.abs().moneyFormatCompact()}$percentageLabel ${delta >= 0 ? 'lebih tinggi' : 'lebih rendah'} dari $previousPeriodLabel.$topCategory';
     }
-    return 'Spent ${selectedPeriodTotal.moneyFormatCompact()} in this period.$topCategory';
+    return 'Pengeluaran periode ini ${selectedPeriodTotal.moneyFormatCompact()}.$topCategory';
   }
 
   @override
@@ -1025,11 +1025,11 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
         .toLowerCase();
     final value = separator == -1 ? '' : trimmed.substring(separator).trim();
     final prefix = switch (command) {
-      '/expense' => 'Tambah expense',
+      '/expense' => 'Tambah pengeluaran',
       '/note' => 'Tambah note',
       '/goal' => 'Tambah goal',
       '/budget' => 'Tambah budget',
-      '/memory' => 'Lihat memory yang kamu simpan',
+      '/memory' => 'Lihat memori yang kamu simpan',
       '/web' => 'Cari di web',
       _ => null,
     };
@@ -1098,7 +1098,7 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
       final extracted = await _extractAttachmentText(bytes, extension);
       final content = _limitAttachmentText(extracted);
       if (content.isEmpty) {
-        throw FormatException('Tidak ada text yang bisa dibaca');
+        throw FormatException('Tidak ada teks yang bisa dibaca');
       }
 
       chatAttachments.add({
@@ -1477,7 +1477,7 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
     return '''
 Gue nemu ${expenses.length} transaksi "$query" di Supabase:
 
-| Tanggal | Catatan | Kategori | Nominal |
+| Tanggal | Note | Kategori | Nominal |
 |---|---|---|---:|
 $rows$suffix
 '''.trim();
@@ -1790,7 +1790,7 @@ $rows$suffix
           if (count == 0) {
             return 'Gue nggak nemu transaksi "$query" di data kamu.';
           }
-          return 'Total pengeluaran "$query" all time: ${(total['amount'] as num).moneyFormat()} dari $count transaksi.';
+          return 'Total pengeluaran "$query" sepanjang waktu: ${(total['amount'] as num).moneyFormat()} dari $count transaksi.';
         }
         if (directArguments['data_type'] == 'expense_lookup') {
           final query = directArguments['query'] as String;
@@ -2073,14 +2073,14 @@ $rows$suffix
       amount: amount,
     );
     final confirmed = await _confirmAction(
-      'Add Expense?',
+      'Tambah pengeluaran?',
       {
         'Note': note,
-        'Amount': amount.moneyFormat(),
-        'Date': date,
-        'Category': category.label,
+        'Nominal': amount.moneyFormat(),
+        'Tanggal': date,
+        'Kategori': category.label,
         if (detail.isNotEmpty) 'Detail': detail,
-        if (duplicates.isNotEmpty) 'Warning': 'Possible duplicate',
+        if (duplicates.isNotEmpty) 'Peringatan': 'Kemungkinan duplikat',
       },
     );
     if (!confirmed) return {'status': 'cancelled'};
@@ -2144,8 +2144,8 @@ $rows$suffix
       );
       if (duplicates.isNotEmpty) duplicateCount++;
     }
-    final confirmed = await _confirmAction('Add Expenses?', {
-      'Expenses': expenses
+    final confirmed = await _confirmAction('Tambah pengeluaran?', {
+      'Pengeluaran': expenses
           .map(
             (expense) =>
                 '${expense.date} · ${expense.note} · ${expense.amount?.moneyFormat()}',
@@ -2153,7 +2153,7 @@ $rows$suffix
           .join('\n'),
       'Total': total.moneyFormat(),
       if (duplicateCount > 0)
-        'Warning': '$duplicateCount possible duplicate',
+        'Peringatan': '$duplicateCount kemungkinan duplikat',
     });
     if (!confirmed) return {'status': 'cancelled'};
 
@@ -2195,9 +2195,9 @@ $rows$suffix
   ) async {
     final title = _requiredText(arguments, 'title', maxLength: 200);
     final content = _requiredText(arguments, 'content', maxLength: 10000);
-    if (!await _confirmAction('Add Note?', {
-      'Title': title,
-      'Content': content,
+    if (!await _confirmAction('Tambah note?', {
+      'Judul': title,
+      'Isi': content,
     })) {
       return {'status': 'cancelled'};
     }
@@ -2228,11 +2228,11 @@ $rows$suffix
     if (currentAmount > target) {
       throw FormatException('current_amount cannot exceed target');
     }
-    if (!await _confirmAction('Add Goal?', {
-      'Title': title,
-      'Current': currentAmount.moneyFormat(),
-      'Target': target.moneyFormat(),
-      'Due': dueDate,
+    if (!await _confirmAction('Tambah goal?', {
+      'Nama': title,
+      'Saldo sekarang': currentAmount.moneyFormat(),
+      'Goal': target.moneyFormat(),
+      'Tanggal goal': dueDate,
     })) {
       return {'status': 'cancelled'};
     }
@@ -2270,12 +2270,12 @@ $rows$suffix
     if (await homeRepo.checkDuplicateBudgets(category.code)) {
       return {
         'status': 'conflict',
-        'message': 'Budget already exists for ${category.label}',
+        'message': 'Budget untuk ${category.label} sudah ada',
       };
     }
-    if (!await _confirmAction('Add Budget?', {
-      'Category': category.label,
-      'Monthly amount': amount.moneyFormat(),
+    if (!await _confirmAction('Tambah budget?', {
+      'Kategori': category.label,
+      'Budget bulanan': amount.moneyFormat(),
     })) {
       return {'status': 'cancelled'};
     }
@@ -2421,11 +2421,11 @@ $rows$suffix
             actions: [
               TextButton(
                 onPressed: () => Get.back(result: false),
-                child: Text('Cancel'),
+                child: Text('Batal'),
               ),
               OutlinedButton(
                 onPressed: () => Get.back(result: true),
-                child: Text('Confirm'),
+                child: Text('Konfirmasi'),
               ),
             ],
           ),

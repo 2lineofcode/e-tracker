@@ -7,35 +7,33 @@ import 'const.dart';
 mixin AppColor {
   static final _pref = GetStorage(kStorageKey);
   static bool get isDark => _pref.read<bool>(kIsDarkMode) ?? true;
-  static const defaultThemeColor = 0xff5D3872;
+  static const defaultThemeColor = 0xff2563EB;
   static const themeColors = <int>[
     defaultThemeColor,
-    0xff2563EB,
-    0xff0F766E,
-    0xff16A34A,
-    0xffD97706,
-    0xffDC2626,
-    0xffDB2777,
     0xff4F46E5,
+    0xff7C3AED,
+    0xffDB2777,
+    0xffDC2626,
+    0xffD97706,
+    0xff16A34A,
+    0xff0F766E,
   ];
 
-  static int get themeColorValue => _pref.read<int>(kThemeColor) ?? defaultThemeColor;
-
-  static Color _darkTone(double lightness) {
-    final hsl = HSLColor.fromColor(primary);
-    return hsl.withSaturation((hsl.saturation * 0.7).clamp(0.0, 1.0)).withLightness(lightness).toColor();
+  static int get themeColorValue {
+    final color = _pref.read<int>(kThemeColor);
+    return themeColors.contains(color) ? color! : defaultThemeColor;
   }
 
   /// selected / unselected
   static Color get primary => Color(themeColorValue);
-  static Color get secondary => isDark ? primary.withAlpha(150) : Vx.neutral200;
+  static Color get secondary => isDark ? Vx.neutral700 : Vx.neutral200;
 
   /// layout
-  static Color get scaffoldPrimary => isDark ? _darkTone(0.06) : Vx.neutral100;
-  static Color get sideMenuPrimary => isDark ? _darkTone(0.14) : Vx.neutral100;
-  static Color get appbarPrimary => isDark ? _darkTone(0.08) : Vx.neutral100;
-  static Color get footerPrimary => isDark ? _darkTone(0.08) : Vx.neutral100;
-  static Color get emptyStatePrimary => isDark ? _darkTone(0.08) : Vx.neutral100;
+  static Color get scaffoldPrimary => isDark ? Color(0xFF0F1115) : Color(0xFFF5F6F8);
+  static Color get sideMenuPrimary => isDark ? Color(0xFF171A20) : Vx.white;
+  static Color get appbarPrimary => isDark ? Color(0xFF12151A) : Vx.white;
+  static Color get footerPrimary => isDark ? Color(0xFF12151A) : Vx.white;
+  static Color get emptyStatePrimary => isDark ? Color(0xFF171A20) : Color(0xFFF8F9FA);
 
   /// calender
   static Color get calendarSelectedColor => isDark ? primary : primary.withAlpha(150);
@@ -46,18 +44,18 @@ mixin AppColor {
   static Color get noteColor => isDark ? Vx.blue600.withAlpha(50) : Vx.blue600.withAlpha(150);
 
   /// menu
-  static Color get sideMenuSelected => primary.withAlpha(150);
-  static Color get menuSelected => primary.withAlpha(100);
+  static Color get sideMenuSelected => primary.withAlpha(isDark ? 60 : 35);
+  static Color get menuSelected => primary.withAlpha(isDark ? 45 : 25);
   static Color get menuUnSelected => secondary;
 
   /// textfield
-  static Color get textFieldPrimary => isDark ? Vx.neutral800 : Vx.neutral200;
+  static Color get textFieldPrimary => isDark ? Color(0xFF1B1F27) : Color(0xFFECEFF3);
 
   /// card item
-  static Color get card => primary.withAlpha(50);
-  static Color get box => primary.withAlpha(20);
-  static Color get border => primary.withAlpha(80);
-  static Color get divider => neutral;
+  static Color get card => isDark ? Color(0xFF1B1F27) : Vx.white;
+  static Color get box => isDark ? Color(0xFF171A20) : Color(0xFFF8F9FB);
+  static Color get border => isDark ? Color(0xFF2B3039) : Color(0xFFE1E5EA);
+  static Color get divider => border;
 
   /// text on background (special case)
   static Color get textOnBackground => isDark ? Vx.white : Vx.neutral100;
@@ -65,11 +63,11 @@ mixin AppColor {
   static Color get textOnWhiteBackground => isDark ? Vx.black : Vx.black;
 
   /// table
-  static Color get tableHeader => isDark ? card : Vx.neutral300;
+  static Color get tableHeader => isDark ? Color(0xFF20252E) : Color(0xFFECEFF3);
 
   /// shimmer
-  static Color get shimmerPrimary => isDark ? box : Vx.neutral300;
-  static Color get shimmerSecondary => isDark ? card : Vx.neutral200;
+  static Color get shimmerPrimary => isDark ? Color(0xFF171A20) : Color(0xFFE1E5EA);
+  static Color get shimmerSecondary => isDark ? Color(0xFF242A33) : Color(0xFFF1F3F5);
 
   /// ------------------------------------------------------------------------
   /// green

@@ -27,6 +27,17 @@ import 'section_dialog_goal.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
+
+  String _dateDistanceLabel(DateTime date) {
+    final days = DateUtils.dateOnly(date)
+        .difference(DateUtils.dateOnly(DateTime.now()))
+        .inDays;
+    if (days == 0) return 'Hari ini';
+    if (days == 1) return 'Besok';
+    if (days == -1) return 'Kemarin';
+    return days > 0 ? '$days hari lagi' : '${days.abs()} hari lalu';
+  }
+
   @override
   Widget build(BuildContext context) {
     return MyLayout(
@@ -120,7 +131,7 @@ class HomeView extends GetView<HomeController> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: Get.isDarkMode ? AppColor.card : Colors.white,
-                hintText: '@ Category · # Date · \$ Min · ? Note',
+                hintText: '@ Kategori · # Tanggal · \$ Minimal · ? Note',
                 hintStyle: TextStyle(fontSize: 12, color: AppColor.neutral),
                 prefixIcon: Icon(
                   UIconsPro.regularRounded.search,
@@ -131,7 +142,7 @@ class HomeView extends GetView<HomeController> {
                 suffixIcon: value.text.isEmpty
                     ? null
                     : IconButton(
-                        tooltip: 'Clear',
+                        tooltip: 'Bersihkan',
                         icon: Icon(
                           UIconsPro.solidRounded.cross_small,
                           size: 14,
@@ -180,19 +191,19 @@ class HomeView extends GetView<HomeController> {
     if (text.isEmpty) {
       return [
         _SearchOption.command(
-          label: 'Category',
+          label: 'Kategori',
           input: '@',
           icon: CupertinoIcons.square_grid_2x2,
           color: AppColor.primary,
         ),
         _SearchOption.command(
-          label: 'Date',
+          label: 'Tanggal',
           input: '#',
           icon: CupertinoIcons.calendar,
           color: AppColor.blue,
         ),
         _SearchOption.command(
-          label: 'Amount ≥',
+          label: 'Nominal ≥',
           input: r'$',
           icon: CupertinoIcons.money_dollar_circle,
           color: AppColor.green,
@@ -230,7 +241,7 @@ class HomeView extends GetView<HomeController> {
       final query = text.substring(1).toLowerCase();
       return [
         _SearchOption(
-          label: 'Today',
+          label: 'Hari ini',
           input: '#today',
           query: '#today',
           icon: CupertinoIcons.today,
@@ -238,7 +249,7 @@ class HomeView extends GetView<HomeController> {
           suffix: '#today',
         ),
         _SearchOption(
-          label: '7 days',
+          label: '7 hari',
           input: '#7',
           query: '#7',
           icon: CupertinoIcons.calendar,
@@ -246,7 +257,7 @@ class HomeView extends GetView<HomeController> {
           suffix: '#7',
         ),
         _SearchOption(
-          label: '30 days',
+          label: '30 hari',
           input: '#30',
           query: '#30',
           icon: CupertinoIcons.calendar,
@@ -254,7 +265,7 @@ class HomeView extends GetView<HomeController> {
           suffix: '#30',
         ),
         _SearchOption(
-          label: 'This month',
+          label: 'Bulan ini',
           input: '#month',
           query: '#month',
           icon: CupertinoIcons.calendar_today,
@@ -297,7 +308,7 @@ class HomeView extends GetView<HomeController> {
         if (query.isNotEmpty) return const [];
         return [
           _SearchOption.command(
-            label: 'Type note or detail',
+            label: 'Ketik note atau detail',
             input: text,
             icon: CupertinoIcons.text_quote,
             color: AppColor.orange,
@@ -430,7 +441,7 @@ class HomeView extends GetView<HomeController> {
             Divider(color: AppColor.border),
 
             // :0:
-            '::Tools'.text.size(12).bold.make().pOnly(top: 2, bottom: 12),
+            '::Fitur'.text.size(12).bold.make().pOnly(top: 2, bottom: 12),
 
             Expanded(
               child: VStack([
@@ -444,7 +455,7 @@ class HomeView extends GetView<HomeController> {
                       size: 14,
                       color: Color.fromARGB(255, 195, 86, 69),
                     ).pOnly(right: 8),
-                    'High Spendings!'.text.size(12).make(),
+                    'Total Hari Boros'.text.size(12).make(),
                     Spacer(),
                     CustomPopup(
                       content: highSpendingPopupContent(),
@@ -467,7 +478,7 @@ class HomeView extends GetView<HomeController> {
                 // :2: budgets
                 Obx(
                   () => buildTools(
-                    title: 'Budgets Planning',
+                    title: 'Budget',
                     icon: Icon(
                       UIconsPro.solidRounded.piggy_bank_budget,
                       size: 14,
@@ -481,7 +492,7 @@ class HomeView extends GetView<HomeController> {
                 // :3:
                 Obx(
                   () => buildTools(
-                    title: 'Assets',
+                    title: 'Aset',
                     icon: Icon(
                       UIconsPro.solidRounded.plant_seed_invest,
                       size: 14,
@@ -496,7 +507,7 @@ class HomeView extends GetView<HomeController> {
                 // :4:
                 Obx(
                   () => buildTools(
-                    title: 'Goals',
+                    title: 'Goal',
                     icon: Icon(
                       UIconsPro.solidRounded.location_crosshairs,
                       size: 14,
@@ -510,7 +521,7 @@ class HomeView extends GetView<HomeController> {
                 // :5:
                 Obx(
                   () => buildTools(
-                    title: 'Notes',
+                    title: 'Note',
                     icon: Icon(
                       UIconsPro.solidRounded.notebook,
                       size: 14,
@@ -529,7 +540,7 @@ class HomeView extends GetView<HomeController> {
                     size: 14,
                     color: Color.fromARGB(255, 57, 182, 107),
                   ),
-                  count: 'Open',
+                  count: 'Buka',
                   ontap: () => Get.toNamed(Routes.CALCP),
                 ).pOnly(bottom: 12),
 
@@ -543,7 +554,7 @@ class HomeView extends GetView<HomeController> {
                               size: 14,
                               color: Color.fromARGB(255, 123, 99, 196),
                             ),
-                            count: 'Open',
+                            count: 'Buka',
                             ontap: () => Get.toNamed(Routes.SQL_EDITOR),
                           )
                           .pOnly(bottom: 12)
@@ -564,7 +575,7 @@ class HomeView extends GetView<HomeController> {
                   child: VStack(
                     [
                       HStack([
-                        'Spend vs Budgets'.text.bold
+                        'Pengeluaran vs budget'.text.bold
                             .size(11)
                             .minFontSize(11)
                             .make()
@@ -634,7 +645,7 @@ class HomeView extends GetView<HomeController> {
                             DateTime.now().year ==
                                 controller.focusedDay.value.year) {
                           return HStack([
-                            '${dayInMonth(DateTime.now()) - DateTime.now().day} Day Remaining'
+                            '${dayInMonth(DateTime.now()) - DateTime.now().day} hari tersisa'
                                 .text
                                 .color(AppColor.textReverse)
                                 .size(10)
@@ -677,13 +688,13 @@ class HomeView extends GetView<HomeController> {
           ),
         ).pOnly(right: 8),
         VStack([
-          'High Spendings'.text.black.bold.size(12).make(),
-          '${list.length} peak days'.text.size(10).minFontSize(10).color(Vx.neutral500).make(),
+          'High Spending'.text.black.bold.size(12).make(),
+          'ada ${list.length} hari nih'.text.size(10).minFontSize(10).color(Vx.neutral500).make(),
         ]).expand(),
       ]).pOnly(bottom: 8),
 
       if (list.isEmpty) ...[
-        'No high spending day yet'.text.size(11).color(Vx.neutral500).makeCentered().pSymmetric(v: 12),
+        'Belum ada hari boros'.text.size(11).color(Vx.neutral500).makeCentered().pSymmetric(v: 12),
       ] else ...[
         ...visibleList.asMap().entries.map((entry) {
           final item = entry.value;
@@ -801,9 +812,9 @@ class HomeView extends GetView<HomeController> {
                 size: 14,
                 color: AppColor.primary,
               ).pOnly(right: 8),
-              'Smart Forecast'.text.bold.size(12).make().expand(),
+              'Smart Proyeksi'.text.bold.size(12).make().expand(),
               if (controller.budgetWarningCount > 0)
-                '${controller.budgetWarningCount} risk'.text
+                '${controller.budgetWarningCount} risiko'.text
                     .size(10)
                     .minFontSize(10)
                     .color(AppColor.textOnBackground)
@@ -822,7 +833,7 @@ class HomeView extends GetView<HomeController> {
             ]).pOnly(bottom: 8).onInkTap(() => isExpanded.toggle()),
             if (hasBudget) ...[
               HStack([
-                'Projected'.text
+                'Proyeksi outcome'.text
                     .size(11)
                     .minFontSize(11)
                     .color(AppColor.neutral)
@@ -836,7 +847,7 @@ class HomeView extends GetView<HomeController> {
                     .make(),
               ]).pOnly(bottom: 4),
               HStack([
-                'Daily safe'.text
+                'Batas aman harian'.text
                     .size(11)
                     .minFontSize(11)
                     .color(AppColor.neutral)
@@ -869,15 +880,15 @@ class HomeView extends GetView<HomeController> {
                     .pOnly(left: 8),
               ]).pOnly(bottom: 6),
               (isOverProjection
-                      ? 'Over pace by ${controller.projectedBudgetDelta.abs().moneyFormatCompact()}'
-                      : 'On pace, spare ${controller.projectedBudgetDelta.moneyFormatCompact()}')
+                      ? 'Terlalu cepat ${controller.projectedBudgetDelta.abs().moneyFormatCompact()}'
+                      : 'Masih aman, sisa ${controller.projectedBudgetDelta.moneyFormatCompact()}')
                   .text
                   .size(10)
                   .minFontSize(10)
                   .color(isOverProjection ? AppColor.red : AppColor.green)
                   .make(),
             ] else ...[
-              'Set category budgets to unlock burn-rate forecast.'.text
+              'Atur budget kategori untuk melihat proyeksi.'.text
                   .size(11)
                   .minFontSize(11)
                   .color(AppColor.neutral)
@@ -898,12 +909,12 @@ class HomeView extends GetView<HomeController> {
                       size: 12,
                       color: AppColor.blue,
                     ).pOnly(right: 8),
-                    'Upcoming'.text.bold.size(11).make(),
+                    'Tagihan Mendatang'.text.bold.size(11).make(),
                   ]).pOnly(bottom: 6),
                   ...upcoming.map((item) {
                     final dueText = item.remainingDays == 0
-                        ? 'today'
-                        : '${item.remainingDays}d';
+                        ? 'hari ini'
+                        : '${item.remainingDays} hari';
                     return HStack([
                       '${item.note}'.text
                           .size(11)
@@ -928,7 +939,7 @@ class HomeView extends GetView<HomeController> {
                       size: 12,
                       color: AppColor.red,
                     ).pOnly(right: 8),
-                    'Unbudgeted'.text.bold.size(11).make(),
+                    'Belum dianggarkan'.text.bold.size(11).make(),
                   ]).pOnly(bottom: 6),
                   ...unbudgeted.map((item) {
                     return HStack([
@@ -1027,7 +1038,7 @@ class HomeView extends GetView<HomeController> {
         ]).p12(),
         onError: (e) => ExUiErrorOrEmpty(
           illustration: Icon(CupertinoIcons.wifi_slash),
-          title: 'Offline',
+          title: 'Sedang offline',
           message: '$e',
           bgColor: AppColor.emptyStatePrimary,
         ),
@@ -1036,6 +1047,13 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget bodyHeaderBasicView() {
+    final flagLabel = switch (controller.countOfDay.value.getFlagText()) {
+      'Hemat' => 'Hari hemat',
+      'Biasa' => 'Hari biasa',
+      'Boros' => 'Hari boros',
+      final label => label,
+    };
+
     return HStack(
       [
         Container(
@@ -1053,7 +1071,7 @@ class HomeView extends GetView<HomeController> {
               .size(12)
               .bold
               .make(),
-          '${controller.focusedDay.value.getTimeAgoFromNow()}'.text
+          _dateDistanceLabel(controller.focusedDay.value).text
               .size(11)
               .minFontSize(11)
               .make(),
@@ -1063,54 +1081,54 @@ class HomeView extends GetView<HomeController> {
           content: Obx(
             () => VStack(
               [
-                if (controller.countOfDay.value.getFlagText() == 'Eco') ...[
-                  'Your score of spend this day'.text
+                if (controller.countOfDay.value.getFlagText() == 'Hemat') ...[
+                  'Pengeluaran hari ini'.text
                       .color(AppColor.textOnWhiteBackground)
                       .make(),
                   Divider(thickness: 0.3).w(200),
-                  'Usage: ${controller.countOfDay.value.moneyFormatCompact()} of ${controller.userProfile.value.ecoDay?.moneyFormatCompact()}'
+                  'Terpakai ${controller.countOfDay.value.moneyFormatCompact()} dari ${controller.userProfile.value.ecoDay?.moneyFormatCompact()}'
                       .text
                       .size(12)
                       .black
                       .make()
                       .pOnly(bottom: 2),
-                  'Remaining: ${(controller.userProfile.value.ecoDay! - controller.countOfDay.value).moneyFormatCompact()}'
+                  'Sisa ${(controller.userProfile.value.ecoDay! - controller.countOfDay.value).moneyFormatCompact()}'
                       .text
                       .size(12)
                       .green700
                       .make(),
                 ],
 
-                if (controller.countOfDay.value.getFlagText() == 'Average') ...[
-                  'Your score of spend this day'.text
+                if (controller.countOfDay.value.getFlagText() == 'Biasa') ...[
+                  'Pengeluaran hari ini'.text
                       .color(AppColor.textOnWhiteBackground)
                       .make(),
                   Divider(thickness: 0.3).w(200),
-                  'Usage: ${controller.countOfDay.value.moneyFormatCompact()} of ${controller.userProfile.value.averageDay?.moneyFormatCompact()}'
+                  'Terpakai ${controller.countOfDay.value.moneyFormatCompact()} dari ${controller.userProfile.value.averageDay?.moneyFormatCompact()}'
                       .text
                       .size(12)
                       .black
                       .make()
                       .pOnly(bottom: 2),
-                  'Remaining: ${(controller.userProfile.value.averageDay! - controller.countOfDay.value).moneyFormatCompact()}'
+                  'Sisa ${(controller.userProfile.value.averageDay! - controller.countOfDay.value).moneyFormatCompact()}'
                       .text
                       .size(12)
                       .green700
                       .make(),
                 ],
 
-                if (controller.countOfDay.value.getFlagText() == 'Spender') ...[
-                  'Your score of spend this day'.text
+                if (controller.countOfDay.value.getFlagText() == 'Boros') ...[
+                  'Pengeluaran hari ini'.text
                       .color(AppColor.textOnWhiteBackground)
                       .make(),
                   Divider(thickness: 0.3).w(200),
-                  'Usage: ${controller.countOfDay.value.moneyFormatCompact()} of ${controller.userProfile.value.spenderDay?.moneyFormatCompact()}'
+                  'Terpakai ${controller.countOfDay.value.moneyFormatCompact()} dari ${controller.userProfile.value.spenderDay?.moneyFormatCompact()}'
                       .text
                       .size(12)
                       .black
                       .make()
                       .pOnly(bottom: 2),
-                  'Minus: ${(controller.userProfile.value.spenderDay! - controller.countOfDay.value).moneyFormat()}'
+                  'Selisih ${(controller.userProfile.value.spenderDay! - controller.countOfDay.value).moneyFormat()}'
                       .text
                       .size(12)
                       .red500
@@ -1124,7 +1142,7 @@ class HomeView extends GetView<HomeController> {
               borderRadius: 90,
               borderColor: controller.countOfDay.value.getFlagColorLight(),
             ),
-            child: '${controller.countOfDay.value.getFlagText()} Day'
+            child: flagLabel
                 //
                 .text
                 .size(12)
@@ -1159,8 +1177,8 @@ class HomeView extends GetView<HomeController> {
           child: VStack(
             [
               HStack([
-                'Showing data:'.text.bold.make().pOnly(right: 8),
-                '$searchText days from today'.text.size(12).make(),
+                'Menampilkan:'.text.bold.make().pOnly(right: 8),
+                '$searchText hari terakhir'.text.size(12).make(),
               ]),
               '🗓️ ($startDate → $endDate)'.text
                   .size(11)
@@ -1185,7 +1203,7 @@ class HomeView extends GetView<HomeController> {
             ),
             width: double.infinity,
             child: VStack([
-              'Showing for date range:'.text.bold.make().pOnly(bottom: 4),
+              'Rentang tanggal:'.text.bold.make().pOnly(bottom: 4),
               '🗓️ $startDate → $endDate'.text.size(12).make(),
             ]).p8(),
           );
@@ -1210,12 +1228,11 @@ class HomeView extends GetView<HomeController> {
           ),
           child: HStack(
             [
-              'Search For: `${controller.tfSearchExpense.value.text}`'.text.bold
+              'Cari: `${controller.tfSearchExpense.value.text}`'.text.bold
                   .make(),
               Spacer(),
-              if (!searchText.startsWith('#') &&
-                  !searchText.startsWith(r'$'))
-                'Filter'.text.size(8).underline.make().onInkTap(() {
+              if (!searchText.startsWith('#'))
+                'Atur filter'.text.size(8).underline.make().onInkTap(() {
                   DialogExpense.openAdvenceFilter(
                     controller.tfSearchExpense.value.text,
                   );
@@ -1316,14 +1333,14 @@ class HomeView extends GetView<HomeController> {
         final category = item.resolvedCategory;
         final isTypeNotes =
             category.code == 'expense:misc:notes' ||
-            category.label.contains('Notes');
+            category.label.contains('Note');
 
         return Container(
               width: double.infinity,
               decoration: BoxDecoration(
                 color: isTypeNotes
                     ? AppColor.noteColor
-                    : AppColor.card.withAlpha(50),
+                    : AppColor.card,
                 borderRadius: BorderRadius.all(Radius.circular(16)),
               ),
               child: Row(
@@ -1403,7 +1420,7 @@ class HomeView extends GetView<HomeController> {
         return Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Get.isDarkMode ? Color(0xFF19151F) : Colors.white,
+            color: AppColor.card,
           ),
           child: HStack(
             [
@@ -1412,7 +1429,7 @@ class HomeView extends GetView<HomeController> {
                   .bold
                   .make(),
               Spacer(),
-              '(${item.date!.toDateEx(format: yMd).getTimeAgoFromNow()})'.text
+              '(${_dateDistanceLabel(item.date!.toDateEx(format: yMd))})'.text
                   .minFontSize(11)
                   .size(11)
                   .make(),
@@ -1428,12 +1445,12 @@ class HomeView extends GetView<HomeController> {
         final category = item.resolvedCategory;
         final isTypeNotes =
             category.code == 'expense:misc:notes' ||
-            category.label.contains('Notes');
+            category.label.contains('Note');
         return Container(
               decoration: BoxDecoration(
                 color: isTypeNotes
                     ? AppColor.noteColor
-                    : AppColor.card.withAlpha(50),
+                    : AppColor.card,
                 borderRadius: BorderRadius.all(Radius.circular(16)),
               ),
               width: double.infinity,
@@ -1495,7 +1512,7 @@ class HomeView extends GetView<HomeController> {
       () => HStack(
         [
           if (controller.tfSearchExpense.value.text.isNotBlank) ...[
-            'Search for: "${controller.tfSearchExpense.value.text}"'.text
+            'Hasil pencarian: "${controller.tfSearchExpense.value.text}"'.text
                 .make(),
           ] else ...[
             Container(
@@ -1515,7 +1532,7 @@ class HomeView extends GetView<HomeController> {
                   .size(12)
                   .bold
                   .make(),
-              '${controller.focusedDay.value.getTimeAgoFromNow()}'.text
+              _dateDistanceLabel(controller.focusedDay.value).text
                   .size(11)
                   .minFontSize(11)
                   .make(),
@@ -1526,7 +1543,7 @@ class HomeView extends GetView<HomeController> {
                 borderRadius: 90,
                 borderColor: AppColor.textReverse,
               ),
-              child: 'No Record'.text
+              child: 'Belum ada data'.text
                   .size(12)
                   .minFontSize(12)
                   .color(AppColor.textReverse)
@@ -1558,15 +1575,15 @@ class HomeView extends GetView<HomeController> {
                   width: 150,
                   reverse: true,
                 ),
-          'No Expense'.text.bold
+          'Belum ada pengeluaran'.text.bold
               .align(TextAlign.center)
               .make()
               .pOnly(bottom: 8),
           Obx(
             () =>
                 '${controller.tfSearchExpense.value.text.isNotEmptyAndNotNull //
-                        ? '"${controller.tfSearchExpense.value.text}" Not found' //
-                          : ' in ${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'} '
+                        ? '"${controller.tfSearchExpense.value.text}" tidak ditemukan' //
+                          : 'pada ${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'} '
                     .text
                     .neutral500
                     .size(11)
@@ -1575,7 +1592,7 @@ class HomeView extends GetView<HomeController> {
           ),
           16.heightBox,
           ExButtonOutline(
-            label: 'Add Expense',
+            label: 'Tambah pengeluaran',
             labelSize: 12,
             labelColor: AppColor.textReverse,
             onPressed: () => DialogExpense.openAIInput(),
@@ -1597,15 +1614,15 @@ class HomeView extends GetView<HomeController> {
                 .bold
                 .make(),
             Divider().w(180),
-            'Balance   : ${controller.userProfile.value.balance}'.text
+            'Saldo        : ${controller.userProfile.value.balance}'.text
                 .size(12)
                 .black
                 .make(),
-            'Income    : ${controller.userProfile.value.income}'.text
+            'Penghasilan : ${controller.userProfile.value.income}'.text
                 .size(12)
                 .black
                 .make(),
-            'LastUpd. : ${controller.userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y, HH:mm')}'
+            'Diperbarui   : ${controller.userProfile.value.updatedAt?.reformatDate(to: 'dd MMM y, HH:mm')}'
                 .text
                 .size(12)
                 .black

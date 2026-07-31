@@ -52,17 +52,17 @@ class LoginView extends GetView<LoginController> {
 
     return VStack(
       [
-        'Email/Username'.text.make().pOnly(bottom: 8),
+        'Email/Nama pengguna'.text.make().pOnly(bottom: 8),
         TextField(
           controller: controller.tfEmail,
           keyboardType: TextInputType.emailAddress,
           style: TextStyle(fontSize: 13),
           decoration: HelperDecoration.input(
-            hint: 'Enter your email/username',
+            hint: 'Masukkan email atau nama pengguna',
           ),
           onSubmitted: (_) => controller.onLogin(),
         ).h(36).pOnly(bottom: 24),
-        'Password'.text.make().pOnly(bottom: 8),
+        'Kata sandi'.text.make().pOnly(bottom: 8),
         Obx(
           () => TextField(
             controller: controller.tfPassword,
@@ -72,7 +72,7 @@ class LoginView extends GetView<LoginController> {
             enableSuggestions: false,
             autocorrect: false,
             decoration: HelperDecoration.input(
-              hint: 'Enter your password',
+              hint: 'Masukkan kata sandi',
               suffixIcon: IconButton(
                 icon: Icon(passwordVisible.isTrue ? Icons.visibility : Icons.visibility_off, size: 16),
                 onPressed: () => passwordVisible.value = !passwordVisible.value,
@@ -87,7 +87,7 @@ class LoginView extends GetView<LoginController> {
             'Just Personal Project'.text.neutral500.make(),
             Spacer(),
             ExButtonElevated(
-              label: 'Login',
+              label: 'Masuk',
               onPressed: () => controller.onLogin(),
             ),
           ],

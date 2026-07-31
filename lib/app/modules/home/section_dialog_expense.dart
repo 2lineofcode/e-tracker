@@ -85,14 +85,14 @@ mixin DialogExpense {
       return db.storage.from(_expenseImageBucket).getPublicUrl(fileName);
     } catch (e) {
       if (e is StorageException) {
-        await HelperToast.error('${e.message}\nMax 5MB');
+        await HelperToast.error('${e.message}\nMaks. 5 MB');
       } else {
         await HelperErrorLog.record(
           page: 'section_dialog_input',
           action: '_uploadExpenseImage',
           stack: e.toString(),
         );
-        await HelperToast.error('Failed to upload image');
+        await HelperToast.error('Gagal mengunggah gambar');
       }
       return null;
     }
@@ -133,7 +133,7 @@ mixin DialogExpense {
         action: '_deleteExpenseImagesFromStorage',
         stack: e.toString(),
       );
-      await HelperToast.warn('Expense saved, but failed to delete old image');
+      await HelperToast.warn('Pengeluaran tersimpan, tapi gambar lama gagal dihapus');
     }
   }
 
@@ -237,7 +237,7 @@ mixin DialogExpense {
                 size: 13,
                 color: AppColor.textReverse,
               ).pOnly(right: 6),
-              (hasImage ? 'Change Image' : 'Upload Image').text
+              (hasImage ? 'Ganti gambar' : 'Tambah gambar').text
                   .size(11)
                   .minFontSize(11)
                   .make(),
@@ -291,7 +291,7 @@ mixin DialogExpense {
     final _controller = Get.find<HomeController>();
 
     if (_controller.categoryList.isEmptyOrNull) {
-      await HelperToast.warn('Please Creete at least 1 category');
+      await HelperToast.warn('Buat minimal 1 kategori dulu');
       return;
     }
 
@@ -325,7 +325,7 @@ mixin DialogExpense {
         ? true.obs
         : false.obs;
     ExBottomSheet.basic(
-      title: '${expense != null ? 'Edit Expense' : 'Add Expense'}',
+      title: '${expense != null ? 'Edit pengeluaran' : 'Tambah pengeluaran'}',
       backgroundColor: AppColor.appbarPrimary,
       barrierColor: Colors.black54,
       content: VStack(
@@ -334,7 +334,7 @@ mixin DialogExpense {
             CupertinoTextField(
               controller: _tfDate,
               readOnly: true,
-              placeholder: 'Date',
+              placeholder: 'Tanggal',
               decoration: BoxDecoration(
                 color: Get.isDarkMode ? Vx.black : Vx.white,
                 borderRadius: BorderRadius.circular(4),
@@ -369,7 +369,7 @@ mixin DialogExpense {
             [
               Spacer(),
               Text(
-                'with Detail?',
+                'Tambah detail?',
                 style: TextStyle(
                   fontSize: 11,
                   decoration: TextDecoration.underline,
@@ -386,7 +386,7 @@ mixin DialogExpense {
               visible: isShowDetail.value,
               child: CupertinoTextField(
                 controller: _tfDescription,
-                placeholder: 'Detail: Nama Toko/Waktu',
+                placeholder: 'Detail: Toko/waktu',
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                 minLines: 5,
@@ -556,7 +556,7 @@ mixin DialogExpense {
               if (expense != null) ...[
                 ExButtonElevated(
                   child: Text(
-                    'Delete',
+                    'Hapus',
                     style: TextStyle(color: Vx.red500, fontSize: 13),
                   ),
                   onPressed: () async {
@@ -569,7 +569,7 @@ mixin DialogExpense {
                 ).pOnly(right: 12).expand(),
               ],
               ExButtonElevated(
-                child: Text('Submit', style: TextStyle(fontSize: 13)),
+                child: Text('Simpan', style: TextStyle(fontSize: 13)),
                 onPressed: () async {
                   Get.back();
                   await _submitExpense(
@@ -600,7 +600,7 @@ mixin DialogExpense {
     final _controller = Get.find<HomeController>();
 
     if (_controller.categoryList.isEmptyOrNull) {
-      await HelperToast.warn('Please Creete at least 1 category');
+      await HelperToast.warn('Buat minimal 1 kategori dulu');
       return;
     }
 
@@ -657,14 +657,13 @@ mixin DialogExpense {
         ),
         actions: OverlayActions(
           onReady: () async => _fnNote.requestFocus(),
-          onClose: (_) async => await Overlayment.dismissLast(),
         ),
         child: VStack(
           [
             VStack([
               // header
               HStack([
-                '${expense != null ? 'Edit Expense' : 'Add Expense'}'.text.bold
+                '${expense != null ? 'Edit pengeluaran' : 'Tambah pengeluaran'}'.text.bold
                     .make(),
                 Spacer(),
                 IconButton(
@@ -682,7 +681,7 @@ mixin DialogExpense {
                 CupertinoTextField(
                   controller: _tfDate,
                   readOnly: true,
-                  placeholder: 'Date',
+                  placeholder: 'Tanggal',
                   placeholderStyle: TextStyle(fontSize: 13),
                   decoration: BoxDecoration(
                     color: Get.isDarkMode ? Vx.black : Vx.white,
@@ -721,7 +720,7 @@ mixin DialogExpense {
 
               HStack([
                 Spacer(),
-                'with Detail?'.text
+                'Tambah detail?'.text
                     .size(11)
                     .minFontSize(11)
                     .underline
@@ -737,7 +736,7 @@ mixin DialogExpense {
                   visible: isShowDetail.value,
                   child: CupertinoTextField(
                     controller: _tfDescription,
-                    placeholder: 'Detail: Nama Toko/Waktu',
+                    placeholder: 'Detail: Toko/waktu',
                     decoration: BoxDecoration(
                       color: Get.isDarkMode ? Vx.black : Vx.white,
                       borderRadius: BorderRadius.circular(4),
@@ -759,7 +758,7 @@ mixin DialogExpense {
                 () => CupertinoTextField(
                   controller: _tfCategory,
                   readOnly: true,
-                  placeholder: 'Select Category',
+                  placeholder: 'Pilih kategori',
                   decoration: BoxDecoration(
                     color: Get.isDarkMode ? Vx.black : Vx.white,
                     borderRadius: BorderRadius.circular(4),
@@ -840,7 +839,7 @@ mixin DialogExpense {
             HStack([
               if (expense != null) ...[
                 ExButtonText(
-                  child: 'Delete'.text.color(AppColor.red).size(13).make(),
+                  child: 'Hapus'.text.color(AppColor.red).size(13).make(),
                   onPressed: () async {
                     await Overlayment.dismissLast();
                     await _deleteExpense(
@@ -856,7 +855,7 @@ mixin DialogExpense {
                 ).pSymmetric(h: 4),
               ],
               ExButtonText(
-                child: Text('Submit', style: TextStyle(fontSize: 13)),
+                child: Text('Simpan', style: TextStyle(fontSize: 13)),
                 onPressed: () async {
                   await Overlayment.dismissLast();
                   await _submitExpense(
@@ -891,7 +890,7 @@ mixin DialogExpense {
 
       HelperDialog.ios(
         title: Text(
-          'Add Expense',
+          'Tambah pengeluaran',
           style: TextStyle(fontWeight: FontWeight.bold),
           textAlign: TextAlign.left,
         ).pOnly(bottom: 16),
@@ -899,12 +898,12 @@ mixin DialogExpense {
           CupertinoTextField(
             controller: _tfText,
             focusNode: _fnText,
-            placeholder: 'Type your expense here...',
+            placeholder: 'Tulis pengeluaranmu di sini...',
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
             style: TextStyle(fontSize: 13, color: AppColor.textReverse),
             onSubmitted: (s) async {
               if (s.trim().isEmpty) {
-                await HelperToast.warn('Please enter some text');
+                await HelperToast.warn('Tulis pengeluarannya dulu');
                 return;
               }
               Get.back();
@@ -914,10 +913,10 @@ mixin DialogExpense {
         ]),
         actions: [
           CupertinoDialogAction(
-            child: Text('Submit', style: TextStyle(fontSize: 13)),
+            child: Text('Simpan', style: TextStyle(fontSize: 13)),
             onPressed: () async {
               if (_tfText.text.trim().isEmpty) {
-                await HelperToast.warn('Please enter some text');
+                await HelperToast.warn('Tulis pengeluarannya dulu');
                 return;
               }
               Get.back();
@@ -943,7 +942,7 @@ mixin DialogExpense {
       }
 
       ExBottomSheet.basic(
-        title: 'Add Expense',
+        title: 'Tambah pengeluaran',
         backgroundColor: AppColor.appbarPrimary,
         barrierColor: Colors.black54,
         content: ConstrainedBox(
@@ -970,8 +969,8 @@ mixin DialogExpense {
                     maxLines: 3,
                     autofocus: !kIsWeb,
                     placeholder: kIsWeb
-                        ? 'Tap here to type your expense...'
-                        : 'Type your expense here...',
+                        ? 'Ketuk di sini untuk mulai mengetik...'
+                        : 'Tulis pengeluaranmu di sini...',
                     placeholderStyle: TextStyle(
                       fontSize: 13,
                       color: Vx.neutral500,
@@ -979,7 +978,7 @@ mixin DialogExpense {
                     style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                     onSubmitted: (s) async {
                       if (s.trim().isEmpty) {
-                        await HelperToast.warn('Please enter some text');
+                        await HelperToast.warn('Tulis pengeluarannya dulu');
                         return;
                       }
                       Get.back();
@@ -1015,7 +1014,7 @@ mixin DialogExpense {
                                 ? AppColor.red
                                 : AppColor.textReverse,
                           ).pOnly(right: 6),
-                          (_isListening.value ? 'Listening...' : 'Voice').text
+                          (_isListening.value ? 'Mendengarkan...' : 'Suara').text
                               .size(12)
                               .minFontSize(12)
                               .make(),
@@ -1029,11 +1028,11 @@ mixin DialogExpense {
                     ).pSymmetric(h: 8),
                   ],
                   ExButtonText(
-                    label: 'Submit',
+                    label: 'Simpan',
                     labelSize: 13,
                     onPressed: () async {
                       if (_tfText.text.trim().isEmpty) {
-                        await HelperToast.warn('Please enter some text');
+                        await HelperToast.warn('Tulis pengeluarannya dulu');
                         return;
                       }
                       Get.back();
@@ -1056,7 +1055,7 @@ mixin DialogExpense {
   static Future<void> _processAIInput(String userText) async {
     final _controller = Get.find<HomeController>();
 
-    _controller.footerStatus.value = 'Processing...';
+    _controller.footerStatus.value = 'Lagi diproses...';
 
     groq.startChat();
     groq.setCustomInstructionsWith('''
@@ -1094,7 +1093,7 @@ mixin DialogExpense {
 
     final json = jsonDecode(response.choices.first.message.content);
     logD('json -> $json');
-    _controller.footerStatus.value = 'Insert to DB';
+    _controller.footerStatus.value = 'Lagi disimpan...';
     await _submitExpense(
       json['note'] as String,
       json['detail'] as String,
@@ -1102,7 +1101,7 @@ mixin DialogExpense {
       json['amount'] as String,
       tfDate: json['date'] as String,
     ).catchError((e) async {
-      _controller.footerStatus.value = 'Failed: ${e.toString()}';
+      _controller.footerStatus.value = 'Gagal: ${e.toString()}';
       await HelperToast.error(e.toString());
     });
     _controller.footerStatus.value = '';
@@ -1184,10 +1183,10 @@ mixin DialogExpense {
     if (duplicates.isNotEmpty) {
       final duplicate = duplicates.first;
       ExAlert.confirm(
-        title: 'Possible Duplicate',
+        title: 'Kemungkinan duplikat',
         message:
-            '${duplicate.note} (${duplicate.amount?.moneyFormat()}) already exists on ${duplicate.date?.reformatDate(from: yMd, to: 'dd MMM y')}.\n\nContinue saving this transaction?',
-        btnYesText: 'Save Anyway',
+            '${duplicate.note} (${duplicate.amount?.moneyFormat()}) sudah ada pada ${duplicate.date?.reformatDate(from: yMd, to: 'dd MMM y')}.\n\nTetap simpan transaksi ini?',
+        btnYesText: 'Tetap simpan',
         onYes: () async {
           Get.back();
           await _persistExpense(
@@ -1249,7 +1248,7 @@ mixin DialogExpense {
         action: '_persistExpense',
         stack: e.toString(),
       );
-      await HelperToast.error('Failed to ${isEdit ? 'Edit' : 'Added'} Data');
+      await HelperToast.error('Gagal ${isEdit ? 'mengubah' : 'menambah'} pengeluaran');
     }
   }
 
@@ -1262,7 +1261,7 @@ mixin DialogExpense {
     final _tfEndDate = TextEditingController(text: '');
     HelperDialog.ios(
       title: Text(
-        'Advance Search for "$s"',
+        'Filter lanjutan untuk "$s"',
         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         textAlign: TextAlign.left,
       ).pOnly(bottom: 16),
@@ -1272,7 +1271,7 @@ mixin DialogExpense {
           CupertinoTextField(
             controller: _tfStartDate,
             readOnly: true,
-            placeholder: 'Start Date',
+            placeholder: 'Tanggal mulai',
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
             prefix: Icon(
               CupertinoIcons.calendar_today,
@@ -1291,7 +1290,7 @@ mixin DialogExpense {
           CupertinoTextField(
             controller: _tfEndDate,
             readOnly: true,
-            placeholder: 'End Date',
+            placeholder: 'Tanggal akhir',
             placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
             prefix: Icon(
               CupertinoIcons.calendar_today,
@@ -1308,7 +1307,7 @@ mixin DialogExpense {
           HStack(
             [
               Text(
-                'This Month',
+                'Bulan ini',
                 style: TextStyle(decoration: TextDecoration.underline),
                 overflow: TextOverflow.ellipsis,
               ).onInkTap(() {
@@ -1325,7 +1324,7 @@ mixin DialogExpense {
               }),
               Spacer(),
               Text(
-                '7 days',
+                '7 hari',
                 style: TextStyle(decoration: TextDecoration.underline),
                 overflow: TextOverflow.ellipsis,
               ).onInkTap(() {
@@ -1336,7 +1335,7 @@ mixin DialogExpense {
               }),
               Spacer(),
               Text(
-                '30 days',
+                '30 hari',
                 style: TextStyle(decoration: TextDecoration.underline),
                 overflow: TextOverflow.ellipsis,
               ).onInkTap(() {
@@ -1351,7 +1350,7 @@ mixin DialogExpense {
       ).h(110),
       actions: [
         CupertinoDialogAction(
-          child: Text('Submit', style: TextStyle(fontSize: 13)),
+          child: Text('Terapkan', style: TextStyle(fontSize: 13)),
           onPressed: () async {
             if (_tfStartDate.text.isNotBlank && _tfEndDate.text.isNotBlank) {
               await _controller.getExpense(
@@ -1361,7 +1360,7 @@ mixin DialogExpense {
               );
               Get.back();
             } else {
-              await HelperToast.warn('Please select date range');
+              await HelperToast.warn('Pilih rentang tanggal dulu');
             }
           },
         ),

@@ -25,7 +25,7 @@ mixin HelperImportExport {
 
       /// get path
       if (customPath == null) {
-        final abPath = await FilePicker.getDirectoryPath(dialogTitle: 'Save to');
+        final abPath = await FilePicker.getDirectoryPath(dialogTitle: 'Pilih folder penyimpanan');
         path = abPath?.replaceAll('/Volumes/Macintosh HD', '');
         if (path == null) return;
       } else {
@@ -34,7 +34,7 @@ mixin HelperImportExport {
 
       /// get data
       if (currentUserId == null) {
-        ExSnackbar.danger('User not authenticated');
+        ExSnackbar.danger('Kamu belum login');
         return;
       }
       final ex =
@@ -103,7 +103,7 @@ mixin HelperImportExport {
       String? path;
 
       if (customPath == null) {
-        final abPath = await FilePicker.getDirectoryPath(dialogTitle: 'Save full backup to');
+        final abPath = await FilePicker.getDirectoryPath(dialogTitle: 'Pilih folder backup');
         path = abPath?.replaceAll('/Volumes/Macintosh HD', '');
         if (path == null) return;
       } else {
@@ -111,7 +111,7 @@ mixin HelperImportExport {
       }
 
       if (currentUserId == null) {
-        ExSnackbar.danger('User not authenticated');
+        ExSnackbar.danger('Kamu belum login');
         return;
       }
 
@@ -214,8 +214,8 @@ mixin HelperImportExport {
         paddingSymmetric: Get.context!.isMobile ? 90 : 200,
         child: VStack([
           CupertinoActivityIndicator().centered(),
-          'Importing...'.text.size(11).minFontSize(11).makeCentered().pSymmetric(v: 8),
-          '${supaExpense.length} expense data'.text.size(11).minFontSize(11).makeCentered(),
+          'Lagi mengimpor...'.text.size(11).minFontSize(11).makeCentered().pSymmetric(v: 8),
+          '${supaExpense.length} data pengeluaran'.text.size(11).minFontSize(11).makeCentered(),
         ]),
       );
 
@@ -227,13 +227,13 @@ mixin HelperImportExport {
       ExLoading.dismiss();
 
       if (customCallback == null) {
-        await HelperToast.success('Import Done');
+        await HelperToast.success('Impor selesai');
       } else {
         customCallback.call();
       }
     } catch (e) {
       ExLoading.dismiss();
-      ExAlert.error(title: 'Import Failed', message: '$e');
+      ExAlert.error(title: 'Impor gagal', message: '$e');
     }
   }
 
@@ -260,7 +260,7 @@ mixin HelperImportExport {
       ExLoading.dismiss();
     } catch (e) {
       ExLoading.dismiss();
-      ExAlert.error(title: 'Delete Failed', message: '$e');
+      ExAlert.error(title: 'Gagal menghapus', message: '$e');
     }
   }
 

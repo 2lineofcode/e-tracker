@@ -44,9 +44,9 @@ class LoginController extends GetxController {
         .catchError((e) async {
           await HelperErrorLog.record(userEmail: tfEmail.text, page: 'login', action: 'onLogin', stack: e.toString());
           if (e is AuthException && e.message.contains('credentials')) {
-            await HelperToast.error('${e.message}');
+            await HelperToast.error('Email atau kata sandinya salah');
           } else {
-            ExAlert.error(title: 'Login Failed', message: '$e');
+            ExAlert.error(title: 'Gagal masuk', message: 'Ada masalah saat masuk. Coba lagi ya.');
           }
           ExLoading.dismiss();
         });

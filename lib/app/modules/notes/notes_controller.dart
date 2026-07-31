@@ -80,7 +80,7 @@ class NotesController extends GetxController {
         action: 'loadNotes',
         stack: e.toString(),
       );
-      await HelperToast.error('Failed to load notes');
+      await HelperToast.error('Note gagal dimuat');
     } finally {
       isLoading.value = false;
     }
@@ -113,7 +113,7 @@ class NotesController extends GetxController {
     final title = _resolveTitle();
 
     if (title.isEmpty && content.isEmpty && !_hasEmbed()) {
-      await HelperToast.warn('Note is empty');
+      await HelperToast.warn('Note masih kosong');
       return;
     }
 
@@ -143,14 +143,14 @@ class NotesController extends GetxController {
       _isApplyingNote = false;
       await loadNotes();
       _refreshHomeNotes();
-      await HelperToast.success('Note saved');
+      await HelperToast.success('Note disimpan');
     } catch (e) {
       await HelperErrorLog.record(
         page: 'notes',
         action: 'saveNote',
         stack: e.toString(),
       );
-      await HelperToast.error('Failed to save note');
+      await HelperToast.error('Note gagal disimpan');
     } finally {
       isSaving.value = false;
     }
@@ -171,14 +171,14 @@ class NotesController extends GetxController {
       _rememberCurrentState();
       await loadNotes();
       _refreshHomeNotes();
-      await HelperToast.success('Note deleted');
+      await HelperToast.success('Note dihapus');
     } catch (e) {
       await HelperErrorLog.record(
         page: 'notes',
         action: 'deleteSelectedNote',
         stack: e.toString(),
       );
-      await HelperToast.error('Failed to delete note');
+      await HelperToast.error('Note gagal dihapus');
     } finally {
       isSaving.value = false;
     }
@@ -207,7 +207,7 @@ class NotesController extends GetxController {
         action: 'togglePinned',
         stack: e.toString(),
       );
-      await HelperToast.error('Failed to update pin');
+      await HelperToast.error('Pin gagal diperbarui');
     } finally {
       isPinning.value = false;
     }
@@ -289,9 +289,9 @@ class NotesController extends GetxController {
     }
 
     ExAlert.confirm(
-      title: 'Discard changes?',
-      message: 'Your unsaved changes will be lost.',
-      btnYesText: 'Discard',
+      title: 'Buang perubahan?',
+      message: 'Perubahan yang belum disimpan bakal hilang.',
+      btnYesText: 'Buang',
       onYes: () {
         Get.back();
         hasDirtyChange.value = false;

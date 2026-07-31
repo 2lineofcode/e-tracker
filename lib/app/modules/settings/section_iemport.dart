@@ -40,13 +40,13 @@ class SectionIEmport extends GetView<SettingsController> {
               size: 18,
               color: AppColor.primary,
             ).pOnly(right: 8),
-            'Analytics'.text.size(14).bold.make(),
+            'Ringkasan'.text.size(14).bold.make(),
           ]).pOnly(bottom: 14),
           '${controller.sumAllExpense.value.moneyFormat()}'.text
               .size(18)
               .bold
               .make(),
-          '${controller.countExpense.value} expenses • ${controller.countCategory.value} categories'
+          '${controller.countExpense.value} pengeluaran • ${controller.countCategory.value} kategori'
               .text
               .size(11)
               .color(AppColor.neutral)
@@ -69,19 +69,19 @@ class SectionIEmport extends GetView<SettingsController> {
           'Data'.text.size(14).bold.make().pOnly(bottom: 8),
           actionRow(
             icon: Icons.upload_file_outlined,
-            title: 'Import CSV',
+            title: 'Impor CSV',
             onTap: () async => await HelperImportExport.importFromCSV(),
           ),
           Divider(height: 1),
           actionRow(
             icon: Icons.download_outlined,
-            title: 'Export CSV',
+            title: 'Ekspor CSV',
             onTap: () async => await HelperImportExport.exportToCSV(),
           ),
           Divider(height: 1),
           actionRow(
             icon: Icons.archive_outlined,
-            title: 'Full Backup',
+            title: 'Backup lengkap',
             onTap: () async =>
                 await HelperImportExport.exportFullBackupBundle(),
           ),
@@ -115,14 +115,14 @@ class SectionIEmport extends GetView<SettingsController> {
         fillColor: AppColor.box,
       ),
       child: VStack([
-        'Danger Zone'.text.size(14).bold.color(AppColor.red).make(),
+        'Aksi berisiko'.text.size(14).bold.color(AppColor.red).make(),
         12.heightBox,
         buttonDelete(
-          title: 'Delete Data',
+          title: 'Hapus semua data',
           action: () async => await HelperImportExport.deleteAllData(),
         ).pOnly(bottom: 10),
         buttonDelete(
-          title: 'Delete Account',
+          title: 'Hapus akun',
           action: () async => await HelperImportExport.deleteAccount(),
         ),
       ]).p16(),
@@ -137,7 +137,7 @@ class SectionIEmport extends GetView<SettingsController> {
       [
         title.text.make().expand(),
         ExButtonOutline(
-          label: 'Delete',
+          label: 'Hapus',
           labelSize: 12,
           height: 38,
           borderColor: Vx.red400,
@@ -154,7 +154,7 @@ class SectionIEmport extends GetView<SettingsController> {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: 'Type ',
+                          text: 'Ketik ',
                           style: TextStyle(color: AppColor.textReverse),
                         ),
                         TextSpan(
@@ -181,7 +181,7 @@ class SectionIEmport extends GetView<SettingsController> {
                   Obx(
                     () => ExButtonElevated(
                       width: double.infinity,
-                      label: 'Delete',
+                      label: 'Hapus',
                       labelSize: 12,
                       backgroundColor: Vx.red600,
                       labelColor: Vx.red50,
@@ -210,12 +210,12 @@ class SectionIEmport extends GetView<SettingsController> {
               child: VStack(
                 [
                   HStack([
-                    'Cloud Sync'.text.size(14).bold.make().expand(),
+                    'Backup cloud'.text.size(14).bold.make().expand(),
                     ExButtonLoading(
                       height: 33,
                       width: 80,
-                      type: ExButtonType.elevated,
-                      child: 'Sync Now'.text.size(11).minFontSize(11).make(),
+                      type: ExButtonType.outlined,
+                      child: 'Backup'.text.size(11).minFontSize(11).make(),
                       onTap: (startLoading, stopLoading, btnState) async {
                         startLoading();
                         await controller.onUploadBackup();
@@ -244,7 +244,7 @@ class SectionIEmport extends GetView<SettingsController> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         trailing: IconButton(
-                          tooltip: 'Restore',
+                          tooltip: 'Pulihkan',
                           icon: Icon(
                             CupertinoIcons.arrow_turn_up_left,
                             size: 18,
@@ -257,7 +257,7 @@ class SectionIEmport extends GetView<SettingsController> {
 
                   if (controller.backupList.length > 1) ...[
                     ExButtonOutline(
-                      label: 'Delete Old',
+                      label: 'Hapus backup lama',
                       labelSize: 12,
                       borderColor: AppColor.red,
                       labelColor: AppColor.red,
@@ -275,13 +275,13 @@ class SectionIEmport extends GetView<SettingsController> {
                 fillColor: AppColor.box,
               ),
               child: VStack([
-                'Cloud Sync'.text.size(14).bold.make(),
+                'Backup cloud'.text.size(14).bold.make(),
                 ExUiErrorOrEmpty(
                   child: VStack(
                     [
-                      'No Backup'.text.size(13).bold.makeCentered(),
+                      'Belum ada backup'.text.size(13).bold.makeCentered(),
                       ExButtonElevated(
-                        label: 'Backup Now',
+                        label: 'Backup sekarang',
                         labelSize: 11,
                         height: 33,
                         onPressed: () => controller.onUploadBackup(),

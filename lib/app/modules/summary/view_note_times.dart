@@ -57,9 +57,9 @@ class ViewNoteTimes extends GetView<SummaryController> {
                       color: AppColor.textOnBackground,
                     ).centered(),
                   ).wh(26, 26).pOnly(right: 8),
-                  '${items.length} notes'.text.size(10).make(),
+                  '${items.length} note'.text.size(10).make(),
                   ' · '.text.size(10).color(AppColor.neutral).make(),
-                  '$occurrences entries'.text.size(10).make(),
+                  '$occurrences entri'.text.size(10).make(),
                   Spacer(),
                   total.moneyFormat().text.size(11).bold.make(),
                 ]).pSymmetric(h: 12, v: 10),
@@ -90,7 +90,7 @@ class ViewNoteTimes extends GetView<SummaryController> {
             ] else ...[
               ExUiErrorOrEmpty(
                 bgColor: AppColor.emptyStatePrimary,
-                title: 'No data yet',
+                title: 'Belum ada data',
                 message: '',
               ).expand(),
             ],
@@ -146,7 +146,7 @@ class ViewNoteTimes extends GetView<SummaryController> {
             .make()
             .pOnly(left: 12),
         IconButton(
-          tooltip: 'Copy',
+          tooltip: 'Salin',
           visualDensity: VisualDensity.compact,
           style: IconButton.styleFrom(
             minimumSize: Size(28, 28),
@@ -171,6 +171,6 @@ class ViewNoteTimes extends GetView<SummaryController> {
 
   Future<void> _copyNote(String note) async {
     await Clipboard.setData(ClipboardData(text: note));
-    await HelperToast.info('Copied "$note"');
+    await HelperToast.info('"$note" disalin');
   }
 }

@@ -33,14 +33,14 @@ mixin DialogAsset {
       OverPanel(
         alignment: Alignment.centerRight,
         width: Get.context!.isMobile ? Get.width * 0.92 : 340,
-        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
         animation: OverSlideAnimation(begin: Offset(1, 0), end: Offset(0, 0), durationMilliseconds: 100, reverseDurationMilliseconds: 100),
 
         child: VStack([
           // title
           HStack([
             Icon(UIconsPro.solidRounded.plant_seed_invest, size: 16).pOnly(right: 10),
-            'Assets'.text.bold.make().pSymmetric(h: 10, v: 3).color(AppColor.border).cornerRadius(6),
+            'Aset'.text.bold.make().pSymmetric(h: 10, v: 3).color(AppColor.border).cornerRadius(6),
             Spacer(),
             IconButton(
               icon: Icon(UIconsPro.solidRounded.plus, size: 16),
@@ -55,7 +55,7 @@ mixin DialogAsset {
               return VStack([
                 Icon(Icons.indeterminate_check_box, size: 64, color: Vx.neutral400).centered(),
                 12.heightBox,
-                'No assets yet'.text.size(12).color(Vx.neutral400).makeCentered().pSymmetric(v: 12),
+                'Belum ada aset'.text.size(12).color(Vx.neutral400).makeCentered().pSymmetric(v: 12),
               ]).centered();
             }
             return ListView.separated(
@@ -106,7 +106,7 @@ mixin DialogAsset {
             '${asset.title}'.text.bold.size(12).maxLines(2).ellipsis.make().pOnly(bottom: 6),
             HStack([
               _assetPill(
-                'Updated ${asset.updatedAt?.reformatDate(to: 'dd MMM yyyy')}',
+                'Diperbarui ${asset.updatedAt?.reformatDate(to: 'dd MMM yyyy')}',
                 AppColor.neutral,
               ).expand(),
             ]),
@@ -153,7 +153,7 @@ mixin DialogAsset {
       ),
       child: Obx(
         () => HStack([
-          'Total Assets'.text.bold.size(12).color(AppColor.textOnBackground).make().expand(),
+          'Total aset'.text.bold.size(12).color(AppColor.textOnBackground).make().expand(),
           '${controller.totalAssets.value.moneyFormat()}'.text.bold.color(AppColor.textOnBackground).size(12).make(),
         ]).pSymmetric(h: 14, v: 10),
       ),
@@ -174,12 +174,11 @@ mixin DialogAsset {
         width: 270,
         alignment: Alignment.center,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColor.appbarPrimary),
-        backgroundSettings: BackgroundSettings(color: AppColor.card, blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
         animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
         actions: OverlayActions(
           onReady: () async => _fnTitle.requestFocus(),
           onClose: (_) async {
-            await Overlayment.dismissLast();
             await 100.milliseconds.delay();
             await openList();
           },
@@ -190,7 +189,7 @@ mixin DialogAsset {
               HStack(
                 [
                   Icon(UIconsPro.solidRounded.plant_seed_invest, size: 16).pOnly(right: 12),
-                  '${asset != null ? 'Edit Asset' : 'New Asset'}'.text.bold.make(),
+                  '${asset != null ? 'Edit aset' : 'Tambah aset'}'.text.bold.make(),
                   Spacer(),
                   IconButton(
                     icon: Icon(UIconsPro.solidRounded.cross, size: 14),
@@ -204,7 +203,7 @@ mixin DialogAsset {
                 controller: _tfTitle,
                 focusNode: _fnTitle,
                 autofocus: true,
-                placeholder: 'Title',
+                placeholder: 'Nama aset',
                 placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
                 decoration: BoxDecoration(color: Get.isDarkMode ? Vx.black : Vx.white, borderRadius: BorderRadius.circular(4)),
                 style: TextStyle(fontSize: 13, color: AppColor.textReverse),
@@ -238,7 +237,7 @@ mixin DialogAsset {
             [
               if (asset != null) ...[
                 ExButtonText(
-                  child: Text('Delete', style: TextStyle(fontSize: 13, color: AppColor.red)),
+                  child: Text('Hapus', style: TextStyle(fontSize: 13, color: AppColor.red)),
                   onPressed: () async {
                     await _controller.repo.deleteAssets(asset.id ?? '');
                     await _controller.loadAssetsSummary();
@@ -248,7 +247,7 @@ mixin DialogAsset {
                 Container(height: 24, width: 0.5, color: Vx.neutral700).pSymmetric(h: 8),
               ],
               ExButtonText(
-                child: Text('Submit', style: TextStyle(fontSize: 13)),
+                child: Text('Simpan', style: TextStyle(fontSize: 13)),
                 onPressed: () async {
                   final newAsset = SupaAssets(
                     id: asset?.id ?? UuidV4().generate(),

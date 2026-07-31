@@ -8,9 +8,9 @@ import '../../models/supa_expense_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 
 mixin SectionMenu {
-  static const APP_CONFIG = 'App Config';
-  static const REPEAT_SETTING = 'Recurring';
-  static const IMPORT_EXPORT = 'Import/Export';
+  static const APP_CONFIG = 'Umum';
+  static const REPEAT_SETTING = 'Transaksi Rutin';
+  static const IMPORT_EXPORT = 'Data & Backup';
 }
 
 class SettingsRepository {

@@ -130,7 +130,7 @@ class SqlEditorController extends GetxController {
     if (isRunning.value) return;
     final sql = _resolveExecutableSql();
     if (sql == null || sql.isEmpty) {
-      errorMessage.value = 'Please enter a SQL statement.';
+      errorMessage.value = 'Tulis query SQL dulu.';
       return;
     }
 

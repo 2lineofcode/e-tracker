@@ -68,7 +68,7 @@ mixin HelperNewUser {
         alignment: Alignment.centerRight,
         child: VStack([
           Obx(
-            () => 'Hi ${name.value}👋'.text
+            () => 'Halo ${name.value} 👋'.text
                 .size(16)
                 .bold
                 .make()
@@ -130,17 +130,17 @@ mixin HelperNewUser {
               });
             },
             height: 33,
-            child: 'Change Photo'.text.size(11).minFontSize(11).make(),
+            child: 'Ganti foto'.text.size(11).minFontSize(11).make(),
           ).centered().pOnly(bottom: 16),
           TextField(
             controller: tfFullName,
-            decoration: HelperDecoration.input(hint: 'Full Name'),
+            decoration: HelperDecoration.input(hint: 'Nama lengkap'),
             style: TextStyle(fontSize: 13),
             onChanged: (value) => name.value = value,
           ).h(33).pOnly(bottom: 12),
           TextField(
             controller: tfBirthYear,
-            decoration: HelperDecoration.input(hint: 'Birth Year'),
+            decoration: HelperDecoration.input(hint: 'Tahun lahir'),
             style: TextStyle(fontSize: 13),
             keyboardType: TextInputType.number,
             inputFormatters: [
@@ -151,7 +151,7 @@ mixin HelperNewUser {
           Divider().pSymmetric(v: 16),
 
           ///
-          '"${DateTime.now().toStringEx(format: 'dd MMM y')}" This is the day that we hope you commit to start tracking your fucking expenses! 🔥'
+          '"${DateTime.now().toStringEx(format: 'dd MMM y')}" Semoga hari ini jadi awal kamu rajin mencatat pengeluaran! 🔥'
               .text
               .make(),
 
@@ -162,13 +162,13 @@ mixin HelperNewUser {
               child: Container(
                 decoration: ExDecorator.box(),
                 child: VStack([
-                  'do you wants to record this as reminder?'.text
+                  'Mau simpan ini sebagai pengingat?'.text
                       .size(12)
                       .makeCentered()
                       .pOnly(bottom: 8),
                   HStack([
                     ExButtonElevated(
-                      label: 'Yes',
+                      label: 'Ya',
                       height: 33,
                       onPressed: () async {
                         opt1.value = false;
@@ -179,9 +179,9 @@ mixin HelperNewUser {
                           date: DateTime.now().toStringEx(format: 'yyyy-MM-dd'),
                           categoryName: 'expense:misc:notes',
                           amount: 0,
-                          note: 'Hi!',
+                          note: 'Mulai mencatat!',
                           detail:
-                              'This is the day you commit to starting record your fucking expenses! 🔥',
+                              'Hari ini aku mulai rajin mencatat pengeluaran! 🔥',
                         );
                         await db.from('expense').insert(expsenses.toJson());
                         await Get.find<HomeController>().getExpense();
@@ -189,7 +189,7 @@ mixin HelperNewUser {
                     ).expand(),
                     12.widthBox,
                     ExButtonElevated(
-                      label: 'No',
+                      label: 'Tidak',
                       height: 33,
                       onPressed: () => opt1.value = false,
                     ).expand(),
@@ -202,13 +202,13 @@ mixin HelperNewUser {
           Spacer(),
           ExButtonElevated(
             width: double.infinity,
-            label: 'Save',
+            label: 'Simpan',
             onPressed: () async {
               final birthYear = int.tryParse(tfBirthYear.text);
               if (birthYear == null ||
                   birthYear < 1900 ||
                   birthYear > DateTime.now().year) {
-                await HelperToast.error('Enter a valid birth year');
+                await HelperToast.error('Masukkan tahun lahir yang valid');
                 return;
               }
 

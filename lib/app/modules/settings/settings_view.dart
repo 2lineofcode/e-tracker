@@ -18,7 +18,7 @@ class SettingsView extends GetView<SettingsController> {
   Widget build(BuildContext context) {
     return MyLayout(
       drawerKey: drawerKeySetting,
-      appBarTitle: 'Settings'.text.size(15).bold.make(),
+      appBarTitle: 'Pengaturan'.text.size(15).bold.make(),
       appBarAction: appBarAction(),
       sideMenuContent: sideMenuContent(),
       sideMenuWidth: 220,
@@ -44,7 +44,7 @@ class SettingsView extends GetView<SettingsController> {
   Widget sideMenuContent() {
     return Obx(
       () => VStack([
-        'PREFERENCES'.text
+        'MENU'.text
             .size(10)
             .color(AppColor.neutral)
             .letterSpacing(1.2)
