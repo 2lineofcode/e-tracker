@@ -2178,6 +2178,7 @@ $rows$suffix
           .toSet()) {
         await home.onCalenderRefreshEvent(period: period);
       }
+      await home.getCount1Month(home.focusedDay.value);
     }
     await getExpenses(
       year: yearSelected.value,

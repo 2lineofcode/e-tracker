@@ -48,6 +48,7 @@ class HomeController extends GetxController with StateMixin {
 
   /// assets
   final assetsList = <SupaAssets>[].obs;
+  final assetSnapshots = <SupaAssetSnapshot>[].obs;
   final totalAssets = 0.obs;
 
   /// goals & notes
@@ -64,6 +65,7 @@ class HomeController extends GetxController with StateMixin {
   /// count
   final countOfDay = 0.0.obs;
   final countOfMonth = 0.obs;
+  final payCycleExpense = 0.obs;
   final rpcSpenderDay = [].obs;
   final countMaxBudget = 0.obs;
   final countRemainingBudget = 0.obs;
@@ -96,6 +98,7 @@ class HomeController extends GetxController with StateMixin {
 
     rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
     userProfile.value = await repo.getUserProfile().then((value) => value[0]);
+    await loadPayCycleExpense();
     await HomeRT.initExpenseRT();
     update();
     super.onInit();
@@ -114,6 +117,10 @@ class HomeController extends GetxController with StateMixin {
       totalAssets.value = assets
           .fold<num>(0, (sum, e) => sum + (e.amount ?? 0))
           .toInt();
+      assetSnapshots.assignAll(await repo.getAssetSnapshots());
+      if (assets.isNotEmpty && assetSnapshots.isEmpty) {
+        await saveAssetSnapshot();
+      }
     } catch (e) {
       await HelperErrorLog.record(
         page: 'home',
@@ -122,7 +129,13 @@ class HomeController extends GetxController with StateMixin {
       );
       assetsList.clear();
       totalAssets.value = 0;
+      assetSnapshots.clear();
     }
+  }
+
+  Future<void> saveAssetSnapshot() async {
+    await repo.saveAssetSnapshot(totalAssets.value);
+    assetSnapshots.assignAll(await repo.getAssetSnapshots());
   }
 
   Future<void> loadGoalsList() async {
@@ -329,6 +342,7 @@ class HomeController extends GetxController with StateMixin {
     try {
       final month = dateTime.toStringEx(format: yM);
       countOfMonth.value = await repo.getCount1Month(month) ?? 0;
+      if (userProfile.value.id != null) await loadPayCycleExpense();
       await loadMonthlyExpenseByGroup(dateTime);
 
       // count percentage of remain budget
@@ -524,6 +538,9 @@ class HomeController extends GetxController with StateMixin {
 
   int get focusedMonthDays => dayInMonth(focusedDay.value);
 
+  List<num> get focusedMonthDailyTotals =>
+      dailyExpenseTotals(events, focusedDay.value);
+
   bool get isFocusedCurrentMonth {
     final now = DateTime.now();
     return focusedDay.value.year == now.year &&
@@ -610,6 +627,47 @@ class HomeController extends GetxController with StateMixin {
     return result;
   }
 
+  int get paymentDay =>
+      (userProfile.value.paymentDay ?? 28).toInt().clamp(1, 31).toInt();
+
+  DateTime get currentPayCycleStart =>
+      payCycleStartAt(DateTime.now(), paymentDay);
+
+  DateTime get nextPayday => nextPaydayAt(DateTime.now(), paymentDay);
+
+  Future<void> loadPayCycleExpense() async {
+    payCycleExpense.value = await repo.getExpenseTotal(
+      currentPayCycleStart,
+      DateUtils.dateOnly(DateTime.now()),
+    );
+  }
+
+  num get scheduledBeforePayday => upcomingRepeatTransactions
+      .where((item) => !item.dueDate.isAfter(nextPayday))
+      .fold<num>(0, (sum, item) => sum + item.amount);
+
+  num get monthlyIncome => userProfile.value.income?.moneyUnformat() ?? 0;
+
+  bool get hasCurrentMonthCashflow =>
+      isFocusedCurrentMonth && monthlyIncome > 0;
+
+  num get cashAfterScheduledBills =>
+      calculateCashUntilPayday(
+        monthlyIncome,
+        payCycleExpense.value,
+        scheduledBeforePayday,
+      );
+
+  int get daysUntilPayday => nextPayday
+      .difference(DateUtils.dateOnly(DateTime.now()))
+      .inDays
+      .clamp(0, 366)
+      .toInt();
+
+  num get safeDailyUntilPayday => daysUntilPayday <= 0
+      ? cashAfterScheduledBills
+      : cashAfterScheduledBills / daysUntilPayday;
+
   @override
   void onClose() {
     unawaited(HomeRT.dispose());
@@ -617,6 +675,73 @@ class HomeController extends GetxController with StateMixin {
     searchFocusNode.dispose();
     super.onClose();
   }
+}
+
+num calculateCashUntilPayday(num income, num spent, num scheduled) =>
+    income - spent - scheduled;
+
+List<num> dailyExpenseTotals(
+  Map<DateTime, List<String>> events,
+  DateTime month,
+) {
+  final totals = List<num>.filled(dayInMonth(month), 0);
+  events.forEach((date, amounts) {
+    if (date.year != month.year || date.month != month.month) return;
+    totals[date.day - 1] = amounts.fold<num>(
+      0,
+      (sum, amount) => sum + (num.tryParse(amount) ?? 0),
+    );
+  });
+  return totals;
+}
+
+({int activeDays, num average, num highest, int highestDay})
+monthlyExpenseStats(List<num> totals) {
+  num total = 0;
+  var activeDays = 0;
+  num highest = 0;
+  var highestDay = 0;
+  for (var i = 0; i < totals.length; i++) {
+    final amount = totals[i];
+    total += amount;
+    if (amount <= 0) continue;
+    activeDays++;
+    if (amount > highest) {
+      highest = amount;
+      highestDay = i + 1;
+    }
+  }
+  return (
+    activeDays: activeDays,
+    average: activeDays == 0 ? 0 : total / activeDays,
+    highest: highest,
+    highestDay: highestDay,
+  );
+}
+
+List<num> weeklyExpenseTotals(List<num> totals) {
+  final weeks = List<num>.filled((totals.length + 6) ~/ 7, 0);
+  for (var i = 0; i < totals.length; i++) {
+    weeks[i ~/ 7] += totals[i];
+  }
+  return weeks;
+}
+
+DateTime paydayAt(int year, int month, int payDay) {
+  final lastDay = DateTime(year, month + 1, 0).day;
+  return DateTime(year, month, payDay.clamp(1, lastDay).toInt());
+}
+
+DateTime payCycleStartAt(DateTime now, int payDay) {
+  final today = DateUtils.dateOnly(now);
+  final thisMonth = paydayAt(now.year, now.month, payDay);
+  if (!thisMonth.isAfter(today)) return thisMonth;
+  return paydayAt(now.year, now.month - 1, payDay);
+}
+
+DateTime nextPaydayAt(DateTime now, int payDay) {
+  final start = payCycleStartAt(now, payDay);
+  return paydayAt(start.year, start.month + 1, payDay);
 }
 
 class UpcomingRepeatTransaction {

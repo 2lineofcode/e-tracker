@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex_kit/ex.dart';
@@ -16,6 +17,7 @@ import 'package:uicons_pro/uicons_pro.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/v4.dart';
 
+import '../../../env.g.dart';
 import '../../core/app_api.dart';
 import '../../core/app_color.dart';
 import '../../core/app_setting.dart';
@@ -269,23 +271,39 @@ mixin DialogExpense {
   /// ------------------------------------------------------------------------
   static Future<void> openManualInput({
     SupaExpense? expense,
+    SupaExpense? draft,
     Function? customCallback,
   }) async {
     if (Get.context!.isMobile) {
       await _manualInputForMobile(
         expense: expense,
+        draft: draft,
         customCallback: customCallback,
       );
     } else {
       await _manualInputForDesktop(
         expense: expense,
+        draft: draft,
         customCallback: customCallback,
       );
     }
   }
 
+  static Future<void> repeatExpense(SupaExpense source) async {
+    await openManualInput(
+      draft: SupaExpense(
+        date: DateTime.now().toStringEx(format: yMd),
+        note: source.note,
+        detail: source.detail,
+        categoryName: source.categoryName,
+        amount: source.amount,
+      ),
+    );
+  }
+
   static Future<void> _manualInputForMobile({
     SupaExpense? expense,
+    SupaExpense? draft,
     Function? customCallback,
   }) async {
     final _controller = Get.find<HomeController>();
@@ -295,33 +313,32 @@ mixin DialogExpense {
       return;
     }
 
-    final _tfDate = TextEditingController(
-      text: expense != null ? expense.date : '',
-    );
+    final initial = expense ?? draft;
+    final _tfDate = TextEditingController(text: initial?.date ?? '');
     final _tfNote = TextEditingController(
-      text: expense != null ? expense.note : '',
+      text: initial?.note ?? '',
     );
     final _tfDescription = TextEditingController(
-      text: expense != null ? expense.detail : '',
+      text: initial?.detail ?? '',
     );
     final _tfCategory =
-        (expense != null
-                ? expense.categoryName ?? ''
+        (initial != null
+                ? initial.categoryName ?? ''
                 : _controller.categoryList[0].code)
             .obs;
     final _tfAmount = TextEditingController(
-      text: expense != null ? expense.amount!.moneyFormat() : '',
+      text: initial?.amount?.moneyFormat() ?? '',
     );
-    final _imageUrl = (expense?.imageUrl ?? '').obs;
+    final _imageUrl = (initial?.imageUrl ?? '').obs;
     final _imagePreview = Rx<Uint8List?>(null);
     final _imageUrlsToDelete = <String>[].obs;
 
     /// flag
-    final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull
+    final isShowDetail = initial != null && initial.detail.isNotEmptyAndNotNull
         ? true.obs
         : false.obs;
     final isTypeNotes =
-        expense != null && expense.resolvedCategory.code == 'expense:misc:notes'
+        initial != null && initial.resolvedCategory.code == 'expense:misc:notes'
         ? true.obs
         : false.obs;
     ExBottomSheet.basic(
@@ -330,7 +347,7 @@ mixin DialogExpense {
       barrierColor: Colors.black54,
       content: VStack(
         [
-          if (expense != null) ...[
+          if (initial != null) ...[
             CupertinoTextField(
               controller: _tfDate,
               readOnly: true,
@@ -347,7 +364,7 @@ mixin DialogExpense {
               ).pOnly(left: 8),
               style: TextStyle(fontSize: 13, color: AppColor.textReverse),
               onTap: () => ExDatePicker.materialDatePicker(
-                initialDate: expense.date?.toDateEx(format: yMd),
+                initialDate: initial.date?.toDateEx(format: yMd),
                 minDate: DateTime(2020),
                 callback: (c) => _tfDate.text = c.toStringEx(format: yMd),
               ),
@@ -461,7 +478,7 @@ mixin DialogExpense {
                   isTypeNotes.value = true;
                   isShowDetail.value = true;
                 } else {
-                  _tfAmount.text = expense?.amount?.moneyFormat() ?? '';
+                  _tfAmount.text = initial?.amount?.moneyFormat() ?? '';
                   isTypeNotes.value = false;
                   isShowDetail.value = false;
                 }
@@ -594,6 +611,7 @@ mixin DialogExpense {
 
   static Future<void> _manualInputForDesktop({
     SupaExpense? expense,
+    SupaExpense? draft,
     Function? customCallback,
   }) async {
     // local inject
@@ -604,40 +622,39 @@ mixin DialogExpense {
       return;
     }
 
-    final _tfDate = TextEditingController(
-      text: expense != null ? expense.date : '',
-    );
+    final initial = expense ?? draft;
+    final _tfDate = TextEditingController(text: initial?.date ?? '');
     final _tfNote = TextEditingController(
-      text: expense != null ? expense.note : '',
+      text: initial?.note ?? '',
     );
     final _fnNote = FocusNode();
     final _tfDescription = TextEditingController(
-      text: expense != null ? expense.detail : '',
+      text: initial?.detail ?? '',
     );
     final _tfCategory = TextEditingController(
-      text: expense != null
-          ? resolveExpenseCategory(expense.categoryName ?? '').label
+      text: initial != null
+          ? resolveExpenseCategory(initial.categoryName ?? '').label
           : resolveExpenseCategory(_controller.categoryList[0].code).label,
     );
     final _tfCategoryCode =
-        (expense != null
-                ? expense.categoryName ?? ''
+        (initial != null
+                ? initial.categoryName ?? ''
                 : _controller.categoryList[0].code)
             .obs;
 
     final _tfAmount = TextEditingController(
-      text: expense != null ? expense.amount!.moneyFormat() : '',
+      text: initial?.amount?.moneyFormat() ?? '',
     );
-    final _imageUrl = (expense?.imageUrl ?? '').obs;
+    final _imageUrl = (initial?.imageUrl ?? '').obs;
     final _imagePreview = Rx<Uint8List?>(null);
     final _imageUrlsToDelete = <String>[].obs;
 
     /// flag
-    final isShowDetail = expense != null && expense.detail.isNotEmptyAndNotNull
+    final isShowDetail = initial != null && initial.detail.isNotEmptyAndNotNull
         ? true.obs
         : false.obs;
     final isTypeNotes =
-        expense != null && expense.resolvedCategory.code == 'expense:misc:notes'
+        initial != null && initial.resolvedCategory.code == 'expense:misc:notes'
         ? true.obs
         : false.obs;
 
@@ -677,7 +694,7 @@ mixin DialogExpense {
               ]).pOnly(bottom: 12),
 
               // body
-              if (expense != null) ...[
+              if (initial != null) ...[
                 CupertinoTextField(
                   controller: _tfDate,
                   readOnly: true,
@@ -694,7 +711,7 @@ mixin DialogExpense {
                   ).pOnly(left: 12, right: 4),
                   style: TextStyle(fontSize: 13, color: AppColor.textReverse),
                   onTap: () => HelperOverlay.openDatePicker(
-                    initialDate: expense.date?.toDateEx(format: yMd),
+                    initialDate: initial.date?.toDateEx(format: yMd),
                     minDate: DateTime(2020),
                     callback: (c) => _tfDate.text = c.toStringEx(format: yMd),
                   ),
@@ -913,6 +930,13 @@ mixin DialogExpense {
         ]),
         actions: [
           CupertinoDialogAction(
+            child: Text('Scan struk', style: TextStyle(fontSize: 13)),
+            onPressed: () async {
+              Get.back();
+              await openReceiptScanner();
+            },
+          ),
+          CupertinoDialogAction(
             child: Text('Simpan', style: TextStyle(fontSize: 13)),
             onPressed: () async {
               if (_tfText.text.trim().isEmpty) {
@@ -988,6 +1012,19 @@ mixin DialogExpense {
                 ),
                 Divider().pOnly(top: 6, bottom: 0),
                 HStack([
+                  ExButtonText(
+                    label: 'Scan struk',
+                    labelSize: 12,
+                    onPressed: () async {
+                      Get.back();
+                      await openReceiptScanner();
+                    },
+                  ).expand(),
+                  Container(
+                    height: 24,
+                    width: 0.5,
+                    color: AppColor.border,
+                  ).pSymmetric(h: 8),
                   if (_isVoiceSupported) ...[
                     Obx(
                       () => ExButtonText(
@@ -1049,6 +1086,108 @@ mixin DialogExpense {
     }
   }
 
+  static Future<void> openReceiptScanner() async {
+    if (kIsWeb) {
+      await HelperToast.warn('Scan struk belum tersedia di web');
+      return;
+    }
+
+    final result = await FilePicker.pickFiles(
+      type: FileType.image,
+    );
+    if (result == null) return;
+    final file = result.files.first;
+    final bytes = await file.readAsBytes();
+    if (bytes.isEmpty) {
+      await HelperToast.error('Gambar nggak bisa dibaca');
+      return;
+    }
+    if (bytes.length > 3 * 1024 * 1024) {
+      await HelperToast.warn('Ukuran gambar maksimal 3 MB');
+      return;
+    }
+
+    final controller = Get.find<HomeController>();
+    ExLoading.show(
+      paddingSymmetric: Get.context!.isMobile ? 90 : 250,
+      child: VStack([
+        CupertinoActivityIndicator().centered(),
+        'Lagi membaca struk...'.text.size(11).makeCentered().pOnly(top: 8),
+      ]),
+    );
+
+    final client = HttpClient();
+    try {
+      final request = await client.postUrl(
+        Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
+      );
+      request.headers
+        ..set(HttpHeaders.authorizationHeader, 'Bearer ${Env.groqApiKey}')
+        ..set(HttpHeaders.contentTypeHeader, 'application/json');
+      request.write(jsonEncode({
+        'model': 'qwen/qwen3.6-27b',
+        'temperature': 0,
+        'response_format': {'type': 'json_object'},
+        'messages': [
+          {
+            'role': 'user',
+            'content': [
+              {
+                'type': 'text',
+                'text': '''Read this Indonesian receipt and return JSON only:
+{"note":"merchant or short purchase title","detail":"important items or empty string","category":"one category code","amount":number,"date":"YYYY-MM-DD"}
+Current date: ${DateTime.now().toStringEx(format: yMd)}
+Category codes: ${controller.categoryList.map((e) => e.code).join(', ')}''',
+              },
+              {
+                'type': 'image_url',
+                'image_url': {
+                  'url': 'data:${_contentTypeFromName(file.name)};base64,${base64Encode(bytes)}',
+                },
+              },
+            ],
+          },
+        ],
+      }));
+
+      final response = await request.close();
+      final body = await response.transform(utf8.decoder).join();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw HttpException('Groq ${response.statusCode}: $body');
+      }
+      final payload = jsonDecode(body) as Map<String, dynamic>;
+      final content = payload['choices'][0]['message']['content'].toString();
+      final receipt = jsonDecode(content) as Map<String, dynamic>;
+      final amount = receipt['amount'].toString().moneyUnformat() ?? 0;
+      final date = DateTime.tryParse(receipt['date']?.toString() ?? '') == null
+          ? DateTime.now().toStringEx(format: yMd)
+          : receipt['date'].toString();
+
+      ExLoading.dismiss();
+      await openManualInput(
+        draft: SupaExpense(
+          note: receipt['note']?.toString() ?? '',
+          detail: receipt['detail']?.toString() ?? '',
+          categoryName: resolveExpenseCategory(
+            receipt['category']?.toString(),
+          ).code,
+          amount: amount,
+          date: date,
+        ),
+      );
+    } catch (e) {
+      ExLoading.dismiss();
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'openReceiptScanner',
+        stack: e.toString(),
+      );
+      await HelperToast.error('Struk gagal dibaca');
+    } finally {
+      client.close(force: true);
+    }
+  }
+
   // ────────────────────────────────────────────────────────────────
   // ⵌ processAIInput
   // ────────────────────────────────────────────────────────────────
@@ -1086,7 +1225,7 @@ mixin DialogExpense {
     final response = await groq.sendMessage('''
       Current date: ${DateTime.now().toStringEx(format: yMd)}
       date selected is: ${_controller.focusedDay.value.toStringEx(format: yMd)}
-      If no category fits, use "expense:unkown"
+      If no category fits, use "expense:unknown"
       Analyze the following text:
       $userText
     ''');

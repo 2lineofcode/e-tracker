@@ -1,5 +1,6 @@
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex_kit/ex.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -69,6 +70,8 @@ mixin DialogAsset {
               },
             );
           }).expand(),
+
+          _assetHistory(_controller),
 
           // xx
           _assetTotalBar(_controller),
@@ -160,6 +163,57 @@ mixin DialogAsset {
     );
   }
 
+  static Widget _assetHistory(HomeController controller) {
+    return Obx(() {
+      final snapshots = controller.assetSnapshots;
+      if (snapshots.length < 2) return 0.heightBox;
+      final amounts = snapshots.map((item) => (item.amount ?? 0).toDouble());
+      final minAmount = amounts.reduce((a, b) => a < b ? a : b);
+      final maxAmount = amounts.reduce((a, b) => a > b ? a : b);
+      final padding = minAmount == maxAmount ? 1.0 : (maxAmount - minAmount) * 0.1;
+
+      return Container(
+        height: 96,
+        decoration: ExDecorator.box(
+          borderRadius: 8,
+          borderColor: AppColor.border,
+          fillColor: AppColor.box,
+        ),
+        child: VStack([
+          'Riwayat aset'.text.size(10).color(AppColor.neutral).make(),
+          LineChart(
+            LineChartData(
+              minX: 0,
+              maxX: (snapshots.length - 1).toDouble(),
+              minY: minAmount - padding,
+              maxY: maxAmount + padding,
+              titlesData: const FlTitlesData(show: false),
+              gridData: const FlGridData(show: false),
+              borderData: FlBorderData(show: false),
+              lineTouchData: const LineTouchData(enabled: false),
+              lineBarsData: [
+                LineChartBarData(
+                  spots: [
+                    for (var i = 0; i < snapshots.length; i++)
+                      FlSpot(i.toDouble(), (snapshots[i].amount ?? 0).toDouble()),
+                  ],
+                  isCurved: true,
+                  barWidth: 2,
+                  color: AppColor.green,
+                  dotData: const FlDotData(show: false),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    color: AppColor.green.withAlpha(20),
+                  ),
+                ),
+              ],
+            ),
+          ).expand(),
+        ]).pSymmetric(h: 10, v: 8),
+      ).pOnly(bottom: 10);
+    });
+  }
+
   static Future<void> openAddEdit({SupaAssets? asset}) async {
     await Overlayment.dismissLast();
     final _controller = Get.find<HomeController>();
@@ -241,6 +295,7 @@ mixin DialogAsset {
                   onPressed: () async {
                     await _controller.repo.deleteAssets(asset.id ?? '');
                     await _controller.loadAssetsSummary();
+                    await _controller.saveAssetSnapshot();
                     await Overlayment.dismissLast();
                   },
                 ).expand(),
@@ -263,6 +318,7 @@ mixin DialogAsset {
                     await _controller.repo.addAssets(newAsset).then((s) {});
                   }
                   await _controller.loadAssetsSummary();
+                  await _controller.saveAssetSnapshot();
                   await Overlayment.dismissLast();
                 },
               ).expand(),

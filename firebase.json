@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "site": "ditdhew",
     "public": "build/web",
     "ignore": [
       "firebase.json",

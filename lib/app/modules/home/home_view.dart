@@ -1,12 +1,12 @@
 import 'package:animated_icon/animated_icon.dart';
 import 'package:ex_kit/ex.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_popup/flutter_popup.dart';
 import 'package:get/get.dart';
 import 'package:grouped_list/grouped_list.dart';
-import 'package:lottie/lottie.dart';
 import 'package:overlayment/overlayment.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:uicons_pro/uicons_pro.dart';
@@ -565,99 +565,6 @@ class HomeView extends GetView<HomeController> {
                           ),
                 ),
 
-                // :summary:
-                Container(
-                  decoration: ExDecorator.box(
-                    borderRadius: 4,
-                    borderColor: AppColor.border,
-                    fillColor: AppColor.card,
-                  ),
-                  child: VStack(
-                    [
-                      HStack([
-                        'Pengeluaran vs budget'.text.bold
-                            .size(11)
-                            .minFontSize(11)
-                            .make()
-                            .expand(),
-                        Obx(() {
-                          final totalSpentRaw =
-                              controller.totalSumAllBudget.value;
-                          final totalBudgetRaw =
-                              controller.totalAllBudget.value;
-                          final totalSpent = totalSpentRaw.isFinite
-                              ? totalSpentRaw
-                              : 0;
-                          final totalBudget = totalBudgetRaw.isFinite
-                              ? totalBudgetRaw
-                              : 0;
-                          return '${totalSpent.moneyFormatCompact()} / ${totalBudget.moneyFormatCompact()}'
-                              .text
-                              .size(12)
-                              .make();
-                        }),
-                      ]),
-                      Obx(
-                        () {
-                          final totalSpentRaw =
-                              controller.totalSumAllBudget.value;
-                          final totalBudgetRaw =
-                              controller.totalAllBudget.value;
-                          final totalSpent =
-                              totalSpentRaw.isFinite && totalSpentRaw >= 0
-                              ? totalSpentRaw.toDouble()
-                              : 0.0;
-                          final totalBudget =
-                              totalBudgetRaw.isFinite && totalBudgetRaw > 0
-                              ? totalBudgetRaw.toDouble()
-                              : 0.0;
-                          final ratio = totalBudget == 0
-                              ? 0.0
-                              : (totalSpent / totalBudget) * 100;
-                          final percentage = ratio.isFinite && !ratio.isNaN
-                              ? ratio.clamp(0, 999).round()
-                              : 0;
-                          final progressValue = percentage.clamp(0, 100);
-
-                          return HStack(
-                            [
-                              ExProgressBar(
-                                value: progressValue.toInt(),
-                                color1: HelperBibit.getColorForPercentage(
-                                  percentage.toInt(),
-                                ),
-                                color2: Vx.neutral400,
-                              ).h(4).expand(),
-                              '${percentage.toInt()}%'.text
-                                  .size(11)
-                                  .minFontSize(11)
-                                  .make()
-                                  .pOnly(left: 12),
-                            ],
-                          );
-                        },
-                      ).pSymmetric(v: 3),
-
-                      /// day remaining...
-                      Obx(() {
-                        if (DateTime.now().month ==
-                                controller.focusedDay.value.month &&
-                            DateTime.now().year ==
-                                controller.focusedDay.value.year) {
-                          return HStack([
-                            '${dayInMonth(DateTime.now()) - DateTime.now().day} hari tersisa'
-                                .text
-                                .color(AppColor.textReverse)
-                                .size(10)
-                                .minFontSize(10)
-                                .make(),
-                          ]);
-                        }
-                        return 0.heightBox;
-                      }),
-                    ],
-                  ).p12(),
-                ).onInkTap(() => controller.goSummary()).pOnly(bottom: 12),
               ]).scrollVertical(physics: ClampingScrollPhysics()),
             ),
           ],
@@ -812,7 +719,14 @@ class HomeView extends GetView<HomeController> {
                 size: 14,
                 color: AppColor.primary,
               ).pOnly(right: 8),
-              'Smart Proyeksi'.text.bold.size(12).make().expand(),
+              (controller.isFocusedCurrentMonth
+                      ? 'Proyeksi+'
+                      : 'Ringkasan Budget')
+                  .text
+                  .bold
+                  .size(12)
+                  .make()
+                  .expand(),
               if (controller.budgetWarningCount > 0)
                 '${controller.budgetWarningCount} risiko'.text
                     .size(10)
@@ -831,9 +745,53 @@ class HomeView extends GetView<HomeController> {
                 color: AppColor.neutral,
               ),
             ]).pOnly(bottom: 8).onInkTap(() => isExpanded.toggle()),
+            if (controller.hasCurrentMonthCashflow) ...[
+              HStack([
+                'Sisa sampai gajian'.text
+                    .size(11)
+                    .minFontSize(11)
+                    .color(AppColor.neutral)
+                    .make()
+                    .expand(),
+                controller.cashAfterScheduledBills
+                    .moneyFormatCompact()
+                    .text
+                    .bold
+                    .size(12)
+                    .color(
+                      controller.cashAfterScheduledBills >= 0
+                          ? AppColor.green
+                          : AppColor.red,
+                    )
+                    .make(),
+              ]).pOnly(bottom: 4),
+              HStack([
+                '${controller.daysUntilPayday} hari · ${controller.nextPayday.toStringEx(format: 'dd MMM')}'
+                    .text
+                    .size(10)
+                    .minFontSize(10)
+                    .color(AppColor.neutral)
+                    .make()
+                    .expand(),
+                '${controller.safeDailyUntilPayday.moneyFormatCompact()}/hari'
+                    .text
+                    .size(10)
+                    .minFontSize(10)
+                    .color(
+                      controller.safeDailyUntilPayday >= 0
+                          ? AppColor.green
+                          : AppColor.red,
+                    )
+                    .make(),
+              ]).pOnly(bottom: 8),
+              Divider(color: AppColor.border).pOnly(bottom: 8),
+            ],
             if (hasBudget) ...[
               HStack([
-                'Proyeksi outcome'.text
+                (controller.isFocusedCurrentMonth
+                        ? 'Proyeksi outcome'
+                        : 'Total outcome')
+                    .text
                     .size(11)
                     .minFontSize(11)
                     .color(AppColor.neutral)
@@ -846,25 +804,26 @@ class HomeView extends GetView<HomeController> {
                     .size(12)
                     .make(),
               ]).pOnly(bottom: 4),
-              HStack([
-                'Batas aman harian'.text
-                    .size(11)
-                    .minFontSize(11)
-                    .color(AppColor.neutral)
-                    .make()
-                    .expand(),
-                controller.dailyAllowance
-                    .moneyFormatCompact()
-                    .text
-                    .bold
-                    .size(12)
-                    .color(
-                      controller.dailyAllowance > 0
-                          ? AppColor.green
-                          : AppColor.red,
-                    )
-                    .make(),
-              ]).pOnly(bottom: 4),
+              if (controller.isFocusedCurrentMonth)
+                HStack([
+                  'Batas aman harian'.text
+                      .size(11)
+                      .minFontSize(11)
+                      .color(AppColor.neutral)
+                      .make()
+                      .expand(),
+                  controller.dailyAllowance
+                      .moneyFormatCompact()
+                      .text
+                      .bold
+                      .size(12)
+                      .color(
+                        controller.dailyAllowance > 0
+                            ? AppColor.green
+                            : AppColor.red,
+                      )
+                      .make(),
+                ]).pOnly(bottom: 4),
               HStack([
                 ExProgressBar(
                   value: controller.projectedBudgetPercent.clamp(0, 100),
@@ -879,9 +838,13 @@ class HomeView extends GetView<HomeController> {
                     .make()
                     .pOnly(left: 8),
               ]).pOnly(bottom: 6),
-              (isOverProjection
-                      ? 'Terlalu cepat ${controller.projectedBudgetDelta.abs().moneyFormatCompact()}'
-                      : 'Masih aman, sisa ${controller.projectedBudgetDelta.moneyFormatCompact()}')
+              (controller.isFocusedCurrentMonth
+                      ? isOverProjection
+                            ? 'Terlalu cepat ${controller.projectedBudgetDelta.abs().moneyFormatCompact()}'
+                            : 'Budget masih aman, sisa ${controller.projectedBudgetDelta.moneyFormatCompact()}'
+                      : isOverProjection
+                      ? 'Lewat budget ${controller.projectedBudgetDelta.abs().moneyFormatCompact()}'
+                      : 'Sisa budget ${controller.projectedBudgetDelta.moneyFormatCompact()}')
                   .text
                   .size(10)
                   .minFontSize(10)
@@ -1397,9 +1360,17 @@ class HomeView extends GetView<HomeController> {
                   /// amount
                   isTypeNotes
                       ? 0.heightBox
-                      : '${item.amount?.moneyFormat()}'.text.bold
-                            .size(16)
-                            .make(),
+                      : HStack([
+                          IconButton(
+                            tooltip: 'Ulangi transaksi',
+                            visualDensity: VisualDensity.compact,
+                            icon: Icon(CupertinoIcons.doc_on_doc, size: 14),
+                            onPressed: () => DialogExpense.repeatExpense(item),
+                          ),
+                          '${item.amount?.moneyFormat()}'.text.bold
+                              .size(16)
+                              .make(),
+                        ]),
                 ],
               ).p12(),
             )
@@ -1494,10 +1465,17 @@ class HomeView extends GetView<HomeController> {
                   /// amount
                   isTypeNotes
                       ? 0.heightBox
-                      : '${item.amount?.moneyFormat()}'.text.bold
-                            .size(16)
-                            .make()
-                            .pOnly(left: 12),
+                      : HStack([
+                          IconButton(
+                            tooltip: 'Ulangi transaksi',
+                            visualDensity: VisualDensity.compact,
+                            icon: Icon(CupertinoIcons.doc_on_doc, size: 14),
+                            onPressed: () => DialogExpense.repeatExpense(item),
+                          ),
+                          '${item.amount?.moneyFormat()}'.text.bold
+                              .size(16)
+                              .make(),
+                        ]).pOnly(left: 12),
                 ],
               ).p12(),
             )
@@ -1558,48 +1536,282 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget emptyBodyView() {
-    return ExUiErrorOrEmpty(
-      bgColor: Theme.of(Get.context!).scaffoldBackgroundColor,
-      illustration: Column(
-        children: [
-          Get
-                  .context!
-                  .isMobile //
-              ? Image.asset(
-                  'assets/icons/app_icon.png',
-                  width: 56,
-                  height: 56,
-                ).pOnly(bottom: 16)
-              : Lottie.asset(
-                  'assets/lottie/empty.json',
-                  width: 150,
-                  reverse: true,
-                ),
-          'Belum ada pengeluaran'.text.bold
-              .align(TextAlign.center)
-              .make()
-              .pOnly(bottom: 8),
-          Obx(
-            () =>
-                '${controller.tfSearchExpense.value.text.isNotEmptyAndNotNull //
-                        ? '"${controller.tfSearchExpense.value.text}" tidak ditemukan' //
-                          : 'pada ${controller.focusedDay.value.toStringEx(format: 'dd MMM y')}'} '
-                    .text
-                    .neutral500
-                    .size(11)
-                    .align(TextAlign.center)
-                    .makeCentered(),
+    return Obx(() {
+      final search = controller.tfSearchExpense.value.text;
+      if (search.isNotEmpty) {
+        return ExUiErrorOrEmpty(
+          bgColor: Theme.of(Get.context!).scaffoldBackgroundColor,
+          title: 'Tidak ditemukan',
+          message: '"$search"',
+        ).expand();
+      }
+
+      final totals = controller.focusedMonthDailyTotals;
+      final total = totals.fold<num>(0, (sum, amount) => sum + amount);
+      final stats = monthlyExpenseStats(totals);
+      final weeks = weeklyExpenseTotals(totals);
+
+      return VStack([
+        Container(
+          decoration: ExDecorator.box(
+            borderRadius: 8,
+            borderColor: AppColor.border,
+            fillColor: AppColor.card,
           ),
-          16.heightBox,
-          ExButtonOutline(
-            label: 'Tambah pengeluaran',
-            labelSize: 12,
-            labelColor: AppColor.textReverse,
-            onPressed: () => DialogExpense.openAIInput(),
+          child: VStack([
+            HStack([
+              'Pengeluaran ${controller.focusedDay.value.toStringEx(format: 'MMMM y')}'
+                  .text
+                  .bold
+                  .size(12)
+                  .make()
+                  .expand(),
+              total.moneyFormatCompact().text.bold.size(12).make(),
+            ]).pOnly(bottom: 16),
+            _emptyMonthChart(totals).h(200),
+          ]).p12(),
+        ).pOnly(bottom: 12),
+        HStack([
+          _dashboardMetric(
+            icon: CupertinoIcons.calendar,
+            label: 'Hari aktif',
+            value: '${stats.activeDays}',
+          ).expand(),
+          8.widthBox,
+          _dashboardMetric(
+            icon: CupertinoIcons.divide,
+            label: 'Rata-rata',
+            value: stats.average.moneyFormatCompact(),
+          ).expand(),
+          8.widthBox,
+          _dashboardMetric(
+            icon: CupertinoIcons.arrow_up_right,
+            label: stats.highestDay == 0
+                ? 'Tertinggi'
+                : 'Tertinggi · tgl ${stats.highestDay}',
+            value: stats.highest.moneyFormatCompact(),
+          ).expand(),
+        ]).pOnly(bottom: 12),
+        _weeklyDashboard(weeks, totals.length),
+      ]).p12().scrollVertical().expand();
+    });
+  }
+
+  Widget _weeklyDashboard(List<num> weeks, int daysInMonth) {
+    final maxWeek = weeks.fold<num>(
+      0,
+      (max, amount) => amount > max ? amount : max,
+    );
+    return Container(
+      decoration: ExDecorator.box(
+        borderRadius: 8,
+        borderColor: AppColor.border,
+        fillColor: AppColor.card,
+      ),
+      child: VStack([
+        HStack([
+          Icon(
+            CupertinoIcons.chart_bar_alt_fill,
+            size: 13,
+            color: AppColor.primary,
+          ).pOnly(right: 7),
+          'Aktivitas mingguan'.text.bold.size(11).make().expand(),
+          Icon(
+            CupertinoIcons.chevron_right,
+            size: 11,
+            color: AppColor.neutral,
+          ),
+        ]).pOnly(bottom: 12).onInkTap(() => controller.goSummary()),
+        ...weeks.asMap().entries.map((entry) {
+          final start = entry.key * 7 + 1;
+          final end = (start + 6).clamp(1, daysInMonth).toInt();
+          final percentage = maxWeek <= 0
+              ? 0
+              : (entry.value / maxWeek * 100).round();
+          return VStack([
+            HStack([
+              'Minggu ${entry.key + 1} · $start–$end'.text
+                  .size(9)
+                  .minFontSize(9)
+                  .color(AppColor.neutral)
+                  .make()
+                  .expand(),
+              entry.value.moneyFormatCompact().text.bold.size(10).make(),
+            ]).pOnly(bottom: 4),
+            ExProgressBar(
+              value: percentage,
+              color1: AppColor.primary,
+              color2: AppColor.border,
+            ).h(4).pOnly(bottom: entry.key == weeks.length - 1 ? 0 : 10),
+          ]);
+        }),
+      ]).p12(),
+    );
+  }
+
+  Widget _dashboardMetric({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      decoration: ExDecorator.box(
+        borderRadius: 8,
+        borderColor: AppColor.border,
+        fillColor: AppColor.card,
+      ),
+      child: VStack([
+        HStack([
+          Icon(icon, size: 11, color: AppColor.primary).pOnly(right: 5),
+          label.text
+              .size(9)
+              .minFontSize(9)
+              .color(AppColor.neutral)
+              .ellipsis
+              .make()
+              .expand(),
+        ]).pOnly(bottom: 6),
+        value.text.bold.size(12).ellipsis.make(),
+      ]).p12(),
+    );
+  }
+
+  Widget _emptyMonthChart(List<num> totals) {
+    final maxAmount = totals.fold<num>(
+      0,
+      (max, amount) => amount > max ? amount : max,
+    );
+    final chartMax = maxAmount > 0 ? maxAmount.toDouble() * 1.15 : 1.0;
+    return LineChart(
+      LineChartData(
+        minX: 1,
+        maxX: totals.length.toDouble(),
+        minY: 0,
+        maxY: chartMax,
+        gridData: FlGridData(
+          drawVerticalLine: false,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: AppColor.border.withAlpha(90),
+            strokeWidth: 1,
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        titlesData: FlTitlesData(
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 42,
+              interval: chartMax / 4,
+              maxIncluded: false,
+              getTitlesWidget: (value, meta) {
+                if (value == 0) return SizedBox.shrink();
+                return SideTitleWidget(
+                  meta: meta,
+                  child: value.moneyFormatCompact().text
+                      .size(9)
+                      .minFontSize(9)
+                      .color(AppColor.neutral)
+                      .make(),
+                );
+              },
+            ),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 22,
+              interval: 1,
+              getTitlesWidget: (value, meta) {
+                final day = value.toInt();
+                final showStep = day % 5 == 0 && totals.length - day > 2;
+                if (day != 1 && !showStep && day != totals.length) {
+                  return SizedBox.shrink();
+                }
+                return SideTitleWidget(
+                  meta: meta,
+                  child: '$day'.text
+                      .size(9)
+                      .minFontSize(9)
+                      .color(AppColor.neutral)
+                      .make(),
+                );
+              },
+            ),
+          ),
+        ),
+        lineTouchData: LineTouchData(
+          touchCallback: (event, response) async {
+            final spots = response?.lineBarSpots;
+            if (event is! FlTapUpEvent || spots == null || spots.isEmpty)
+              return;
+            final day = spots.first.x.toInt();
+            await controller.onCalenderGoDate(
+              DateTime(
+                controller.focusedDay.value.year,
+                controller.focusedDay.value.month,
+                day,
+              ),
+            );
+          },
+          touchTooltipData: LineTouchTooltipData(
+            fitInsideHorizontally: true,
+            fitInsideVertically: true,
+            getTooltipColor: (spot) => AppColor.textReverse,
+            getTooltipItems: (spots) => spots.map((spot) {
+              final date = DateTime(
+                controller.focusedDay.value.year,
+                controller.focusedDay.value.month,
+                spot.x.toInt(),
+              );
+              return LineTooltipItem(
+                '${date.toStringEx(format: 'dd MMM')}\n${spot.y.moneyFormat()}',
+                TextStyle(
+                  color: AppColor.scaffoldPrimary,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        lineBarsData: [
+          LineChartBarData(
+            spots: List.generate(
+              totals.length,
+              (index) => FlSpot(
+                (index + 1).toDouble(),
+                totals[index].toDouble(),
+              ),
+            ),
+            isCurved: true,
+            barWidth: 2,
+            color: AppColor.primary,
+            dotData: FlDotData(
+              show: true,
+              checkToShowDot: (spot, barData) =>
+                  spot.y > 0 ||
+                  spot.x.toInt() == controller.focusedDay.value.day,
+              getDotPainter: (spot, percent, barData, index) {
+                final selected =
+                    spot.x.toInt() == controller.focusedDay.value.day;
+                return FlDotCirclePainter(
+                  radius: selected ? 4 : 2,
+                  color: selected ? AppColor.primary : AppColor.card,
+                  strokeWidth: 2,
+                  strokeColor: AppColor.primary,
+                );
+              },
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              color: AppColor.primary.withAlpha(24),
+            ),
           ),
         ],
       ),
-    ).pOnly(bottom: Get.context!.isMobile ? 0 : 90).expand();
+    );
   }
 
   Widget footerContent() {
@@ -1654,16 +1866,13 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget floatingActionButton() {
-    return Obx(
-      () => controller.expenseList.isNotEmpty
-          ? FloatingActionButton(
-              mini: true,
-              backgroundColor: AppColor.primary,
-              child: Icon(CupertinoIcons.add, color: Colors.white),
-              onPressed: () => DialogExpense.openAIInput(),
-            ).pOnly(bottom: Get.context!.isMobile ? 90 : 68)
-          : 0.heightBox,
-    );
+    return FloatingActionButton(
+      mini: true,
+      tooltip: 'Tambah pengeluaran',
+      backgroundColor: AppColor.primary,
+      child: Icon(CupertinoIcons.add, color: Colors.white),
+      onPressed: () => DialogExpense.openAIInput(),
+    ).pOnly(bottom: Get.context!.isMobile ? 90 : 68);
   }
 }
 

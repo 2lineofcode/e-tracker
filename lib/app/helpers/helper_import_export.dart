@@ -6,11 +6,15 @@ import 'package:csv/csv.dart' as csv;
 import 'package:ex_kit/ex.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/v4.dart';
 
 import '../core/app_api.dart';
+import '../core/app_color.dart';
+import '../core/const.dart';
 import '../models/supa_category_entity.dart';
 import '../models/supa_expense_entity.dart';
 import '../modules/home/home_controller.dart';
@@ -126,6 +130,7 @@ mixin HelperImportExport {
         'expense': await _safeSelectRows('expense'),
         'budgets': await _safeSelectRows('budgets'),
         'assets': await _safeSelectRows('assets'),
+        'asset_snapshots': await _safeSelectRows('asset_snapshots'),
         'goals': await _safeSelectRows('goals'),
         'notes': await _safeSelectRows('notes'),
         'category': await _safeSelectRows('category'),
@@ -162,6 +167,10 @@ mixin HelperImportExport {
   /// import from csv
   static Future<void> importFromCSV({String? customPath, Function()? customCallback}) async {
     try {
+      if (currentUserId == null) {
+        await HelperToast.warn('Kamu belum login');
+        return;
+      }
       String? path;
 
       /// get path
@@ -178,32 +187,101 @@ mixin HelperImportExport {
       /// ----------------------------------------------------------------------------------
       final csvString = await File(path).readAsString();
       List<List<dynamic>> csvTable = csv.csv.decode(csvString);
-      List<Map<String, dynamic>> jsonList = [];
+      if (csvTable.length < 2) {
+        await HelperToast.warn('CSV kosong');
+        return;
+      }
       List<String> headers = csvTable[0].map((header) => header.toString()).toList();
 
-      for (int i = 1; i < csvTable.length; i++) {
-        Map<String, dynamic> jsonMap = Map.fromIterables(headers, csvTable[i]);
-        jsonList.add(jsonMap);
+      final mapping = customPath == null
+          ? await _pickImportMapping(headers)
+          : <String, String>{
+              'date': 'date',
+              'note': 'note',
+              'amount': 'amount',
+              'category': 'category_name',
+              'detail': 'detail',
+              'created_at': 'created_at',
+            };
+      if (mapping == null) return;
+
+      final jsonList = <Map<String, dynamic>>[];
+      for (final row in csvTable.skip(1)) {
+        jsonList.add({
+          for (var i = 0; i < headers.length; i++)
+            headers[i]: i < row.length ? row[i] : '',
+        });
       }
 
       /// ----------------------------------------------------------------------------------
       /// # EXPENSE ########################################################################
       /// ----------------------------------------------------------------------------------
       final supaExpense = <SupaExpense>[];
+      final learnedCategories = customPath == null
+          ? await _loadImportCategories()
+          : const <String, String>{};
+      var invalidRows = 0;
       for (var e in jsonList) {
-        final category = resolveExpenseCategory(e['category_name'].toString());
+        final date = normalizeImportDate(e[mapping['date']].toString());
+        final amount = normalizeImportAmount(e[mapping['amount']].toString());
+        final note = e[mapping['note']].toString().trim();
+        if (date == null || amount == null || amount == 0 || note.isEmpty) {
+          invalidRows++;
+          continue;
+        }
+        final category = resolveExpenseCategory(
+          mapping['category'].isEmptyOrNull
+              ? learnedCategories[_normalizeImportNote(note)] ??
+                    'expense:unknown'
+              : e[mapping['category']].toString(),
+        );
         supaExpense.add(
           SupaExpense(
             id: UuidV4().generate(),
             userId: currentUserId ?? '',
-            createdAt: e['created_at'].toString(),
-            date: e['date'].toString(),
+            createdAt: mapping['created_at'].isEmptyOrNull
+                ? DateTime.now().toStringEx()
+                : e[mapping['created_at']].toString(),
+            date: date,
             categoryName: category.code,
-            note: e['note'].toString(),
-            detail: e['detail'].toString(),
-            amount: e['amount'].toString().toNum() ?? 0,
+            note: note.toTitleCase,
+            detail: mapping['detail'].isEmptyOrNull
+                ? ''
+                : e[mapping['detail']].toString(),
+            amount: amount.abs(),
           ),
         );
+      }
+
+      var duplicateRows = 0;
+      if (customPath == null && supaExpense.isNotEmpty) {
+        supaExpense.sort((a, b) => a.date!.compareTo(b.date!));
+        final existing = await db
+            .from('expense')
+            .select('date,note,amount')
+            .eq('user_id', currentUserId!)
+            .gte('date', supaExpense.first.date!)
+            .lte('date', supaExpense.last.date!)
+            .withConverter<List<SupaExpense>>(
+              (data) => data.map((e) => SupaExpense.fromJson(e)).toList(),
+            );
+        final keys = existing.map(_expenseImportKey).toSet();
+        final before = supaExpense.length;
+        supaExpense.removeWhere((item) => !keys.add(_expenseImportKey(item)));
+        duplicateRows = before - supaExpense.length;
+      }
+
+      if (customPath == null) {
+        final confirmed = await _confirmImport(
+          supaExpense,
+          invalidRows: invalidRows,
+          duplicateRows: duplicateRows,
+        );
+        if (!confirmed) return;
+      }
+      if (supaExpense.isEmpty) {
+        await HelperToast.warn('Nggak ada transaksi baru untuk diimpor');
+        return;
       }
       log('total expense: ${supaExpense.length}');
 
@@ -235,6 +313,197 @@ mixin HelperImportExport {
       ExLoading.dismiss();
       ExAlert.error(title: 'Impor gagal', message: '$e');
     }
+  }
+
+  static String _expenseImportKey(SupaExpense expense) {
+    final note = _normalizeImportNote(expense.note ?? '');
+    final amount = (expense.amount ?? 0).toDouble().toStringAsFixed(2);
+    return '${expense.date}|$amount|$note';
+  }
+
+  static String _normalizeImportNote(String value) =>
+      value.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
+
+  static Future<Map<String, String>> _loadImportCategories() async {
+    try {
+      final rows = await db
+          .from('autocomplete')
+          .select('note,category_name')
+          .eq('user_id', currentUserId!);
+      return {
+        for (final row in rows)
+          _normalizeImportNote(row['note']?.toString() ?? ''):
+              row['category_name']?.toString() ?? 'expense:unknown',
+      };
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST205') return {};
+      rethrow;
+    }
+  }
+
+  static Future<Map<String, String>?> _pickImportMapping(
+    List<String> headers,
+  ) async {
+    String find(List<String> candidates) {
+      for (final header in headers) {
+        final normalized = header.toLowerCase().replaceAll(
+          RegExp(r'[^a-z0-9]'),
+          '',
+        );
+        if (candidates.any(normalized.contains)) return header;
+      }
+      return '';
+    }
+
+    final mapping = <String, String>{
+      'date': find(['date', 'tanggal']),
+      'note': find(['note', 'description', 'merchant', 'keterangan', 'transaksi']),
+      'amount': find(['amount', 'nominal', 'debit', 'keluar']),
+      'category': find(['category', 'kategori']),
+      'detail': find(['detail', 'memo']),
+      'created_at': find(['createdat', 'dibuat']),
+    };
+
+    return await showDialog<Map<String, String>>(
+      context: Get.context!,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          Widget field(String key, String label, {bool required = false}) {
+            return DropdownButtonFormField<String>(
+              initialValue: mapping[key]!.isEmpty ? null : mapping[key],
+              isExpanded: true,
+              decoration: InputDecoration(labelText: label),
+              items: [
+                if (!required)
+                  const DropdownMenuItem(value: '', child: Text('Tidak ada')),
+                ...headers.map(
+                  (header) => DropdownMenuItem(
+                    value: header,
+                    child: Text(header, overflow: TextOverflow.ellipsis),
+                  ),
+                ),
+              ],
+              onChanged: (value) => setState(() => mapping[key] = value ?? ''),
+            ).pOnly(bottom: 10);
+          }
+
+          final valid = ['date', 'note', 'amount'].every(
+            (key) => mapping[key].isNotEmptyAndNotNull,
+          );
+          return AlertDialog(
+            title: const Text('Mapping kolom CSV'),
+            content: SizedBox(
+              width: 420,
+              child: SingleChildScrollView(
+                child: VStack([
+                  field('date', 'Tanggal', required: true),
+                  field('note', 'Nama transaksi', required: true),
+                  field('amount', 'Nominal', required: true),
+                  field('category', 'Kategori'),
+                  field('detail', 'Detail'),
+                  field('created_at', 'Waktu dibuat'),
+                ]),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
+              ),
+              FilledButton(
+                onPressed: valid
+                    ? () => Navigator.pop(context, Map.of(mapping))
+                    : null,
+                child: const Text('Lanjut'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  static Future<bool> _confirmImport(
+    List<SupaExpense> expenses, {
+    required int invalidRows,
+    required int duplicateRows,
+  }) async {
+    return await showDialog<bool>(
+          context: Get.context!,
+          builder: (context) => AlertDialog(
+            title: const Text('Preview impor'),
+            content: SizedBox(
+              width: 440,
+              child: VStack([
+                '${expenses.length} transaksi siap diimpor'.text.bold.make(),
+                if (duplicateRows > 0)
+                  '$duplicateRows duplikat dilewati'.text
+                      .size(11)
+                      .color(AppColor.neutral)
+                      .make(),
+                if (invalidRows > 0)
+                  '$invalidRows baris tidak valid dilewati'.text
+                      .size(11)
+                      .color(AppColor.red)
+                      .make(),
+                Divider().pSymmetric(v: 8),
+                ...expenses.take(5).map(
+                  (item) => HStack([
+                    '${item.date} · ${item.note}'.text
+                        .size(11)
+                        .ellipsis
+                        .make()
+                        .expand(),
+                    item.amount!.moneyFormatCompact().text.size(11).make(),
+                  ]).pOnly(bottom: 6),
+                ),
+                if (expenses.length > 5)
+                  '+${expenses.length - 5} lainnya'.text
+                      .size(10)
+                      .color(AppColor.neutral)
+                      .make(),
+              ]),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Batal'),
+              ),
+              FilledButton(
+                onPressed: expenses.isEmpty
+                    ? null
+                    : () => Navigator.pop(context, true),
+                child: const Text('Impor'),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  static String? normalizeImportDate(String raw) {
+    final value = raw.trim();
+    final parsed = DateTime.tryParse(value);
+    if (parsed != null) return DateFormat(yMd).format(parsed);
+    for (final pattern in ['dd/MM/yyyy', 'dd-MM-yyyy', 'dd MMM yyyy']) {
+      try {
+        return DateFormat(yMd).format(DateFormat(pattern, 'id_ID').parseStrict(value));
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  static num? normalizeImportAmount(String raw) {
+    final value = raw.trim().replaceAll(RegExp(r'[^0-9,.-]'), '');
+    if (value.isEmpty) return null;
+    final lastComma = value.lastIndexOf(',');
+    final lastDot = value.lastIndexOf('.');
+    final decimalIndex = lastComma > lastDot ? lastComma : lastDot;
+    final decimalDigits = decimalIndex == -1 ? 0 : value.length - decimalIndex - 1;
+    final normalized = decimalDigits == 2
+        ? '${value.substring(0, decimalIndex).replaceAll(RegExp(r'[,.]'), '')}.${value.substring(decimalIndex + 1)}'
+        : value.replaceAll(RegExp(r'[,.]'), '');
+    return num.tryParse(normalized);
   }
 
   /// delete all data

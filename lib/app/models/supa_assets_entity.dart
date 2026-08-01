@@ -35,3 +35,15 @@ class SupaAssets {
     return data;
   }
 }
+
+class SupaAssetSnapshot {
+  String? date;
+  num? amount;
+
+  SupaAssetSnapshot({this.date, this.amount});
+
+  SupaAssetSnapshot.fromJson(Map<String, dynamic> json) {
+    date = json['snapshot_date'];
+    amount = json['amount'] ?? 0;
+  }
+}

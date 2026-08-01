@@ -1,4 +1,5 @@
 import 'package:ex_kit/ex.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_api.dart';
 import '../../core/const.dart';
@@ -221,6 +222,17 @@ class HomeRepository {
     return x.toInt();
   }
 
+  Future<int> getExpenseTotal(DateTime start, DateTime end) async {
+    if (currentUserId == null) return 0;
+    final response = await db
+        .from('expense')
+        .select('amount')
+        .eq('user_id', currentUserId!)
+        .gte('date', start.toStringEx(format: yMd))
+        .lte('date', end.toStringEx(format: yMd));
+    return response.fold<num>(0, (sum, item) => sum + (item['amount'] ?? 0)).toInt();
+  }
+
   Future<void> addExpense(SupaExpense entity) async {
     final response =
         await db //
@@ -435,6 +447,40 @@ class HomeRepository {
             .delete()
             .match({'id': id, 'user_id': currentUserId!});
     return response;
+  }
+
+  Future<List<SupaAssetSnapshot>> getAssetSnapshots() async {
+    if (currentUserId == null) return [];
+    try {
+      return await db
+          .from('asset_snapshots')
+          .select()
+          .eq('user_id', currentUserId!)
+          .order('snapshot_date', ascending: false)
+          .limit(24)
+          .withConverter<List<SupaAssetSnapshot>>(
+            (data) => data.reversed
+                .map((e) => SupaAssetSnapshot.fromJson(e))
+                .toList(),
+          );
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST205') return [];
+      rethrow;
+    }
+  }
+
+  Future<void> saveAssetSnapshot(num amount) async {
+    if (currentUserId == null) return;
+    final now = DateTime.now();
+    try {
+      await db.from('asset_snapshots').upsert({
+        'user_id': currentUserId,
+        'snapshot_date': DateTime(now.year, now.month).toIso8601String().substring(0, 10),
+        'amount': amount,
+      }, onConflict: 'user_id,snapshot_date');
+    } on PostgrestException catch (e) {
+      if (e.code != 'PGRST205') rethrow;
+    }
   }
 
   // ────────────────────────────────────────────────────────────────

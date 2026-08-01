@@ -369,6 +369,11 @@ class SettingsController extends GetxController with StateMixin {
                 child: CupertinoActivityIndicator(),
               );
               await repo.editProfile(editProfile);
+              if (Get.isRegistered<HomeController>()) {
+                final home = Get.find<HomeController>();
+                home.userProfile.value = editProfile;
+                await home.loadPayCycleExpense();
+              }
               await onInit();
               ExLoading.dismiss();
             },
