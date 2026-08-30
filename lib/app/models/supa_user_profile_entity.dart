@@ -10,9 +10,9 @@ class SupaUserProfile {
   String? username;
   String? fullName;
   String? avatarUrl;
-  String? income;
-  String? age;
-  String? balance;
+  int? income;
+  int? birthYear;
+  int? balance;
   num? ecoDay;
   num? averageDay;
   num? spenderDay;
@@ -25,7 +25,7 @@ class SupaUserProfile {
     this.fullName,
     this.avatarUrl,
     this.income,
-    this.age,
+    this.birthYear,
     this.balance,
     this.ecoDay,
     this.averageDay,
@@ -39,9 +39,9 @@ class SupaUserProfile {
     username = json['username'] ?? '';
     fullName = json['full_name'] ?? '';
     avatarUrl = json['avatar_url'];
-    income = json['income'] ?? '';
-    age = json['age'] ?? '';
-    balance = json['balance'] ?? '';
+    income = (json['income'] as num?)?.toInt() ?? 0;
+    birthYear = (json['birth_year'] as num?)?.toInt();
+    balance = (json['balance'] as num?)?.toInt() ?? 0;
     ecoDay = json['eco_day'] ?? 0;
     averageDay = json['average_day'] ?? 0;
     spenderDay = json['spender_day'] ?? 0;
@@ -49,31 +49,28 @@ class SupaUserProfile {
   }
 
   int? get calculatedAge {
-    final value = int.tryParse(age ?? '');
-    if (value == null) return null;
-    return value >= 1900 ? DateTime.now().year - value : value;
+    if (birthYear == null) return null;
+    return DateTime.now().year - birthYear!;
   }
 
   String get birthYearInput {
-    final value = int.tryParse(age ?? '');
-    if (value == null) return '';
-    return '${value >= 1900 ? value : DateTime.now().year - value}';
+    return birthYear?.toString() ?? '';
   }
 
   Map<String, dynamic> toJson() {
     final data = <String, dynamic>{};
-    data['id'] = id;
-    data['updated_at'] = updatedAt;
-    data['username'] = username;
-    data['full_name'] = fullName;
-    data['avatar_url'] = avatarUrl;
-    data['income'] = income;
-    data['age'] = age;
-    data['balance'] = balance;
-    data['eco_day'] = ecoDay;
-    data['average_day'] = averageDay;
-    data['spender_day'] = spenderDay;
-    data['pay_day'] = paymentDay;
+    if (id != null) data['id'] = id;
+    if (updatedAt != null) data['updated_at'] = updatedAt;
+    if (username != null) data['username'] = username;
+    if (fullName != null) data['full_name'] = fullName;
+    if (avatarUrl != null) data['avatar_url'] = avatarUrl;
+    if (income != null) data['income'] = income;
+    if (birthYear != null) data['birth_year'] = birthYear;
+    if (balance != null) data['balance'] = balance;
+    if (ecoDay != null) data['eco_day'] = ecoDay;
+    if (averageDay != null) data['average_day'] = averageDay;
+    if (spenderDay != null) data['spender_day'] = spenderDay;
+    if (paymentDay != null) data['pay_day'] = paymentDay;
     return data;
   }
 

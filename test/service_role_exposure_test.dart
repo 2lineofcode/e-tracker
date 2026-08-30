@@ -22,6 +22,34 @@ void main() {
     expect(localSetup.contains('service_role key:'), isFalse);
   });
 
+  test('Agent credentials stay in the Edge Function', () {
+    final clientSource = Directory('lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .where(
+          (file) =>
+              file.path.endsWith('.dart') && !file.path.endsWith('env.g.dart'),
+        )
+        .map((file) => file.readAsStringSync())
+        .join('\n');
+    final proxy = File(
+      'supabase/functions/agent-proxy/index.ts',
+    ).readAsStringSync();
+    final summary = File(
+      'lib/app/modules/summary/summary_controller.dart',
+    ).readAsStringSync();
+    final config = File('supabase/config.toml').readAsStringSync();
+
+    expect(clientSource.contains('Env.agentApiKey'), isFalse);
+    expect(clientSource.contains('Env.agentBaseUrl'), isFalse);
+    expect(summary.contains("import 'dart:io';"), isFalse);
+    expect(proxy.contains("Deno.env.get('AGENT_API_KEY')"), isTrue);
+    expect(
+      config.contains('[functions.agent-proxy]\nverify_jwt = true'),
+      isTrue,
+    );
+  });
+
   test('Supabase migration scopes personal data to each user', () {
     final migration = File(
       'supabase/migrations/20260730010000_remove_client_service_role.sql',

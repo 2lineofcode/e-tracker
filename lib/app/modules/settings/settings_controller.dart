@@ -24,21 +24,12 @@ import '../../core/app_theme.dart';
 import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_category_entity.dart';
-import '../../models/supa_cron_entity.dart';
+import '../../models/supa_recurring_expense_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 import '../../routes/app_pages.dart';
 import '../home/home_controller.dart';
 import '../widgets/widgets.dart';
 import 'settings_repository.dart';
-
-String repeatScheduleLabel(SupaCronSchedule? schedule) {
-  if (schedule == null) return 'Jadwal khusus';
-  return switch (schedule.repeatMonths) {
-    1 => 'Setiap bulan',
-    12 => 'Setiap tahun',
-    _ => 'Setiap ${schedule.repeatMonths} bulan',
-  };
-}
 
 class SettingsController extends GetxController with StateMixin {
   // repo
@@ -68,8 +59,7 @@ class SettingsController extends GetxController with StateMixin {
   /// backupList
   final backupList = <FileObject>[].obs;
 
-  /// cronList
-  final cronList = <SupaCron>[].obs;
+  final recurringList = <SupaRecurringExpense>[].obs;
 
   @override
   Future<void> onInit() async {
@@ -94,7 +84,7 @@ class SettingsController extends GetxController with StateMixin {
     sumAllExpense.value = await repo.sumAllExpense();
 
     backupList.value = await repo.getBackupList();
-    cronList.value = await repo.getCron();
+    recurringList.value = await repo.getRecurringExpenses();
 
     super.onInit();
   }
@@ -116,8 +106,12 @@ class SettingsController extends GetxController with StateMixin {
     final tfPaymentDay = TextEditingController(
       text: '${userProfile.value.paymentDay ?? 28}',
     );
-    final tfIncome = TextEditingController(text: userProfile.value.income);
-    final tfBalance = TextEditingController(text: userProfile.value.balance);
+    final tfIncome = TextEditingController(
+      text: userProfile.value.income?.moneyFormat(),
+    );
+    final tfBalance = TextEditingController(
+      text: userProfile.value.balance?.moneyFormat(),
+    );
     final tfAvatar = userProfile.value.avatarUrl.obs;
 
     final isReplacePhoto = false.obs;
@@ -180,10 +174,15 @@ class SettingsController extends GetxController with StateMixin {
               // filepicker select file and upload to supabase storage
               try {
                 await FilePicker.pickFile(
-                  type: FileType.image,
+                  type: FileType.custom,
+                  allowedExtensions: ['png'],
                 ).then((img) async {
                   if (img != null) {
                     final bytes = await img.readAsBytes();
+                    if (bytes.length > 5 * 1024 * 1024) {
+                      errorMsg.value = 'Maks. 5 MB';
+                      return;
+                    }
 
                     isReplacePhoto.value = true;
 
@@ -353,10 +352,10 @@ class SettingsController extends GetxController with StateMixin {
                 id: userProfile.value.id,
                 username: username.isEmpty ? null : username,
                 fullName: tfFullName.text,
-                age: tfBirthYear.text,
+                birthYear: birthYear,
                 avatarUrl: tfAvatar.value,
-                income: tfIncome.text,
-                balance: tfBalance.text,
+                income: tfIncome.text.moneyUnformat() ?? 0,
+                balance: tfBalance.text.moneyUnformat() ?? 0,
                 ecoDay: userProfile.value.ecoDay,
                 averageDay: userProfile.value.averageDay,
                 spenderDay: userProfile.value.spenderDay,
@@ -395,7 +394,7 @@ class SettingsController extends GetxController with StateMixin {
     try {
       final filePath = await getTemporaryDirectory();
       final fileName =
-          '${db.auth.currentSession?.user.email}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
+          '${currentUserId}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
 
       await HelperImportExport.exportToCSV(
         customPath: filePath.path,
@@ -486,12 +485,12 @@ class SettingsController extends GetxController with StateMixin {
   }
 
   Future<void> onDeleteOldCloudData() async {
-    final listToDelete = <String>[];
-    await repo.getBackupList()
-      ..removeAt(0)
-      ..forEach((element) {
-        listToDelete.add(element.name);
-      });
+    final backups = await repo.getBackupList();
+    if (backups.length <= 1) {
+      await HelperToast.info('Belum ada backup lama');
+      return;
+    }
+    final listToDelete = backups.skip(1).map((file) => file.name).toList();
 
     ExAlert.confirm(
       title: 'Hapus backup lama',
@@ -592,7 +591,7 @@ class SettingsController extends GetxController with StateMixin {
     ExLoading.dismiss();
   }
 
-  Future<void> addCron(
+  Future<void> addRecurringExpense(
     String date, {
     required String note,
     required String category,
@@ -600,29 +599,19 @@ class SettingsController extends GetxController with StateMixin {
     int repeatMonths = 1,
   }) async {
     try {
-      final jobName = cronJobName(note);
-
-      // Call database function
-      final params = <String, dynamic>{
-        'job_name': jobName,
-        'day_of_month': date,
-        'note_text': note,
-        'category_text': category,
-        'amount_value': amount,
-        'user_email': db.auth.currentSession?.user.email ?? '',
-        'user_id_value': db.auth.currentSession?.user.id ?? '',
-      };
-      if (repeatMonths != 1) {
-        params['repeat_months'] = repeatMonths;
-        params['start_month'] = DateTime.now().month;
-      }
-
-      await db.rpc(
-        'create_expense_cron',
-        params: params,
+      await repo.addRecurringExpense(
+        SupaRecurringExpense(
+          userId: currentUserId,
+          note: note.trim(),
+          categoryName: category,
+          amount: amount.toInt(),
+          dueDay: int.parse(date),
+          intervalMonths: repeatMonths,
+          startMonth: DateTime.now().month,
+          active: true,
+        ),
       );
-
-      cronList.value = await repo.getCron();
+      recurringList.value = await repo.getRecurringExpenses();
     } catch (e) {
       await HelperErrorLog.record(
         page: 'settings',
@@ -633,25 +622,10 @@ class SettingsController extends GetxController with StateMixin {
     }
   }
 
-  @visibleForTesting
-  static String cronJobName(String note, {int? timestamp}) {
-    final normalizedNote = note
-        .toLowerCase()
-        .replaceAll(RegExp(r'[^a-z0-9\s]'), '')
-        .trim()
-        .replaceAll(RegExp(r'\s+'), '_');
-    final shortenedNote = normalizedNote.length > 30
-        ? normalizedNote.substring(0, 30)
-        : normalizedNote;
-    final cleanNote = shortenedNote.replaceFirst(RegExp(r'_+$'), '');
-    return '${cleanNote.isEmpty ? 'expense' : cleanNote}_${timestamp ?? DateTime.now().millisecondsSinceEpoch}';
-  }
-
-  /// Delete cron job by job name
-  Future<void> deleteCron(String jobName) async {
+  Future<void> archiveRecurringExpense(String id) async {
     try {
-      await db.rpc('delete_expense_cron', params: {'job_name': jobName});
-      cronList.value = await repo.getCron();
+      await repo.archiveRecurringExpense(id);
+      recurringList.value = await repo.getRecurringExpenses();
     } catch (e) {
       await HelperErrorLog.record(
         page: 'settings',
@@ -865,7 +839,7 @@ class SettingsController extends GetxController with StateMixin {
                 await Overlayment.dismissAll();
 
                 // Add cron job
-                await addCron(
+                await addRecurringExpense(
                   tfDate.text,
                   note: tfNote.text,
                   category: tfCategoryCode.value,
@@ -943,24 +917,8 @@ class SettingsController extends GetxController with StateMixin {
   }
 
   /// Show info dialog when tap cron item
-  void onShowCronInfo(SupaCron item) {
-    final command = item.command ?? '';
-
-    // Use regex to extract all values at once
-    final valuesRegex = RegExp(
-      r"values\s*\('([^']*)',\s*'([^']*)',\s*([0-9.]+)",
-      caseSensitive: false,
-    );
-    final match = valuesRegex.firstMatch(command);
-
-    final note = match?.group(1) ?? '';
-    final categoryFull = match?.group(2) ?? '';
-    final categoryName = categoryFull.split('#').first.trim();
-    final amount = num.tryParse(match?.group(3) ?? '0') ?? 0;
-    final schedule = SupaCronSchedule.parse(item.schedule);
-    final dueDate = schedule?.dueDay.toString() ?? '-';
-    final remainingDays = schedule?.remainingDays() ?? 0;
-    final scheduleLabel = repeatScheduleLabel(schedule);
+  void onShowRecurringInfo(SupaRecurringExpense item) {
+    final remainingDays = item.remainingDays();
 
     Overlayment.show(
       context: Get.context!,
@@ -990,14 +948,14 @@ class SettingsController extends GetxController with StateMixin {
           VStack([
             'Note'.text.size(11).neutral500.make(),
             4.heightBox,
-            '📝 $note'.text.size(13).make(),
+            '📝 ${item.note}'.text.size(13).make(),
           ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
 
           // Category
           VStack([
             'Kategori'.text.size(11).neutral500.make(),
             4.heightBox,
-            '🏷️ ${resolveExpenseCategory(categoryName).label}'.text
+            '🏷️ ${resolveExpenseCategory(item.categoryName).label}'.text
                 .size(13)
                 .make(),
           ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
@@ -1006,14 +964,14 @@ class SettingsController extends GetxController with StateMixin {
           VStack([
             'Nominal'.text.size(11).neutral500.make(),
             4.heightBox,
-            '💰 ${amount.moneyFormat()}'.text.size(13).bold.make(),
+            '💰 ${item.amount?.moneyFormat()}'.text.size(13).bold.make(),
           ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
 
           // Schedule
           VStack([
             'Jadwal'.text.size(11).neutral500.make(),
             4.heightBox,
-            '🗓️ $scheduleLabel, tanggal $dueDate pukul 00.00'.text.size(13).make(),
+            '🗓️ ${item.scheduleLabel}, tanggal ${item.dueDay}'.text.size(13).make(),
           ], crossAlignment: CrossAxisAlignment.start).pOnly(bottom: 16),
 
           // Next Run
@@ -1038,7 +996,7 @@ class SettingsController extends GetxController with StateMixin {
             ExButtonText(
               child: 'Hapus'.text.color(AppColor.red).size(12).make(),
               onPressed: () async {
-                await deleteCron(item.jobname ?? '');
+                await archiveRecurringExpense(item.id ?? '');
                 await Overlayment.dismissAll();
               },
             ).expand(),

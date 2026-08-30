@@ -12,6 +12,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:uicons_pro/uicons_pro.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../core/app_api.dart';
 import '../../core/app_color.dart';
 import '../../core/app_setting.dart';
 import '../../core/const.dart';
@@ -1214,23 +1215,28 @@ class HomeView extends GetView<HomeController> {
   }
 
   Widget expenseImageThumbnail(SupaExpense item) {
-    if (item.imageUrl.isEmptyOrNull) return 0.heightBox;
+    if (item.imagePath.isEmptyOrNull) return 0.heightBox;
 
-    return ExImageNoCacheView(
-      url: item.imageUrl!,
-      size: 48,
-      radius: 10,
-      errorBuilder: (_, _, _) => Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: AppColor.card.withAlpha(80),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(
-          Icons.image_not_supported_outlined,
-          size: 18,
-          color: AppColor.neutral,
+    return FutureBuilder<String>(
+      future: db.storage
+          .from('expense-images')
+          .createSignedUrl(item.imagePath!, 300),
+      builder: (_, snapshot) => ExImageNoCacheView(
+        url: snapshot.data ?? '',
+        size: 48,
+        radius: 10,
+        errorBuilder: (_, _, _) => Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: AppColor.card.withAlpha(80),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            Icons.image_not_supported_outlined,
+            size: 18,
+            color: AppColor.neutral,
+          ),
         ),
       ),
     ).pOnly(right: 12);
@@ -1314,7 +1320,9 @@ class HomeView extends GetView<HomeController> {
                     HStack([
                       '${item.note}'.text.bold
                           .color(isTypeNotes ? Vx.white : AppColor.textReverse)
-                          .make(),
+                          .ellipsis
+                          .make()
+                          .expand(),
                       if (!isTypeNotes) ...[
                         Icon(
                           CupertinoIcons.time,
@@ -1742,19 +1750,6 @@ class HomeView extends GetView<HomeController> {
           ),
         ),
         lineTouchData: LineTouchData(
-          touchCallback: (event, response) async {
-            final spots = response?.lineBarSpots;
-            if (event is! FlTapUpEvent || spots == null || spots.isEmpty)
-              return;
-            final day = spots.first.x.toInt();
-            await controller.onCalenderGoDate(
-              DateTime(
-                controller.focusedDay.value.year,
-                controller.focusedDay.value.month,
-                day,
-              ),
-            );
-          },
           touchTooltipData: LineTouchTooltipData(
             fitInsideHorizontally: true,
             fitInsideVertically: true,
@@ -1826,11 +1821,11 @@ class HomeView extends GetView<HomeController> {
                 .bold
                 .make(),
             Divider().w(180),
-            'Saldo        : ${controller.userProfile.value.balance}'.text
+            'Saldo        : ${controller.userProfile.value.balance?.moneyFormat()}'.text
                 .size(12)
                 .black
                 .make(),
-            'Penghasilan : ${controller.userProfile.value.income}'.text
+            'Penghasilan : ${controller.userProfile.value.income?.moneyFormat()}'.text
                 .size(12)
                 .black
                 .make(),

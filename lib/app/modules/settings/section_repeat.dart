@@ -7,7 +7,6 @@ import 'package:uicons_pro/uicons_pro.dart';
 import '../../core/app_color.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_category_entity.dart';
-import '../../models/supa_cron_entity.dart';
 import 'settings_controller.dart';
 
 class SectionRepeat extends GetView<SettingsController> {
@@ -27,28 +26,14 @@ class SectionRepeat extends GetView<SettingsController> {
           ),
         ]).pOnly(bottom: 18),
         Obx(
-          () => controller.cronList.isNotEmpty
+          () => controller.recurringList.isNotEmpty
               ? ListView.separated(
-                  itemCount: controller.cronList.length,
+                  itemCount: controller.recurringList.length,
                   separatorBuilder: (context, index) => 10.heightBox,
                   itemBuilder: (context, index) {
-                    final item = controller.cronList[index];
-                    final command = item.command ?? '';
-                    final valuesRegex = RegExp(
-                      r"values\s*\('([^']*)',\s*'([^']*)',\s*([0-9.]+)",
-                      caseSensitive: false,
-                    );
-                    final match = valuesRegex.firstMatch(command);
-
-                    final note = match?.group(1) ?? '';
-                    final categoryFull = match?.group(2) ?? '';
-                    final categoryName = categoryFull.split('#').first.trim();
-                    final amount = num.tryParse(match?.group(3) ?? '0') ?? 0;
-                    final schedule = SupaCronSchedule.parse(item.schedule);
-                    final dueDate = schedule?.dueDay.toString() ?? '-';
-                    final remainingDays = schedule?.remainingDays() ?? 0;
-                    final scheduleLabel = repeatScheduleLabel(schedule);
-                    final category = resolveExpenseCategory(categoryName);
+                    final item = controller.recurringList[index];
+                    final remainingDays = item.remainingDays();
+                    final category = resolveExpenseCategory(item.categoryName);
                     final remainingLabel = remainingDays.isNegative
                         ? 'Bulan depan'
                         : remainingDays == 0
@@ -76,15 +61,15 @@ class SectionRepeat extends GetView<SettingsController> {
                                   size: 10,
                                   color: AppColor.red,
                                 ).pOnly(right: 7),
-                                '$scheduleLabel • $dueDate'.text
+                                '${item.scheduleLabel} • ${item.dueDay}'.text
                                     .size(10)
                                     .make(),
                               ]).pSymmetric(h: 9, v: 5),
                             ).pOnly(bottom: 10),
 
                             HStack([
-                              '$note'.text.size(14).bold.make().expand(),
-                              '${amount.moneyFormat()}'.text
+                              '${item.note}'.text.size(14).bold.make().expand(),
+                              '${item.amount?.moneyFormat()}'.text
                                   .size(14)
                                   .bold
                                   .make(),
@@ -118,7 +103,7 @@ class SectionRepeat extends GetView<SettingsController> {
                         ],
                       ).p16(),
                     ).onInkTap(() {
-                      controller.onShowCronInfo(item);
+                      controller.onShowRecurringInfo(item);
                     });
                   },
                 ).expand()

@@ -6,7 +6,6 @@ import '../models/supa_error_log_entity.dart';
 
 mixin HelperErrorLog {
   static Future<void> record({
-    String? userEmail,
     required String page,
     required String action,
     required String stack,
@@ -16,7 +15,7 @@ mixin HelperErrorLog {
     final errObj = SupaErrorLog(
       id: UuidV4().generate(),
       createdAt: DateTime.now().toStringEx(),
-      userEmail: userEmail ?? db.auth.currentSession?.user.email,
+      userId: db.auth.currentSession?.user.id,
       page: page,
       action: action,
       stack: stack,

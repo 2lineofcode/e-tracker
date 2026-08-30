@@ -79,7 +79,8 @@ class MyLayout extends StatelessWidget {
                 body().expand(),
 
                 /// footer
-                footer(),
+                if (!context.isMobile || MediaQuery.viewInsetsOf(context).bottom == 0)
+                  footer(),
               ],
             ).expand(),
           ],

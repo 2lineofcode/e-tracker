@@ -30,6 +30,7 @@ class NotesController extends GetxController {
   final isPinning = false.obs;
   final isPreviewMode = true.obs;
   final hasDirtyChange = false.obs;
+  final isMobileEditorOpen = false.obs;
   bool _isApplyingNote = false;
   String _savedTitle = '';
   String _savedContent = '';
@@ -73,6 +74,7 @@ class NotesController extends GetxController {
         } else {
           openNote(notesList.first);
         }
+        isMobileEditorOpen.value = false;
       }
     } catch (e) {
       await HelperErrorLog.record(
@@ -92,6 +94,7 @@ class NotesController extends GetxController {
     tfTitle.text = '';
     _replaceDocument(ParchmentDocument());
     isPreviewMode.value = false;
+    isMobileEditorOpen.value = true;
     _rememberCurrentState();
     _isApplyingNote = false;
   }
@@ -102,6 +105,7 @@ class NotesController extends GetxController {
     tfTitle.text = note.title ?? '';
     _replaceDocument(_decodeDocument(note.content));
     isPreviewMode.value = true;
+    isMobileEditorOpen.value = true;
     _rememberCurrentState();
     _isApplyingNote = false;
   }
@@ -220,6 +224,15 @@ class NotesController extends GetxController {
   void enterEditMode() {
     isPreviewMode.value = false;
     editorFocusNode.requestFocus();
+  }
+
+  void closeMobileEditor() {
+    final shouldRestore = hasDirtyChange.value;
+    final note = selectedNote.value;
+    confirmDiscardChanges(() {
+      if (shouldRestore && note != null) openNote(note);
+      isMobileEditorOpen.value = false;
+    });
   }
 
   void insertTable(int rows, int columns) {

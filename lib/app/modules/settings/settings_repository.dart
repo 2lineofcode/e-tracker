@@ -3,8 +3,7 @@ import 'package:uicons_pro/uicons_pro.dart';
 
 import '../../core/app_api.dart';
 import '../../models/supa_category_entity.dart';
-import '../../models/supa_cron_entity.dart';
-import '../../models/supa_expense_entity.dart';
+import '../../models/supa_recurring_expense_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 
 mixin SectionMenu {
@@ -51,18 +50,21 @@ class SettingsRepository {
   /// ! storage
   /// ------------------------------------------------------------------------
   Future<List<FileObject>> getBackupList() async {
-    final email = db.auth.currentSession?.user.email;
-    if (email == null) return [];
+    if (currentUserId == null) return [];
 
-    final response = await db.storage
-        .from('backup')
-        .list(
-          searchOptions: SearchOptions(
-            sortBy: SortBy(column: 'created_at', order: 'desc'),
-          ),
-        );
-
-    return response.where((file) => file.name.startsWith('${email}_')).toList();
+    const pageSize = 100;
+    final files = <FileObject>[];
+    while (true) {
+      final page = await db.storage.from('backup').list(
+        searchOptions: SearchOptions(
+          limit: pageSize,
+          offset: files.length,
+          sortBy: SortBy(column: 'created_at', order: 'desc'),
+        ),
+      );
+      files.addAll(page);
+      if (page.length < pageSize) return files;
+    }
   }
 
   /// ------------------------------------------------------------------------
@@ -96,28 +98,38 @@ class SettingsRepository {
   /// ------------------------------------------------------------------------
   /// ! admin
   /// ------------------------------------------------------------------------
-  Future<List<SupaCron>> getCron() async {
+  Future<List<SupaRecurringExpense>> getRecurringExpenses() async {
     if (currentUserId == null) return [];
-    return await db.rpc('get_expense_cron').withConverter<List<SupaCron>>((data) {
-      return (data as List).map((e) => SupaCron.fromJson(e)).toList();
-    });
+    return await db
+        .from('recurring_expenses')
+        .select()
+        .eq('user_id', currentUserId!)
+        .isFilter('archived_at', null)
+        .order('created_at')
+        .withConverter<List<SupaRecurringExpense>>(
+          (data) => data.map((e) => SupaRecurringExpense.fromJson(e)).toList(),
+        );
+  }
+
+  Future<void> addRecurringExpense(SupaRecurringExpense entity) async {
+    if (currentUserId == null) return;
+    await db.from('recurring_expenses').insert(entity.toJson());
+  }
+
+  Future<void> archiveRecurringExpense(String id) async {
+    if (currentUserId == null) return;
+    await db
+        .from('recurring_expenses')
+        .update({
+          'active': false,
+          'archived_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', id)
+        .eq('user_id', currentUserId!);
   }
 
   Future<num> sumAllExpense() async {
     if (currentUserId == null) return 0;
-    var totalExpense = 0 as num;
-    final response =
-        await db //
-            .from('expense')
-            .select()
-            .eq('user_id', currentUserId!)
-            .withConverter<List<SupaExpense>>((data) {
-              return (data).map((e) => SupaExpense.fromJson(e)).toList();
-            });
-
-    response.forEach(
-      (element) => totalExpense = totalExpense + element.amount!,
-    );
-    return totalExpense;
+    return await db.rpc('sum_own_expenses') as num? ?? 0;
   }
 }

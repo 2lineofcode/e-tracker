@@ -11,7 +11,6 @@ SET row_security = off;
 COMMENT ON SCHEMA "public" IS 'standard public schema';
 CREATE EXTENSION IF NOT EXISTS "pg_cron" WITH SCHEMA "public";
 CREATE EXTENSION IF NOT EXISTS "pg_net" WITH SCHEMA "extensions";
-CREATE EXTENSION IF NOT EXISTS "pgsodium" WITH SCHEMA "pgsodium";
 CREATE EXTENSION IF NOT EXISTS "http" WITH SCHEMA "extensions";
 CREATE EXTENSION IF NOT EXISTS "pg_graphql" WITH SCHEMA "graphql";
 CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
@@ -19,91 +18,6 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
 CREATE EXTENSION IF NOT EXISTS "pgjwt" WITH SCHEMA "extensions";
 CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA "vault";
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
-CREATE OR REPLACE FUNCTION "public"."get_ihsg"() RETURNS TABLE("cf_code" "json", "cf_name" "json", "cf_last" "json", "cf_netchng" "json", "pctchng" "json")
-    LANGUAGE "plpgsql"
-    AS $$
-BEGIN
-
-RETURN QUERY
-  SELECT
-    content::json->'data'->0->'CODE' AS CF_CODE,
-    content::json->'data'->0->'NAME' AS CF_NAME,
-    content::json->'data'->0->'CF_LAST' AS CF_LAST,
-    content::json->'data'->0->'CF_NETCHNG' AS CF_NETCHNG,
-    content::json->'data'->0->'PCTCHNG' AS PCTCHNG
-FROM
-    http(
-        (
-            'POST',
-            'https://www.cnbcindonesia.com/market-data/api/getMajorIndexes',
-            ARRAY[
-                http_header(
-                    'accept',
-                    'application/json'
-                ),
-                http_header(
-                    'authorization',
-                    'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJrZXkiOiJrMXQ0SGFydXNCaXM0IiwidGltZSI6MTUyMzkzMTMzMCwic2FsdCI6ImV5SjBlWEFpT2lKS1YxUWlMQ0poYkdjaU9pSklVekkxTmlKOS5NVFV5TXprek1UTXpNQS42MG5ZQ0oyX2hsRzlDTmxOR1dQcmVOMV8weHgwMW84Tzc4V3VyVXYtUTBRIn0.WAcM1Wska3QulFqRxvdA3Lk6tKQ9YdPZIkWEvArbGxA'
-                )
-            ],
-            '',
-            ''
-        )::http_request
-    ) AS response;
-END;
-$$;
-ALTER FUNCTION "public"."get_ihsg"() OWNER TO "postgres";
-CREATE OR REPLACE FUNCTION "public"."get_pintu"() RETURNS TABLE("api" character varying, "response" character varying)
-    LANGUAGE "plpgsql"
-    AS $$
-BEGIN
-    RETURN QUERY
-    -- HTTP request pertama
-    WITH request1 AS (
-        SELECT
-            content
-        FROM
-            http(
-                (
-                    'GET',
-                    'https://api.pintu.co.id/v2/wallet/supportedCurrencies',
-                    null,
-                    '',
-                    ''
-                )::http_request
-            ) AS response
-    )
-
-    -- HTTP request kedua
-    , request2 AS (
-        SELECT
-            content
-        FROM
-            http(
-                (
-                    'GET',
-                    'https://api.pintu.co.id/v2/trade/price-changes',
-                    null,
-                    '',
-                    ''
-                )::http_request
-            ) AS response
-    )
-
-    SELECT
-        'supportedCurrencies'::VARCHAR AS api,
-        r1.content::VARCHAR AS response
-    FROM
-        request1 r1
-    UNION ALL
-    SELECT
-        'price-changes'::VARCHAR AS api,
-        r2.content::VARCHAR AS response
-    FROM
-        request2 r2;
-  END;
-$$;
-ALTER FUNCTION "public"."get_pintu"() OWNER TO "postgres";
 CREATE OR REPLACE FUNCTION "public"."get_spender_day"("userid" "uuid", "periode" character varying) RETURNS TABLE("date" character varying, "total" numeric)
     LANGUAGE "plpgsql"
     AS $$
@@ -136,38 +50,6 @@ begin
 end;
 $$;
 ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
-CREATE OR REPLACE FUNCTION "public"."javlib_bycode"("code" "text") RETURNS "text"
-    LANGUAGE "plpgsql"
-    AS $$
-DECLARE
-  url TEXT;
-  res TEXT;
-BEGIN
-  url := 'https://www.javlibrary.com/en/vl_searchbyid.php?keyword=' || code;
-  res := (SELECT content::TEXT FROM http_get(url));
-  RETURN res;
-
-END;
-$$;
-ALTER FUNCTION "public"."javlib_bycode"("code" "text") OWNER TO "postgres";
-CREATE OR REPLACE FUNCTION "public"."javlib_byid"("id" "text") RETURNS "text"
-    LANGUAGE "plpgsql"
-    AS $$
-DECLARE
-  url TEXT;
-  res TEXT;
-BEGIN
-  url := 'https://www.javlibrary.com/en/?v=' || id;
-
-  res := (SELECT 
-             content::TEXT
-          FROM http_get(url));
-
-  RETURN res;
-
-END;
-$$;
-ALTER FUNCTION "public"."javlib_byid"("id" "text") OWNER TO "postgres";
 CREATE OR REPLACE FUNCTION "public"."sum_all_month"("userid" "uuid", "periode" integer) RETURNS TABLE("period" character varying, "total" integer)
     LANGUAGE "plpgsql"
     AS $$
@@ -191,35 +73,6 @@ BEGIN
 END;
 $$;
 ALTER FUNCTION "public"."sum_all_month"("userid" "uuid", "periode" integer) OWNER TO "postgres";
-CREATE OR REPLACE FUNCTION "public"."sum_by_category"("userid" "uuid", "periode" character varying) RETURNS TABLE("period" character varying, "category_id" character varying, "category_name" character varying, "category_color" character varying, "category_icon" character varying, "max_budget" numeric, "total" numeric, "use_percentage" integer, "remaining_budget" numeric)
-    LANGUAGE "plpgsql"
-    AS $$
-BEGIN
-    RETURN QUERY
-    SELECT 
-        periode::varchar,
-        c.id::varchar,
-        c.name::varchar,
-        c.color::varchar,
-        c.icon::varchar,
-        c.max_budget::numeric,
-        COALESCE(SUM(e.amount), 0)::numeric,
-        CASE 
-            WHEN c.max_budget IS NOT NULL AND c.max_budget > 0 THEN CAST(COALESCE(SUM(e.amount), 0) / c.max_budget * 100 AS INTEGER) 
-            ELSE NULL 
-        END::integer,
-        CASE 
-            WHEN c.max_budget IS NOT NULL THEN c.max_budget - COALESCE(SUM(e.amount), 0) 
-            ELSE NULL 
-        END::numeric
-    FROM category c
-    LEFT JOIN expense e ON e.category_name = c.name AND e.date LIKE '%' || periode || '%' 
-    WHERE c.user_id = userid
-    GROUP BY c.name, c.max_budget  
-    ORDER BY c.max_budget DESC NULLS LAST, c.name;
-END;
-$$;
-ALTER FUNCTION "public"."sum_by_category"("userid" "uuid", "periode" character varying) OWNER TO "postgres";
 CREATE OR REPLACE FUNCTION "public"."sum_note_times"("userid" "uuid", "periode" character varying) RETURNS TABLE("period" character varying, "note" character varying, "times" integer, "total" numeric)
     LANGUAGE "plpgsql"
     AS $$
@@ -380,30 +233,15 @@ SET SESSION AUTHORIZATION "postgres";
 RESET SESSION AUTHORIZATION;
 SET SESSION AUTHORIZATION "postgres";
 RESET SESSION AUTHORIZATION;
-GRANT ALL ON FUNCTION "public"."get_ihsg"() TO "anon";
-GRANT ALL ON FUNCTION "public"."get_ihsg"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_ihsg"() TO "service_role";
-GRANT ALL ON FUNCTION "public"."get_pintu"() TO "anon";
-GRANT ALL ON FUNCTION "public"."get_pintu"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."get_pintu"() TO "service_role";
 GRANT ALL ON FUNCTION "public"."get_spender_day"("userid" "uuid", "periode" character varying) TO "anon";
 GRANT ALL ON FUNCTION "public"."get_spender_day"("userid" "uuid", "periode" character varying) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."get_spender_day"("userid" "uuid", "periode" character varying) TO "service_role";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "anon";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "authenticated";
 GRANT ALL ON FUNCTION "public"."handle_new_user"() TO "service_role";
-GRANT ALL ON FUNCTION "public"."javlib_bycode"("code" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."javlib_bycode"("code" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."javlib_bycode"("code" "text") TO "service_role";
-GRANT ALL ON FUNCTION "public"."javlib_byid"("id" "text") TO "anon";
-GRANT ALL ON FUNCTION "public"."javlib_byid"("id" "text") TO "authenticated";
-GRANT ALL ON FUNCTION "public"."javlib_byid"("id" "text") TO "service_role";
 GRANT ALL ON FUNCTION "public"."sum_all_month"("userid" "uuid", "periode" integer) TO "anon";
 GRANT ALL ON FUNCTION "public"."sum_all_month"("userid" "uuid", "periode" integer) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."sum_all_month"("userid" "uuid", "periode" integer) TO "service_role";
-GRANT ALL ON FUNCTION "public"."sum_by_category"("userid" "uuid", "periode" character varying) TO "anon";
-GRANT ALL ON FUNCTION "public"."sum_by_category"("userid" "uuid", "periode" character varying) TO "authenticated";
-GRANT ALL ON FUNCTION "public"."sum_by_category"("userid" "uuid", "periode" character varying) TO "service_role";
 GRANT ALL ON FUNCTION "public"."sum_note_times"("userid" "uuid", "periode" character varying) TO "anon";
 GRANT ALL ON FUNCTION "public"."sum_note_times"("userid" "uuid", "periode" character varying) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."sum_note_times"("userid" "uuid", "periode" character varying) TO "service_role";

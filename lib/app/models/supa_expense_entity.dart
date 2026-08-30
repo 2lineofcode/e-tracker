@@ -11,7 +11,8 @@ class SupaExpense {
   String? date;
   String? userId;
   String? detail;
-  String? imageUrl;
+  String? imagePath;
+  String? updatedAt;
 
   SupaExpense({
     this.id,
@@ -22,7 +23,8 @@ class SupaExpense {
     this.date,
     this.userId,
     this.detail,
-    this.imageUrl,
+    this.imagePath,
+    this.updatedAt,
   });
 
   SupaExpense.fromJson(Map<String, dynamic> json) {
@@ -34,7 +36,8 @@ class SupaExpense {
     date = _sanitizeDate(json['date']);
     userId = json['user_id'];
     detail = json['detail'];
-    imageUrl = json['image_url'];
+    imagePath = json['image_path'];
+    updatedAt = json['updated_at'];
   }
 
   Map<String, dynamic> toJson() {
@@ -47,7 +50,8 @@ class SupaExpense {
     data['date'] = date;
     data['user_id'] = userId;
     data['detail'] = detail;
-    data['image_url'] = imageUrl;
+    data['image_path'] = imagePath;
+    if (updatedAt != null) data['updated_at'] = updatedAt;
     return data;
   }
 

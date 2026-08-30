@@ -20,3 +20,19 @@ supabase db reset
 ```sh
 supabase status
 ```
+
+# Agnes proxy
+
+Copy `supabase/functions/agent-proxy/.env.example` to `.env.local`, fill the
+Agent credentials, then run locally:
+
+```sh
+supabase functions serve agent-proxy --env-file supabase/functions/agent-proxy/.env.local
+```
+
+Deploy the secret and function:
+
+```sh
+supabase secrets set --env-file supabase/functions/agent-proxy/.env.local
+supabase functions deploy agent-proxy
+```

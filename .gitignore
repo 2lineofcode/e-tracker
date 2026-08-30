@@ -53,8 +53,12 @@ supabase/**
 !supabase/
 !supabase/.gitignore
 !supabase/config.toml
+!supabase/functions/
+!supabase/functions/**
 !supabase/migrations/
 !supabase/migrations/*.sql
+!supabase/tests/
+!supabase/tests/*.sql
 devtools_options.yaml
 macos/Flutter/GeneratedPluginRegistrant.swift
 

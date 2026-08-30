@@ -42,7 +42,7 @@ class LoginController extends GetxController {
           Get.offAllNamed(Routes.HOME);
         })
         .catchError((e) async {
-          await HelperErrorLog.record(userEmail: tfEmail.text, page: 'login', action: 'onLogin', stack: e.toString());
+          await HelperErrorLog.record(page: 'login', action: 'onLogin', stack: e.toString());
           if (e is AuthException && e.message.contains('credentials')) {
             await HelperToast.error('Email atau kata sandinya salah');
           } else {

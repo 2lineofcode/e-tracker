@@ -8,10 +8,13 @@ import '../../helpers/helpers.dart';
 import '../../models/supa_category_entity.dart';
 import '../home/home_controller.dart';
 import '../widgets/widget_shimmer_summary.dart';
+import 'agent_controller.dart';
 import 'summary_controller.dart';
 
 class ViewOverview extends GetView<SummaryController> {
   const ViewOverview({super.key});
+
+  AgentController get agent => Get.find<AgentController>();
 
   @override
   Widget build(BuildContext context) {
@@ -203,6 +206,26 @@ class ViewOverview extends GetView<SummaryController> {
               color: AppColor.border,
             ).pSymmetric(h: 12),
             _headerMiniMetric(
+              label: 'Hari aktif',
+              value: '${controller.activeDays}',
+              color: AppColor.green,
+            ).expand(),
+            Container(
+              width: 1,
+              height: 28,
+              color: AppColor.border,
+            ).pSymmetric(h: 12),
+            _headerMiniMetric(
+              label: 'Hari tdk aktif',
+              value: '${controller.inactiveDays}',
+              color: Vx.neutral300,
+            ).expand(),
+            Container(
+              width: 1,
+              height: 28,
+              color: AppColor.border,
+            ).pSymmetric(h: 12),
+            _headerMiniMetric(
               label: isCurrentMonth ? 'Proyeksi' : 'Total periode',
               value: projectedSpend.moneyFormatCompact(),
               color: projectedDelta >= 0 ? AppColor.green : AppColor.red,
@@ -226,7 +249,7 @@ class ViewOverview extends GetView<SummaryController> {
               'Insight AI'.text.underline.size(12).make().onTap(() async {
                 controller.menuSelected.value = 5;
                 await 100.milliseconds.delay();
-                controller.chatInputController.text =
+                agent.chatInputController.text =
                     'jelasin budget pace periode ini dan kasih batas pengeluaran harian yang aman. jawab singkat aja';
               }),
             ]).pOnly(top: 8),

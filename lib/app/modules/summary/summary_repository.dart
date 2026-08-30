@@ -1,14 +1,14 @@
 import 'package:ex_kit/ex.dart';
 
 import '../../core/app_api.dart';
-import '../../helpers/helpers.dart';
+import '../../core/const.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
 import '../../models/supa_category_entity.dart';
-import '../../models/supa_cron_entity.dart';
 import '../../models/supa_error_log_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../../models/supa_notes_entity.dart';
+import '../../models/supa_recurring_expense_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 
 class SummaryRepository {
@@ -45,6 +45,16 @@ class SummaryRepository {
       'semua',
       'apa',
       'aja',
+      'saja',
+      'hari',
+      'today',
+      'kemarin',
+      'yesterday',
+      'ini',
+      'periode',
+      'dashboard',
+      'milikku',
+      'punyaku',
       'pernah',
       'terakhir',
       'pertama',
@@ -118,14 +128,19 @@ class SummaryRepository {
 
   Future<List<SupaExpense>> getExpenses({required String year, String? month}) async {
     if (currentUserId == null) return [];
-    final fixYM = '$year${month != null ? '-${month.reformatDate(from: 'MMMM', to: 'MM')}' : ''}';
+    final monthNumber = month?.reformatDate(from: 'MMMM', to: 'MM');
+    final start = DateTime.parse('$year-${monthNumber ?? '01'}-01');
+    final end = monthNumber == null
+        ? DateTime(start.year + 1, 1, 1)
+        : DateTime(start.year, start.month + 1, 1);
     final response =
         await db //
             .from('expense')
             // .select()
             .select('date, amount, category_name, note')
             .eq('user_id', currentUserId!)
-            .or('date.ilike.$fixYM%')
+            .gte('date', start.toStringEx(format: yMd))
+            .lt('date', end.toStringEx(format: yMd))
             .order('date')
             .withConverter<List<SupaExpense>>((data) {
               return (data).map((e) => SupaExpense.fromJson(e)).toList();
@@ -164,12 +179,11 @@ class SummaryRepository {
   }
 
   Future<List<SupaErrorLog>> getErrorLogs() async {
-    final email = db.auth.currentSession?.user.email;
-    if (email == null) return [];
+    if (currentUserId == null) return [];
     return await db
         .from('error_log')
-        .select('id, created_at, page, action, stack')
-        .eq('user_email', email)
+        .select('id, created_at, user_id, page, action, stack')
+        .eq('user_id', currentUserId!)
         .order('created_at', ascending: false)
         .limit(100)
         .withConverter<List<SupaErrorLog>>(
@@ -213,11 +227,17 @@ class SummaryRepository {
     return deleted != null;
   }
 
-  Future<List<SupaCron>> getCron() async {
+  Future<List<SupaRecurringExpense>> getRecurringExpenses() async {
     if (currentUserId == null) return [];
-    return await db.rpc('get_expense_cron').withConverter<List<SupaCron>>((data) {
-      return (data as List).map((e) => SupaCron.fromJson(e)).toList();
-    });
+    return await db
+        .from('recurring_expenses')
+        .select()
+        .eq('user_id', currentUserId!)
+        .isFilter('archived_at', null)
+        .order('created_at')
+        .withConverter<List<SupaRecurringExpense>>(
+          (data) => data.map((e) => SupaRecurringExpense.fromJson(e)).toList(),
+        );
   }
 
   /// ------------------------------------------------------------------------
@@ -266,6 +286,6 @@ class SummaryRepository {
             });
 
     if (response.isEmpty) return 0;
-    return response.first.income?.moneyUnformat() ?? 0;
+    return response.first.income ?? 0;
   }
 }

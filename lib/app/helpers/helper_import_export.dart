@@ -41,15 +41,9 @@ mixin HelperImportExport {
         ExSnackbar.danger('Kamu belum login');
         return;
       }
-      final ex =
-          await db //
-              .from('expense')
-              .select('*')
-              .eq('user_id', currentUserId!)
-              .order('date', ascending: false)
-              .withConverter<List<SupaExpense>>((data) {
-                return (data).map((e) => SupaExpense.fromJson(e)).toList();
-              });
+      final rows = await _safeSelectRows('expense');
+      final ex = rows.map((e) => SupaExpense.fromJson(e)).toList()
+        ..sort((a, b) => (b.date ?? '').compareTo(a.date ?? ''));
 
       final jsonFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.json';
       final csvFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
@@ -133,8 +127,8 @@ mixin HelperImportExport {
         'asset_snapshots': await _safeSelectRows('asset_snapshots'),
         'goals': await _safeSelectRows('goals'),
         'notes': await _safeSelectRows('notes'),
-        'category': await _safeSelectRows('category'),
-        'autocomplete': await _safeSelectRows('autocomplete'),
+        'recurring_expenses': await _safeSelectRows('recurring_expenses'),
+        'agent_memory': await _safeSelectRows('agent_memory'),
       };
 
       final filePath = '$path/etracker_full_${DateTime.now().toStringEx(format: 'ddMMMy_HHmm')}.json';
@@ -154,7 +148,18 @@ mixin HelperImportExport {
   static Future<List<dynamic>> _safeSelectRows(String table, {String idColumn = 'user_id'}) async {
     try {
       if (currentUserId == null) return [];
-      return await db.from(table).select().eq(idColumn, currentUserId!);
+      const pageSize = 1000;
+      final rows = <dynamic>[];
+      while (true) {
+        final page = await db
+            .from(table)
+            .select()
+            .eq(idColumn, currentUserId!)
+            .order('id')
+            .range(rows.length, rows.length + pageSize - 1);
+        rows.addAll(page);
+        if (page.length < pageSize) return rows;
+      }
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST205') {
         logW('$table table not found, skipping export');
@@ -217,9 +222,6 @@ mixin HelperImportExport {
       /// # EXPENSE ########################################################################
       /// ----------------------------------------------------------------------------------
       final supaExpense = <SupaExpense>[];
-      final learnedCategories = customPath == null
-          ? await _loadImportCategories()
-          : const <String, String>{};
       var invalidRows = 0;
       for (var e in jsonList) {
         final date = normalizeImportDate(e[mapping['date']].toString());
@@ -231,8 +233,7 @@ mixin HelperImportExport {
         }
         final category = resolveExpenseCategory(
           mapping['category'].isEmptyOrNull
-              ? learnedCategories[_normalizeImportNote(note)] ??
-                    'expense:unknown'
+              ? 'expense:unknown'
               : e[mapping['category']].toString(),
         );
         supaExpense.add(
@@ -298,7 +299,15 @@ mixin HelperImportExport {
       );
 
       /// -> expense
-      await db.from('expense').insert(supaExpense.map((e) => e.toJson()).toList());
+      const batchSize = 500;
+      for (var offset = 0; offset < supaExpense.length; offset += batchSize) {
+        final end = offset + batchSize < supaExpense.length
+            ? offset + batchSize
+            : supaExpense.length;
+        await db
+            .from('expense')
+            .insert(supaExpense.sublist(offset, end).map((e) => e.toJson()).toList());
+      }
 
       /// refresh all
       await __refresh__();
@@ -323,23 +332,6 @@ mixin HelperImportExport {
 
   static String _normalizeImportNote(String value) =>
       value.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
-
-  static Future<Map<String, String>> _loadImportCategories() async {
-    try {
-      final rows = await db
-          .from('autocomplete')
-          .select('note,category_name')
-          .eq('user_id', currentUserId!);
-      return {
-        for (final row in rows)
-          _normalizeImportNote(row['note']?.toString() ?? ''):
-              row['category_name']?.toString() ?? 'expense:unknown',
-      };
-    } on PostgrestException catch (e) {
-      if (e.code == 'PGRST205') return {};
-      rethrow;
-    }
-  }
 
   static Future<Map<String, String>?> _pickImportMapping(
     List<String> headers,
@@ -483,9 +475,20 @@ mixin HelperImportExport {
 
   static String? normalizeImportDate(String raw) {
     final value = raw.trim();
+    final numeric = RegExp(r'^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$').firstMatch(value);
+    if (numeric != null) {
+      final day = int.parse(numeric.group(1)!);
+      final month = int.parse(numeric.group(2)!);
+      final year = int.parse(numeric.group(3)!);
+      final date = DateTime(year, month, day);
+      if (date.year == year && date.month == month && date.day == day) {
+        return DateFormat(yMd).format(date);
+      }
+      return null;
+    }
     final parsed = DateTime.tryParse(value);
     if (parsed != null) return DateFormat(yMd).format(parsed);
-    for (final pattern in ['dd/MM/yyyy', 'dd-MM-yyyy', 'dd MMM yyyy']) {
+    for (final pattern in ['dd MMM yyyy']) {
       try {
         return DateFormat(yMd).format(DateFormat(pattern, 'id_ID').parseStrict(value));
       } catch (_) {}
@@ -511,18 +514,24 @@ mixin HelperImportExport {
     ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
     try {
       if (currentUserId == null) return;
+      final expenseImagePaths = (await _safeSelectRows('expense'))
+          .map((row) => row['image_path']?.toString())
+          .whereType<String>()
+          .where((path) => path.isNotEmpty)
+          .toList();
+      await _removeStorageFiles('expense-images', expenseImagePaths);
       await db.from('expense').delete().match({'user_id': currentUserId!});
-      try {
-        await db.from('autocomplete').delete().match({'user_id': currentUserId!});
-      } on PostgrestException catch (e) {
-        if (e.code != 'PGRST205') rethrow;
-        logW('autocomplete table not found, skipping delete');
-      }
-      try {
-        await db.from('category').delete().match({'user_id': currentUserId!});
-      } on PostgrestException catch (e) {
-        if (e.code != 'PGRST205') rethrow;
-        logW('category table not found, skipping delete');
+      for (final table in [
+        'recurring_expenses',
+        'budgets',
+        'asset_snapshots',
+        'assets',
+        'goals',
+        'notes',
+        'agent_memory',
+        'error_log',
+      ]) {
+        await db.from(table).delete().eq('user_id', currentUserId!);
       }
       if (withRefresh) await __refresh__();
 

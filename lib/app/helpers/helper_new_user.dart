@@ -99,10 +99,15 @@ mixin HelperNewUser {
             onPressed: () async {
               // filepicker select file and upload to supabase storage
               await FilePicker.pickFile(
-                type: FileType.image,
+                type: FileType.custom,
+                allowedExtensions: ['png'],
               ).then((img) async {
                 if (img != null) {
                   final bytes = await img.readAsBytes();
+                  if (bytes.length > 5 * 1024 * 1024) {
+                    await HelperToast.error('Maks. 5 MB');
+                    return;
+                  }
 
                   isReplacePhoto.value = true;
 
@@ -216,7 +221,7 @@ mixin HelperNewUser {
               final editProfile = SupaUserProfile(
                 id: userProfile[0].id ?? '',
                 fullName: tfFullName.text,
-                age: tfBirthYear.text,
+                birthYear: birthYear,
                 avatarUrl: tfAvatar.value,
                 updatedAt: DateTime.now().toStringEx(),
               );

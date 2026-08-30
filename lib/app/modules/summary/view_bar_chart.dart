@@ -83,6 +83,12 @@ class ViewBarChart extends GetView<SummaryController> {
                   ],
                 ),
               ).expand(),
+            ] else ...[
+              ExUiErrorOrEmpty(
+                bgColor: AppColor.emptyStatePrimary,
+                title: 'Tidak ada pengeluaran tinggi',
+                message: '',
+              ).expand(),
             ],
           ]
           /// empty view

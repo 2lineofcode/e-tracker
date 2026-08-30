@@ -17,48 +17,76 @@ class NotesView extends GetView<NotesController> {
   @override
   Widget build(BuildContext context) {
     return Obx(
-      () => PopScope(
-        canPop: !controller.hasDirtyChange.value && !controller.isSaving.value,
-        onPopInvokedWithResult: (didPop, result) {
-          if (didPop) return;
-          controller.confirmDiscardChanges(() => Get.back(result: result));
-        },
-        child: Scaffold(
-          backgroundColor: AppColor.scaffoldPrimary,
-          body: SafeArea(
-            child: VStack([
-              _NotesHeader(controller: controller).pOnly(left: 12, top: 28, right: 12, bottom: 12),
-              Obx(() {
-                if (controller.isLoading.value && controller.notesList.isEmpty) {
-                  return CupertinoActivityIndicator().centered();
-                }
+      () {
+        final isMobile = context.isMobile;
+        final showMobileEditor = isMobile && controller.isMobileEditorOpen.value;
+        return PopScope(
+          canPop: !showMobileEditor &&
+              !controller.hasDirtyChange.value &&
+              !controller.isSaving.value,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) return;
+            if (showMobileEditor) {
+              controller.closeMobileEditor();
+              return;
+            }
+            controller.confirmDiscardChanges(() => Get.back(result: result));
+          },
+          child: Scaffold(
+            backgroundColor: AppColor.scaffoldPrimary,
+            body: SafeArea(
+              child: VStack([
+                _NotesHeader(
+                  controller: controller,
+                  showEditorActions: !isMobile || showMobileEditor,
+                  compact: isMobile,
+                  onBack: showMobileEditor
+                      ? controller.closeMobileEditor
+                      : () => controller.confirmDiscardChanges(() => Get.back()),
+                ).pOnly(
+                  left: 12,
+                  top: isMobile ? 8 : 28,
+                  right: 12,
+                  bottom: 12,
+                ),
+                Obx(() {
+                  if (controller.isLoading.value && controller.notesList.isEmpty) {
+                    return CupertinoActivityIndicator().centered();
+                  }
 
-                if (context.isMobile) {
-                  return VStack([
-                    _NotesSidePanel(controller: controller).h(220),
-                    Divider(height: 1, color: AppColor.border.withAlpha(80)),
+                  if (isMobile) {
+                    return showMobileEditor
+                        ? _NoteEditorPanel(controller: controller)
+                        : _NotesSidePanel(controller: controller);
+                  }
+
+                  return HStack([
+                    _NotesSidePanel(controller: controller).w(290),
+                    VerticalDivider(width: 1, color: AppColor.border.withAlpha(80)),
                     _NoteEditorPanel(controller: controller).expand(),
                   ]);
-                }
-
-                return HStack([
-                  _NotesSidePanel(controller: controller).w(290),
-                  VerticalDivider(width: 1, color: AppColor.border.withAlpha(80)),
-                  _NoteEditorPanel(controller: controller).expand(),
-                ]);
-              }).expand(),
-            ]),
+                }).expand(),
+              ]),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
 
 class _NotesHeader extends StatelessWidget {
-  const _NotesHeader({required this.controller});
+  const _NotesHeader({
+    required this.controller,
+    required this.showEditorActions,
+    required this.compact,
+    required this.onBack,
+  });
 
   final NotesController controller;
+  final bool showEditorActions;
+  final bool compact;
+  final VoidCallback onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -66,78 +94,79 @@ class _NotesHeader extends StatelessWidget {
       IconButton(
         tooltip: 'Kembali',
         icon: Icon(CupertinoIcons.arrow_left, size: 20),
-        onPressed: controller.isSaving.value
-            ? null
-            : () => controller.confirmDiscardChanges(() => Get.back()),
+        onPressed: controller.isSaving.value ? null : onBack,
       ),
       Icon(UIconsPro.solidRounded.notebook, size: 15).pOnly(left: 4, right: 10),
       'Note'.text.size(12).bold.make(),
-      Obx(() {
-        if (controller.isSaving.value) {
-          return 'Menyimpan...'.text.size(10).color(AppColor.neutral).make().pOnly(left: 10);
-        }
-        if (controller.hasDirtyChange.value) {
-          return 'Belum disimpan'.text.size(10).color(AppColor.orangeLight).make().pOnly(left: 10);
-        }
-        return SizedBox.shrink();
-      }),
+      if (showEditorActions && !compact)
+        Obx(() {
+          if (controller.isSaving.value) {
+            return 'Menyimpan...'.text.size(10).color(AppColor.neutral).make().pOnly(left: 10);
+          }
+          if (controller.hasDirtyChange.value) {
+            return 'Belum disimpan'.text.size(10).color(AppColor.orangeLight).make().pOnly(left: 10);
+          }
+          return SizedBox.shrink();
+        }),
       Spacer(),
-      Obx(
-        () => IconButton(
-          tooltip: controller.isPreviewMode.value ? 'Ubah' : 'Lihat hasil',
-          icon: Icon(
-            controller.isPreviewMode.value ? UIconsPro.solidRounded.pen_nib : UIconsPro.solidRounded.eye,
-            size: 16,
+      if (showEditorActions) ...[
+        Obx(
+          () => IconButton(
+            tooltip: controller.isPreviewMode.value ? 'Ubah' : 'Lihat hasil',
+            icon: Icon(
+              controller.isPreviewMode.value ? UIconsPro.solidRounded.pen_nib : UIconsPro.solidRounded.eye,
+              size: 16,
+            ),
+            onPressed: controller.isSaving.value ? null : controller.togglePreviewMode,
           ),
-          onPressed: controller.isSaving.value ? null : controller.togglePreviewMode,
         ),
-      ),
-      Obx(() {
-        final note = controller.selectedNote.value;
-        if (note == null) return SizedBox.shrink();
-        return IconButton(
-          tooltip: note.isPinned ? 'Lepas pin' : 'Pin',
-          icon: Icon(
-            note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-            size: 16,
-            color: note.isPinned ? AppColor.primary : null,
+        Obx(() {
+          final note = controller.selectedNote.value;
+          if (note == null) return SizedBox.shrink();
+          return IconButton(
+            tooltip: note.isPinned ? 'Lepas pin' : 'Pin',
+            icon: Icon(
+              note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+              size: 16,
+              color: note.isPinned ? AppColor.primary : null,
+            ),
+            onPressed: controller.isPinning.value
+                ? null
+                : () => controller.togglePinned(note),
+          );
+        }),
+        Obx(() {
+          if (controller.selectedNote.value == null) return SizedBox.shrink();
+          return IconButton(
+            tooltip: 'Hapus',
+            icon: Icon(UIconsPro.solidRounded.trash, size: 16, color: AppColor.red),
+            onPressed: controller.isSaving.value
+                ? null
+                : () {
+                    ExAlert.confirm(
+                      title: 'Hapus note ini?',
+                      message: 'Note yang dihapus nggak bisa dikembalikan.',
+                      btnYesText: 'Hapus',
+                      onYes: () async {
+                        Get.back();
+                        await controller.deleteSelectedNote();
+                      },
+                    );
+                  },
+          );
+        }),
+        Obx(
+          () => IconButton(
+            tooltip: 'Simpan',
+            icon: controller.isSaving.value
+                ? CupertinoActivityIndicator(radius: 8)
+                : Icon(UIconsPro.solidRounded.disk, size: 16),
+            onPressed: controller.isSaving.value || !controller.hasDirtyChange.value
+                ? null
+                : controller.saveNote,
           ),
-          onPressed: controller.isPinning.value
-              ? null
-              : () => controller.togglePinned(note),
-        );
-      }),
-      Obx(() {
-        if (controller.selectedNote.value == null) return SizedBox.shrink();
-        return IconButton(
-          tooltip: 'Hapus',
-          icon: Icon(UIconsPro.solidRounded.trash, size: 16, color: AppColor.red),
-          onPressed: controller.isSaving.value
-              ? null
-              : () {
-                  ExAlert.confirm(
-                    title: 'Hapus note ini?',
-                    message: 'Note yang dihapus nggak bisa dikembalikan.',
-                    btnYesText: 'Hapus',
-                    onYes: () async {
-                      Get.back();
-                      await controller.deleteSelectedNote();
-                    },
-                  );
-                },
-        );
-      }),
-      Obx(
-        () => IconButton(
-          tooltip: 'Simpan',
-          icon: controller.isSaving.value
-              ? CupertinoActivityIndicator(radius: 8)
-              : Icon(UIconsPro.solidRounded.disk, size: 16),
-          onPressed: controller.isSaving.value || !controller.hasDirtyChange.value
-              ? null
-              : controller.saveNote,
         ),
-      ),
+      ],
     ]);
   }
 }
@@ -207,7 +236,9 @@ class _NotesSidePanel extends StatelessWidget {
                   .color(AppColor.neutral)
                   .make()
                   .pOnly(left: 2, top: 4, bottom: 8),
-              ...pinnedNotes.map(_buildNoteTile),
+              ...pinnedNotes.map(
+                (note) => _buildNoteTile(note, context.isMobile),
+              ),
             ],
             if (notes.isNotEmpty) ...[
               'NOTE'.text
@@ -220,7 +251,9 @@ class _NotesSidePanel extends StatelessWidget {
                     top: pinnedNotes.isEmpty ? 4 : 8,
                     bottom: 8,
                   ),
-              ...notes.map(_buildNoteTile),
+              ...notes.map(
+                (note) => _buildNoteTile(note, context.isMobile),
+              ),
             ],
           ],
         ).expand();
@@ -228,14 +261,14 @@ class _NotesSidePanel extends StatelessWidget {
     ]);
   }
 
-  Widget _buildNoteTile(SupaNotes note) {
+  Widget _buildNoteTile(SupaNotes note, bool isMobile) {
     final isSelected = controller.selectedNote.value?.id == note.id;
     return _NoteTile(
       note: note,
       isSelected: isSelected,
       onPin: () => controller.togglePinned(note),
       onTap: () {
-        if (isSelected) return;
+        if (isSelected && !isMobile) return;
         controller.confirmDiscardChanges(() => controller.openNote(note));
       },
     ).pOnly(bottom: 10);

@@ -9,16 +9,20 @@ import '../../core/app_color.dart';
 import '../../helpers/helpers.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
 import '../widgets/widget_shimmer_summary.dart';
+import 'agent_controller.dart';
 import 'summary_controller.dart';
 
 class ViewInsights extends GetView<SummaryController> {
   const ViewInsights({super.key});
+
+  AgentController get agent => Get.find<AgentController>();
 
   static const _slashOptions = [
     _ComposerOption('/expense', Icons.payments_outlined),
     _ComposerOption('/note', Icons.note_add_outlined),
     _ComposerOption('/goal', Icons.flag_outlined),
     _ComposerOption('/budget', Icons.account_balance_wallet_outlined),
+    _ComposerOption('/import', Icons.upload_file_outlined),
     _ComposerOption('/memory', Icons.memory_rounded),
     _ComposerOption('/web', Icons.public_rounded),
     _ComposerOption('/clear', Icons.delete_sweep_outlined),
@@ -38,8 +42,6 @@ class ViewInsights extends GetView<SummaryController> {
     return controller.obx(
       (state) => Column(
         children: [
-          _buildHeader(),
-          12.heightBox,
           Expanded(
             child: Container(
               width: double.infinity,
@@ -50,9 +52,11 @@ class ViewInsights extends GetView<SummaryController> {
                 fillColor: AppColor.box,
               ),
               child: Obx(() {
-                final hasChat = controller.chatMessages.isNotEmpty;
+                final hasChat = agent.chatMessages.isNotEmpty;
+                final isRunning = agent.isAIAnalysisRunning.value;
                 return Column(
                   children: [
+                    if (hasChat) _buildChatActions(isRunning),
                     if (!hasChat)
                       _buildPeriodDecision().pOnly(
                         left: 14,
@@ -61,46 +65,59 @@ class ViewInsights extends GetView<SummaryController> {
                       ),
                     Expanded(
                       child: hasChat
-                          ? ListView.separated(
-                              controller: controller.chatScrollController,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 12,
-                              ),
-                              itemCount: controller.chatMessages.length,
-                              separatorBuilder: (context, index) =>
-                                  14.heightBox,
-                              itemBuilder: (context, index) {
-                                final message =
-                                    controller.chatMessages[index];
-                                final isUser = message['isUser'] as bool;
-                                final text = message['text'] as String;
-                                final isLoading =
-                                    message['isLoading'] == true;
-                                final attachments =
-                                    (message['attachments'] as List<dynamic>?)
-                                            ?.whereType<Map>()
-                                            .map(
-                                              (item) =>
-                                                  Map<String, dynamic>.from(
+                          ? Stack(
+                              children: [
+                                ListView.separated(
+                                  controller:
+                                      agent.chatScrollController,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 12,
+                                  ),
+                                  itemCount: agent.chatMessages.length,
+                                  separatorBuilder: (context, index) =>
+                                      14.heightBox,
+                                  itemBuilder: (context, index) {
+                                    final message =
+                                        agent.chatMessages[index];
+                                    final isUser = message['isUser'] as bool;
+                                    final text = message['text'] as String;
+                                    final isLoading =
+                                        message['isLoading'] == true;
+                                    final attachments =
+                                        (message['attachments']
+                                                    as List<dynamic>?)
+                                                ?.whereType<Map>()
+                                                .map(
+                                                  (item) =>
+                                                      Map<String, dynamic>.from(
                                                     item,
                                                   ),
-                                            )
-                                            .toList() ??
-                                    [];
-                                return _buildChatBubble(
-                                  message: text,
-                                  isUser: isUser,
-                                  isLoading: isLoading,
-                                  attachments: attachments,
-                                  isStreaming:
-                                      controller.isAIAnalysisRunning.isTrue &&
-                                      index ==
-                                          controller.chatMessages.length - 1 &&
-                                      !isUser &&
-                                      !isLoading,
-                                );
-                              },
+                                                )
+                                                .toList() ??
+                                            [];
+                                    return _buildChatBubble(
+                                      messageIndex: index,
+                                      message: text,
+                                      isUser: isUser,
+                                      isLoading: isLoading,
+                                      attachments: attachments,
+                                      isStreaming: agent
+                                              .isAIAnalysisRunning.isTrue &&
+                                          index ==
+                                              agent.chatMessages.length -
+                                                  1 &&
+                                          !isUser &&
+                                          !isLoading,
+                                    );
+                                  },
+                                ),
+                                if (agent.showBackToEnd.isTrue)
+                                  IconButton(
+                                    onPressed: agent.scrollChatToEnd,
+                                    icon: Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColor.primary),
+                                  ).positioned(bottom: 12, right: 0, left: 0),
+                              ],
                             )
                           : _buildInsightDashboard(),
                     ),
@@ -117,68 +134,54 @@ class ViewInsights extends GetView<SummaryController> {
     );
   }
 
-  Widget _buildHeader() {
-    return Obx(
-      () => Container(
-        width: double.infinity,
-        decoration: ExDecorator.box(
-          borderColor: AppColor.border,
-          borderRadius: 12,
-          fillColor: AppColor.card,
-        ),
-        child: HStack([
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppColor.primary,
-              borderRadius: BorderRadius.circular(10),
+  Widget _buildChatActions(bool isRunning) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Semantics(
+            label: 'Lihat JSON',
+            button: true,
+            child: IconButton(
+              onPressed: _showChatJson,
+              icon: Icon(Icons.data_object_rounded, size: 18),
+              style: IconButton.styleFrom(
+                minimumSize: Size(36, 32),
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+              ),
             ),
-            child: Icon(
-              Icons.auto_awesome_rounded,
-              size: 18,
-              color: AppColor.textOnBackground,
-            ),
-          ).pOnly(right: 10),
-          VStack([
-            'ditdhewAI'.text.bold.size(14).make(),
-            _selectedPeriod().text
-                .size(10)
-                .minFontSize(10)
-                .color(AppColor.neutral)
-                .make(),
-          ]).expand(),
-          IconButton(
-            tooltip: 'Lihat JSON',
-            onPressed: _showChatJson,
-            icon: Icon(Icons.data_object_rounded, size: 18),
           ),
-          if (controller.chatMessages.isNotEmpty) ...[
-            4.widthBox,
-            IconButton(
-              tooltip: controller.isAIAnalysisRunning.isTrue
-                  ? 'Tunggu ditdhewAI selesai'
-                  : 'Hapus percakapan',
-              onPressed: controller.isAIAnalysisRunning.isTrue
-                  ? null
-                  : controller.clearChat,
+          Semantics(
+            label: isRunning
+                ? 'Tunggu ditdhewAI selesai'
+                : 'Hapus percakapan',
+            button: true,
+            child: IconButton(
+              onPressed: isRunning ? null : agent.clearChat,
               icon: Icon(Icons.delete_outline_rounded, size: 18),
+              style: IconButton.styleFrom(
+                minimumSize: Size(36, 32),
+                padding: EdgeInsets.zero,
+                visualDensity: VisualDensity.compact,
+              ),
             ),
-          ],
-        ]).p12(),
-      ),
-    );
+          ),
+        ],
+      ).pOnly(right: 4),
+    ).pOnly(top: 2);
   }
 
   Widget _buildComposer() {
-    return GetBuilder<SummaryController>(
-      builder: (controller) {
-        final isRunning = controller.isAIAnalysisRunning.isTrue;
-        final isLoadingFile = controller.isChatAttachmentLoading.isTrue;
-        final options = _composerOptions(controller.chatInputController.text);
+    return GetBuilder<AgentController>(
+      builder: (agent) {
+        final isRunning = agent.isAIAnalysisRunning.isTrue;
+        final isLoadingFile = agent.isChatAttachmentLoading.isTrue;
+        final options = _composerOptions(agent.chatInputController.text);
         final canSend =
-            (controller.chatInputController.text.trim().isNotEmpty ||
-                controller.chatAttachments.isNotEmpty) &&
+            (agent.chatInputController.text.trim().isNotEmpty ||
+                agent.chatAttachments.isNotEmpty) &&
             !isLoadingFile &&
             !isRunning;
 
@@ -190,13 +193,36 @@ class ViewInsights extends GetView<SummaryController> {
             fillColor: AppColor.textFieldPrimary,
           ),
           child: VStack([
+            if (agent.editingChatMessageIndex != null)
+              HStack([
+                Icon(
+                  Icons.edit_outlined,
+                  size: 14,
+                  color: AppColor.primary,
+                ),
+                7.widthBox,
+                'Edit pesan'.text.size(11).make().expand(),
+                Semantics(
+                  label: 'Batal edit',
+                  button: true,
+                  child: IconButton(
+                    onPressed: agent.cancelEditingChatMessage,
+                    icon: Icon(Icons.close_rounded, size: 15),
+                    style: IconButton.styleFrom(
+                      minimumSize: Size(28, 28),
+                      padding: EdgeInsets.zero,
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ),
+                ),
+              ]).pOnly(left: 12, right: 6, top: 6),
             if (options.isNotEmpty)
               _buildComposerSuggestions(options).pOnly(
                 left: 8,
                 right: 8,
                 top: 8,
               ),
-            if (controller.chatAttachments.isNotEmpty)
+            if (agent.chatAttachments.isNotEmpty)
               _buildPendingAttachments().pOnly(
                 left: 8,
                 right: 8,
@@ -214,12 +240,12 @@ class ViewInsights extends GetView<SummaryController> {
                     LogicalKeyboardKey.enter,
                     meta: true,
                   ): () {
-                    if (canSend) controller.sendMessage();
+                    if (canSend) agent.sendMessage();
                   },
                 },
                 child: CupertinoTextField(
-                  controller: controller.chatInputController,
-                  focusNode: controller.chatInputFocusNode,
+                  controller: agent.chatInputController,
+                  focusNode: agent.chatInputFocusNode,
                   placeholder: isRunning
                       ? 'ditdhewAI lagi bekerja...'
                       : 'Tanya ditdhewAI...',
@@ -237,14 +263,14 @@ class ViewInsights extends GetView<SummaryController> {
                   minLines: 1,
                   maxLines: 5,
                   textInputAction: TextInputAction.newline,
-                  onChanged: (value) => controller.update(),
+                  onChanged: (value) => agent.update(),
                 ),
               ).expand(),
               IconButton(
                 tooltip: 'Lampirkan file',
                 onPressed: isRunning || isLoadingFile
                     ? null
-                    : controller.pickChatAttachment,
+                    : agent.pickChatAttachment,
                 icon: isLoadingFile
                     ? SizedBox(
                         width: 16,
@@ -257,7 +283,7 @@ class ViewInsights extends GetView<SummaryController> {
               Tooltip(
                 message: isRunning ? 'Menunggu ditdhewAI' : 'Kirim pesan',
                 child: IconButton(
-                  onPressed: canSend ? controller.sendMessage : null,
+                  onPressed: canSend ? agent.sendMessage : null,
                   icon: isRunning
                       ? SizedBox(
                           width: 17,
@@ -330,16 +356,18 @@ class ViewInsights extends GetView<SummaryController> {
   }
 
   void _applyComposerOption(String option) {
-    final text = controller.chatInputController.text;
-    final next = option.startsWith('/')
+    final text = agent.chatInputController.text;
+    final next = option == '/import'
+        ? AgentController.importExpenseTemplate
+        : option.startsWith('/')
         ? '$option '
         : '${text.substring(0, text.lastIndexOf('@'))}$option ';
-    controller.chatInputController.value = TextEditingValue(
+    agent.chatInputController.value = TextEditingValue(
       text: next,
       selection: TextSelection.collapsed(offset: next.length),
     );
-    controller.update();
-    controller.chatInputFocusNode.requestFocus();
+    agent.update();
+    agent.chatInputFocusNode.requestFocus();
   }
 
   Widget _buildPendingAttachments() {
@@ -347,10 +375,10 @@ class ViewInsights extends GetView<SummaryController> {
       height: 34,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        itemCount: controller.chatAttachments.length,
+        itemCount: agent.chatAttachments.length,
         separatorBuilder: (context, index) => 6.widthBox,
         itemBuilder: (context, index) {
-          final attachment = controller.chatAttachments[index];
+          final attachment = agent.chatAttachments[index];
           return Container(
             decoration: ExDecorator.box(
               borderColor: AppColor.primary,
@@ -372,7 +400,7 @@ class ViewInsights extends GetView<SummaryController> {
                   .make(),
               3.widthBox,
               InkWell(
-                onTap: () => controller.removeChatAttachment(index),
+                onTap: () => agent.removeChatAttachment(index),
                 child: Icon(Icons.close_rounded, size: 14),
               ),
             ]).pSymmetric(h: 8),
@@ -402,7 +430,7 @@ class ViewInsights extends GetView<SummaryController> {
           width: 720,
           height: 480,
           child: SingleChildScrollView(
-            child: VxJson.list(controller.agentSessionJson),
+            child: VxJson.list(agent.agentSessionJson),
           ),
         ),
         actions: [
@@ -472,12 +500,6 @@ class ViewInsights extends GetView<SummaryController> {
   }
 
   Widget _buildInsightDashboard() {
-    final total = controller.selectedPeriodTotal;
-    final daysWithExpense = controller.expenses.length;
-    final showSafeDaily =
-        controller.isCurrentSelectedMonth &&
-        controller.countBudget.value > 0 &&
-        controller.dayRemaining.value > 0;
     final topCategory = controller.categorySummaries.isNotEmpty
         ? controller.categorySummaries.first
         : null;
@@ -493,42 +515,6 @@ class ViewInsights extends GetView<SummaryController> {
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(14, 12, 14, 14),
       child: VStack([
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final columns = constraints.maxWidth < 420 ? 2 : 3;
-            final width =
-                (constraints.maxWidth - ((columns - 1) * 8)) / columns;
-            return Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _summaryMetric(
-                  width: width,
-                  label: 'Pengeluaran',
-                  value: total.moneyFormatCompact(),
-                  icon: Icons.payments_outlined,
-                ),
-                _summaryMetric(
-                  width: width,
-                  label: 'Hari aktif',
-                  value: '$daysWithExpense',
-                  icon: Icons.calendar_today_outlined,
-                ),
-                _summaryMetric(
-                  width: width,
-                  label: showSafeDaily
-                      ? 'Aman / hari'
-                      : 'Rata-rata / hari',
-                  value: (showSafeDaily
-                          ? controller.dailySafeAllowance
-                          : controller.dailyAverageSpend)
-                      .moneyFormatCompact(),
-                  icon: Icons.speed_rounded,
-                ),
-              ],
-            );
-          },
-        ).pOnly(bottom: 12),
         if (controller.isShowAllYear.isFalse)
           _insightCard(
             icon: Icons.speed_rounded,
@@ -601,54 +587,28 @@ class ViewInsights extends GetView<SummaryController> {
           runSpacing: 8,
           children: [
             _promptChip(
-              'Lebih hemat',
-              'buatkan rencana hemat dari data pengeluaran dan budget. jawab bullet singkat.',
+              'Rencana hemat',
+              'buat rencana hemat yang realistis dari pola pengeluaran dan budget, lengkap dengan target nominal yang bisa dipangkas.',
             ),
             _promptChip(
-              'Kurangi pengeluaran',
-              'top pengeluaran apa yang paling realistis dipotong? kasih 3 rekomendasi.',
+              'Cari pengeluaran bocor',
+              'identifikasi pengeluaran yang paling boros atau tidak konsisten, lalu kasih 3 prioritas yang bisa dikurangi.',
             ),
             _promptChip(
-              'Jelaskan',
-              'jelasin kondisi finansial secara singkat, fokus ke risk dan next action.',
+              'Bandingkan periode',
+              'bandingkan pengeluaran dengan periode sebelumnya: total, kategori utama, dan perubahan terbesar.',
+            ),
+            _promptChip(
+              'Atur sisa budget',
+              'kalau periode masih berjalan, bagi sisa budget menjadi batas harian dan prioritas kategori sampai akhir periode.',
+            ),
+            _promptChip(
+              'Ringkas kondisi',
+              'ringkas kondisi finansial periode ini: apa yang aman, risiko utama, dan satu tindakan berikutnya.',
             ),
           ],
         ).pOnly(top: 4),
       ]),
-    );
-  }
-
-  Widget _summaryMetric({
-    required double width,
-    required String label,
-    required String value,
-    required IconData icon,
-  }) {
-    return Container(
-      width: width,
-      decoration: ExDecorator.box(
-        borderColor: AppColor.border,
-        borderRadius: 10,
-        fillColor: AppColor.card,
-      ),
-      child: VStack([
-        HStack([
-          Icon(icon, size: 13, color: AppColor.primary).pOnly(right: 6),
-          label.text
-              .size(10)
-              .minFontSize(10)
-              .color(AppColor.neutral)
-              .maxLines(1)
-              .ellipsis
-              .make(),
-        ]),
-        value.text.bold
-            .size(12)
-            .maxLines(1)
-            .ellipsis
-            .make()
-            .pOnly(top: 5),
-      ]).pSymmetric(h: 10, v: 10),
     );
   }
 
@@ -716,10 +676,10 @@ class ViewInsights extends GetView<SummaryController> {
   }
 
   Future<void> _sendInsightPrompt(String prompt) async {
-    controller.chatInputController.text =
+    agent.chatInputController.text =
         'Untuk dashboard periode ini, $prompt\njawab singkat aja.';
     await 100.milliseconds.delay();
-    await controller.sendMessage();
+    await agent.sendMessage();
   }
 
   RpcSumNoteTimes? _topNote() {
@@ -732,12 +692,14 @@ class ViewInsights extends GetView<SummaryController> {
   }
 
   Widget _buildChatBubble({
+    required int messageIndex,
     required String message,
     required bool isUser,
     required bool isLoading,
     required List<Map<String, dynamic>> attachments,
     required bool isStreaming,
   }) {
+    final markdownColor = isUser ? Colors.white : Vx.neutral100;
     final body = isLoading
         ? HStack([
             message.text.color(Vx.neutral100).size(12).make().expand(),
@@ -751,8 +713,6 @@ class ViewInsights extends GetView<SummaryController> {
               ),
             ),
           ])
-        : isUser
-        ? message.text.color(Colors.white).size(12).make()
         : isStreaming
         ? '$message ▍'.text
               .color(Vx.neutral100)
@@ -766,28 +726,28 @@ class ViewInsights extends GetView<SummaryController> {
               configs: [
                 PConfig(
                   textStyle: TextStyle(
-                    color: Vx.neutral100,
+                    color: markdownColor,
                     fontSize: 12,
                     height: 1.5,
                   ),
                 ),
                 H1Config(
                   style: TextStyle(
-                    color: Vx.neutral100,
+                    color: markdownColor,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 H2Config(
                   style: TextStyle(
-                    color: Vx.neutral100,
+                    color: markdownColor,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 H3Config(
                   style: TextStyle(
-                    color: Vx.neutral100,
+                    color: markdownColor,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -905,26 +865,54 @@ class ViewInsights extends GetView<SummaryController> {
                     8.heightBox,
                   ],
                   body,
-                  if (!isUser && !isLoading && !isStreaming) ...[
+                  if (!isLoading && !isStreaming) ...[
                     4.heightBox,
                     Align(
                       alignment: Alignment.centerRight,
-                      child: SizedBox(
-                        width: 26,
-                        height: 26,
-                        child: IconButton(
-                          tooltip: 'Salin jawaban',
-                          padding: EdgeInsets.zero,
-                          onPressed: () {
-                            Clipboard.setData(ClipboardData(text: message));
-                          },
-                          icon: Icon(
-                            Icons.copy_rounded,
-                            size: 14,
-                            color: Vx.neutral400,
+                      child: HStack([
+                        Semantics(
+                          label: 'Salin pesan',
+                          button: true,
+                          child: SizedBox(
+                            width: 26,
+                            height: 26,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: () {
+                                Clipboard.setData(
+                                  ClipboardData(text: message),
+                                );
+                              },
+                              icon: Icon(
+                                Icons.copy_rounded,
+                                size: 14,
+                                color: isUser
+                                    ? Colors.white70
+                                    : Vx.neutral400,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        if (isUser)
+                          Semantics(
+                            label: 'Edit pesan',
+                            button: true,
+                            child: SizedBox(
+                              width: 26,
+                              height: 26,
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: () => agent
+                                    .startEditingChatMessage(messageIndex),
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  size: 14,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ]),
                     ),
                   ],
                 ]),

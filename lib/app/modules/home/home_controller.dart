@@ -12,10 +12,10 @@ import '../../helpers/helpers.dart';
 import '../../models/supa_assets_entity.dart';
 import '../../models/supa_budgets_entity.dart';
 import '../../models/supa_category_entity.dart';
-import '../../models/supa_cron_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../../models/supa_goals_entity.dart';
 import '../../models/supa_notes_entity.dart';
+import '../../models/supa_recurring_expense_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 import '../../routes/app_pages.dart';
 import 'home_repository.dart';
@@ -54,7 +54,7 @@ class HomeController extends GetxController with StateMixin {
   /// goals & notes
   final goalsList = <SupaGoals>[].obs;
   final notesList = <SupaNotes>[].obs;
-  final cronList = <SupaCron>[].obs;
+  final recurringList = <SupaRecurringExpense>[].obs;
 
   /// expense
   final userProfile = SupaUserProfile().obs;
@@ -94,7 +94,7 @@ class HomeController extends GetxController with StateMixin {
     await loadAssetsSummary();
     await loadGoalsList();
     await loadNotesList();
-    await loadCronList();
+    await loadRecurringList();
 
     rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
     userProfile.value = await repo.getUserProfile().then((value) => value[0]);
@@ -166,17 +166,17 @@ class HomeController extends GetxController with StateMixin {
     }
   }
 
-  Future<void> loadCronList() async {
+  Future<void> loadRecurringList() async {
     try {
-      final cron = await repo.getCron();
-      cronList.assignAll(cron);
+      final recurring = await repo.getRecurringExpenses();
+      recurringList.assignAll(recurring);
     } catch (e) {
       await HelperErrorLog.record(
         page: 'home',
-        action: 'loadCronList',
+        action: 'loadRecurringList',
         stack: e.toString(),
       );
-      cronList.clear();
+      recurringList.clear();
     }
   }
 
@@ -614,10 +614,9 @@ class HomeController extends GetxController with StateMixin {
     final now = DateTime.now();
     final result = <UpcomingRepeatTransaction>[];
 
-    for (final item in cronList) {
+    for (final item in recurringList) {
       if (item.active == false) continue;
-      final parsed = UpcomingRepeatTransaction.fromCron(item, now: now);
-      if (parsed == null) continue;
+      final parsed = UpcomingRepeatTransaction.fromRecurring(item, now: now);
       if (parsed.dueDate.difference(now).inDays <= 31) {
         result.add(parsed);
       }
@@ -646,7 +645,7 @@ class HomeController extends GetxController with StateMixin {
       .where((item) => !item.dueDate.isAfter(nextPayday))
       .fold<num>(0, (sum, item) => sum + item.amount);
 
-  num get monthlyIncome => userProfile.value.income?.moneyUnformat() ?? 0;
+  num get monthlyIncome => userProfile.value.income ?? 0;
 
   bool get hasCurrentMonthCashflow =>
       isFocusedCurrentMonth && monthlyIncome > 0;
@@ -764,28 +763,15 @@ class UpcomingRepeatTransaction {
     return due.difference(today).inDays;
   }
 
-  static UpcomingRepeatTransaction? fromCron(
-    SupaCron cron, {
+  static UpcomingRepeatTransaction fromRecurring(
+    SupaRecurringExpense recurring, {
     required DateTime now,
   }) {
-    final schedule = SupaCronSchedule.parse(cron.schedule);
-    if (schedule == null) return null;
-
-    final valuesMatch = RegExp(
-      r"values\s*\('([^']*)',\s*'([^']*)',\s*([0-9.]+)",
-      caseSensitive: false,
-    ).firstMatch(cron.command ?? '');
-    if (valuesMatch == null) return null;
-
-    final note = valuesMatch.group(1) ?? cron.jobname ?? '';
-    final categoryRaw = (valuesMatch.group(2) ?? '').split('#').first.trim();
-    final amount = num.tryParse(valuesMatch.group(3) ?? '0') ?? 0;
-
     return UpcomingRepeatTransaction(
-      note: note,
-      category: resolveExpenseCategory(categoryRaw),
-      amount: amount,
-      dueDate: schedule.nextRun(from: now),
+      note: recurring.note ?? '',
+      category: resolveExpenseCategory(recurring.categoryName),
+      amount: recurring.amount ?? 0,
+      dueDate: recurring.nextRun(from: now),
     );
   }
 }

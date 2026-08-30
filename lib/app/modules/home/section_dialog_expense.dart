@@ -68,6 +68,14 @@ mixin DialogExpense {
       final bytes = await file.readAsBytes();
 
       final ext = file.extension?.toLowerCase() ?? 'jpg';
+      if (!['jpg', 'jpeg', 'png', 'webp', 'gif'].contains(ext)) {
+        await HelperToast.error('Format gambar tidak didukung');
+        return null;
+      }
+      if (bytes.length > 5 * 1024 * 1024) {
+        await HelperToast.error('Maks. 5 MB');
+        return null;
+      }
       final fileName =
           '${db.auth.currentSession?.user.id ?? currentUserId}/$expenseId.$ext';
       previewBytes.value = bytes;
@@ -84,7 +92,7 @@ mixin DialogExpense {
             ),
           );
 
-      return db.storage.from(_expenseImageBucket).getPublicUrl(fileName);
+      return fileName;
     } catch (e) {
       if (e is StorageException) {
         await HelperToast.error('${e.message}\nMaks. 5 MB');
@@ -100,10 +108,12 @@ mixin DialogExpense {
     }
   }
 
-  static String? _expenseImagePathFromUrl(String imageUrl) {
-    if (imageUrl.isEmptyOrNull) return null;
+  static String? _expenseImagePath(String value) {
+    if (value.isEmptyOrNull) return null;
 
-    final uri = Uri.tryParse(imageUrl);
+    if (!value.startsWith('http')) return value;
+
+    final uri = Uri.tryParse(value);
     if (uri == null) return null;
 
     final bucketIndex = uri.pathSegments.indexOf(_expenseImageBucket);
@@ -121,7 +131,7 @@ mixin DialogExpense {
     List<String> imageUrls,
   ) async {
     final paths = imageUrls
-        .map(_expenseImagePathFromUrl)
+        .map(_expenseImagePath)
         .whereType<String>()
         .toSet()
         .toList();
@@ -144,7 +154,13 @@ mixin DialogExpense {
     required Uint8List? previewBytes,
   }) async {
     if (imageUrl.isNotEmptyAndNotNull) {
-      await launchUrlString(imageUrl);
+      final path = _expenseImagePath(imageUrl);
+      if (path != null) {
+        final signedUrl = await db.storage
+            .from(_expenseImageBucket)
+            .createSignedUrl(path, 300);
+        await launchUrlString(signedUrl);
+      }
       return;
     }
 
@@ -204,11 +220,16 @@ mixin DialogExpense {
                         height: 120,
                         fit: BoxFit.cover,
                       )
-                    : ExImageNoCacheView(
-                        url: imageUrl.value,
-                        width: double.infinity,
-                        height: 120,
-                        radius: 6,
+                    : FutureBuilder<String>(
+                        future: db.storage
+                            .from(_expenseImageBucket)
+                            .createSignedUrl(imageUrl.value, 300),
+                        builder: (_, snapshot) => ExImageNoCacheView(
+                          url: snapshot.data ?? '',
+                          width: double.infinity,
+                          height: 120,
+                          radius: 6,
+                        ),
                       ),
               )
               .onInkTap(
@@ -329,7 +350,7 @@ mixin DialogExpense {
     final _tfAmount = TextEditingController(
       text: initial?.amount?.moneyFormat() ?? '',
     );
-    final _imageUrl = (initial?.imageUrl ?? '').obs;
+    final _imageUrl = (initial?.imagePath ?? '').obs;
     final _imagePreview = Rx<Uint8List?>(null);
     final _imageUrlsToDelete = <String>[].obs;
 
@@ -645,7 +666,7 @@ mixin DialogExpense {
     final _tfAmount = TextEditingController(
       text: initial?.amount?.moneyFormat() ?? '',
     );
-    final _imageUrl = (initial?.imageUrl ?? '').obs;
+    final _imageUrl = (initial?.imagePath ?? '').obs;
     final _imagePreview = Rx<Uint8List?>(null);
     final _imageUrlsToDelete = <String>[].obs;
 
@@ -1302,7 +1323,7 @@ Category codes: ${controller.categoryList.map((e) => e.code).join(', ')}''',
       categoryName: tfCategory,
       note: '${tfNote.toTitleCase}',
       detail: tfDescription ?? '',
-      imageUrl: imageUrl ?? expense?.imageUrl,
+      imagePath: imageUrl ?? expense?.imagePath,
     );
 
     if (resolveExpenseCategory(newExpense.categoryName).code ==

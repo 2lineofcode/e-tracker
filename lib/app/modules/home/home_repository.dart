@@ -7,10 +7,10 @@ import '../../helpers/helpers.dart';
 import '../../models/supa_assets_entity.dart';
 import '../../models/supa_budgets_entity.dart';
 import '../../models/supa_category_entity.dart';
-import '../../models/supa_cron_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../../models/supa_goals_entity.dart';
 import '../../models/supa_notes_entity.dart';
+import '../../models/supa_recurring_expense_entity.dart';
 import '../../models/supa_user_profile_entity.dart';
 
 class HomeRepository {
@@ -20,17 +20,24 @@ class HomeRepository {
   // get all list: for calendar painting
   Future<List<SupaExpense>> getExpenseAll({String period = ''}) async {
     if (currentUserId == null) return [];
-    final response =
-        await db //
-            .from('expense')
-            .select('date, amount')
-            .eq('user_id', currentUserId!)
-            .or('date.ilike.$period%')
-            .order('date')
-            .withConverter<List<SupaExpense>>((data) {
-              return (data).map((e) => SupaExpense.fromJson(e)).toList();
-            });
-    return response;
+    var request = db
+        .from('expense')
+        .select('date, amount')
+        .eq('user_id', currentUserId!);
+    if (period.isNotEmpty) {
+      final start = DateTime.parse('${period.length == 4 ? '$period-01' : period}-01');
+      final end = period.length == 4
+          ? DateTime(start.year + 1, 1, 1)
+          : DateTime(start.year, start.month + 1, 1);
+      request = request
+          .gte('date', start.toStringEx(format: yMd))
+          .lt('date', end.toStringEx(format: yMd));
+    }
+    return await request
+        .order('date')
+        .withConverter<List<SupaExpense>>(
+          (data) => data.map((e) => SupaExpense.fromJson(e)).toList(),
+        );
   }
 
   // get list by @date
@@ -209,12 +216,15 @@ class HomeRepository {
   // get sum by @date [1month]
   Future<int?> getCount1Month(String date) async {
     if (currentUserId == null) return 0;
+    final start = DateTime.parse('$date-01');
+    final end = DateTime(start.year, start.month + 1, 1);
     final response =
         await db //
             .from('expense')
-            .select('amount, date')
+            .select('amount')
             .eq('user_id', currentUserId!)
-            .like('date', '%$date%');
+            .gte('date', start.toStringEx(format: yMd))
+            .lt('date', end.toStringEx(format: yMd));
     num x = 0;
     for (var element in response) {
       x += element['amount'] ?? 0;
@@ -592,10 +602,16 @@ class HomeRepository {
     return result;
   }
 
-  Future<List<SupaCron>> getCron() async {
+  Future<List<SupaRecurringExpense>> getRecurringExpenses() async {
     if (currentUserId == null) return [];
-    return await db.rpc('get_expense_cron').withConverter<List<SupaCron>>((data) {
-      return (data as List).map((e) => SupaCron.fromJson(e)).toList();
-    });
+    return await db
+        .from('recurring_expenses')
+        .select()
+        .eq('user_id', currentUserId!)
+        .isFilter('archived_at', null)
+        .order('created_at')
+        .withConverter<List<SupaRecurringExpense>>(
+          (data) => data.map((e) => SupaRecurringExpense.fromJson(e)).toList(),
+        );
   }
 }
