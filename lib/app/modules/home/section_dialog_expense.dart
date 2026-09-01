@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex_kit/ex.dart';
@@ -17,7 +16,6 @@ import 'package:uicons_pro/uicons_pro.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/v4.dart';
 
-import '../../../env.g.dart';
 import '../../core/app_api.dart';
 import '../../core/app_color.dart';
 import '../../core/app_setting.dart';
@@ -44,17 +42,6 @@ import 'home_repository.dart';
 mixin DialogExpense {
   static const _expenseImageBucket = 'expense-images';
 
-  static String _contentTypeFromName(String fileName) {
-    final ext = fileName.split('.').last.toLowerCase();
-    return switch (ext) {
-      'jpg' || 'jpeg' => 'image/jpeg',
-      'png' => 'image/png',
-      'webp' => 'image/webp',
-      'gif' => 'image/gif',
-      _ => 'image/jpeg',
-    };
-  }
-
   static Future<String?> _uploadExpenseImage({
     required String expenseId,
     required Rx<Uint8List?> previewBytes,
@@ -65,20 +52,13 @@ mixin DialogExpense {
       );
       if (file == null) return null;
 
-      final bytes = await file.readAsBytes();
-
-      final ext = file.extension?.toLowerCase() ?? 'jpg';
-      if (!['jpg', 'jpeg', 'png', 'webp', 'gif'].contains(ext)) {
-        await HelperToast.error('Format gambar tidak didukung');
-        return null;
-      }
+      final bytes = await compressImage(await file.readAsBytes());
       if (bytes.length > 5 * 1024 * 1024) {
         await HelperToast.error('Maks. 5 MB');
         return null;
       }
       final fileName =
-          '${db.auth.currentSession?.user.id ?? currentUserId}/$expenseId.$ext';
-      previewBytes.value = bytes;
+          '${db.auth.currentSession?.user.id ?? currentUserId}/$expenseId.jpg';
 
       await db.storage
           .from(_expenseImageBucket)
@@ -88,13 +68,16 @@ mixin DialogExpense {
             fileOptions: FileOptions(
               upsert: true,
               cacheControl: '1',
-              contentType: _contentTypeFromName(file.name),
+              contentType: 'image/jpeg',
             ),
           );
 
+      previewBytes.value = bytes;
       return fileName;
     } catch (e) {
-      if (e is StorageException) {
+      if (e is FormatException) {
+        await HelperToast.error(e.message);
+      } else if (e is StorageException) {
         await HelperToast.error('${e.message}\nMaks. 5 MB');
       } else {
         await HelperErrorLog.record(
@@ -287,6 +270,84 @@ mixin DialogExpense {
     });
   }
 
+  static Widget _merchantField({
+    required HomeController controller,
+    required TextEditingController textController,
+    required FocusNode focusNode,
+    required ValueChanged<SupaExpense> onSelected,
+    Widget? prefix,
+  }) {
+    return RawAutocomplete<SupaExpense>(
+      textEditingController: textController,
+      focusNode: focusNode,
+      displayStringForOption: (option) => option.note ?? '',
+      optionsBuilder: (value) => controller.merchantSuggestions(value.text),
+      onSelected: onSelected,
+      fieldViewBuilder: (context, fieldController, fieldFocusNode, _) {
+        return CupertinoTextField(
+          controller: fieldController,
+          focusNode: fieldFocusNode,
+          autofocus: !Get.context!.isMobile,
+          placeholder: 'Note: Nasi Padang',
+          placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
+          decoration: BoxDecoration(
+            color: Get.isDarkMode ? Vx.black : Vx.white,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+          prefix: prefix,
+        );
+      },
+      optionsViewBuilder: (context, select, options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 8,
+            color: AppColor.card,
+            borderRadius: BorderRadius.circular(6),
+            child: SizedBox(
+              width: Get.context!.isMobile ? Get.width - 48 : 238,
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.symmetric(vertical: 4),
+                itemCount: options.length,
+                itemBuilder: (context, index) {
+                  final option = options.elementAt(index);
+                  return InkWell(
+                    onTap: () => select(option),
+                    child: HStack([
+                      Icon(
+                        option.resolvedCategory.icon,
+                        size: 13,
+                        color: option.resolvedCategory.color,
+                      ).pOnly(right: 8),
+                      VStack([
+                        '${option.note}'.text.size(12).ellipsis.make(),
+                        [
+                          option.resolvedCategory.label,
+                          if (option.detail?.trim().isNotEmpty == true)
+                            option.detail!.trim(),
+                        ].join(' · ').text
+                            .size(9)
+                            .minFontSize(9)
+                            .color(AppColor.neutral)
+                            .make(),
+                      ]).expand(),
+                      '${option.amount?.moneyFormatCompact()}'.text
+                          .size(10)
+                          .minFontSize(10)
+                          .make(),
+                    ]).pSymmetric(h: 10, v: 7),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   /// ------------------------------------------------------------------------
   /// Manual Input
   /// ------------------------------------------------------------------------
@@ -339,6 +400,7 @@ mixin DialogExpense {
     final _tfNote = TextEditingController(
       text: initial?.note ?? '',
     );
+    final _fnNote = FocusNode();
     final _tfDescription = TextEditingController(
       text: initial?.detail ?? '',
     );
@@ -392,15 +454,17 @@ mixin DialogExpense {
             ).pOnly(bottom: 16),
           ],
 
-          CupertinoTextField(
-            controller: _tfNote,
-            placeholder: 'Note: Nasi Padang',
-            placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-            decoration: BoxDecoration(
-              color: Get.isDarkMode ? Vx.black : Vx.white,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+          _merchantField(
+            controller: _controller,
+            textController: _tfNote,
+            focusNode: _fnNote,
+            onSelected: (suggestion) {
+              _tfDescription.text = suggestion.detail ?? '';
+              _tfCategory.value = suggestion.resolvedCategory.code;
+              _tfAmount.text = suggestion.amount?.moneyFormat() ?? '';
+              isShowDetail.value = _tfDescription.text.isNotEmpty;
+              isTypeNotes.value = false;
+            },
           ).pOnly(bottom: 16),
 
           HStack(
@@ -738,17 +802,18 @@ mixin DialogExpense {
                   ),
                 ).pOnly(bottom: 16),
               ],
-              CupertinoTextField(
-                controller: _tfNote,
+              _merchantField(
+                controller: _controller,
+                textController: _tfNote,
                 focusNode: _fnNote,
-                autofocus: true,
-                placeholder: 'Note: Nasi Padang',
-                placeholderStyle: TextStyle(fontSize: 13, color: Vx.neutral500),
-                decoration: BoxDecoration(
-                  color: Get.isDarkMode ? Vx.black : Vx.white,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                style: TextStyle(fontSize: 13, color: AppColor.textReverse),
+                onSelected: (suggestion) {
+                  _tfDescription.text = suggestion.detail ?? '';
+                  _tfCategory.text = suggestion.resolvedCategory.label;
+                  _tfCategoryCode.value = suggestion.resolvedCategory.code;
+                  _tfAmount.text = suggestion.amount?.moneyFormat() ?? '';
+                  isShowDetail.value = _tfDescription.text.isNotEmpty;
+                  isTypeNotes.value = false;
+                },
                 prefix: Icon(
                   UIconsPro.solidRounded.notebook,
                   size: 13,
@@ -977,10 +1042,13 @@ mixin DialogExpense {
       final _fnText = FocusNode();
       final _isListening = false.obs;
       final _isVoiceSupported = kIsWeb && HelperVoiceInput.isSupported;
+      var _voiceBaseText = '';
 
       void applyVoiceText(String text) {
-        final current = _tfText.text.trim();
-        _tfText.text = current.isEmpty ? text : '$current $text';
+        _tfText.text = [
+          _voiceBaseText,
+          text,
+        ].where((value) => value.isNotEmpty).join(' ');
         _tfText.selection = TextSelection.fromPosition(
           TextPosition(offset: _tfText.text.length),
         );
@@ -1037,6 +1105,7 @@ mixin DialogExpense {
                     label: 'Scan struk',
                     labelSize: 12,
                     onPressed: () async {
+                      HelperVoiceInput.stopListening();
                       Get.back();
                       await openReceiptScanner();
                     },
@@ -1049,19 +1118,28 @@ mixin DialogExpense {
                   if (_isVoiceSupported) ...[
                     Obx(
                       () => ExButtonText(
-                        onPressed: _isListening.value
-                            ? null
-                            : () {
-                                HelperVoiceInput.listenIndonesian(
-                                  onStart: () => _isListening.value = true,
-                                  onEnd: () => _isListening.value = false,
-                                  onResult: applyVoiceText,
-                                  onError: (e) async {
-                                    _isListening.value = false;
-                                    await HelperToast.warn('$e');
-                                  },
-                                );
-                              },
+                        onPressed: () {
+                          if (_isListening.value) {
+                            _isListening.value = false;
+                            HelperVoiceInput.stopListening();
+                            return;
+                          }
+
+                          _fnText.unfocus();
+                          _voiceBaseText = _tfText.text.trim();
+                          _isListening.value = true;
+                          HelperVoiceInput.listenIndonesian(
+                            onStart: () => _isListening.value = true,
+                            onEnd: () => _isListening.value = false,
+                            onResult: applyVoiceText,
+                            onError: (e) async {
+                              _isListening.value = false;
+                              await HelperToast.warn(
+                                HelperVoiceInput.errorMessage(e),
+                              );
+                            },
+                          );
+                        },
                         child: HStack([
                           Icon(
                             _isListening.value
@@ -1072,7 +1150,7 @@ mixin DialogExpense {
                                 ? AppColor.red
                                 : AppColor.textReverse,
                           ).pOnly(right: 6),
-                          (_isListening.value ? 'Mendengarkan...' : 'Suara').text
+                          (_isListening.value ? 'Stop' : 'Suara').text
                               .size(12)
                               .minFontSize(12)
                               .make(),
@@ -1093,6 +1171,7 @@ mixin DialogExpense {
                         await HelperToast.warn('Tulis pengeluarannya dulu');
                         return;
                       }
+                      HelperVoiceInput.stopListening();
                       Get.back();
                       await _processAIInput(_tfText.text);
                     },
@@ -1108,26 +1187,10 @@ mixin DialogExpense {
   }
 
   static Future<void> openReceiptScanner() async {
-    if (kIsWeb) {
-      await HelperToast.warn('Scan struk belum tersedia di web');
-      return;
-    }
-
-    final result = await FilePicker.pickFiles(
+    final file = await FilePicker.pickFile(
       type: FileType.image,
     );
-    if (result == null) return;
-    final file = result.files.first;
-    final bytes = await file.readAsBytes();
-    if (bytes.isEmpty) {
-      await HelperToast.error('Gambar nggak bisa dibaca');
-      return;
-    }
-    if (bytes.length > 3 * 1024 * 1024) {
-      await HelperToast.warn('Ukuran gambar maksimal 3 MB');
-      return;
-    }
-
+    if (file == null) return;
     final controller = Get.find<HomeController>();
     ExLoading.show(
       paddingSymmetric: Get.context!.isMobile ? 90 : 250,
@@ -1137,76 +1200,73 @@ mixin DialogExpense {
       ]),
     );
 
-    final client = HttpClient();
+    SupaExpense? draft;
     try {
-      final request = await client.postUrl(
-        Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
-      );
-      request.headers
-        ..set(HttpHeaders.authorizationHeader, 'Bearer ${Env.groqApiKey}')
-        ..set(HttpHeaders.contentTypeHeader, 'application/json');
-      request.write(jsonEncode({
-        'model': 'qwen/qwen3.6-27b',
-        'temperature': 0,
-        'response_format': {'type': 'json_object'},
-        'messages': [
-          {
-            'role': 'user',
-            'content': [
-              {
-                'type': 'text',
-                'text': '''Read this Indonesian receipt and return JSON only:
-{"note":"merchant or short purchase title","detail":"important items or empty string","category":"one category code","amount":number,"date":"YYYY-MM-DD"}
-Current date: ${DateTime.now().toStringEx(format: yMd)}
-Category codes: ${controller.categoryList.map((e) => e.code).join(', ')}''',
-              },
-              {
-                'type': 'image_url',
-                'image_url': {
-                  'url': 'data:${_contentTypeFromName(file.name)};base64,${base64Encode(bytes)}',
-                },
-              },
-            ],
-          },
-        ],
-      }));
-
-      final response = await request.close();
-      final body = await response.transform(utf8.decoder).join();
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        throw HttpException('Groq ${response.statusCode}: $body');
+      final sourceBytes = await file.readAsBytes();
+      if (sourceBytes.isEmpty) {
+        throw FormatException('Gambar nggak bisa dibaca');
       }
-      final payload = jsonDecode(body) as Map<String, dynamic>;
-      final content = payload['choices'][0]['message']['content'].toString();
+      final bytes = await compressImage(sourceBytes);
+      if (bytes.length > 3 * 1024 * 1024) {
+        throw FormatException('Ukuran gambar maksimal 3 MB');
+      }
+
+      final response = await db.functions.invoke(
+        'agent-proxy',
+        body: {
+          'action': 'receipt_scan',
+          'image': base64Encode(bytes),
+          'current_date': DateTime.now().toStringEx(format: yMd),
+          'category_codes': controller.categoryList
+              .map((category) => category.code)
+              .toList(),
+        },
+      );
+      if (response.data is! Map) {
+        throw FormatException('Respons scan struk tidak valid');
+      }
+      final payload = Map<String, dynamic>.from(response.data as Map);
+      final choices = payload['choices'];
+      if (choices is! List || choices.isEmpty) {
+        throw FormatException('Respons scan struk tidak valid');
+      }
+      final choice = choices.first;
+      if (choice is! Map || choice['message'] is! Map) {
+        throw FormatException('Respons scan struk tidak valid');
+      }
+      final content = (choice['message'] as Map)['content'];
+      if (content is! String) {
+        throw FormatException('Respons scan struk tidak valid');
+      }
       final receipt = jsonDecode(content) as Map<String, dynamic>;
       final amount = receipt['amount'].toString().moneyUnformat() ?? 0;
       final date = DateTime.tryParse(receipt['date']?.toString() ?? '') == null
           ? DateTime.now().toStringEx(format: yMd)
           : receipt['date'].toString();
 
-      ExLoading.dismiss();
-      await openManualInput(
-        draft: SupaExpense(
-          note: receipt['note']?.toString() ?? '',
-          detail: receipt['detail']?.toString() ?? '',
-          categoryName: resolveExpenseCategory(
-            receipt['category']?.toString(),
-          ).code,
-          amount: amount,
-          date: date,
-        ),
+      draft = SupaExpense(
+        note: receipt['note']?.toString() ?? '',
+        detail: receipt['detail']?.toString() ?? '',
+        categoryName: resolveExpenseCategory(
+          receipt['category']?.toString(),
+        ).code,
+        amount: amount,
+        date: date,
       );
     } catch (e) {
-      ExLoading.dismiss();
       await HelperErrorLog.record(
         page: 'home',
         action: 'openReceiptScanner',
         stack: e.toString(),
       );
-      await HelperToast.error('Struk gagal dibaca');
+      await HelperToast.error(
+        e is FormatException ? e.message.toString() : 'Struk gagal dibaca',
+      );
     } finally {
-      client.close(force: true);
+      ExLoading.dismiss();
     }
+
+    if (draft != null) await openManualInput(draft: draft);
   }
 
   // ────────────────────────────────────────────────────────────────
@@ -1279,6 +1339,8 @@ Category codes: ${controller.categoryList.map((e) => e.code).join(', ')}''',
 
     await _repo.deleteExpense(expense.id!);
     await _controller.getExpense();
+    await _controller.loadRecentExpenses();
+    await _controller.loadBudgetSuggestions();
     await _controller.onCalenderRefreshEvent(
       period: _controller.focusedDay.value.toStringEx(format: yM),
     );
@@ -1392,6 +1454,8 @@ Category codes: ${controller.categoryList.map((e) => e.code).join(', ')}''',
             ? _controller.tfSearchExpense.value.text
             : null,
       );
+      await _controller.loadRecentExpenses();
+      await _controller.loadBudgetSuggestions();
       await _controller.getCount1Month(_controller.focusedDay.value);
       _controller.rpcSpenderDay.value = await _repo.rpcGetSpenderDay(
         _controller.focusedDay.value,

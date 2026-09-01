@@ -5,12 +5,14 @@ import 'package:excel_plus/excel_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image/image.dart' as img;
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:uuid/v4.dart';
 
 import '../../core/app_api.dart';
 import '../../core/app_setting.dart';
 import '../../core/const.dart';
+import '../../helpers/helper_image.dart';
 import '../../helpers/helper_money.dart';
 import '../../helpers/helper_toast.dart';
 import '../../models/supa_assets_entity.dart';
@@ -601,6 +603,31 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
     return '$message\n\nATTACHMENTS:\n${jsonEncode(attachments)}';
   }
 
+  static dynamic _messageContentWithAttachments(
+    String message,
+    List<dynamic>? attachments,
+  ) {
+    final items = attachments ?? [];
+    final metadata = items.whereType<Map>().map((item) {
+      final value = Map<String, dynamic>.from(item);
+      value.remove('data_url');
+      return value;
+    }).toList();
+    final text = _messageWithAttachments(message, metadata);
+    final images = items.whereType<Map>().where(
+      (item) => item['data_url'] is String,
+    );
+    if (images.isEmpty) return text;
+    return [
+      {'type': 'text', 'text': text},
+      for (final image in images)
+        {
+          'type': 'image_url',
+          'image_url': {'url': image['data_url']},
+        },
+    ];
+  }
+
   static String _limitAttachmentText(String value) {
     final normalized = value
         .replaceAll('\u0000', '')
@@ -617,10 +644,7 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
       return;
     }
 
-    final file = await FilePicker.pickFile(
-      type: FileType.custom,
-      allowedExtensions: ['txt', 'md', 'csv', 'json', 'pdf', 'xls', 'xlsx'],
-    );
+    final file = await FilePicker.pickFile(type: FileType.any);
     if (file == null) return;
 
     isChatAttachmentLoading.value = true;
@@ -631,6 +655,17 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
         throw FormatException('File maksimal 10 MB');
       }
       final extension = (file.extension ?? '').toLowerCase();
+      if (img.findDecoderForData(bytes) != null) {
+        final compressed = await compressImage(bytes, maxDimension: 1600);
+        chatAttachments.add({
+          'name': file.name,
+          'extension': extension,
+          'type': 'image',
+          'size_bytes': compressed.length,
+          'data_url': 'data:image/jpeg;base64,${base64Encode(compressed)}',
+        });
+        return;
+      }
       final extracted = await _extractAttachmentText(bytes, extension);
       final content = _limitAttachmentText(extracted);
       if (content.isEmpty) {
@@ -663,9 +698,6 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
     List<int> bytes,
     String extension,
   ) async {
-    if ({'txt', 'md', 'csv', 'json'}.contains(extension)) {
-      return utf8.decode(bytes, allowMalformed: true);
-    }
     if (extension == 'pdf') {
       final document = PdfDocument(inputBytes: bytes);
       try {
@@ -697,7 +729,22 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
       }
       return output.toString();
     }
-    throw FormatException('Format file tidak didukung');
+    if (attachmentLooksLikeText(bytes)) {
+      return utf8.decode(bytes, allowMalformed: true);
+    }
+    throw FormatException('File binary ini belum bisa dibaca');
+  }
+
+  @visibleForTesting
+  static bool attachmentLooksLikeText(List<int> bytes) {
+    if (bytes.isEmpty) return false;
+    final sample = bytes.take(4096);
+    var controls = 0;
+    for (final byte in sample) {
+      if (byte == 0) return false;
+      if (byte < 32 && byte != 9 && byte != 10 && byte != 13) controls++;
+    }
+    return controls <= sample.length / 100;
   }
 
   void removeChatAttachment(int index) {
@@ -751,6 +798,11 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
     final attachments = chatAttachments
         .map((item) => Map<String, dynamic>.from(item))
         .toList();
+    final storedAttachments = attachments.map((item) {
+      final stored = Map<String, dynamic>.from(item);
+      stored.remove('data_url');
+      return stored;
+    }).toList();
     if (input.isEmpty && attachments.isEmpty) return;
     if (input.toLowerCase() == '/clear') {
       await clearChat();
@@ -777,7 +829,7 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
       'text': message,
       'isUser': true,
       'createdAt': DateTime.now().toIso8601String(),
-      if (attachments.isNotEmpty) 'attachments': attachments,
+      if (storedAttachments.isNotEmpty) 'attachments': storedAttachments,
     });
     chatInputController.clear();
     chatAttachments.clear();
@@ -1381,7 +1433,7 @@ $rows$suffix
       }),
       {
         'role': 'user',
-        'content': _messageWithAttachments(userMessage, attachments),
+        'content': _messageContentWithAttachments(userMessage, attachments),
       },
     ];
 

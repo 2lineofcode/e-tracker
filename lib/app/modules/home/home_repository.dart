@@ -56,6 +56,39 @@ class HomeRepository {
     return response;
   }
 
+  Future<List<SupaExpense>> getRecentExpenses({int limit = 200}) async {
+    if (currentUserId == null) return [];
+    return await db
+        .from('expense')
+        .select('date, amount, category_name, note, detail, created_at')
+        .eq('user_id', currentUserId!)
+        .gt('amount', 0)
+        .order('date', ascending: false)
+        .order('created_at', ascending: false)
+        .limit(limit)
+        .withConverter<List<SupaExpense>>(
+          (data) => data.map((e) => SupaExpense.fromJson(e)).toList(),
+        );
+  }
+
+  Future<List<SupaExpense>> getBudgetSuggestionExpenses(
+    DateTime targetMonth,
+  ) async {
+    if (currentUserId == null) return [];
+    final start = DateTime(targetMonth.year, targetMonth.month - 3, 1);
+    final end = DateTime(targetMonth.year, targetMonth.month, 1);
+    return await db
+        .from('expense')
+        .select('date, amount, category_name')
+        .eq('user_id', currentUserId!)
+        .gte('date', start.toStringEx(format: yMd))
+        .lt('date', end.toStringEx(format: yMd))
+        .order('date')
+        .withConverter<List<SupaExpense>>(
+          (data) => data.map((e) => SupaExpense.fromJson(e)).toList(),
+        );
+  }
+
   // find list by @note or @category.name
   Future<List<SupaExpense>> findExpense(String name, {String? startDate, String? endDate}) async {
     final List<SupaExpense> response;

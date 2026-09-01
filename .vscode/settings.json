@@ -19,7 +19,7 @@
     "windows": true,
     "macos": true,
     "ios": true,
-    "web": true,
+    "web": false,
     "build": true,
     "supabase": false,
     "*.iml": true,

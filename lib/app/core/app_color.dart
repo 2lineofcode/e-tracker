@@ -15,6 +15,7 @@ mixin AppColor {
     0xffDB2777,
     0xffDC2626,
     0xffD97706,
+    0xffEAB308,
     0xff16A34A,
     0xff0F766E,
   ];

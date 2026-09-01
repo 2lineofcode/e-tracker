@@ -420,14 +420,28 @@ class HomeView extends GetView<HomeController> {
               /// custom
               calendarBuilders: CalendarBuilders(
                 markerBuilder: (context, day, events) {
-                  if (events.isNotEmpty) {
+                  final recurring = controller.recurringExpensesForDay(day);
+                  if (events.isNotEmpty || recurring.isNotEmpty) {
                     var total = 0;
                     for (var event in events) total += event.toInt()!;
-                    return Icon(
-                      Icons.circle,
-                      size: 6,
-                      color: total.getFlagColor(),
-                    ).positioned(top: 8, right: 8);
+                    return HStack([
+                      if (events.isNotEmpty)
+                        Icon(
+                          Icons.circle,
+                          size: 6,
+                          color: total.getFlagColor(),
+                        ),
+                      if (events.isNotEmpty && recurring.isNotEmpty)
+                        2.widthBox,
+                      if (recurring.isNotEmpty)
+                        Icon(
+                          Icons.circle,
+                          size: 6,
+                          color: AppColor.blue,
+                        ).tooltip(
+                          'Tagihan: ${recurring.map((item) => item.note).join(', ')}',
+                        ),
+                    ]).positioned(top: 8, right: 8);
                   }
                   return Container();
                 },
@@ -746,6 +760,19 @@ class HomeView extends GetView<HomeController> {
                 color: AppColor.neutral,
               ),
             ]).pOnly(bottom: 8).onInkTap(() => isExpanded.toggle()),
+            if (controller.noSpendStreak > 0)
+              HStack([
+                '${controller.noSpendStreak} hari no-spend'.text
+                    .size(10)
+                    .minFontSize(10)
+                    .color(AppColor.green)
+                    .make()
+                    .pSymmetric(h: 7, v: 3)
+                    .box
+                    .color(AppColor.green.withAlpha(22))
+                    .make()
+                    .cornerRadius(90),
+              ]).pOnly(bottom: 8),
             if (controller.hasCurrentMonthCashflow) ...[
               HStack([
                 'Sisa sampai gajian'.text

@@ -69,6 +69,8 @@ mixin HomeRT {
         await _home.getExpense(find: query, startDate: start, endDate: end, showLoading: false);
       }
 
+      await _home.loadRecentExpenses();
+      await _home.loadBudgetSuggestions();
       await _home.getCount1Month(_home.focusedDay.value);
       await _home.onCalenderRefreshEvent(
         period: _home.focusedDay.value.toStringEx(format: yM),

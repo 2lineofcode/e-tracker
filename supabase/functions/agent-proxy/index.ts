@@ -37,11 +37,12 @@ Deno.serve(async (request) => {
     return jsonResponse({xml: await response.text()}, 200)
   }
 
-  if (
+  const isReceiptScan = payload.action === 'receipt_scan'
+  if (!isReceiptScan && (
     payload.action !== 'chat' ||
     !Array.isArray(payload.messages) ||
     !payload.messages.length
-  ) {
+  )) {
     return jsonResponse({error: 'Invalid chat payload'}, 400)
   }
 
@@ -50,17 +51,60 @@ Deno.serve(async (request) => {
     return jsonResponse({error: 'Agent is not configured'}, 500)
   }
 
-  const agentPayload: Record<string, unknown> = {
-    model: Deno.env.get('AGENT_MODEL') ?? 'agnes-2.0-flash',
-    messages: payload.messages,
-    temperature: 0.2,
-    max_tokens: 65536,
-    chat_template_kwargs: {enable_thinking: false},
-    stream: true,
-  }
-  if (Array.isArray(payload.tools)) {
-    agentPayload.tools = payload.tools
-    agentPayload.tool_choice = payload.tool_choice ?? 'auto'
+  let agentPayload: Record<string, unknown>
+  if (isReceiptScan) {
+    const image = typeof payload.image === 'string' ? payload.image : ''
+    const categories = Array.isArray(payload.category_codes)
+      ? payload.category_codes.filter((value) => typeof value === 'string')
+      : []
+    const currentDate = typeof payload.current_date === 'string' &&
+        /^\d{4}-\d{2}-\d{2}$/.test(payload.current_date)
+      ? payload.current_date
+      : new Date().toISOString().slice(0, 10)
+    if (
+      !image ||
+      image.length > 4 * 1024 * 1024 ||
+      image.length % 4 !== 0 ||
+      !/^[A-Za-z0-9+/]+={0,2}$/.test(image) ||
+      !categories.length ||
+      categories.length > 200
+    ) {
+      return jsonResponse({error: 'Invalid receipt payload'}, 400)
+    }
+    agentPayload = {
+      model: Deno.env.get('AGENT_MODEL') ?? 'agnes-2.0-flash',
+      temperature: 0,
+      max_tokens: 1024,
+      response_format: {type: 'json_object'},
+      chat_template_kwargs: {enable_thinking: false},
+      stream: false,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: `Read this Indonesian receipt and return JSON only:\n{"note":"merchant or short purchase title","detail":"important items or empty string","category":"one category code","amount":number,"date":"YYYY-MM-DD"}\nCurrent date: ${currentDate}\nCategory codes: ${categories.join(', ')}`,
+          },
+          {
+            type: 'image_url',
+            image_url: {url: `data:image/jpeg;base64,${image}`},
+          },
+        ],
+      }],
+    }
+  } else {
+    agentPayload = {
+      model: Deno.env.get('AGENT_MODEL') ?? 'agnes-2.0-flash',
+      messages: payload.messages,
+      temperature: 0.2,
+      max_tokens: 65536,
+      chat_template_kwargs: {enable_thinking: false},
+      stream: true,
+    }
+    if (Array.isArray(payload.tools)) {
+      agentPayload.tools = payload.tools
+      agentPayload.tool_choice = payload.tool_choice ?? 'auto'
+    }
   }
 
   const response = await fetch(
@@ -77,6 +121,13 @@ Deno.serve(async (request) => {
   )
   if (!response.ok || !response.body) {
     return jsonResponse({error: 'Agent request failed'}, 502)
+  }
+  if (isReceiptScan) {
+    try {
+      return jsonResponse(await response.json(), 200)
+    } catch (_) {
+      return jsonResponse({error: 'Agent returned an invalid response'}, 502)
+    }
   }
 
   return new Response(response.body, {

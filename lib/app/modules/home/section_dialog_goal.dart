@@ -47,6 +47,10 @@ mixin DialogGoal {
               icon: Icon(UIconsPro.solidRounded.plus, size: 16),
               onPressed: () => openAddEdit(),
             ),
+            IconButton(
+              icon: Icon(UIconsPro.solidRounded.cross, size: 14),
+              onPressed: () async => await Overlayment.dismissLast(),
+            ),
           ]).pOnly(bottom: 12),
 
           // body

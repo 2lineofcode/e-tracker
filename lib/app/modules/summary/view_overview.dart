@@ -1,5 +1,6 @@
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 
@@ -103,10 +104,13 @@ class ViewOverview extends GetView<SummaryController> {
           colors: [Vx.pink500, AppColor.primary],
         ),
         child: VStack([
-          'Total pengeluaran ${controller.monthSelected.value.reformatDate(from: 'MMMM', to: 'MMM')} ${controller.yearSelected.value}:'
-              .text
-              .make()
-              .pOnly(bottom: 8),
+          HStack([
+            'Total pengeluaran ${controller.monthSelected.value.reformatDate(from: 'MMMM', to: 'MMM')} ${controller.yearSelected.value}:'
+                .text
+                .make()
+                .expand(),
+            _copySummaryButton(),
+          ]).pOnly(bottom: 8),
           '${controller.countOnly1Month.value.moneyFormat()}'.text.bold.make(),
         ]).p12(),
       );
@@ -218,7 +222,7 @@ class ViewOverview extends GetView<SummaryController> {
             _headerMiniMetric(
               label: 'Hari tdk aktif',
               value: '${controller.inactiveDays}',
-              color: Vx.neutral300,
+              color: AppColor.neutral,
             ).expand(),
             Container(
               width: 1,
@@ -246,6 +250,7 @@ class ViewOverview extends GetView<SummaryController> {
                   .color(projectedDelta >= 0 ? AppColor.green : AppColor.red)
                   .make(),
               Spacer(),
+              _copySummaryButton(),
               'Insight AI'.text.underline.size(12).make().onTap(() async {
                 controller.menuSelected.value = 5;
                 await 100.milliseconds.delay();
@@ -261,6 +266,7 @@ class ViewOverview extends GetView<SummaryController> {
                   .size(12)
                   .makeCentered(),
               Spacer(),
+              _copySummaryButton(),
               'Insight AI'.text.underline.size(12).make().onTap(() {
                 controller.menuSelected.value = 5;
               }),
@@ -269,6 +275,24 @@ class ViewOverview extends GetView<SummaryController> {
         ],
       ).p8(),
     );
+  }
+
+  Widget _copySummaryButton() {
+    return IconButton(
+      tooltip: 'Salin ringkasan',
+      visualDensity: VisualDensity.compact,
+      icon: Icon(Icons.copy_all_rounded, size: 14),
+      onPressed: () async {
+        try {
+          await Clipboard.setData(
+            ClipboardData(text: controller.monthlySummaryText),
+          );
+          await HelperToast.success('Ringkasan disalin');
+        } catch (_) {
+          await HelperToast.error('Ringkasan gagal disalin');
+        }
+      },
+    ).pOnly(right: 4);
   }
 
   Widget detailPerMonth() {
@@ -318,7 +342,7 @@ class ViewOverview extends GetView<SummaryController> {
       label.text
           .size(10)
           .minFontSize(10)
-          .color(Vx.neutral300)
+          .color(AppColor.neutral)
           .make()
           .pOnly(bottom: 2),
       value.text.bold.size(12).minFontSize(12).color(color).make(),

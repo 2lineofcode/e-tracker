@@ -15,6 +15,7 @@ import '../modules/home/home_controller.dart';
 import '../modules/widgets/widget_image_no_cache_view.dart';
 import '../routes/app_pages.dart';
 import 'helper_decoration.dart';
+import 'helper_image.dart';
 import 'helper_toast.dart';
 
 mixin HelperNewUser {
@@ -99,11 +100,12 @@ mixin HelperNewUser {
             onPressed: () async {
               // filepicker select file and upload to supabase storage
               await FilePicker.pickFile(
-                type: FileType.custom,
-                allowedExtensions: ['png'],
+                type: FileType.image,
               ).then((img) async {
                 if (img != null) {
-                  final bytes = await img.readAsBytes();
+                  final bytes = await compressImage(
+                    await img.readAsBytes(),
+                  );
                   if (bytes.length > 5 * 1024 * 1024) {
                     await HelperToast.error('Maks. 5 MB');
                     return;
@@ -122,7 +124,7 @@ mixin HelperNewUser {
                         fileOptions: FileOptions(
                           upsert: true,
                           cacheControl: '1',
-                          contentType: 'image/png',
+                          contentType: 'image/jpeg',
                         ),
                       )
                       .then((response) async {

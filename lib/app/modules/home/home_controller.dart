@@ -59,8 +59,11 @@ class HomeController extends GetxController with StateMixin {
   /// expense
   final userProfile = SupaUserProfile().obs;
   final expenseList = <SupaExpense>[].obs;
+  final recentExpenses = <SupaExpense>[].obs;
   final tfSearchExpense = TextEditingController().obs;
   final searchFocusNode = FocusNode();
+
+  final budgetSuggestions = <String, num>{}.obs;
 
   /// count
   final countOfDay = 0.0.obs;
@@ -95,6 +98,8 @@ class HomeController extends GetxController with StateMixin {
     await loadGoalsList();
     await loadNotesList();
     await loadRecurringList();
+    await loadRecentExpenses();
+    await loadBudgetSuggestions();
 
     rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
     userProfile.value = await repo.getUserProfile().then((value) => value[0]);
@@ -178,6 +183,72 @@ class HomeController extends GetxController with StateMixin {
       );
       recurringList.clear();
     }
+    update();
+  }
+
+  Future<void> loadRecentExpenses() async {
+    try {
+      recentExpenses.assignAll(await repo.getRecentExpenses());
+    } catch (e) {
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'loadRecentExpenses',
+        stack: e.toString(),
+      );
+      recentExpenses.clear();
+    }
+  }
+
+  List<SupaExpense> merchantSuggestions(String input) {
+    final query = input.trim().toLowerCase();
+    if (query.length < 2) return [];
+
+    final seen = <String>{};
+    return recentExpenses.where((expense) {
+      final note = expense.note?.trim() ?? '';
+      final detail = expense.detail?.trim() ?? '';
+      final normalizedNote = note.toLowerCase();
+      final normalizedDetail = detail.toLowerCase();
+      if (note.isEmpty ||
+          (expense.amount ?? 0) <= 0 ||
+          (!normalizedNote.contains(query) &&
+              !normalizedDetail.contains(query))) {
+        return false;
+      }
+      return seen.add('$normalizedNote|$normalizedDetail');
+    }).take(5).toList();
+  }
+
+  int get noSpendStreak => calculateNoSpendStreak(recentExpenses);
+
+  DateTime get budgetSuggestionMonth {
+    final now = DateTime.now();
+    return DateTime(now.year, now.month + 1, 1);
+  }
+
+  Future<void> loadBudgetSuggestions() async {
+    try {
+      final expenses = await repo.getBudgetSuggestionExpenses(
+        budgetSuggestionMonth,
+      );
+      budgetSuggestions.assignAll(
+        calculateBudgetSuggestions(expenses, budgetSuggestionMonth),
+      );
+    } catch (e) {
+      await HelperErrorLog.record(
+        page: 'home',
+        action: 'loadBudgetSuggestions',
+        stack: e.toString(),
+      );
+      budgetSuggestions.clear();
+    }
+  }
+
+  List<SupaRecurringExpense> recurringExpensesForDay(DateTime day) {
+    return recurringList.where((item) {
+      final dueDate = recurringDateInMonth(item, day);
+      return dueDate != null && isSameDay(dueDate, day);
+    }).toList();
   }
 
   void _updateTotalBudgetAggregate() {
@@ -741,6 +812,76 @@ DateTime payCycleStartAt(DateTime now, int payDay) {
 DateTime nextPaydayAt(DateTime now, int payDay) {
   final start = payCycleStartAt(now, payDay);
   return paydayAt(start.year, start.month + 1, payDay);
+}
+
+int calculateNoSpendStreak(
+  List<SupaExpense> expenses, {
+  DateTime? now,
+}) {
+  final today = DateUtils.dateOnly(now ?? DateTime.now());
+  DateTime? lastSpend;
+  for (final expense in expenses) {
+    if ((expense.amount ?? 0) <= 0) continue;
+    final date = DateTime.tryParse(expense.date ?? '');
+    if (date == null || date.isAfter(today)) continue;
+    final spendDate = DateUtils.dateOnly(date);
+    if (lastSpend == null || spendDate.isAfter(lastSpend)) {
+      lastSpend = spendDate;
+    }
+  }
+  return lastSpend == null ? 0 : today.difference(lastSpend).inDays;
+}
+
+DateTime? recurringDateInMonth(
+  SupaRecurringExpense recurring,
+  DateTime month,
+) {
+  if (recurring.active == false || recurring.archivedAt != null) return null;
+  final interval = (recurring.intervalMonths ?? 1).clamp(1, 12).toInt();
+  if ((month.month - (recurring.startMonth ?? 1)) % interval != 0) return null;
+
+  final maxDay = DateTime(month.year, month.month + 1, 0).day;
+  final dueDate = DateTime(
+    month.year,
+    month.month,
+    (recurring.dueDay ?? 1).clamp(1, maxDay),
+  );
+  final createdAt = DateTime.tryParse(recurring.createdAt ?? '');
+  if (createdAt != null && dueDate.isBefore(DateUtils.dateOnly(createdAt))) {
+    return null;
+  }
+  return dueDate;
+}
+
+Map<String, num> calculateBudgetSuggestions(
+  List<SupaExpense> expenses,
+  DateTime targetMonth,
+) {
+  final months = List.generate(
+    3,
+    (index) => DateTime(targetMonth.year, targetMonth.month - 3 + index, 1),
+  );
+  final totals = <String, List<num>>{};
+
+  for (final expense in expenses) {
+    final date = DateTime.tryParse(expense.date ?? '');
+    if (date == null || (expense.amount ?? 0) <= 0) continue;
+    final monthIndex = months.indexWhere(
+      (month) => month.year == date.year && month.month == date.month,
+    );
+    if (monthIndex == -1) continue;
+    final code = expense.resolvedCategory.code;
+    if (code == 'expense:misc:notes') continue;
+    final values = totals.putIfAbsent(code, () => List<num>.filled(3, 0));
+    values[monthIndex] += expense.amount ?? 0;
+  }
+
+  final suggestions = <String, num>{};
+  totals.forEach((code, values) {
+    values.sort();
+    if (values[1] > 0) suggestions[code] = values[1];
+  });
+  return suggestions;
 }
 
 class UpcomingRepeatTransaction {

@@ -122,7 +122,7 @@ class MyCalenderBody<T> extends StatelessWidget {
           ),
           itemBuilder: (context, index) {
             if (index >= days.length) return SizedBox.shrink();
-            return _buildDayCell(days[index]);
+            return _buildDayCell(context, days[index]);
           },
         ),
       ],
@@ -145,8 +145,13 @@ class MyCalenderBody<T> extends StatelessWidget {
     return DateTime(year, month, startDay.clamp(1, monthDays));
   }
 
-  Widget _buildDayCell(DateTime day) {
+  Widget _buildDayCell(BuildContext context, DateTime day) {
     final events = eventLoader?.call(day) ?? [];
+    final marker = calendarBuilders?.markerBuilder?.call(
+      context,
+      day,
+      events,
+    );
     final selected = selectedDayPredicate?.call(day) ?? false;
     final today = isSameDay(day, DateTime.now());
     final isWeekend =
@@ -181,7 +186,9 @@ class MyCalenderBody<T> extends StatelessWidget {
               ),
             ),
           ),
-          if (events.isNotEmpty)
+          if (marker != null)
+            marker
+          else if (events.isNotEmpty)
             Icon(
               Icons.circle,
               size: 6,

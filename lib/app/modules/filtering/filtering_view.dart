@@ -315,9 +315,9 @@ class FilteringView extends GetView<FilteringController> {
                     '${controller.sumByDate[element.date]?.getFlagText()}',
                   )
                   .pOnly(right: 8),
-              '${element.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.color(AppColor.textOnBackground).size(11).make(),
+              '${element.date!.reformatDate(from: yMd, to: '(E) dd MMM y')}'.text.color(AppColor.textReverse).size(11).make(),
               Spacer(),
-              '${controller.sumByDate[element.date]!.moneyFormat()}'.text.size(12).color(AppColor.textOnBackground).make(),
+              '${controller.sumByDate[element.date]!.moneyFormat()}'.text.size(12).color(AppColor.textReverse).make(),
             ],
           ).p8(),
         );

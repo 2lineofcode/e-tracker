@@ -41,7 +41,7 @@ class SummaryView extends GetView<SummaryController> {
               height: 18,
               width: 18,
               color: menu.value == 1
-                  ? AppColor.textOnBackground
+                  ? AppColor.textReverse
                   : Vx.neutral500,
             ),
           ),
@@ -52,7 +52,7 @@ class SummaryView extends GetView<SummaryController> {
               CupertinoIcons.chart_bar_alt_fill,
               size: 18,
               color: menu.value == 2
-                  ? AppColor.textOnBackground
+                  ? AppColor.textReverse
                   : Vx.neutral500,
             ),
           ),
@@ -63,7 +63,7 @@ class SummaryView extends GetView<SummaryController> {
               CupertinoIcons.chart_pie_fill,
               size: 18,
               color: menu.value == 3
-                  ? AppColor.textOnBackground
+                  ? AppColor.textReverse
                   : Vx.neutral500,
             ),
           ),
@@ -75,7 +75,7 @@ class SummaryView extends GetView<SummaryController> {
               height: 18,
               width: 18,
               color: menu.value == 4
-                  ? AppColor.textOnBackground
+                  ? AppColor.textReverse
                   : Vx.neutral500,
             ),
           ),
@@ -86,7 +86,7 @@ class SummaryView extends GetView<SummaryController> {
               CupertinoIcons.chat_bubble_fill,
               size: 18,
               color: menu.value == 5
-                  ? AppColor.textOnBackground
+                  ? AppColor.textReverse
                   : Vx.neutral500,
             ),
           ),

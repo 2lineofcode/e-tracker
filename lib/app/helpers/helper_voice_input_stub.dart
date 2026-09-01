@@ -1,6 +1,10 @@
 class HelperVoiceInput {
   static bool get isSupported => false;
 
+  static void stopListening() {}
+
+  static String errorMessage(Object error) => 'Pengenalan suara tidak didukung';
+
   static void listenIndonesian({
     required void Function(String text) onResult,
     void Function()? onStart,

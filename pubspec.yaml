@@ -52,6 +52,7 @@ dependencies:
   currency_text_input_formatter: 2.3.1
   csv: ^8.0.0
   excel_plus: ^2.12.4
+  image: ^4.9.1
   web: ^1.1.1
   path_provider: ^2.1.6
   package_info_plus: ^10.2.1

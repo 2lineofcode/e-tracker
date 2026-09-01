@@ -1,7 +1,9 @@
 import 'package:ex_kit/ex.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../helpers/helper_toast.dart';
 import 'app_color.dart';
 import 'app_setting.dart';
 import 'const.dart';
@@ -54,17 +56,20 @@ mixin AppTheme {
       _isDarkMode() ? ThemeMode.dark : ThemeMode.light;
 
   static Future<void> refreshTheme() async {
+    ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
     Get.changeTheme(_isDarkMode() ? dark : light);
-    await 50.milliseconds.delay();
+    await 500.milliseconds.delay();
     await Get.forceAppUpdate();
-    await 50.milliseconds.delay();
+    await 500.milliseconds.delay();
     await Get.forceAppUpdate();
+    ExLoading.dismiss();
+    await HelperToast.success('Theme applied');
   }
 
   static Future<void> switchTheme() async {
-    Get.changeThemeMode(_isDarkMode() ? ThemeMode.light : ThemeMode.dark);
-    await pref.write(kIsDarkMode, !_isDarkMode());
-    await 600.milliseconds.delay();
+    final isDarkMode = !_isDarkMode();
+    await pref.write(kIsDarkMode, isDarkMode);
+    Get.changeThemeMode(isDarkMode ? ThemeMode.dark : ThemeMode.light);
     await refreshTheme();
   }
 }

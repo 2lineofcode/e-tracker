@@ -461,6 +461,11 @@ void main() {
     );
   });
 
+  test('detects text and binary attachments without extension whitelist', () {
+    expect(AgentController.attachmentLooksLikeText('hello'.codeUnits), isTrue);
+    expect(AgentController.attachmentLooksLikeText([0, 1, 2, 3]), isFalse);
+  });
+
   test('asks Agent for scan-friendly Markdown responses', () {
     expect(
       AgentController.agentResponseFormatInstructions,

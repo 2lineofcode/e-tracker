@@ -1,3 +1,5 @@
+import 'package:expense_tracker/app/models/supa_expense_entity.dart';
+import 'package:expense_tracker/app/models/supa_recurring_expense_entity.dart';
 import 'package:expense_tracker/app/modules/home/home_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -27,6 +29,45 @@ void main() {
     expect(
       weeklyExpenseTotals([100000, 200000, 0, 0, 0, 0, 0, 400000]),
       [300000, 400000],
+    );
+    expect(
+      calculateNoSpendStreak([
+        SupaExpense(date: '2026-08-27', amount: 100000),
+        SupaExpense(date: '2026-08-29', amount: 50000),
+      ], now: DateTime(2026, 8, 31)),
+      2,
+    );
+    expect(
+      recurringDateInMonth(
+        SupaRecurringExpense(
+          createdAt: '2026-01-01',
+          dueDay: 31,
+          intervalMonths: 1,
+          startMonth: 1,
+        ),
+        DateTime(2026, 2),
+      ),
+      DateTime(2026, 2, 28),
+    );
+    expect(
+      calculateBudgetSuggestions([
+        SupaExpense(
+          date: '2026-05-01',
+          amount: 100000,
+          categoryName: 'expense:basic:food',
+        ),
+        SupaExpense(
+          date: '2026-06-01',
+          amount: 300000,
+          categoryName: 'expense:basic:food',
+        ),
+        SupaExpense(
+          date: '2026-07-01',
+          amount: 200000,
+          categoryName: 'expense:basic:food',
+        ),
+      ], DateTime(2026, 8)),
+      {'expense:basic:food': 200000},
     );
   });
 }

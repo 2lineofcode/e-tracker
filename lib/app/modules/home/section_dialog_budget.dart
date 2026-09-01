@@ -50,7 +50,13 @@ mixin DialogBudget {
               icon: Icon(UIconsPro.solidRounded.plus, size: 16),
               onPressed: () => openAddEdit(),
             ),
+            IconButton(
+              icon: Icon(UIconsPro.solidRounded.cross, size: 14),
+              onPressed: () async => await Overlayment.dismissLast(),
+            ),
           ]).pOnly(bottom: 12),
+
+          Obx(() => _budgetSuggestionCard(_controller)),
 
           // body
           GetBuilder(
@@ -212,6 +218,79 @@ mixin DialogBudget {
         .cornerRadius(90);
   }
 
+  static Widget _budgetSuggestionCard(HomeController controller) {
+    final suggestions = controller.budgetSuggestions.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    if (suggestions.isEmpty) return 0.heightBox;
+
+    return Container(
+      decoration: ExDecorator.box(
+        borderRadius: 8,
+        borderColor: AppColor.border,
+        fillColor: AppColor.card,
+      ),
+      child: VStack([
+        HStack([
+          Icon(
+            CupertinoIcons.lightbulb_fill,
+            size: 13,
+            color: AppColor.primary,
+          ).pOnly(right: 8),
+          'Saran budget ${controller.budgetSuggestionMonth.toStringEx(format: 'MMM')}'
+              .text
+              .bold
+              .size(11)
+              .make(),
+          Spacer(),
+          'Median 3 bulan'.text
+              .size(9)
+              .minFontSize(9)
+              .color(AppColor.neutral)
+              .make(),
+        ]).pOnly(bottom: 8),
+        SizedBox(
+          height: (suggestions.length.clamp(1, 6) * 24).toDouble(),
+          child: ListView.separated(
+            padding: EdgeInsets.zero,
+            itemCount: suggestions.length,
+            separatorBuilder: (context, index) => 5.heightBox,
+            itemBuilder: (context, index) {
+              final entry = suggestions[index];
+              final category = resolveExpenseCategory(entry.key);
+              SupaBudgets? budget;
+              for (final item in controller.budgetsList) {
+                if (resolveExpenseCategory(item.categoryCode).code == entry.key) {
+                  budget = item;
+                  break;
+                }
+              }
+              return HStack([
+                Icon(
+                  category.icon,
+                  size: 11,
+                  color: category.color,
+                ).pOnly(right: 6),
+                category.label.text.size(10).ellipsis.make().expand(),
+                entry.value.moneyFormatCompact().text.bold.size(10).make(),
+                Icon(
+                  CupertinoIcons.chevron_right,
+                  size: 10,
+                  color: AppColor.neutral,
+                ).pOnly(left: 6),
+              ]).onInkTap(
+                () => openAddEdit(
+                  budget: budget,
+                  categoryCode: entry.key,
+                  suggestedAmount: entry.value,
+                ),
+              );
+            },
+          ),
+        ),
+      ]).pSymmetric(h: 10, v: 10),
+    ).pOnly(bottom: 12);
+  }
+
   static Widget _budgetTotalBar(HomeController controller) {
     return Container(
       decoration: ExDecorator.box(
@@ -230,14 +309,19 @@ mixin DialogBudget {
     );
   }
 
-  static Future<void> openAddEdit({SupaBudgets? budget}) async {
+  static Future<void> openAddEdit({
+    SupaBudgets? budget,
+    String? categoryCode,
+    num? suggestedAmount,
+  }) async {
     await Overlayment.dismissLast();
     final _controller = Get.find<HomeController>();
 
-    final _tfCategory = TextEditingController(text: budget != null ? resolveExpenseCategory(budget.categoryCode ?? '').label : resolveExpenseCategory(_controller.categoryList[0].code).label);
-    final _tfCategoryCode = (budget != null ? budget.categoryCode ?? '' : _controller.categoryList[0].code).obs;
+    final initialCategoryCode = budget?.categoryCode ?? categoryCode ?? _controller.categoryList[0].code;
+    final _tfCategory = TextEditingController(text: resolveExpenseCategory(initialCategoryCode).label);
+    final _tfCategoryCode = initialCategoryCode.obs;
 
-    final _tfAmount = TextEditingController(text: budget != null ? budget.amount!.moneyFormat() : '');
+    final _tfAmount = TextEditingController(text: (suggestedAmount ?? budget?.amount)?.moneyFormat() ?? '');
     final _fnAmount = FocusNode();
 
     await Overlayment.show(

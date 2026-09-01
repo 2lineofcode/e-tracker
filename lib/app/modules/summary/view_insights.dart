@@ -467,20 +467,20 @@ class ViewInsights extends GetView<SummaryController> {
           child: Icon(
             Icons.insights_rounded,
             size: 19,
-            color: AppColor.textOnBackground,
+            color: AppColor.textReverse,
           ),
         ).pOnly(right: 10),
         VStack([
           HStack([
             controller.periodDecisionTitle.text.bold
                 .size(13)
-                .color(AppColor.textOnBackground)
+                .color(AppColor.textReverse)
                 .make()
                 .expand(),
             _selectedPeriod().text
                 .size(9)
                 .minFontSize(9)
-                .color(AppColor.textOnBackground.withAlpha(180))
+                .color(AppColor.textReverse.withAlpha(180))
                 .make(),
           ]),
           (controller.selectedPeriodTotal <= 0
@@ -489,7 +489,7 @@ class ViewInsights extends GetView<SummaryController> {
               .text
               .size(10)
               .minFontSize(10)
-              .color(AppColor.textOnBackground.withAlpha(190))
+              .color(AppColor.textReverse.withAlpha(190))
               .maxLines(1)
               .ellipsis
               .make()

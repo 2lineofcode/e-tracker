@@ -174,11 +174,12 @@ class SettingsController extends GetxController with StateMixin {
               // filepicker select file and upload to supabase storage
               try {
                 await FilePicker.pickFile(
-                  type: FileType.custom,
-                  allowedExtensions: ['png'],
+                  type: FileType.image,
                 ).then((img) async {
                   if (img != null) {
-                    final bytes = await img.readAsBytes();
+                    final bytes = await compressImage(
+                      await img.readAsBytes(),
+                    );
                     if (bytes.length > 5 * 1024 * 1024) {
                       errorMsg.value = 'Maks. 5 MB';
                       return;
@@ -197,7 +198,7 @@ class SettingsController extends GetxController with StateMixin {
                           fileOptions: FileOptions(
                             upsert: true,
                             cacheControl: '1',
-                            contentType: 'image/png',
+                            contentType: 'image/jpeg',
                           ),
                         )
                         .then((response) async {
@@ -548,7 +549,6 @@ class SettingsController extends GetxController with StateMixin {
 
   Future<void> onThemeColorChange(int colorValue) async {
     await pref.write(kThemeColor, colorValue);
-    await 50.milliseconds.delay();
     selectedThemeColor.value = colorValue;
     await AppTheme.refreshTheme();
   }
@@ -612,6 +612,9 @@ class SettingsController extends GetxController with StateMixin {
         ),
       );
       recurringList.value = await repo.getRecurringExpenses();
+      if (Get.isRegistered<HomeController>()) {
+        await Get.find<HomeController>().loadRecurringList();
+      }
     } catch (e) {
       await HelperErrorLog.record(
         page: 'settings',
@@ -626,6 +629,9 @@ class SettingsController extends GetxController with StateMixin {
     try {
       await repo.archiveRecurringExpense(id);
       recurringList.value = await repo.getRecurringExpenses();
+      if (Get.isRegistered<HomeController>()) {
+        await Get.find<HomeController>().loadRecurringList();
+      }
     } catch (e) {
       await HelperErrorLog.record(
         page: 'settings',

@@ -202,6 +202,33 @@ class SummaryController extends GetxController with StateMixin {
     return 'Pengeluaran periode ini ${selectedPeriodTotal.moneyFormatCompact()}.$topCategory';
   }
 
+  String get monthlySummaryText {
+    final lines = <String>[
+      'Ringkasan ${monthSelected.value} ${yearSelected.value}',
+      'Pengeluaran: ${countOnly1Month.value.moneyFormat()}',
+    ];
+    if (countBudget.value > 0) {
+      lines.add('Budget: ${countBudget.value.moneyFormat()}');
+      lines.add('Sisa budget: ${countRemainingBudget.value.moneyFormat()}');
+    }
+    if (categorySummaries.isNotEmpty) {
+      final top = categorySummaries.first;
+      lines.add(
+        'Kategori terbesar: ${top.resolvedCategory.label} (${top.total.moneyFormat()})',
+      );
+    }
+    if (isCurrentSelectedMonth) {
+      lines.add('Proyeksi akhir bulan: ${projectedPeriodSpend.moneyFormat()}');
+    }
+    final delta = periodTrendDelta;
+    if (delta != null) {
+      lines.add(
+        'Dibanding $previousPeriodLabel: ${delta >= 0 ? '+' : '-'}${delta.abs().moneyFormat()}',
+      );
+    }
+    return lines.join('\n');
+  }
+
   @override
   Future<void> onInit() async {
     yearSelected.value = Get.parameters['period'].toString().reformatDate(
