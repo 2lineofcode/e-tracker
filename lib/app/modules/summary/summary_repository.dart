@@ -126,13 +126,8 @@ class SummaryRepository {
     }
   }
 
-  Future<List<SupaExpense>> getExpenses({required String year, String? month}) async {
+  Future<List<SupaExpense>> getExpenses(DateTime start, DateTime end) async {
     if (currentUserId == null) return [];
-    final monthNumber = month?.reformatDate(from: 'MMMM', to: 'MM');
-    final start = DateTime.parse('$year-${monthNumber ?? '01'}-01');
-    final end = monthNumber == null
-        ? DateTime(start.year + 1, 1, 1)
-        : DateTime(start.year, start.month + 1, 1);
     final response =
         await db //
             .from('expense')
@@ -243,7 +238,10 @@ class SummaryRepository {
   /// ------------------------------------------------------------------------
   /// ! rpc
   /// ------------------------------------------------------------------------
-  Future<List<RpcSumAllMonth>> getSumAllMonth({required String year}) async {
+  Future<List<RpcSumAllMonth>> getSumAllMonth({
+    required String year,
+    required int startDay,
+  }) async {
     if (currentUserId == null) return [];
     return await db
         .rpc(
@@ -251,6 +249,7 @@ class SummaryRepository {
           params: {
             'userid': currentUserId!,
             'periode': year.toInt(),
+            'start_day': startDay,
           },
         )
         .withConverter<List<RpcSumAllMonth>>((data) {
@@ -258,15 +257,20 @@ class SummaryRepository {
         });
   }
 
-  Future<List<RpcSumNoteTimes>> getSumNoteTimes({required String year, String? month}) async {
+  Future<List<RpcSumNoteTimes>> getSumNoteTimes({
+    required DateTime start,
+    required DateTime end,
+    required int startDay,
+  }) async {
     if (currentUserId == null) return [];
-    final fixYM = '$year${month != null ? '-${month.reformatDate(from: 'MMMM', to: 'MM')}' : ''}';
     return await db
         .rpc(
           'sum_note_times',
           params: {
             'userid': currentUserId!,
-            'periode': fixYM,
+            'start_date': start.toStringEx(format: yMd),
+            'end_date': end.toStringEx(format: yMd),
+            'start_day': startDay,
           },
         )
         .withConverter<List<RpcSumNoteTimes>>((data) {

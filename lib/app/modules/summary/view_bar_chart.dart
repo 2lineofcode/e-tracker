@@ -23,9 +23,7 @@ class ViewBarChart extends GetView<SummaryController> {
       (state) => VStack(
         [
           HStack([
-            (controller.isShowAllYear.isTrue
-                    ? '${controller.yearSelected}'
-                    : '${controller.monthSelected} ${controller.yearSelected}')
+            controller.selectedPeriodLabel
                 .text
                 .bold
                 .make()
@@ -256,7 +254,12 @@ class _Chart extends GetView<SummaryController> {
     for (final expense in dataExpense) {
       final date = DateTime.tryParse(expense.date ?? '');
       if (date == null) continue;
-      final index = controller.isShowAllYear.isTrue ? date.month : date.day;
+      final index = controller.isShowAllYear.isTrue
+          ? expensePeriodForDate(date, controller.calendarStartDay)
+              .end
+              .subtract(1.days)
+              .month
+          : date.difference(controller.selectedPeriod.start).inDays + 1;
       values[index] = (values[index] ?? 0) + (expense.amount ?? 0);
     }
 
@@ -272,20 +275,17 @@ class _Chart extends GetView<SummaryController> {
       });
     }
 
-    final year = controller.yearSelected.value.toInt() ?? DateTime.now().year;
-    final month = controller.monthSelected.value
-            .reformatDate(from: 'MMMM', to: 'MM')
-            .toInt() ??
-        DateTime.now().month;
-    final days = DateTime(year, month + 1, 0).day;
+    final period = controller.selectedPeriod;
+    final days = period.end.difference(period.start).inDays;
     return List.generate(days, (index) {
       final day = index + 1;
+      final date = period.start.add(index.days);
       return _ChartPoint(
         x: day,
-        label: '$day',
-        shortLabel: '$day',
+        label: date.toStringEx(format: 'd MMM'),
+        shortLabel: '${date.day}',
         amount: values[day] ?? 0,
-        date: DateTime(year, month, day),
+        date: date,
       );
     });
   }

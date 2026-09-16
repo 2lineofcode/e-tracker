@@ -54,7 +54,7 @@ class ViewOverview extends GetView<SummaryController> {
       ),
       child: VStack(
         [
-          'Total pengeluaran ${controller.yearSelected}'.text
+          'Total pengeluaran ${controller.selectedPeriodLabel}'.text
               .size(12)
               .make()
               .pOnly(bottom: 8),
@@ -105,7 +105,7 @@ class ViewOverview extends GetView<SummaryController> {
         ),
         child: VStack([
           HStack([
-            'Total pengeluaran ${controller.monthSelected.value.reformatDate(from: 'MMMM', to: 'MMM')} ${controller.yearSelected.value}:'
+            'Total pengeluaran ${controller.selectedPeriodLabel}:'
                 .text
                 .make()
                 .expand(),
@@ -136,7 +136,7 @@ class ViewOverview extends GetView<SummaryController> {
               Container(
                 color: AppColor.primary,
                 child:
-                    '${controller.monthSelected.value.reformatDate(from: 'MMMM', to: 'MMM')} ${controller.yearSelected.value}'
+                    controller.selectedPeriodLabel
                         .text
                         .size(11)
                         .minFontSize(11)

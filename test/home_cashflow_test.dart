@@ -1,9 +1,25 @@
+import 'package:expense_tracker/app/helpers/helper_misc.dart';
 import 'package:expense_tracker/app/models/supa_expense_entity.dart';
 import 'package:expense_tracker/app/models/supa_recurring_expense_entity.dart';
 import 'package:expense_tracker/app/modules/home/home_controller.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('uses one continuous custom period across short months', () {
+    expect(
+      expensePeriodForDate(DateTime(2026, 9, 1), 28),
+      (start: DateTime(2026, 8, 28), end: DateTime(2026, 9, 28)),
+    );
+    expect(
+      expensePeriodForMonth(2026, 3, 31),
+      (start: DateTime(2026, 2, 28), end: DateTime(2026, 3, 31)),
+    );
+    expect(
+      expensePeriodForYear(2026, 28),
+      (start: DateTime(2025, 12, 28), end: DateTime(2026, 12, 28)),
+    );
+  });
+
   test('cash until payday excludes pay-cycle spending and scheduled bills', () {
     expect(calculateCashUntilPayday(10000000, 2500000, 1500000), 6000000);
     expect(payCycleStartAt(DateTime(2026, 8, 1), 28), DateTime(2026, 7, 28));
@@ -12,14 +28,22 @@ void main() {
       dailyExpenseTotals({
         DateTime(2026, 7, 2): ['100000', '50000'],
         DateTime(2026, 8, 2): ['999999'],
-      }, DateTime(2026, 7)),
+      }, DateTime(2026, 7), DateTime(2026, 8)),
       hasLength(31),
     );
     expect(
       dailyExpenseTotals({
         DateTime(2026, 7, 2): ['100000', '50000'],
-      }, DateTime(2026, 7))[1],
+      }, DateTime(2026, 7), DateTime(2026, 8))[1],
       150000,
+    );
+    expect(
+      dailyExpenseTotals({
+        DateTime(2026, 8, 28): ['100000'],
+        DateTime(2026, 9, 27): ['200000'],
+        DateTime(2026, 9, 28): ['999999'],
+      }, DateTime(2026, 8, 28), DateTime(2026, 9, 28)),
+      [100000, ...List<num>.filled(29, 0), 200000],
     );
     final stats = monthlyExpenseStats([0, 100000, 0, 300000]);
     expect(stats.activeDays, 2);
@@ -67,6 +91,31 @@ void main() {
           categoryName: 'expense:basic:food',
         ),
       ], DateTime(2026, 8)),
+      {'expense:basic:food': 200000},
+    );
+    expect(
+      calculateBudgetSuggestions([
+        SupaExpense(
+          date: '2026-04-28',
+          amount: 100000,
+          categoryName: 'expense:basic:food',
+        ),
+        SupaExpense(
+          date: '2026-05-28',
+          amount: 300000,
+          categoryName: 'expense:basic:food',
+        ),
+        SupaExpense(
+          date: '2026-06-28',
+          amount: 200000,
+          categoryName: 'expense:basic:food',
+        ),
+        SupaExpense(
+          date: '2026-07-28',
+          amount: 999999,
+          categoryName: 'expense:basic:food',
+        ),
+      ], DateTime(2026, 8), startDay: 28),
       {'expense:basic:food': 200000},
     );
   });

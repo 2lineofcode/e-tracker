@@ -6,6 +6,10 @@ formatter:
 analyzer:
   exclude:
     - lib/*.g.dart*
+    - build/**
+    - android/**
+    - web/**
+    - macos/**
 
   errors:
     todo: ignore

@@ -23,9 +23,7 @@ class ViewPieChart extends GetView<SummaryController> {
         );
         return VStack(
           [
-            (controller.isShowAllYear.isTrue
-                    ? '${controller.yearSelected}'
-                    : '${controller.monthSelected} ${controller.yearSelected}')
+            controller.selectedPeriodLabel
                 .text
                 .bold
                 .make()

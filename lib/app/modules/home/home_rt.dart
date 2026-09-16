@@ -1,10 +1,8 @@
 import 'dart:async';
 
-import 'package:ex_kit/ex.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_api.dart';
-import '../../core/const.dart';
 import '../../helpers/helper_error_log.dart';
 import 'home_controller.dart';
 
@@ -72,11 +70,11 @@ mixin HomeRT {
       await _home.loadRecentExpenses();
       await _home.loadBudgetSuggestions();
       await _home.getCount1Month(_home.focusedDay.value);
-      await _home.onCalenderRefreshEvent(
-        period: _home.focusedDay.value.toStringEx(format: yM),
-      );
+      await _home.onCalenderRefreshEvent();
+      final period = _home.focusedPeriod;
       _home.rpcSpenderDay.value = await _home.repo.rpcGetSpenderDay(
-        _home.focusedDay.value,
+        period.start,
+        period.end,
       );
     } catch (e, stack) {
       await HelperErrorLog.record(page: 'home', action: '_refreshExpenseAfterRealtime', stack: '$e\n$stack');

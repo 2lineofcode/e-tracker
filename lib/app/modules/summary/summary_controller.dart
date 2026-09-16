@@ -1,5 +1,5 @@
 import 'package:ex_kit/ex.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/app_setting.dart';
@@ -63,14 +63,29 @@ class SummaryController extends GetxController with StateMixin {
         DateTime.now().month;
   }
 
+  int get calendarStartDay => pref.read<int>(kCalendarStartDay) ?? 1;
+
+  ({DateTime start, DateTime end}) get selectedPeriod => isShowAllYear.isTrue
+      ? expensePeriodForYear(_selectedYear, calendarStartDay)
+      : expensePeriodForMonth(_selectedYear, _selectedMonth, calendarStartDay);
+
+  String get selectedPeriodLabel {
+    final period = selectedPeriod;
+    return '${period.start.toStringEx(format: 'd MMM')} – ${period.end.subtract(1.days).toStringEx(format: 'd MMM y')}';
+  }
+
   bool get isCurrentSelectedMonth {
     if (isShowAllYear.isTrue) return false;
     final now = DateTime.now();
-    return _selectedYear == now.year && _selectedMonth == now.month;
+    final period = selectedPeriod;
+    return !now.isBefore(period.start) && now.isBefore(period.end);
   }
 
   bool get _isCurrentSelectedYear {
-    return isShowAllYear.isTrue && _selectedYear == DateTime.now().year;
+    if (isShowAllYear.isFalse) return false;
+    final now = DateTime.now();
+    final period = selectedPeriod;
+    return !now.isBefore(period.start) && now.isBefore(period.end);
   }
 
   num get selectedPeriodTotal {
@@ -80,26 +95,16 @@ class SummaryController extends GetxController with StateMixin {
   }
 
   int get _daysInSelectedPeriod {
-    if (isShowAllYear.isTrue) {
-      return DateTime(_selectedYear + 1).difference(DateTime(_selectedYear)).inDays;
-    }
-    return DateTime(_selectedYear, _selectedMonth + 1, 0).day;
+    return selectedPeriod.end.difference(selectedPeriod.start).inDays;
   }
 
   int get _elapsedDaysInSelectedPeriod {
     final now = DateTime.now();
-    if (_isCurrentSelectedYear) {
-      return DateTime(now.year, now.month, now.day)
-              .difference(DateTime(now.year))
-              .inDays +
-          1;
+    final period = selectedPeriod;
+    if (_isCurrentSelectedYear || isCurrentSelectedMonth) {
+      return DateUtils.dateOnly(now).difference(period.start).inDays + 1;
     }
-    if (isCurrentSelectedMonth) return now.day;
-
-    final selectedStart = isShowAllYear.isTrue
-        ? DateTime(_selectedYear)
-        : DateTime(_selectedYear, _selectedMonth);
-    if (selectedStart.isAfter(DateTime(now.year, now.month, now.day))) return 0;
+    if (period.start.isAfter(DateUtils.dateOnly(now))) return 0;
     return _daysInSelectedPeriod;
   }
 
@@ -156,11 +161,19 @@ class SummaryController extends GetxController with StateMixin {
 
   String get previousPeriodLabel {
     if (isShowAllYear.isTrue) {
-      return '${_selectedYear - 1}${_isCurrentSelectedYear ? ' sampai hari ini' : ''}';
+      final previous = expensePeriodForYear(
+        _selectedYear - 1,
+        calendarStartDay,
+      );
+      return '${previous.start.toStringEx(format: 'd MMM y')} – ${previous.end.subtract(1.days).toStringEx(format: 'd MMM y')}${_isCurrentSelectedYear ? ' (durasi berjalan sama)' : ''}';
     }
-    final previous = DateTime(_selectedYear, _selectedMonth - 1);
-    final label = previous.toStringEx(format: 'MMMM yyyy');
-    return '$label${isCurrentSelectedMonth ? ' (jumlah hari sama)' : ''}';
+    final previous = expensePeriodForMonth(
+      _selectedYear,
+      _selectedMonth - 1,
+      calendarStartDay,
+    );
+    final label = '${previous.start.toStringEx(format: 'd MMM')} – ${previous.end.subtract(1.days).toStringEx(format: 'd MMM y')}';
+    return '$label${isCurrentSelectedMonth ? ' (durasi berjalan sama)' : ''}';
   }
 
   String get periodDecisionTitle {
@@ -185,7 +198,7 @@ class SummaryController extends GetxController with StateMixin {
         : ' Pengeluaran terbesar: ${categorySummaries.first.resolvedCategory.label} sebesar ${categorySummaries.first.total.moneyFormatCompact()}.';
     if (isCurrentSelectedMonth && countBudget.value > 0) {
       final delta = countBudget.value - projectedPeriodSpend;
-      return 'Proyeksi akhir bulan ${projectedPeriodSpend.moneyFormatCompact()}, ${delta >= 0 ? '${delta.moneyFormatCompact()} di bawah' : '${delta.abs().moneyFormatCompact()} di atas'} budget.$topCategory';
+      return 'Proyeksi akhir periode ${projectedPeriodSpend.moneyFormatCompact()}, ${delta >= 0 ? '${delta.moneyFormatCompact()} di bawah' : '${delta.abs().moneyFormatCompact()} di atas'} budget.$topCategory';
     }
 
     final delta = periodTrendDelta;
@@ -204,7 +217,7 @@ class SummaryController extends GetxController with StateMixin {
 
   String get monthlySummaryText {
     final lines = <String>[
-      'Ringkasan ${monthSelected.value} ${yearSelected.value}',
+      'Ringkasan $selectedPeriodLabel',
       'Pengeluaran: ${countOnly1Month.value.moneyFormat()}',
     ];
     if (countBudget.value > 0) {
@@ -218,7 +231,7 @@ class SummaryController extends GetxController with StateMixin {
       );
     }
     if (isCurrentSelectedMonth) {
-      lines.add('Proyeksi akhir bulan: ${projectedPeriodSpend.moneyFormat()}');
+      lines.add('Proyeksi akhir periode: ${projectedPeriodSpend.moneyFormat()}');
     }
     final delta = periodTrendDelta;
     if (delta != null) {
@@ -256,6 +269,7 @@ class SummaryController extends GetxController with StateMixin {
       year: _selectedYear,
       month: _selectedMonth,
       allYear: isShowAllYear.value,
+      startDay: calendarStartDay,
     );
   }
 
@@ -264,13 +278,15 @@ class SummaryController extends GetxController with StateMixin {
     required int year,
     required int month,
     required bool allYear,
+    int startDay = 1,
     DateTime? now,
   }) {
     final today = now ?? DateTime.now();
-    if (allYear || year != today.year || month != today.month) return 0;
-    return DateTime(year, month + 1)
-        .difference(DateTime(today.year, today.month, today.day))
-        .inDays;
+    if (allYear) return 0;
+    final period = expensePeriodForMonth(year, month, startDay);
+    final date = DateUtils.dateOnly(today);
+    if (date.isBefore(period.start) || !date.isBefore(period.end)) return 0;
+    return period.end.difference(date).inDays;
   }
 
   Future<void> onMonthChange(String month) async {
@@ -302,7 +318,13 @@ class SummaryController extends GetxController with StateMixin {
       await getSumNoteTimes(year: yearSelected.value);
     } else {
       isShowAllYear.value = false;
-      monthSelected.value = '${DateTime.now().toStringEx(format: 'MMMM')}';
+      final currentLabel = expensePeriodForDate(
+        DateTime.now(),
+        calendarStartDay,
+      ).end.subtract(1.days);
+      yearSelected.value = currentLabel.toStringEx(format: 'yyyy');
+      monthSelected.value = currentLabel.toStringEx(format: 'MMMM');
+      await getSumAllMonth(year: yearSelected.value);
       await getExpenses(
         year: yearSelected.value,
         month: monthSelected.value,
@@ -352,8 +374,12 @@ class SummaryController extends GetxController with StateMixin {
     if (isAIAnalysisRunning.isTrue) return;
     change(0, status: RxStatus.loading());
     isShowAllYear.value = false;
-    yearSelected.value = DateTime.now().toStringEx(format: 'yyyy');
-    monthSelected.value = DateTime.now().toStringEx(format: 'MMMM');
+    final currentLabel = expensePeriodForDate(
+      DateTime.now(),
+      calendarStartDay,
+    ).end.subtract(1.days);
+    yearSelected.value = currentLabel.toStringEx(format: 'yyyy');
+    monthSelected.value = currentLabel.toStringEx(format: 'MMMM');
     await agent.restoreChatMessages();
     await getSumAllMonth(year: yearSelected.value);
     await getExpenses(
@@ -402,20 +428,27 @@ class SummaryController extends GetxController with StateMixin {
     final selectedMonth = month
         ?.reformatDate(from: 'MMMM', to: 'MM')
         .toInt();
+    final period = selectedMonth == null
+        ? expensePeriodForYear(selectedYear, calendarStartDay)
+        : expensePeriodForMonth(
+            selectedYear,
+            selectedMonth,
+            calendarStartDay,
+          );
     final previousPeriod = selectedMonth == null
-        ? DateTime(selectedYear - 1)
-        : DateTime(selectedYear, selectedMonth - 1);
-    final fetched = await repo.getExpenses(year: year, month: month);
+        ? expensePeriodForYear(selectedYear - 1, calendarStartDay)
+        : expensePeriodForMonth(
+            selectedYear,
+            selectedMonth - 1,
+            calendarStartDay,
+          );
+    final fetched = await repo.getExpenses(period.start, period.end);
     try {
       final previous = comparablePreviousExpenses(
-        await repo.getExpenses(
-          year: previousPeriod.year.toString(),
-          month: selectedMonth == null
-              ? null
-              : previousPeriod.toStringEx(format: 'MMMM'),
-        ),
+        await repo.getExpenses(previousPeriod.start, previousPeriod.end),
         selectedYear: selectedYear,
         selectedMonth: selectedMonth,
+        startDay: calendarStartDay,
       );
       countPreviousPeriod.value = previous.fold<int>(
         0,
@@ -472,45 +505,58 @@ class SummaryController extends GetxController with StateMixin {
     List<SupaExpense> source, {
     required int selectedYear,
     int? selectedMonth,
+    int startDay = 1,
     DateTime? now,
   }) {
     final today = now ?? DateTime.now();
+    final currentPeriod = selectedMonth == null
+        ? expensePeriodForYear(selectedYear, startDay)
+        : expensePeriodForMonth(selectedYear, selectedMonth, startDay);
+    final date = DateUtils.dateOnly(today);
     final isCurrentPeriod =
-        selectedYear == today.year &&
-        (selectedMonth == null || selectedMonth == today.month);
+        !date.isBefore(currentPeriod.start) && date.isBefore(currentPeriod.end);
     if (!isCurrentPeriod) return source;
 
     final previousPeriod = selectedMonth == null
-        ? DateTime(selectedYear - 1)
-        : DateTime(selectedYear, selectedMonth - 1);
-    final cutoffMonth = selectedMonth == null
-        ? today.month
-        : previousPeriod.month;
-    final lastDay = DateTime(
-      previousPeriod.year,
-      cutoffMonth + 1,
-      0,
-    ).day;
-    final cutoff = DateTime(
-      previousPeriod.year,
-      cutoffMonth,
-      today.day.clamp(1, lastDay),
+        ? expensePeriodForYear(selectedYear - 1, startDay)
+        : expensePeriodForMonth(selectedYear, selectedMonth - 1, startDay);
+    final elapsed = date.difference(currentPeriod.start).inDays + 1;
+    final cutoff = previousPeriod.start.add(
+      elapsed
+          .clamp(0, previousPeriod.end.difference(previousPeriod.start).inDays)
+          .toInt()
+          .days,
     );
 
     return source.where((expense) {
       final date = DateTime.tryParse(expense.date ?? '');
-      return date != null && !date.isAfter(cutoff);
+      return date != null && date.isBefore(cutoff);
     }).toList();
   }
 
   Future<void> getSumAllMonth({required String year}) async {
-    rpcSumAllMonth.value = await repo.getSumAllMonth(year: year);
+    rpcSumAllMonth.value = await repo.getSumAllMonth(
+      year: year,
+      startDay: calendarStartDay,
+    );
   }
 
   Future<void> getSumNoteTimes({required String year, String? month}) async {
+    final selectedYear = year.toInt() ?? DateTime.now().year;
+    final selectedMonth = month
+        ?.reformatDate(from: 'MMMM', to: 'MM')
+        .toInt();
+    final period = selectedMonth == null
+        ? expensePeriodForYear(selectedYear, calendarStartDay)
+        : expensePeriodForMonth(
+            selectedYear,
+            selectedMonth,
+            calendarStartDay,
+          );
     rpcSumNoteTimes.value = await repo.getSumNoteTimes(
-      year: year,
-      month: month,
+      start: period.start,
+      end: period.end,
+      startDay: calendarStartDay,
     );
   }
 
@@ -561,23 +607,23 @@ class SummaryController extends GetxController with StateMixin {
   /// @param: category, startDate, endDate
   void goAdvanceFilter(String categoryName) {
     if (isShowAllYear.isFalse) {
-      final start = DateTime(_selectedYear, _selectedMonth);
-      final end = DateTime(_selectedYear, _selectedMonth + 1, 0);
+      final period = selectedPeriod;
       Get.toNamed(
         Routes.FILTERING,
         arguments: [
           categoryName,
-          _isoDate(start),
-          _isoDate(end),
+          _isoDate(period.start),
+          _isoDate(period.end.subtract(1.days)),
         ],
       );
     } else {
+      final period = selectedPeriod;
       Get.toNamed(
         Routes.FILTERING,
         arguments: [
           categoryName,
-          '${yearSelected.value}-01-01',
-          '${yearSelected.value}-12-31',
+          _isoDate(period.start),
+          _isoDate(period.end.subtract(1.days)),
         ],
       );
     }

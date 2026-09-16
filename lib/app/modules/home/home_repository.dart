@@ -18,22 +18,14 @@ class HomeRepository {
   // ! expense
   // ────────────────────────────────────────────────────────────────
   // get all list: for calendar painting
-  Future<List<SupaExpense>> getExpenseAll({String period = ''}) async {
+  Future<List<SupaExpense>> getExpenseAll(DateTime start, DateTime end) async {
     if (currentUserId == null) return [];
-    var request = db
+    return await db
         .from('expense')
         .select('date, amount')
-        .eq('user_id', currentUserId!);
-    if (period.isNotEmpty) {
-      final start = DateTime.parse('${period.length == 4 ? '$period-01' : period}-01');
-      final end = period.length == 4
-          ? DateTime(start.year + 1, 1, 1)
-          : DateTime(start.year, start.month + 1, 1);
-      request = request
-          .gte('date', start.toStringEx(format: yMd))
-          .lt('date', end.toStringEx(format: yMd));
-    }
-    return await request
+        .eq('user_id', currentUserId!)
+        .gte('date', start.toStringEx(format: yMd))
+        .lt('date', end.toStringEx(format: yMd))
         .order('date')
         .withConverter<List<SupaExpense>>(
           (data) => data.map((e) => SupaExpense.fromJson(e)).toList(),
@@ -73,10 +65,19 @@ class HomeRepository {
 
   Future<List<SupaExpense>> getBudgetSuggestionExpenses(
     DateTime targetMonth,
+    int startDay,
   ) async {
     if (currentUserId == null) return [];
-    final start = DateTime(targetMonth.year, targetMonth.month - 3, 1);
-    final end = DateTime(targetMonth.year, targetMonth.month, 1);
+    final start = expensePeriodForMonth(
+      targetMonth.year,
+      targetMonth.month - 3,
+      startDay,
+    ).start;
+    final end = expensePeriodForMonth(
+      targetMonth.year,
+      targetMonth.month,
+      startDay,
+    ).start;
     return await db
         .from('expense')
         .select('date, amount, category_name')
@@ -246,11 +247,9 @@ class HomeRepository {
     return findExpense(date);
   }
 
-  // get sum by @date [1month]
-  Future<int?> getCount1Month(String date) async {
+  // get sum by date range
+  Future<int> getExpenseTotal(DateTime start, DateTime end) async {
     if (currentUserId == null) return 0;
-    final start = DateTime.parse('$date-01');
-    final end = DateTime(start.year, start.month + 1, 1);
     final response =
         await db //
             .from('expense')
@@ -263,17 +262,6 @@ class HomeRepository {
       x += element['amount'] ?? 0;
     }
     return x.toInt();
-  }
-
-  Future<int> getExpenseTotal(DateTime start, DateTime end) async {
-    if (currentUserId == null) return 0;
-    final response = await db
-        .from('expense')
-        .select('amount')
-        .eq('user_id', currentUserId!)
-        .gte('date', start.toStringEx(format: yMd))
-        .lte('date', end.toStringEx(format: yMd));
-    return response.fold<num>(0, (sum, item) => sum + (item['amount'] ?? 0)).toInt();
   }
 
   Future<void> addExpense(SupaExpense entity) async {
@@ -368,21 +356,19 @@ class HomeRepository {
     return response;
   }
 
-  Future<Map<String, num>> getMonthlyExpenseByBudgets(DateTime dateTime) async {
+  Future<Map<String, num>> getExpenseByBudgets(
+    DateTime start,
+    DateTime end,
+  ) async {
     if (currentUserId == null) return {};
-
-    final firstDay = DateTime(dateTime.year, dateTime.month, 1);
-    final nextMonth = DateTime(dateTime.year, dateTime.month + 1, 1);
-    final startDate = firstDay.toStringEx(format: yMd);
-    final endDate = nextMonth.toStringEx(format: yMd);
 
     final response =
         await db //
             .from('expense')
             .select('category_name, amount, date')
             .eq('user_id', currentUserId!)
-            .gte('date', startDate)
-            .lt('date', endDate)
+            .gte('date', start.toStringEx(format: yMd))
+            .lt('date', end.toStringEx(format: yMd))
             .order('date')
             .withConverter<List<SupaExpense>>(
               (data) => (data).map((e) => SupaExpense.fromJson(e)).toList(),
@@ -620,15 +606,15 @@ class HomeRepository {
   // ────────────────────────────────────────────────────────────────
   // ! rpc
   // ────────────────────────────────────────────────────────────────
-  Future<List<dynamic>> rpcGetSpenderDay(DateTime focusedDay) async {
+  Future<List<dynamic>> rpcGetSpenderDay(DateTime start, DateTime end) async {
     if (currentUserId == null) return [];
-    final fixYM = focusedDay.toStringEx(format: yM);
     final result = await db
         .rpc(
           'get_spender_day',
           params: {
             'userid': currentUserId!,
-            'periode': fixYM,
+            'start_date': start.toStringEx(format: yMd),
+            'end_date': end.toStringEx(format: yMd),
           },
         )
         .order('total', ascending: false);

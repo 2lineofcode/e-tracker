@@ -145,6 +145,39 @@ int hashDate(DateTime key) => key.day * 1000000 + key.month * 10000 + key.year;
 
 int dayInMonth(DateTime dt) => DateTime(dt.year, dt.month + 1, 0).day;
 
+DateTime _periodDay(int year, int month, int startDay) {
+  final lastDay = DateTime(year, month + 1, 0).day;
+  return DateTime(year, month, startDay.clamp(1, lastDay));
+}
+
+({DateTime start, DateTime end}) expensePeriodForDate(
+  DateTime date,
+  int startDay,
+) {
+  final currentStart = _periodDay(date.year, date.month, startDay);
+  final start = date.isBefore(currentStart)
+      ? _periodDay(date.year, date.month - 1, startDay)
+      : currentStart;
+  return (
+    start: start,
+    end: _periodDay(start.year, start.month + 1, startDay),
+  );
+}
+
+({DateTime start, DateTime end}) expensePeriodForMonth(
+  int year,
+  int month,
+  int startDay,
+) => expensePeriodForDate(DateTime(year, month), startDay);
+
+({DateTime start, DateTime end}) expensePeriodForYear(
+  int year,
+  int startDay,
+) => (
+  start: expensePeriodForMonth(year, 1, startDay).start,
+  end: expensePeriodForMonth(year, 12, startDay).end,
+);
+
 /// ------------------------------------------------------------------------
 /// ! DEBOUNCE
 /// ------------------------------------------------------------------------

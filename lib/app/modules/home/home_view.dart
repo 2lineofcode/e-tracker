@@ -390,12 +390,7 @@ class HomeView extends GetView<HomeController> {
               onGoPrevMonth: () => controller.onCalenderGoPrevMonth(),
               onGoToday: () => controller.onCalenderGoToday(),
               onGoNextMonth: () => controller.onCalenderGoNextMonth(),
-              onGoDate: (dt) {
-                controller.selectedDays.clear();
-                controller.selectedDays.add(dt);
-                controller.focusedDay.value = dt;
-                controller.getExpense();
-              },
+              onGoDate: controller.onCalenderGoDate,
             );
           },
         ),
@@ -1595,7 +1590,7 @@ class HomeView extends GetView<HomeController> {
           ),
           child: VStack([
             HStack([
-              'Pengeluaran ${controller.focusedDay.value.toStringEx(format: 'MMMM y')}'
+              'Pengeluaran ${controller.focusedPeriodLabel}'
                   .text
                   .bold
                   .size(12)
@@ -1759,14 +1754,17 @@ class HomeView extends GetView<HomeController> {
               reservedSize: 22,
               interval: 1,
               getTitlesWidget: (value, meta) {
-                final day = value.toInt();
-                final showStep = day % 5 == 0 && totals.length - day > 2;
-                if (day != 1 && !showStep && day != totals.length) {
+                final index = value.toInt();
+                final showStep = index % 5 == 0 && totals.length - index > 2;
+                if (index != 1 && !showStep && index != totals.length) {
                   return SizedBox.shrink();
                 }
+                final date = controller.focusedPeriod.start.add(
+                  (index - 1).days,
+                );
                 return SideTitleWidget(
                   meta: meta,
-                  child: '$day'.text
+                  child: '${date.day}'.text
                       .size(9)
                       .minFontSize(9)
                       .color(AppColor.neutral)
@@ -1782,10 +1780,8 @@ class HomeView extends GetView<HomeController> {
             fitInsideVertically: true,
             getTooltipColor: (spot) => AppColor.textReverse,
             getTooltipItems: (spots) => spots.map((spot) {
-              final date = DateTime(
-                controller.focusedDay.value.year,
-                controller.focusedDay.value.month,
-                spot.x.toInt(),
+              final date = controller.focusedPeriod.start.add(
+                (spot.x.toInt() - 1).days,
               );
               return LineTooltipItem(
                 '${date.toStringEx(format: 'dd MMM')}\n${spot.y.moneyFormat()}',
@@ -1814,10 +1810,14 @@ class HomeView extends GetView<HomeController> {
               show: true,
               checkToShowDot: (spot, barData) =>
                   spot.y > 0 ||
-                  spot.x.toInt() == controller.focusedDay.value.day,
+                  controller.focusedPeriod.start
+                          .add((spot.x.toInt() - 1).days) ==
+                      DateUtils.dateOnly(controller.focusedDay.value),
               getDotPainter: (spot, percent, barData, index) {
                 final selected =
-                    spot.x.toInt() == controller.focusedDay.value.day;
+                    controller.focusedPeriod.start
+                            .add((spot.x.toInt() - 1).days) ==
+                        DateUtils.dateOnly(controller.focusedDay.value);
                 return FlDotCirclePainter(
                   radius: selected ? 4 : 2,
                   color: selected ? AppColor.primary : AppColor.card,
@@ -1879,7 +1879,7 @@ class HomeView extends GetView<HomeController> {
       ).expand(),
       Obx(
         () =>
-            '${controller.focusedDay.value.toStringEx(format: 'MMM')}: ${controller.countOfMonth.value.moneyFormat()}' //
+            '${controller.focusedPeriodLabel}: ${controller.countOfMonth.value.moneyFormat()}' //
                 .text
                 .make()
                 .onTap(() => controller.goSummary()),

@@ -542,6 +542,17 @@ class SettingsController extends GetxController with StateMixin {
     await repo.editProfile(entity);
     await pref.write(kCalendarStartDay, calendarStartDay);
     await Get.find<AppSettingService>().setupAppPref();
+    if (Get.isRegistered<HomeController>()) {
+      final home = Get.find<HomeController>();
+      await home.onCalenderRefreshEvent();
+      await home.getCount1Month(home.focusedDay.value);
+      await home.loadBudgetSuggestions();
+      final period = home.focusedPeriod;
+      home.rpcSpenderDay.value = await home.repo.rpcGetSpenderDay(
+        period.start,
+        period.end,
+      );
+    }
     await Get.forceAppUpdate();
     ExLoading.dismiss();
     await HelperToast.success('Pengaturan disimpan');

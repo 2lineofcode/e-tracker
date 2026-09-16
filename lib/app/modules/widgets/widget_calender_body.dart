@@ -83,21 +83,16 @@ class MyCalenderBody<T> extends StatelessWidget {
   }
 
   Widget _buildCustomPeriodCalendar(int startDay) {
-    final periodStart = _periodStartDate(startDay);
-    final periodEnd = _monthStartDate(
-      periodStart.year,
-      periodStart.month + 1,
-      startDay,
-    ).subtract(1.days);
-    final totalDays = periodEnd.difference(periodStart).inDays + 1;
+    final period = expensePeriodForDate(focusedDay, startDay);
+    final totalDays = period.end.difference(period.start).inDays;
     final rowCount = (totalDays / 7).ceil();
-    final days = List.generate(totalDays, (i) => periodStart.add(i.days));
+    final days = List.generate(totalDays, (i) => period.start.add(i.days));
 
     return Column(
       children: [
         Row(
           children: List.generate(7, (i) {
-            final day = periodStart.add(i.days);
+            final day = period.start.add(i.days);
             final isWeekend = day.weekday == DateTime.saturday ||
                 day.weekday == DateTime.sunday;
             return Expanded(
@@ -127,22 +122,6 @@ class MyCalenderBody<T> extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  DateTime _periodStartDate(int startDay) {
-    final effectiveStartDay =
-        startDay.clamp(1, DateTime(focusedDay.year, focusedDay.month + 1, 0).day);
-
-    if (focusedDay.day >= effectiveStartDay) {
-      return _monthStartDate(focusedDay.year, focusedDay.month, startDay);
-    }
-
-    return _monthStartDate(focusedDay.year, focusedDay.month - 1, startDay);
-  }
-
-  DateTime _monthStartDate(int year, int month, int startDay) {
-    final monthDays = DateTime(year, month + 1, 0).day;
-    return DateTime(year, month, startDay.clamp(1, monthDays));
   }
 
   Widget _buildDayCell(BuildContext context, DateTime day) {

@@ -1,6 +1,6 @@
 begin;
 
-select plan(21);
+select plan(24);
 
 select has_table('public', 'recurring_expenses', 'recurring_expenses table exists');
 select col_type_is('public', 'expense', 'date', 'date', 'expense date uses date');
@@ -31,7 +31,7 @@ select ok(
   'anon cannot execute sum RPC'
 );
 select ok(
-  not has_function_privilege('anon', 'public.get_spender_day(uuid, character varying)', 'EXECUTE'),
+  not has_function_privilege('anon', 'public.get_spender_day(uuid, date, date)', 'EXECUTE'),
   'anon cannot execute expense RPC'
 );
 
@@ -111,7 +111,9 @@ insert into auth.users (
 insert into public.expense (user_id, note, category_name, amount, date)
 values
   ('00000000-0000-0000-0000-000000000123', 'RLS tenant check', 'expense:unknown', 1, '2026-03-01'),
-  ('00000000-0000-0000-0000-000000000124', 'RLS tenant check', 'expense:unknown', 1, '2026-03-01');
+  ('00000000-0000-0000-0000-000000000124', 'RLS tenant check', 'expense:unknown', 1, '2026-03-01'),
+  ('00000000-0000-0000-0000-000000000123', 'Custom period before boundary', 'expense:unknown', 10, '2026-07-27'),
+  ('00000000-0000-0000-0000-000000000123', 'Custom period on boundary', 'expense:unknown', 20, '2026-07-28');
 
 set local role authenticated;
 set local request.jwt.claim.sub = '00000000-0000-0000-0000-000000000123';
@@ -121,11 +123,46 @@ select is(
     select count(*)
     from public.sum_all_month(
       '00000000-0000-0000-0000-000000000123',
-      2026
+      2026,
+      28
     )
   ),
   12::bigint,
   'year summary always returns every month'
+);
+
+select is(
+  public.expense_period_start('2026-03-01', 28),
+  '2026-02-28'::date,
+  'custom period crosses calendar month boundaries'
+);
+
+select is(
+  (
+    select total
+    from public.sum_all_month(
+      '00000000-0000-0000-0000-000000000123',
+      2026,
+      28
+    )
+    where period = '2026-07'
+  ),
+  10::bigint,
+  'custom period keeps the day before boundary in the ending month'
+);
+
+select is(
+  (
+    select total
+    from public.sum_all_month(
+      '00000000-0000-0000-0000-000000000123',
+      2026,
+      28
+    )
+    where period = '2026-08'
+  ),
+  20::bigint,
+  'custom period moves the boundary day into the next ending month'
 );
 
 select is(

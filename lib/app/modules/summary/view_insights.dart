@@ -416,10 +416,7 @@ class ViewInsights extends GetView<SummaryController> {
   }
 
   String _selectedPeriod() {
-    if (controller.isShowAllYear.isTrue) {
-      return controller.yearSelected.value;
-    }
-    return '${controller.monthSelected.value} ${controller.yearSelected.value}';
+    return controller.selectedPeriodLabel;
   }
 
   void _showChatJson() {

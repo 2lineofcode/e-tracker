@@ -13,6 +13,7 @@ import '../../core/app_api.dart';
 import '../../core/app_setting.dart';
 import '../../core/const.dart';
 import '../../helpers/helper_image.dart';
+import '../../helpers/helper_misc.dart';
 import '../../helpers/helper_money.dart';
 import '../../helpers/helper_toast.dart';
 import '../../models/supa_assets_entity.dart';
@@ -40,9 +41,6 @@ class AgentController extends GetxController {
   RxInt get countOnly1Month => summary.countOnly1Month;
   RxInt get income => summary.income;
   RxInt get surplus => summary.surplus;
-
-  int get _selectedYear =>
-      yearSelected.value.toInt() ?? DateTime.now().year;
 
   int get _selectedMonth {
     return monthSelected.value
@@ -109,7 +107,7 @@ OUTPUT FORMAT:
 
   String get agentSystemPrompt => '''
 You are ditdhewAI, the personal finance assistant inside the user's expense tracker. Today is ${DateTime.now().toStringEx(format: yMd)}.
-The selected dashboard period is ${isShowAllYear.isTrue ? yearSelected.value : '${monthSelected.value} ${yearSelected.value}'}.
+The selected dashboard period is ${summary.selectedPeriodLabel}.
 
 BEHAVIOR:
 - Prioritize the user's transactions, budgets, profile, goals, recurring payments, assets, notes, and financial decisions.
@@ -382,7 +380,7 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
         'model': 'server-managed',
         'period': isShowAllYear.isTrue
             ? yearSelected.value
-            : '${monthSelected.value} ${yearSelected.value}',
+            : summary.selectedPeriodLabel,
         'temperature': 0.2,
         'max_tokens': 65536,
         'history_limit': 10,
@@ -1184,6 +1182,7 @@ $rows$suffix
     String message,
     DateTime selectedPeriod, {
     required bool allYear,
+    int startDay = 1,
     DateTime? now,
   }) {
     final normalized = message.toLowerCase();
@@ -1257,49 +1256,39 @@ $rows$suffix
     ).hasMatch(normalized);
     if (!includesPrevious) return null;
 
-    final start = allYear
-        ? DateTime(selectedPeriod.year - 1, 1, 1)
-        : DateTime(selectedPeriod.year, selectedPeriod.month - 1, 1);
-    final currentStart = allYear
-        ? DateTime(selectedPeriod.year, 1, 1)
-        : DateTime(selectedPeriod.year, selectedPeriod.month, 1);
-    final end = allYear
-        ? DateTime(selectedPeriod.year, 12, 31)
-        : DateTime(selectedPeriod.year, selectedPeriod.month + 1, 0);
+    final previous = allYear
+        ? expensePeriodForYear(selectedPeriod.year - 1, startDay)
+        : expensePeriodForMonth(
+            selectedPeriod.year,
+            selectedPeriod.month - 1,
+            startDay,
+          );
+    final current = allYear
+        ? expensePeriodForYear(selectedPeriod.year, startDay)
+        : expensePeriodForMonth(
+            selectedPeriod.year,
+            selectedPeriod.month,
+            startDay,
+          );
     final today = now ?? DateTime.now();
+    final date = DateUtils.dateOnly(today);
     final isCurrentPeriod =
-        selectedPeriod.year == today.year &&
-        (allYear || selectedPeriod.month == today.month);
+        !date.isBefore(current.start) && date.isBefore(current.end);
     final previousEnd = isCurrentPeriod
-        ? allYear
-              ? DateTime(
-                  selectedPeriod.year - 1,
-                  today.month,
-                  today.day.clamp(
-                    1,
-                    DateTime(
-                      selectedPeriod.year - 1,
-                      today.month + 1,
-                      0,
-                    ).day,
-                  ),
-                )
-              : DateTime(
-                  start.year,
-                  start.month,
-                  today.day.clamp(
-                    1,
-                    DateTime(start.year, start.month + 1, 0).day,
-                  ),
-                )
-        : DateTime(currentStart.year, currentStart.month, 0);
+        ? previous.start.add(
+            (date.difference(current.start).inDays + 1)
+                .clamp(1, previous.end.difference(previous.start).inDays)
+                .toInt()
+                .days,
+          ).subtract(1.days)
+        : previous.end.subtract(1.days);
 
     return {
       'data_type': 'expenses',
-      'start_date': _isoDate(start),
+      'start_date': _isoDate(previous.start),
       'previous_end_date': _isoDate(previousEnd),
-      'current_start_date': _isoDate(currentStart),
-      'end_date': _isoDate(end),
+      'current_start_date': _isoDate(current.start),
+      'end_date': _isoDate(current.end.subtract(1.days)),
     };
   }
 
@@ -1308,6 +1297,7 @@ $rows$suffix
     String message,
     DateTime selectedPeriod, {
     required bool allYear,
+    int startDay = 1,
   }) {
     final normalized = message.toLowerCase();
     final mentionsCurrentPeriod = RegExp(
@@ -1333,17 +1323,18 @@ $rows$suffix
 
     final useFullYear =
         allYear || RegExp(r'\b(tahun ini|this year)\b').hasMatch(normalized);
-    final start = useFullYear
-        ? DateTime(selectedPeriod.year, 1, 1)
-        : DateTime(selectedPeriod.year, selectedPeriod.month, 1);
-    final end = useFullYear
-        ? DateTime(selectedPeriod.year, 12, 31)
-        : DateTime(selectedPeriod.year, selectedPeriod.month + 1, 0);
+    final period = useFullYear
+        ? expensePeriodForYear(selectedPeriod.year, startDay)
+        : expensePeriodForMonth(
+            selectedPeriod.year,
+            selectedPeriod.month,
+            startDay,
+          );
 
     return {
       'data_type': dataType,
-      'start_date': _isoDate(start),
-      'end_date': _isoDate(end),
+      'start_date': _isoDate(period.start),
+      'end_date': _isoDate(period.end.subtract(1.days)),
     };
   }
 
@@ -1352,6 +1343,7 @@ $rows$suffix
     String message,
     DateTime selectedPeriod, {
     required bool allYear,
+    int startDay = 1,
     DateTime? now,
   }) {
     final normalized = message.toLowerCase();
@@ -1377,12 +1369,15 @@ $rows$suffix
       start = DateTime(today.year, today.month, today.day - 1);
       end = start;
     } else {
-      start = allYear
-          ? DateTime(selectedPeriod.year)
-          : DateTime(selectedPeriod.year, selectedPeriod.month);
-      end = allYear
-          ? DateTime(selectedPeriod.year, 12, 31)
-          : DateTime(selectedPeriod.year, selectedPeriod.month + 1, 0);
+      final period = allYear
+          ? expensePeriodForYear(selectedPeriod.year, startDay)
+          : expensePeriodForMonth(
+              selectedPeriod.year,
+              selectedPeriod.month,
+              startDay,
+            );
+      start = period.start;
+      end = period.end.subtract(1.days);
     }
 
     final keywords = SummaryRepository.expenseSearchKeywords(message);
@@ -1461,16 +1456,19 @@ $rows$suffix
                 userMessage,
                 selectedPeriod,
                 allYear: isShowAllYear.isTrue,
+                startDay: summary.calendarStartDay,
               ) ??
               currentPeriodOverviewArguments(
                 userMessage,
                 selectedPeriod,
                 allYear: isShowAllYear.isTrue,
+                startDay: summary.calendarStartDay,
               ) ??
               expensePeriodArguments(
                 userMessage,
                 selectedPeriod,
                 allYear: isShowAllYear.isTrue,
+                startDay: summary.calendarStartDay,
               ) ??
               (directExpenseQuery == null
                   ? null
@@ -1881,18 +1879,25 @@ $rows$suffix
     if (Get.isRegistered<HomeController>()) {
       final home = Get.find<HomeController>();
       await home.getExpense();
-      for (final period in expenses
-          .map((expense) => expense.date!.substring(0, 7))
-          .toSet()) {
-        await home.onCalenderRefreshEvent(period: period);
-      }
+      await home.loadRecentExpenses();
+      await home.loadBudgetSuggestions();
+      await home.onCalenderRefreshEvent();
       await home.getCount1Month(home.focusedDay.value);
+      final period = home.focusedPeriod;
+      home.rpcSpenderDay.value = await home.repo.rpcGetSpenderDay(
+        period.start,
+        period.end,
+      );
     }
     await getExpenses(
       year: yearSelected.value,
       month: isShowAllYear.isTrue ? null : monthSelected.value,
     );
     await getSumAllMonth(year: yearSelected.value);
+    await summary.getSumNoteTimes(
+      year: yearSelected.value,
+      month: isShowAllYear.isTrue ? null : monthSelected.value,
+    );
     await calculateBudgetStatForHeader();
     surplus.value = income.value - countOnly1Month.value;
     getDayRemaining();
@@ -2240,17 +2245,10 @@ $rows$suffix
     if (executedArguments['data_type'] == 'budgets' &&
         executedArguments['start_date'] == null &&
         executedArguments['end_date'] == null) {
+      final period = summary.selectedPeriod;
       executedArguments
-        ..['start_date'] = _isoDate(
-          isShowAllYear.isTrue
-              ? DateTime(_selectedYear)
-              : DateTime(_selectedYear, _selectedMonth),
-        )
-        ..['end_date'] = _isoDate(
-          isShowAllYear.isTrue
-              ? DateTime(_selectedYear, 12, 31)
-              : DateTime(_selectedYear, _selectedMonth + 1, 0),
-        );
+        ..['start_date'] = _isoDate(period.start)
+        ..['end_date'] = _isoDate(period.end.subtract(1.days));
     }
     final execution = <String, dynamic>{
       'tool': 'load_financial_data',
@@ -2570,7 +2568,11 @@ $rows$suffix
         ifAbsent: () => expense.amount ?? 0,
       );
     }
-    final periodMonths = fullMonthSpan(startDate, endDate);
+    final periodMonths = fullMonthSpan(
+      startDate,
+      endDate,
+      startDay: summary.calendarStartDay,
+    );
     final expenseSummary = summarizeExpenses(
       dataExpense,
       currentStartDate: currentStartDate,
@@ -2709,12 +2711,24 @@ $rows$suffix
   }
 
   @visibleForTesting
-  static int? fullMonthSpan(String? startDate, String? endDate) {
+  static int? fullMonthSpan(
+    String? startDate,
+    String? endDate, {
+    int startDay = 1,
+  }) {
     final start = validIsoDate(startDate);
     final end = validIsoDate(endDate);
-    if (start == null || end == null || start.day != 1) return null;
-    if (end.day != DateTime(end.year, end.month + 1, 0).day) return null;
-    final months = (end.year - start.year) * 12 + end.month - start.month + 1;
+    if (start == null || end == null) return null;
+    final first = expensePeriodForDate(start, startDay);
+    final last = expensePeriodForDate(end, startDay);
+    if (first.start != start || last.end.subtract(1.days) != end) return null;
+    final firstLabel = first.end.subtract(1.days);
+    final lastLabel = last.end.subtract(1.days);
+    final months =
+        (lastLabel.year - firstLabel.year) * 12 +
+        lastLabel.month -
+        firstLabel.month +
+        1;
     return months > 0 ? months : null;
   }
 

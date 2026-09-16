@@ -91,9 +91,7 @@ class HomeController extends GetxController with StateMixin {
     await refreshBudgetsList();
     await getExpense();
     await getCount1Month(DateTime.now());
-    await onCalenderRefreshEvent(
-      period: focusedDay.value.toStringEx(format: yM),
-    );
+    await onCalenderRefreshEvent();
     await loadAssetsSummary();
     await loadGoalsList();
     await loadNotesList();
@@ -101,7 +99,8 @@ class HomeController extends GetxController with StateMixin {
     await loadRecentExpenses();
     await loadBudgetSuggestions();
 
-    rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
+    final period = focusedPeriod;
+    rpcSpenderDay.value = await repo.rpcGetSpenderDay(period.start, period.end);
     userProfile.value = await repo.getUserProfile().then((value) => value[0]);
     await loadPayCycleExpense();
     await HomeRT.initExpenseRT();
@@ -223,16 +222,25 @@ class HomeController extends GetxController with StateMixin {
 
   DateTime get budgetSuggestionMonth {
     final now = DateTime.now();
-    return DateTime(now.year, now.month + 1, 1);
+    final currentLabel = expensePeriodForDate(
+      now,
+      _calendarStartDay,
+    ).end.subtract(1.days);
+    return DateTime(currentLabel.year, currentLabel.month + 1, 1);
   }
 
   Future<void> loadBudgetSuggestions() async {
     try {
       final expenses = await repo.getBudgetSuggestionExpenses(
         budgetSuggestionMonth,
+        _calendarStartDay,
       );
       budgetSuggestions.assignAll(
-        calculateBudgetSuggestions(expenses, budgetSuggestionMonth),
+        calculateBudgetSuggestions(
+          expenses,
+          budgetSuggestionMonth,
+          startDay: _calendarStartDay,
+        ),
       );
     } catch (e) {
       await HelperErrorLog.record(
@@ -284,11 +292,7 @@ class HomeController extends GetxController with StateMixin {
   }
 
   Future<void> onCalenderGoToday() async {
-    selectedDays.clear();
-    focusedDay.value = DateTime.now();
-    selectedDays.add(DateTime.now());
-    await getExpense();
-    await getCount1Month(focusedDay.value);
+    await onCalenderGoDate(DateTime.now());
     closeDrawer();
   }
 
@@ -298,16 +302,15 @@ class HomeController extends GetxController with StateMixin {
     selectedDays.add(dateTime);
     await getExpense();
     await getCount1Month(focusedDay.value);
+    await onCalenderRefreshEvent();
+    final period = focusedPeriod;
+    rpcSpenderDay.value = await repo.rpcGetSpenderDay(period.start, period.end);
   }
 
   Future<void> onCalenderGoPrevMonth() async {
     if (_calendarStartDay != 1) {
       final current = focusedDay.value;
       await onCalenderGoDate(_shiftFocusedMonth(current, -1));
-      await onCalenderRefreshEvent(
-        period: focusedDay.value.toStringEx(format: yM),
-      );
-      rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
       return;
     }
 
@@ -321,10 +324,6 @@ class HomeController extends GetxController with StateMixin {
     if (_calendarStartDay != 1) {
       final current = focusedDay.value;
       await onCalenderGoDate(_shiftFocusedMonth(current, 1));
-      await onCalenderRefreshEvent(
-        period: focusedDay.value.toStringEx(format: yM),
-      );
-      rpcSpenderDay.value = await repo.rpcGetSpenderDay(focusedDay.value);
       return;
     }
 
@@ -336,6 +335,16 @@ class HomeController extends GetxController with StateMixin {
 
   int get _calendarStartDay => pref.read<int>(kCalendarStartDay) ?? 1;
 
+  ({DateTime start, DateTime end}) get focusedPeriod =>
+      expensePeriodForDate(focusedDay.value, _calendarStartDay);
+
+  DateTime get focusedPeriodLabelDate => focusedPeriod.end.subtract(1.days);
+
+  String get focusedPeriodLabel {
+    final period = focusedPeriod;
+    return '${period.start.toStringEx(format: 'd MMM')} – ${period.end.subtract(1.days).toStringEx(format: 'd MMM y')}';
+  }
+
   DateTime _shiftFocusedMonth(DateTime dateTime, int monthOffset) {
     final target = DateTime(dateTime.year, dateTime.month + monthOffset, 1);
     final targetMonthDays = DateTime(target.year, target.month + 1, 0).day;
@@ -346,30 +355,12 @@ class HomeController extends GetxController with StateMixin {
     );
   }
 
-  List<String> _calendarEventPeriods(DateTime dateTime) {
-    final effectiveStartDay = _calendarStartDay.clamp(
-      1,
-      DateTime(dateTime.year, dateTime.month + 1, 0).day,
-    );
-
-    if (dateTime.day >= effectiveStartDay) {
-      return [
-        dateTime.toStringEx(format: yM),
-        DateTime(dateTime.year, dateTime.month + 1, 1).toStringEx(format: yM),
-      ];
-    }
-
-    return [
-      DateTime(dateTime.year, dateTime.month - 1, 1).toStringEx(format: yM),
-      dateTime.toStringEx(format: yM),
-    ];
-  }
-
   Future<void> onCalenderPageChanged(DateTime fd) async {
     focusedDay.value = fd;
-    await onCalenderRefreshEvent(period: fd.toStringEx(format: yM));
+    await onCalenderRefreshEvent();
     await getCount1Month(fd);
-    rpcSpenderDay.value = await repo.rpcGetSpenderDay(fd);
+    final period = focusedPeriod;
+    rpcSpenderDay.value = await repo.rpcGetSpenderDay(period.start, period.end);
   }
 
   List<String> onCalenderLoadEvent(DateTime day) {
@@ -381,40 +372,31 @@ class HomeController extends GetxController with StateMixin {
     return kEvents[day] ?? [];
   }
 
-  Future<void> onCalenderRefreshEvent({String period = ''}) async {
+  Future<void> onCalenderRefreshEvent() async {
     events.clear();
-    final periodList = _calendarStartDay == 1
-        ? [period]
-        : _calendarEventPeriods(focusedDay.value);
-
-    for (final itemPeriod in periodList) {
-      await repo.getExpenseAll(period: itemPeriod).then((res) {
-        // Membuat Map untuk mengelompokkan data berdasarkan tanggal
-        Map<DateTime, List<String>> groupedData = {};
-
-        // Iterasi melalui data dan mengelompokkannya
-        for (var item in res) {
-          var date = item.date!.toDateEx(format: yMd);
-          if (groupedData.containsKey(date)) {
-            groupedData[date]!.add('${item.amount}');
-          } else {
-            groupedData[date] = ['${item.amount}'];
-          }
-        }
-        events.addAll(groupedData);
-      });
+    final range = focusedPeriod;
+    final res = await repo.getExpenseAll(range.start, range.end);
+    Map<DateTime, List<String>> groupedData = {};
+    for (var item in res) {
+      var date = item.date!.toDateEx(format: yMd);
+      if (groupedData.containsKey(date)) {
+        groupedData[date]!.add('${item.amount}');
+      } else {
+        groupedData[date] = ['${item.amount}'];
+      }
     }
+    events.addAll(groupedData);
 
     update();
   }
 
-  /// count total per month
+  /// count total per period
   Future<void> getCount1Month(DateTime dateTime) async {
     try {
-      final month = dateTime.toStringEx(format: yM);
-      countOfMonth.value = await repo.getCount1Month(month) ?? 0;
+      final period = expensePeriodForDate(dateTime, _calendarStartDay);
+      countOfMonth.value = await repo.getExpenseTotal(period.start, period.end);
       if (userProfile.value.id != null) await loadPayCycleExpense();
-      await loadMonthlyExpenseByGroup(dateTime);
+      await loadMonthlyExpenseByGroup(period.start, period.end);
 
       // count percentage of remain budget
       var sum = 0;
@@ -436,9 +418,9 @@ class HomeController extends GetxController with StateMixin {
     }
   }
 
-  Future<void> loadMonthlyExpenseByGroup(DateTime dateTime) async {
+  Future<void> loadMonthlyExpenseByGroup(DateTime start, DateTime end) async {
     try {
-      final result = await repo.getMonthlyExpenseByBudgets(dateTime);
+      final result = await repo.getExpenseByBudgets(start, end);
       monthlyExpenseByGroup.assignAll(result);
       monthlyExpenseByGroup.refresh();
 
@@ -536,10 +518,9 @@ class HomeController extends GetxController with StateMixin {
             );
           } else if (dateQuery == 'month') {
             final now = DateTime.now();
-            final firstDay = DateTime(now.year, now.month, 1);
-            final lastDay = DateTime(now.year, now.month + 1, 0);
+            final period = expensePeriodForDate(now, _calendarStartDay);
             expenseList.value = await repo.findExpenseByDateRange(
-              '${firstDay.toStringEx(format: yMd)} ${lastDay.toStringEx(format: yMd)}',
+              '${period.start.toStringEx(format: yMd)} ${period.end.subtract(1.days).toStringEx(format: yMd)}',
             );
           } else if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(dateQuery)) {
             expenseList.value = await repo.getExpense(dateQuery);
@@ -599,7 +580,7 @@ class HomeController extends GetxController with StateMixin {
   void goSummary() {
     Get.toNamed(
       Routes.SUMMARY,
-      parameters: {'period': focusedDay.value.toStringEx(format: yM)},
+      parameters: {'period': focusedPeriodLabelDate.toStringEx(format: yM)},
     );
   }
 
@@ -607,26 +588,32 @@ class HomeController extends GetxController with StateMixin {
     Get.toNamed(Routes.SETTINGS);
   }
 
-  int get focusedMonthDays => dayInMonth(focusedDay.value);
+  int get focusedMonthDays => focusedPeriod.end.difference(focusedPeriod.start).inDays;
 
   List<num> get focusedMonthDailyTotals =>
-      dailyExpenseTotals(events, focusedDay.value);
+      dailyExpenseTotals(events, focusedPeriod.start, focusedPeriod.end);
 
   bool get isFocusedCurrentMonth {
     final now = DateTime.now();
-    return focusedDay.value.year == now.year &&
-        focusedDay.value.month == now.month;
+    final period = focusedPeriod;
+    return !now.isBefore(period.start) && now.isBefore(period.end);
   }
 
   int get elapsedDaysForForecast {
     if (isFocusedCurrentMonth)
-      return DateTime.now().day.clamp(1, focusedMonthDays);
+      return DateUtils.dateOnly(DateTime.now())
+              .difference(focusedPeriod.start)
+              .inDays +
+          1;
     return focusedMonthDays;
   }
 
   int get remainingDaysForForecast {
     if (isFocusedCurrentMonth)
-      return (focusedMonthDays - DateTime.now().day).clamp(0, focusedMonthDays);
+      return focusedPeriod.end
+          .difference(DateUtils.dateOnly(DateTime.now()))
+          .inDays
+          .clamp(0, focusedMonthDays);
     return 0;
   }
 
@@ -708,7 +695,7 @@ class HomeController extends GetxController with StateMixin {
   Future<void> loadPayCycleExpense() async {
     payCycleExpense.value = await repo.getExpenseTotal(
       currentPayCycleStart,
-      DateUtils.dateOnly(DateTime.now()),
+      DateUtils.dateOnly(DateTime.now()).add(1.days),
     );
   }
 
@@ -752,12 +739,13 @@ num calculateCashUntilPayday(num income, num spent, num scheduled) =>
 
 List<num> dailyExpenseTotals(
   Map<DateTime, List<String>> events,
-  DateTime month,
+  DateTime start,
+  DateTime end,
 ) {
-  final totals = List<num>.filled(dayInMonth(month), 0);
+  final totals = List<num>.filled(end.difference(start).inDays, 0);
   events.forEach((date, amounts) {
-    if (date.year != month.year || date.month != month.month) return;
-    totals[date.day - 1] = amounts.fold<num>(
+    if (date.isBefore(start) || !date.isBefore(end)) return;
+    totals[date.difference(start).inDays] = amounts.fold<num>(
       0,
       (sum, amount) => sum + (num.tryParse(amount) ?? 0),
     );
@@ -855,8 +843,9 @@ DateTime? recurringDateInMonth(
 
 Map<String, num> calculateBudgetSuggestions(
   List<SupaExpense> expenses,
-  DateTime targetMonth,
-) {
+  DateTime targetMonth, {
+  int startDay = 1,
+}) {
   final months = List.generate(
     3,
     (index) => DateTime(targetMonth.year, targetMonth.month - 3 + index, 1),
@@ -866,8 +855,9 @@ Map<String, num> calculateBudgetSuggestions(
   for (final expense in expenses) {
     final date = DateTime.tryParse(expense.date ?? '');
     if (date == null || (expense.amount ?? 0) <= 0) continue;
+    final label = expensePeriodForDate(date, startDay).end.subtract(1.days);
     final monthIndex = months.indexWhere(
-      (month) => month.year == date.year && month.month == date.month,
+      (month) => month.year == label.year && month.month == label.month,
     );
     if (monthIndex == -1) continue;
     final code = expense.resolvedCategory.code;

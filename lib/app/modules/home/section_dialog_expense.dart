@@ -1341,12 +1341,12 @@ mixin DialogExpense {
     await _controller.getExpense();
     await _controller.loadRecentExpenses();
     await _controller.loadBudgetSuggestions();
-    await _controller.onCalenderRefreshEvent(
-      period: _controller.focusedDay.value.toStringEx(format: yM),
-    );
+    await _controller.onCalenderRefreshEvent();
     await _controller.getCount1Month(_controller.focusedDay.value);
+    final period = _controller.focusedPeriod;
     _controller.rpcSpenderDay.value = await _repo.rpcGetSpenderDay(
-      _controller.focusedDay.value,
+      period.start,
+      period.end,
     );
     await callback?.call();
     // await HelperToast.warn('Data ${expense.note} Deleted');
@@ -1457,14 +1457,14 @@ mixin DialogExpense {
       await _controller.loadRecentExpenses();
       await _controller.loadBudgetSuggestions();
       await _controller.getCount1Month(_controller.focusedDay.value);
+      final period = _controller.focusedPeriod;
       _controller.rpcSpenderDay.value = await _repo.rpcGetSpenderDay(
-        _controller.focusedDay.value,
+        period.start,
+        period.end,
       );
       await customCallback?.call();
       // await HelperToast.info('Successfully ${expense != null ? 'Edit' : 'Added'} $tfNote');
-      await _controller.onCalenderRefreshEvent(
-        period: _controller.focusedDay.value.toStringEx(format: yM),
-      );
+      await _controller.onCalenderRefreshEvent();
     } catch (e) {
       logE('e: $e');
       await HelperErrorLog.record(

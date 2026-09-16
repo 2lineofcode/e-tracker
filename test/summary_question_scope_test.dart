@@ -159,6 +159,19 @@ void main() {
     );
     expect(
       AgentController.currentPeriodOverviewArguments(
+        'kategori paling boros di dashboard periode ini',
+        DateTime(2026, 7),
+        allYear: false,
+        startDay: 28,
+      ),
+      {
+        'data_type': 'expenses',
+        'start_date': '2026-06-28',
+        'end_date': '2026-07-27',
+      },
+    );
+    expect(
+      AgentController.currentPeriodOverviewArguments(
         'budget periode ini masih aman?',
         DateTime(2026, 7),
         allYear: false,
@@ -520,6 +533,16 @@ void main() {
       ),
       0,
     );
+    expect(
+      SummaryController.remainingDaysForPeriod(
+        year: 2026,
+        month: 7,
+        allYear: false,
+        startDay: 28,
+        now: DateTime(2026, 7, 10),
+      ),
+      18,
+    );
   });
 
   test('finds month totals in sparse unordered data', () {
@@ -589,6 +612,22 @@ void main() {
     );
     expect(
       AgentController.expenseComparisonArguments(
+        'bandingin pengeluaran periode ini dengan periode sebelumnya',
+        DateTime(2026, 9),
+        allYear: false,
+        startDay: 28,
+        now: DateTime(2026, 9, 10),
+      ),
+      {
+        'data_type': 'expenses',
+        'start_date': '2026-07-28',
+        'previous_end_date': '2026-08-10',
+        'current_start_date': '2026-08-28',
+        'end_date': '2026-09-27',
+      },
+    );
+    expect(
+      AgentController.expenseComparisonArguments(
         'bandingin pengeluaran tahun ini dengan tahun sebelumnya',
         DateTime(2026),
         allYear: true,
@@ -620,6 +659,22 @@ void main() {
     expect(
       AgentController.fullMonthSpan('2026-12-01', '2027-02-28'),
       3,
+    );
+    expect(
+      AgentController.fullMonthSpan(
+        '2026-06-28',
+        '2026-07-27',
+        startDay: 28,
+      ),
+      1,
+    );
+    expect(
+      AgentController.fullMonthSpan(
+        '2025-12-28',
+        '2026-12-27',
+        startDay: 28,
+      ),
+      12,
     );
     expect(
       AgentController.fullMonthSpan('2026-01-02', '2026-01-31'),
