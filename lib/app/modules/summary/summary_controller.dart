@@ -71,6 +71,7 @@ class SummaryController extends GetxController with StateMixin {
 
   String get selectedPeriodLabel {
     final period = selectedPeriod;
+    if (calendarStartDay == 1) return period.start.toStringEx(format: isShowAllYear.isTrue ? 'y' : 'MMM y');
     return '${period.start.toStringEx(format: 'd MMM')} – ${period.end.subtract(1.days).toStringEx(format: 'd MMM y')}';
   }
 
@@ -165,14 +166,19 @@ class SummaryController extends GetxController with StateMixin {
         _selectedYear - 1,
         calendarStartDay,
       );
-      return '${previous.start.toStringEx(format: 'd MMM y')} – ${previous.end.subtract(1.days).toStringEx(format: 'd MMM y')}${_isCurrentSelectedYear ? ' (durasi berjalan sama)' : ''}';
+      final label = calendarStartDay == 1
+          ? previous.start.toStringEx(format: 'y')
+          : '${previous.start.toStringEx(format: 'd MMM y')} – ${previous.end.subtract(1.days).toStringEx(format: 'd MMM y')}';
+      return '$label${_isCurrentSelectedYear ? ' (durasi berjalan sama)' : ''}';
     }
     final previous = expensePeriodForMonth(
       _selectedYear,
       _selectedMonth - 1,
       calendarStartDay,
     );
-    final label = '${previous.start.toStringEx(format: 'd MMM')} – ${previous.end.subtract(1.days).toStringEx(format: 'd MMM y')}';
+    final label = calendarStartDay == 1
+        ? previous.start.toStringEx(format: 'MMM y')
+        : '${previous.start.toStringEx(format: 'd MMM')} – ${previous.end.subtract(1.days).toStringEx(format: 'd MMM y')}';
     return '$label${isCurrentSelectedMonth ? ' (durasi berjalan sama)' : ''}';
   }
 

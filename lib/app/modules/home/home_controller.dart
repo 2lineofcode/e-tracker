@@ -342,6 +342,7 @@ class HomeController extends GetxController with StateMixin {
 
   String get focusedPeriodLabel {
     final period = focusedPeriod;
+    if (_calendarStartDay == 1) return period.start.toStringEx(format: 'MMM y');
     return '${period.start.toStringEx(format: 'd MMM')} – ${period.end.subtract(1.days).toStringEx(format: 'd MMM y')}';
   }
 

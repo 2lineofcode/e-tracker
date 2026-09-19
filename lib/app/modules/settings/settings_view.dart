@@ -115,6 +115,7 @@ class SettingsView extends GetView<SettingsController> {
   }
 
   Widget footerContent() {
+    const buildDate = String.fromEnvironment('BUILD_DATE');
     return HStack([
       if (Get.context!.isMobile) ...[
         IconButton(
@@ -127,7 +128,7 @@ class SettingsView extends GetView<SettingsController> {
         () {
           switch (controller.menuSelected.value) {
             case SectionMenu.APP_CONFIG:
-              return 'v${controller.appInfo['version']} (${controller.appInfo['buildNumber']})'
+              return 'v${controller.appInfo['version']} (${controller.appInfo['buildNumber']})${buildDate.isNotEmpty ? ' · $buildDate' : ''}'
                   .text
                   .size(11)
                   .color(AppColor.neutral)

@@ -555,6 +555,18 @@ class HomeView extends GetView<HomeController> {
                 ).pOnly(bottom: 12),
 
                 // :7:
+                buildTools(
+                  title: 'Alat',
+                  icon: Icon(
+                    UIconsPro.solidRounded.box,
+                    size: 14,
+                    color: Color.fromARGB(255, 171, 160, 243),
+                  ),
+                  count: 'Buka',
+                  ontap: () => Get.toNamed(Routes.TOOLS),
+                ).pOnly(bottom: 12),
+
+                // :666:
                 Obx(
                   () =>
                       buildTools(

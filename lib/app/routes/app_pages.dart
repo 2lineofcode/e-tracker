@@ -16,6 +16,8 @@ import '../modules/sql_editor/sql_editor_binding.dart';
 import '../modules/sql_editor/sql_editor_view.dart';
 import '../modules/summary/summary_binding.dart';
 import '../modules/summary/summary_view.dart';
+import '../modules/tools/tools_binding.dart';
+import '../modules/tools/tools_view.dart';
 import 'app_middleware.dart';
 
 part 'app_routes.dart';
@@ -82,6 +84,11 @@ class AppPages {
       page: () => const NotesView(),
       binding: NotesBinding(),
       middlewares: [AppMiddleware()],
+    ),
+    GetPage(
+      name: Routes.TOOLS,
+      page: () => const ToolsView(),
+      binding: ToolsBinding(),
     ),
   ];
 }

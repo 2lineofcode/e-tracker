@@ -11,4 +11,5 @@ abstract class Routes {
   static const SQL_EDITOR = '/sqleditor';
   static const CALCP = '/calcp';
   static const NOTES = '/notes';
+  static const TOOLS = '/tools';
 }

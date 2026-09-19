@@ -29,11 +29,11 @@ dart run enven
 if [ "$(uname)" == "Darwin" ]; then
     echo "=== macOS ==="
     # build for macos
-    flutter build macos --release --no-tree-shake-icons --build-name="$base_version" --build-number="$git_rev"
+    flutter build macos --release --no-tree-shake-icons --build-name="$base_version" --build-number="$git_rev" --dart-define="BUILD_DATE=$publish_date"
 
     # build web (optimized for Safari/iOS)
     echo "🌐 Building Flutter Web (CanvasKit renderer)..."
-    FLUTTER_WEB_RENDERER=canvaskit flutter build web --release --no-tree-shake-icons --base-href "/" --build-name="$base_version" --build-number="$git_rev"
+    FLUTTER_WEB_RENDERER=canvaskit flutter build web --release --no-tree-shake-icons --base-href "/" --build-name="$base_version" --build-number="$git_rev" --dart-define="BUILD_DATE=$publish_date"
 
     echo "🚀 Deploying to Firebase..."
     firebase deploy --only hosting --project e-tr4ck3r
