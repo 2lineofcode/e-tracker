@@ -2,9 +2,9 @@ import 'package:ex_kit/ex.dart';
 
 import '../../core/app_api.dart';
 import '../../core/const.dart';
+import '../../helpers/helper_expense_query.dart';
 import '../../models/rpc_sum_all_month_entity.dart';
 import '../../models/rpc_sum_note_times_entity.dart';
-import '../../models/supa_category_entity.dart';
 import '../../models/supa_error_log_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../../models/supa_notes_entity.dart';
@@ -91,60 +91,31 @@ class SummaryRepository {
   }) async {
     if (currentUserId == null) return [];
 
-    const pageSize = 1000;
-    final expenses = <SupaExpense>[];
     final keywords = query == null ? null : expenseSearchKeywords(query);
     if (query != null && (keywords == null || keywords.isEmpty)) return [];
-    var offset = 0;
-
-    while (true) {
-      var request = db
-          .from('expense')
-          .select()
-          .eq('user_id', currentUserId!);
-      if (startDate != null) request = request.gte('date', startDate);
-      if (endDate != null) request = request.lte('date', endDate);
-      for (final keyword in keywords ?? <String>[]) {
-        request = request.or(
-          'note.ilike.%$keyword%,detail.ilike.%$keyword%,category_name.ilike.%$keyword%',
-        );
-      }
-
-      final response = await request
-          .order('date')
-          .order('id')
-          .range(offset, offset + pageSize - 1)
-          .withConverter<List<SupaExpense>>(
-            (data) => data.map((e) => SupaExpense.fromJson(e)).toList(),
-          );
-      logD(
-        'Agent expense page loaded: offset=$offset, rows=${response.length}',
+    var request = db.from('expense').select().eq('user_id', currentUserId!);
+    if (startDate != null) request = request.gte('date', startDate);
+    if (endDate != null) request = request.lte('date', endDate);
+    for (final keyword in keywords ?? <String>[]) {
+      request = request.or(
+        'note.ilike.%$keyword%,detail.ilike.%$keyword%,category_name.ilike.%$keyword%',
       );
-      expenses.addAll(response);
-      if (response.length < pageSize) return expenses;
-      offset += response.length;
     }
+    return loadAllExpenses(request.order('date'));
   }
 
   Future<List<SupaExpense>> getExpenses(DateTime start, DateTime end) async {
     if (currentUserId == null) return [];
     final response =
-        await db //
+        await loadAllExpenses(db //
             .from('expense')
             // .select()
             .select('date, amount, category_name, note')
             .eq('user_id', currentUserId!)
             .gte('date', start.toStringEx(format: yMd))
             .lt('date', end.toStringEx(format: yMd))
-            .order('date')
-            .withConverter<List<SupaExpense>>((data) {
-              return (data).map((e) => SupaExpense.fromJson(e)).toList();
-            });
+            .order('date'));
     return response;
-  }
-
-  Future<List<ExpenseCategory>> getCategory() async {
-    return expenseCategoryList;
   }
 
   Future<List<SupaUserProfile>> getUserProfile() async {

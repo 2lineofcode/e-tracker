@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:postgres/postgres.dart';
 import 'package:re_editor/re_editor.dart';
@@ -134,9 +134,18 @@ class SqlEditorController extends GetxController {
       return;
     }
 
+    if (kIsWeb) {
+      errorMessage.value = 'SQL Editor tersedia di aplikasi desktop.';
+      return;
+    }
     isRunning.value = true;
     errorMessage.value = null;
     try {
+      if (!_repository.isConfigured) {
+        final connectionString = await _requestConnectionString();
+        if (connectionString == null || connectionString.trim().isEmpty) return;
+        _repository.configure(connectionString);
+      }
       final execution = await _repository.run(sql);
       result.value = execution;
       lastRunAt.value = DateTime.now();
@@ -158,6 +167,32 @@ class SqlEditorController extends GetxController {
       }
     } finally {
       isRunning.value = false;
+    }
+  }
+
+  Future<String?> _requestConnectionString() async {
+    final input = TextEditingController();
+    try {
+      return await showDialog<String>(
+        context: Get.context!,
+        builder: (context) => AlertDialog(
+          title: const Text('Koneksi database'),
+          content: TextField(
+            controller: input,
+            obscureText: true,
+            autocorrect: false,
+            enableSuggestions: false,
+            decoration: const InputDecoration(labelText: 'Connection string'),
+            onSubmitted: (value) => Navigator.pop(context, value),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Batal')),
+            FilledButton(onPressed: () => Navigator.pop(context, input.text), child: const Text('Hubungkan')),
+          ],
+        ),
+      );
+    } finally {
+      WidgetsBinding.instance.addPostFrameCallback((_) => input.dispose());
     }
   }
 

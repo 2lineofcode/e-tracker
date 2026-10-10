@@ -4,25 +4,25 @@ import 'package:currency_text_input_formatter/currency_text_input_formatter.dart
 import 'package:ex_kit/ex.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_simple_calculator/flutter_simple_calculator.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:overlayment/overlayment.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uicons_pro/uicons_pro.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 import 'package:uuid/v4.dart';
 
 import '../../core/app_api.dart';
 import '../../core/app_color.dart';
-import '../../core/app_setting.dart';
 import '../../core/const.dart';
+import '../../helpers/helper_ai_expense.dart';
+import '../../helpers/helper_expense_image.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
+import '../widgets/widget_expense_image_preview.dart';
 import '../widgets/widget_image_no_cache_view.dart';
 import 'home_controller.dart';
 import 'home_repository.dart';
@@ -42,51 +42,24 @@ import 'home_repository.dart';
 mixin DialogExpense {
   static const _expenseImageBucket = 'expense-images';
 
-  static Future<String?> _uploadExpenseImage({
-    required String expenseId,
-    required Rx<Uint8List?> previewBytes,
-  }) async {
+  static Future<Uint8List?> _pickExpenseImage() async {
     try {
-      final file = await FilePicker.pickFile(
-        type: FileType.image,
-      );
+      final file = await FilePicker.pickFile(type: FileType.image);
       if (file == null) return null;
-
       final bytes = await compressImage(await file.readAsBytes());
       if (bytes.length > 5 * 1024 * 1024) {
-        await HelperToast.error('Maks. 5 MB');
-        return null;
+        throw FormatException('Maks. 5 MB');
       }
-      final fileName =
-          '${db.auth.currentSession?.user.id ?? currentUserId}/$expenseId.jpg';
-
-      await db.storage
-          .from(_expenseImageBucket)
-          .uploadBinary(
-            fileName,
-            bytes,
-            fileOptions: FileOptions(
-              upsert: true,
-              cacheControl: '1',
-              contentType: 'image/jpeg',
-            ),
-          );
-
-      previewBytes.value = bytes;
-      return fileName;
+      return bytes;
     } catch (e) {
-      if (e is FormatException) {
-        await HelperToast.error(e.message);
-      } else if (e is StorageException) {
-        await HelperToast.error('${e.message}\nMaks. 5 MB');
-      } else {
-        await HelperErrorLog.record(
-          page: 'section_dialog_input',
-          action: '_uploadExpenseImage',
-          stack: e.toString(),
-        );
-        await HelperToast.error('Gagal mengunggah gambar');
-      }
+      await HelperErrorLog.record(
+        page: 'section_dialog_input',
+        action: '_pickExpenseImage',
+        stack: e.toString(),
+      );
+      await HelperToast.error(
+        e is FormatException ? e.message : 'Gagal membaca gambar',
+      );
       return null;
     }
   }
@@ -110,75 +83,21 @@ mixin DialogExpense {
         .join('/');
   }
 
-  static Future<void> _deleteExpenseImagesFromStorage(
-    List<String> imageUrls,
-  ) async {
-    final paths = imageUrls
-        .map(_expenseImagePath)
-        .whereType<String>()
-        .toSet()
-        .toList();
-    if (paths.isEmpty) return;
-
-    try {
-      await db.storage.from(_expenseImageBucket).remove(paths);
-    } catch (e) {
-      await HelperErrorLog.record(
-        page: 'section_dialog_input',
-        action: '_deleteExpenseImagesFromStorage',
-        stack: e.toString(),
-      );
-      await HelperToast.warn('Pengeluaran tersimpan, tapi gambar lama gagal dihapus');
-    }
-  }
-
   static void _openExpenseImagePreview({
     required String imageUrl,
     required Uint8List? previewBytes,
   }) async {
-    if (imageUrl.isNotEmptyAndNotNull) {
-      final path = _expenseImagePath(imageUrl);
-      if (path != null) {
-        final signedUrl = await db.storage
-            .from(_expenseImageBucket)
-            .createSignedUrl(path, 300);
-        await launchUrlString(signedUrl);
-      }
-      return;
-    }
-
-    if (previewBytes == null) return;
-
-    await showDialog(
-      context: Get.context!,
-      barrierColor: Colors.black87,
-      builder: (_) => Dialog.fullscreen(
-        backgroundColor: Colors.transparent,
-        child: Stack(
-          children: [
-            Center(
-              child: InteractiveViewer(
-                minScale: 0.8,
-                maxScale: 4,
-                child: Image.memory(previewBytes, fit: BoxFit.contain),
-              ),
-            ),
-            Positioned(
-              top: 16,
-              right: 16,
-              child: IconButton(
-                icon: Icon(Icons.close, color: Vx.white, size: 24),
-                onPressed: () => Get.back(),
-              ),
-            ),
-          ],
-        ),
-      ),
+    final path = _expenseImagePath(imageUrl);
+    if (previewBytes == null && path == null) return;
+    await ExpenseImagePreview.show(
+      Get.context!,
+      bytes: previewBytes,
+      loadImage: path == null ? null : () => db.storage.from(_expenseImageBucket).download(path),
     );
   }
 
-  static Widget _expenseImagePicker({
-    required SupaExpense expense,
+  @visibleForTesting
+  static Widget expenseImagePicker({
     required RxString imageUrl,
     required Rx<Uint8List?> previewBytes,
     required RxList<String> imageUrlsToDelete,
@@ -196,12 +115,13 @@ mixin DialogExpense {
         if (hasImage) ...[
           ClipRRect(
                 borderRadius: BorderRadius.circular(6),
-                child: previewBytes.value != null
+                child: Stack(children: [
+                  previewBytes.value != null
                     ? Image.memory(
                         previewBytes.value!,
                         width: double.infinity,
                         height: 120,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                       )
                     : FutureBuilder<String>(
                         future: db.storage
@@ -212,8 +132,19 @@ mixin DialogExpense {
                           width: double.infinity,
                           height: 120,
                           radius: 6,
+                          boxFit: BoxFit.contain,
                         ),
                       ),
+                  Positioned(
+                    right: 8,
+                    bottom: 8,
+                    child: IgnorePointer(child: Container(
+                      padding: EdgeInsets.all(6),
+                      decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(6)),
+                      child: Icon(Icons.open_in_full, size: 16, color: Colors.white),
+                    )),
+                  ),
+                ]),
               )
               .onInkTap(
                 () => _openExpenseImagePreview(
@@ -228,13 +159,11 @@ mixin DialogExpense {
             height: 32,
             onPressed: () async {
               final previousImageUrl = imageUrl.value;
-              final uploadedUrl = await _uploadExpenseImage(
-                expenseId: expense.id ?? UuidV4().generate(),
-                previewBytes: previewBytes,
-              );
-              if (uploadedUrl.isNotEmptyAndNotNull) {
+              final bytes = await _pickExpenseImage();
+              if (bytes != null) {
                 queueDelete(previousImageUrl);
-                imageUrl.value = uploadedUrl!;
+                imageUrl.value = '';
+                previewBytes.value = bytes;
               }
             },
             child: HStack([
@@ -633,6 +562,7 @@ mixin DialogExpense {
                     expense: expense,
                     tfDate: _tfDate.text,
                     imageUrl: _imageUrl.value,
+                    imageBytes: _imagePreview.value,
                     imageUrlsToDelete: _imageUrlsToDelete.toList(),
                     customCallback: customCallback,
                   ),
@@ -642,8 +572,7 @@ mixin DialogExpense {
           ),
 
           if (expense != null) ...[
-            _expenseImagePicker(
-              expense: expense,
+            expenseImagePicker(
               imageUrl: _imageUrl,
               previewBytes: _imagePreview,
               imageUrlsToDelete: _imageUrlsToDelete,
@@ -682,6 +611,7 @@ mixin DialogExpense {
                     expense: expense,
                     tfDate: _tfDate.text,
                     imageUrl: _imageUrl.value,
+                    imageBytes: _imagePreview.value,
                     imageUrlsToDelete: _imageUrlsToDelete.toList(),
                     customCallback: customCallback,
                   );
@@ -927,8 +857,7 @@ mixin DialogExpense {
               ),
 
               if (expense != null) ...[
-                _expenseImagePicker(
-                  expense: expense,
+                expenseImagePicker(
                   imageUrl: _imageUrl,
                   previewBytes: _imagePreview,
                   imageUrlsToDelete: _imageUrlsToDelete,
@@ -969,6 +898,7 @@ mixin DialogExpense {
                     expense: expense,
                     tfDate: _tfDate.text,
                     imageUrl: _imageUrl.value,
+                    imageBytes: _imagePreview.value,
                     imageUrlsToDelete: _imageUrlsToDelete.toList(),
                     customCallback: customCallback,
                   );
@@ -1222,36 +1152,9 @@ mixin DialogExpense {
               .toList(),
         },
       );
-      if (response.data is! Map) {
-        throw FormatException('Respons scan struk tidak valid');
-      }
-      final payload = Map<String, dynamic>.from(response.data as Map);
-      final choices = payload['choices'];
-      if (choices is! List || choices.isEmpty) {
-        throw FormatException('Respons scan struk tidak valid');
-      }
-      final choice = choices.first;
-      if (choice is! Map || choice['message'] is! Map) {
-        throw FormatException('Respons scan struk tidak valid');
-      }
-      final content = (choice['message'] as Map)['content'];
-      if (content is! String) {
-        throw FormatException('Respons scan struk tidak valid');
-      }
-      final receipt = jsonDecode(content) as Map<String, dynamic>;
-      final amount = receipt['amount'].toString().moneyUnformat() ?? 0;
-      final date = DateTime.tryParse(receipt['date']?.toString() ?? '') == null
-          ? DateTime.now().toStringEx(format: yMd)
-          : receipt['date'].toString();
-
-      draft = SupaExpense(
-        note: receipt['note']?.toString() ?? '',
-        detail: receipt['detail']?.toString() ?? '',
-        categoryName: resolveExpenseCategory(
-          receipt['category']?.toString(),
-        ).code,
-        amount: amount,
-        date: date,
+      draft = parseAIExpenseResponse(
+        response.data,
+        controller.categoryList.map((category) => category.code).toList(),
       );
     } catch (e) {
       await HelperErrorLog.record(
@@ -1277,54 +1180,38 @@ mixin DialogExpense {
 
     _controller.footerStatus.value = 'Lagi diproses...';
 
-    groq.startChat();
-    groq.setCustomInstructionsWith('''
-      You are an expert financial assistant. Your task is to analyze the user's text and extract transaction details.
-      Interpret Indonesian currency shortcuts: 'k' or 'rb' means thousands (x1000), 'M' or 'jt' means millions (x1,000,000).
-      You must pick a category value that aligns with the transaction type using the provided list.
-      here the category list: ${_controller.categoryList.map((e) => e.code).join(', ')}
-
-      `note` TitleCase format is required, simplify the detail. better use indonesia language
-      `detail` if user put much detail, put it, but if small detail keep empty string.
-      `category` is required.
-      `amount` is required.
-      `date` is required.
-
-      Return your response ONLY as a single, minified JSON object with the following structure. Do not add any other text or explanation.
-      {
-        "note": "string",             // string
-        "detail": "string",           // string
-        "category": "category_value", // string
-        "amount": "amount_value",     // string
-        "date": "YYYY-MM-DD"          // string
-      }
-    ''');
-
-    // If the user does not specify a date, assume it is the current date.
-    // here the category list: ${_controller.categoryList.map((e) => e.code).join(', ')}
-
-    final response = await groq.sendMessage('''
-      Current date: ${DateTime.now().toStringEx(format: yMd)}
-      date selected is: ${_controller.focusedDay.value.toStringEx(format: yMd)}
-      If no category fits, use "expense:unknown"
-      Analyze the following text:
-      $userText
-    ''');
-
-    final json = jsonDecode(response.choices.first.message.content);
-    logD('json -> $json');
-    _controller.footerStatus.value = 'Lagi disimpan...';
-    await _submitExpense(
-      json['note'] as String,
-      json['detail'] as String,
-      json['category'] as String,
-      json['amount'] as String,
-      tfDate: json['date'] as String,
-    ).catchError((e) async {
-      _controller.footerStatus.value = 'Gagal: ${e.toString()}';
-      await HelperToast.error(e.toString());
-    });
-    _controller.footerStatus.value = '';
+    try {
+      final response = await db.functions.invoke(
+        'agent-proxy',
+        body: {
+          'action': 'expense_parse',
+          'text': userText,
+          'selected_date': _controller.focusedDay.value.toStringEx(format: yMd),
+          'current_date': DateTime.now().toStringEx(format: yMd),
+          'category_codes': _controller.categoryList
+              .map((category) => category.code)
+              .toList(),
+        },
+      );
+      final expense = parseAIExpenseResponse(
+        response.data,
+        _controller.categoryList.map((category) => category.code).toList(),
+      );
+      _controller.footerStatus.value = 'Lagi disimpan...';
+      await _submitExpense(
+        expense.note!,
+        expense.detail,
+        expense.categoryName!,
+        expense.amount!.moneyFormat(),
+        tfDate: expense.date,
+      );
+    } catch (e) {
+      await HelperToast.error(
+        e is FormatException ? e.message : 'Pengeluaran gagal diproses',
+      );
+    } finally {
+      _controller.footerStatus.value = '';
+    }
   }
 
   // ------------------------------------------------------------------------
@@ -1363,6 +1250,7 @@ mixin DialogExpense {
     SupaExpense? expense,
     String? tfDate,
     String? imageUrl,
+    Uint8List? imageBytes,
     List<String> imageUrlsToDelete = const [],
     Function? customCallback,
   }) async {
@@ -1414,6 +1302,7 @@ mixin DialogExpense {
           await _persistExpense(
             newExpense,
             isEdit: expense != null,
+            imageBytes: imageBytes,
             imageUrlsToDelete: imageUrlsToDelete,
             customCallback: customCallback,
           );
@@ -1425,6 +1314,7 @@ mixin DialogExpense {
     await _persistExpense(
       newExpense,
       isEdit: expense != null,
+      imageBytes: imageBytes,
       imageUrlsToDelete: imageUrlsToDelete,
       customCallback: customCallback,
     );
@@ -1433,20 +1323,29 @@ mixin DialogExpense {
   static Future<void> _persistExpense(
     SupaExpense newExpense, {
     required bool isEdit,
+    Uint8List? imageBytes,
     List<String> imageUrlsToDelete = const [],
     Function? customCallback,
   }) async {
     final _controller = Get.find<HomeController>();
     final _repo = Get.find<HomeRepository>();
 
-    /// process data
     try {
-      /// insert to db
-      isEdit
-          ? await _repo.editExpense(newExpense)
-          : await _repo.addExpense(newExpense);
-
-      await _deleteExpenseImagesFromStorage(imageUrlsToDelete);
+      final cleanupError = await persistExpenseWithImage(
+        db,
+        newExpense,
+        imageBytes: imageBytes,
+        oldImagePaths: imageUrlsToDelete.map(_expenseImagePath).whereType<String>().toList(),
+        writeExpense: isEdit ? _repo.editExpense : _repo.addExpense,
+      );
+      if (cleanupError != null) {
+        await HelperErrorLog.record(
+          page: 'section_dialog_input',
+          action: 'persistExpenseWithImage',
+          stack: cleanupError.toString(),
+        );
+        await HelperToast.warn('Pengeluaran tersimpan, tapi gambar lama gagal dihapus');
+      }
 
       /// refresh data after insert
       await _controller.getExpense(

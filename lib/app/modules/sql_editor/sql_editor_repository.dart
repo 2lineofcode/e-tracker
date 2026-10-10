@@ -22,14 +22,15 @@ class SqlExecutionResult {
 class SqlEditorRepository {
   SqlEditorRepository({
     String? connectionString,
-  }) : _connectionString = (connectionString ?? _defaultConnectionString).trim();
+  }) : _connectionString = (connectionString ?? '').trim();
 
-  final String _connectionString;
+  String _connectionString;
 
-  static const String _defaultConnectionString = String.fromEnvironment(
-    'SQL_EDITOR_DB_URL',
-    defaultValue: 'postgres://postgres.nytddmoffawejkpzggzr:AdityaPratama@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require',
-  );
+  bool get isConfigured => _connectionString.isNotEmpty;
+
+  void configure(String connectionString) {
+    _connectionString = connectionString.trim();
+  }
 
   Future<SqlExecutionResult> run(String sql) async {
     final normalized = sql.trim();
@@ -38,12 +39,18 @@ class SqlEditorRepository {
     }
     if (_connectionString.isEmpty) {
       throw StateError(
-        'Connection string belum diatur. Isi SQL_EDITOR_DB_URL saat build.',
+        'Masukkan connection string untuk sesi ini.',
       );
     }
 
     final stopwatch = Stopwatch()..start();
-    final connection = await _openConnection();
+    final Connection connection;
+    try {
+      connection = await _openConnection();
+    } catch (_) {
+      _connectionString = '';
+      rethrow;
+    }
     try {
       final result = await connection.execute(normalized);
       stopwatch.stop();

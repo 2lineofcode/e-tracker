@@ -76,6 +76,7 @@ class SupaRecurringExpense {
   DateTime nextRun({DateTime? from}) {
     final now = from ?? DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
+    final lastRun = DateTime.tryParse(lastRunDate ?? '');
 
     for (var offset = 0; offset <= 36; offset++) {
       final cursor = DateTime(now.year, now.month + offset, 1);
@@ -89,7 +90,7 @@ class SupaRecurringExpense {
         cursor.month,
         (dueDay ?? 1).clamp(1, maxDay),
       );
-      if (!candidate.isBefore(today)) return candidate;
+      if (!candidate.isBefore(today) && (lastRun == null || candidate.isAfter(lastRun))) return candidate;
     }
 
     return today;

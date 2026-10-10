@@ -114,6 +114,7 @@ class NotesController extends GetxController {
     if (isSaving.value) return;
 
     final content = _plainText(fleatherController.document);
+    final titleInput = tfTitle.text.trim();
     final title = _resolveTitle();
 
     if (title.isEmpty && content.isEmpty && !_hasEmbed()) {
@@ -141,9 +142,13 @@ class NotesController extends GetxController {
 
       _isApplyingNote = true;
       selectedNote.value = note;
-      tfTitle.text = title;
-      isPreviewMode.value = true;
-      _rememberCurrentState();
+      final unchanged = tfTitle.text.trim() == titleInput &&
+          _encodeDocument() == note.content;
+      if (unchanged) tfTitle.text = title;
+      _savedTitle = title;
+      _savedContent = note.content!;
+      hasDirtyChange.value = tfTitle.text.trim() != _savedTitle || _encodeDocument() != _savedContent;
+      if (!hasDirtyChange.value) isPreviewMode.value = true;
       _isApplyingNote = false;
       await loadNotes();
       _refreshHomeNotes();
@@ -222,6 +227,7 @@ class NotesController extends GetxController {
   }
 
   void enterEditMode() {
+    if (isSaving.value) return;
     isPreviewMode.value = false;
     editorFocusNode.requestFocus();
   }
@@ -255,7 +261,7 @@ class NotesController extends GetxController {
   }
 
   void updateTable(String tableId, List<List<String>> rows) {
-    if (isPreviewMode.value) return;
+    if (isPreviewMode.value || isSaving.value) return;
     _tableEdits[tableId] =
         rows.map((row) => List<String>.from(row)).toList();
     _markDirty();

@@ -86,6 +86,7 @@ class HomeController extends GetxController with StateMixin {
   /// init ~~
   @override
   Future<void> onInit() async {
+    await Get.find<AppSettingService>().setupAppPref();
     selectedDays.add(DateTime.now());
     loadCategories();
     await refreshBudgetsList();

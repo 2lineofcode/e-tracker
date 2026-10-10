@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:ex_kit/ex.dart';
@@ -177,24 +176,3 @@ DateTime _periodDay(int year, int month, int startDay) {
   start: expensePeriodForMonth(year, 1, startDay).start,
   end: expensePeriodForMonth(year, 12, startDay).end,
 );
-
-/// ------------------------------------------------------------------------
-/// ! DEBOUNCE
-/// ------------------------------------------------------------------------
-class DebounceSearch {
-  final Duration duration;
-  Timer? _timer;
-
-  DebounceSearch({required this.duration});
-
-  Future<List<String>> run(FutureOr<List<String>> Function() action) async {
-    if (null != _timer) _timer?.cancel();
-
-    Completer<List<String>> completer = Completer();
-    _timer = Timer(duration, () async {
-      var result = await action();
-      completer.complete(result);
-    });
-    return completer.future;
-  }
-}

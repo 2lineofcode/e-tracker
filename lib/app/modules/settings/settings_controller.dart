@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:ex_kit/ex.dart';
@@ -11,10 +10,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:overlayment/overlayment.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uicons_pro/uicons_pro.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../core/app_api.dart';
@@ -383,104 +380,41 @@ class SettingsController extends GetxController with StateMixin {
     );
   }
 
-  /// flow:
-  /// 1. collect data expense from database
-  /// 2. save to temp directory
-  /// 3. upload to supabase storage -> file temp directory
-  /// 4. delete temp directory
-  /// 5. refresh data backup list
-  /// 6. show notification
-  /// 7. handle error
   Future<void> onUploadBackup() async {
     try {
-      final filePath = await getTemporaryDirectory();
-      final fileName =
-          '${currentUserId}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
-
-      await HelperImportExport.exportToCSV(
-        customPath: filePath.path,
-        customCallback: (file) async {
-          await db.storage
-              .from('backup')
-              .upload(
-                fileName,
-                file,
-                fileOptions: FileOptions(upsert: true, cacheControl: '1'),
-              )
-              .then((response) async {
-                file.deleteSync();
-                await onInit();
-                await HelperToast.success('Backup selesai');
-              })
-              .catchError((e) {
-                HelperErrorLog.record(
-                  page: 'settings',
-                  action: 'onUploadBackup',
-                  stack: e.toString(),
-                );
-                ExAlert.error(message: '${(e as StorageException).message}');
-              });
-        },
+      final bytes = await HelperImportExport.expenseBackupBytes();
+      final fileName = '${currentUserId}_etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
+      await db.storage.from('backup').uploadBinary(
+        fileName,
+        bytes,
+        fileOptions: FileOptions(upsert: true, cacheControl: '1', contentType: 'text/csv'),
       );
+      await onInit();
+      await HelperToast.success('Backup selesai');
     } catch (e) {
-      log('e: $e');
-      await HelperErrorLog.record(
-        page: 'settings',
-        action: 'onUploadBackup',
-        stack: e.toString(),
-      );
+      await HelperErrorLog.record(page: 'settings', action: 'onUploadBackup', stack: e.toString());
       ExAlert.error(message: '$e');
     }
   }
 
-  /// flow:
-  /// 1. download file from supabase storage
-  /// 2. save file to temp directory
-  /// 3. delete all current data [expense]
-  /// 4. apply new data [expense] from supabase storage selected
-  /// 5. delete file temp directory
-  /// 6. show notification
-  /// 7. handle error
   Future<void> onDownloadBackup(FileObject fileObj) async {
-    final filename =
-        '${fileObj.name.replaceAll('${db.auth.currentSession?.user.email}_', '')}';
+    final filename = fileObj.name.replaceAll('${db.auth.currentSession?.user.email}_', '');
     ExAlert.confirm(
       title: 'Pulihkan backup',
       message: 'Data pengeluaran saat ini akan diganti dengan\n"$filename". Lanjut?',
       onYes: () async {
         Get.back();
-        await db.storage
-            .from('backup')
-            .download(fileObj.name)
-            .then((res) async {
-              final filePath = await getTemporaryDirectory();
-              final fileName = '${fileObj.name}';
-              final file = File('${filePath.path}/$fileName');
-
-              await file.writeAsBytes(res);
-              await db.from('expense').delete().match({
-                'user_id': db.auth.currentSession?.user.id ?? '',
-              });
-              await HelperImportExport.importFromCSV(
-                customPath: '${filePath.path}/$fileName',
-                customCallback: () async {
-                  file.deleteSync();
-                  await onInit();
-                  await HelperToast.success(
-                    'Backup "${fileName.replaceAll('${db.auth.currentSession?.user.email}_', '')}" berhasil dipulihkan',
-                  );
-                },
-              );
-            })
-            .catchError((e) {
-              log('e: $e');
-              HelperErrorLog.record(
-                page: 'settings',
-                action: 'onDownloadBackup',
-                stack: e.toString(),
-              );
-              ExAlert.error(message: '$e');
-            });
+        ExLoading.show(child: CupertinoActivityIndicator());
+        try {
+          final bytes = await db.storage.from('backup').download(fileObj.name);
+          await HelperImportExport.restoreExpenseBackup(bytes);
+          await HelperToast.success('Backup "$filename" berhasil dipulihkan');
+        } catch (e) {
+          await HelperErrorLog.record(page: 'settings', action: 'onDownloadBackup', stack: e.toString());
+          ExAlert.error(message: '$e');
+        } finally {
+          ExLoading.dismiss();
+        }
       },
     );
   }
@@ -514,9 +448,31 @@ class SettingsController extends GetxController with StateMixin {
     );
   }
 
+  static ({int eco, int average, int spender}) parseExpenseThresholds(
+    String ecoText,
+    String averageText,
+    String spenderText,
+  ) {
+    final eco = ecoText.moneyUnformat();
+    final average = averageText.moneyUnformat();
+    final spender = spenderText.moneyUnformat();
+    if (eco == null || average == null || spender == null ||
+        eco < 0 || average < 0 || spender < 0 ||
+        eco > 1000000000000000 || average > 1000000000000000 || spender > 1000000000000000) {
+      throw FormatException('Isi semua batas pengeluaran dengan nominal yang valid');
+    }
+    if (average < eco) {
+      throw FormatException('Batas hari biasa harus lebih besar dari hari hemat');
+    }
+    return (eco: eco, average: average, spender: spender);
+  }
+
   Future<void> onSaveConfig() async {
-    if (tfAverage.text.moneyUnformat()! < tfEco.text.moneyUnformat()!) {
-      ExSnackbar.danger('Batas hari biasa harus lebih besar dari hari hemat');
+    final ({int eco, int average, int spender}) thresholds;
+    try {
+      thresholds = parseExpenseThresholds(tfEco.text, tfAverage.text, tfSpender.text);
+    } on FormatException catch (e) {
+      ExSnackbar.danger(e.message);
       return;
     }
 
@@ -532,43 +488,45 @@ class SettingsController extends GetxController with StateMixin {
       paddingSymmetric: Get.context!.isMobile ? 90 : 250,
       child: CupertinoActivityIndicator(),
     );
-    final entity = userProfile.value;
-    entity.username = userProfile.value.fullName
-        ?.replaceAll(' ', '_')
-        .toLowerCase();
-    entity.ecoDay = tfEco.text.moneyUnformat();
-    entity.averageDay = tfAverage.text.moneyUnformat();
-    entity.spenderDay = tfSpender.text.moneyUnformat();
-    await repo.editProfile(entity);
-    await pref.write(kCalendarStartDay, calendarStartDay);
-    await Get.find<AppSettingService>().setupAppPref();
-    if (Get.isRegistered<HomeController>()) {
-      final home = Get.find<HomeController>();
-      await home.onCalenderRefreshEvent();
-      await home.getCount1Month(home.focusedDay.value);
-      await home.loadBudgetSuggestions();
-      final period = home.focusedPeriod;
-      home.rpcSpenderDay.value = await home.repo.rpcGetSpenderDay(
-        period.start,
-        period.end,
+    try {
+      final entity = SupaUserProfile(
+        id: userProfile.value.id,
+        ecoDay: thresholds.eco,
+        averageDay: thresholds.average,
+        spenderDay: thresholds.spender,
       );
+      await repo.editProfile(entity);
+      userProfile.value.ecoDay = entity.ecoDay;
+      userProfile.value.averageDay = entity.averageDay;
+      userProfile.value.spenderDay = entity.spenderDay;
+      userProfile.refresh();
+      await pref.write(kCalendarStartDay, calendarStartDay);
+      await Get.find<AppSettingService>().applyProfilePreferences(entity);
+      if (Get.isRegistered<HomeController>()) {
+        final home = Get.find<HomeController>();
+        await home.onCalenderRefreshEvent();
+        await home.getCount1Month(home.focusedDay.value);
+        await home.loadBudgetSuggestions();
+        final period = home.focusedPeriod;
+        home.rpcSpenderDay.value = await home.repo.rpcGetSpenderDay(
+          period.start,
+          period.end,
+        );
+      }
+      await Get.forceAppUpdate();
+      await HelperToast.success('Pengaturan disimpan');
+    } catch (e) {
+      await HelperToast.error('Pengaturan gagal disimpan');
+      await HelperErrorLog.record(page: 'settings', action: 'onSaveConfig', stack: e.toString());
+    } finally {
+      ExLoading.dismiss();
     }
-    await Get.forceAppUpdate();
-    ExLoading.dismiss();
-    await HelperToast.success('Pengaturan disimpan');
   }
 
   Future<void> onThemeColorChange(int colorValue) async {
     await pref.write(kThemeColor, colorValue);
     selectedThemeColor.value = colorValue;
     await AppTheme.refreshTheme();
-  }
-
-  Future<void> onGoAppPath() async {
-    final appPath = await getApplicationDocumentsDirectory();
-    if (await canLaunchUrl(appPath.uri)) {
-      await launchUrl(appPath.uri);
-    }
   }
 
   Future<void> onLogout() async {

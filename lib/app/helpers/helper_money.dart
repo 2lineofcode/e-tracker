@@ -1,6 +1,5 @@
 import 'package:ex_kit/ex.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:money_formatter/money_formatter.dart';
 
 import '../core/app_color.dart';
@@ -33,27 +32,14 @@ extension MoneyFormatExt on num {
       return '-';
     }
   }
-
-  /// example: 100 -> '100%'
-  String percentageFormat({int decimalDigits = 2}) {
-    var output = '';
-    try {
-      output = NumberFormat.decimalPercentPattern(decimalDigits: decimalDigits).format(this);
-    } catch (_) {
-      try {
-        final x = this;
-        output = '${x * 100}'.substring(0, 3).replaceAll('.', '');
-      } catch (_) {
-        output = '';
-      }
-    }
-    return '${output.replaceAll('.00', '')}';
-  }
 }
 
 extension MoneyUnformatExt on String {
   /// example: 'Rp. 1.000' -> 1000
-  int? moneyUnformat() => replaceAll(RegExp(r'[^0-9]'), '').toInt();
+  int? moneyUnformat() {
+    final value = replaceAll(RegExp(r'[^0-9]'), '').toInt();
+    return value == null ? null : (contains('-') ? -value : value);
+  }
 }
 
 extension ExpenseFlagColorExt on num {
@@ -90,20 +76,6 @@ extension ExpenseFlagColorExt on num {
       return AppColor.orangeLight;
     } else {
       return AppColor.redLight;
-    }
-  }
-
-  Color getFlagColorDark() {
-    final eco = pref.read<num>(kFlagEco) ?? 50000;
-    final average = pref.read<num>(kFlagAverage) ?? 100000;
-
-    if (this == 0) return AppColor.neutral;
-    if (this <= eco) {
-      return AppColor.greenDark;
-    } else if (this <= average) {
-      return AppColor.orangeDark;
-    } else {
-      return AppColor.redDark;
     }
   }
 }

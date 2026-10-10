@@ -336,7 +336,7 @@ class _NoteEditorPanel extends StatelessWidget {
       Obx(
         () => TextField(
           controller: controller.tfTitle,
-          readOnly: controller.isPreviewMode.value,
+          readOnly: controller.isPreviewMode.value || controller.isSaving.value,
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           decoration: InputDecoration(
             border: InputBorder.none,
@@ -349,7 +349,7 @@ class _NoteEditorPanel extends StatelessWidget {
       Obx(() {
         final editorRevision = controller.editorRevision.value;
         return VStack([
-          if (!controller.isPreviewMode.value) _FleatherEditorToolbar(controller: controller).pSymmetric(h: 16).pOnly(bottom: 12),
+          if (!controller.isPreviewMode.value && !controller.isSaving.value) _FleatherEditorToolbar(controller: controller).pSymmetric(h: 16).pOnly(bottom: 12),
           _FleatherNoteEditor(
             key: ValueKey(editorRevision),
             controller: controller,
@@ -499,8 +499,8 @@ class _FleatherNoteEditor extends StatelessWidget {
                 controller: fleatherController,
                 editorKey: controller.editorKey,
                 focusNode: controller.editorFocusNode,
-                readOnly: controller.isPreviewMode.value,
-                showCursor: !controller.isPreviewMode.value,
+                readOnly: controller.isPreviewMode.value || controller.isSaving.value,
+                showCursor: !controller.isPreviewMode.value && !controller.isSaving.value,
                 expands: true,
                 padding: EdgeInsets.symmetric(horizontal: 14, vertical: 16),
                 clipboardManager: NotesMarkdownClipboardManager(
@@ -548,7 +548,7 @@ class _FleatherNoteEditor extends StatelessWidget {
       return _NoteTableWidget(
         key: ValueKey(tableId ?? node.documentOffset),
         tableData: tableData,
-        readOnly: controller.isPreviewMode.value,
+        readOnly: controller.isPreviewMode.value || controller.isSaving.value,
         autofocus: controller.consumeTableFocus(tableId),
         onChanged: tableId == null
             ? (_) {}

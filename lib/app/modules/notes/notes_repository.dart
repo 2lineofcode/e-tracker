@@ -35,12 +35,12 @@ class NotesRepository {
   Future<void> updateNotes(SupaNotes entity) async {
     final userId = _userId;
     entity.userId = userId;
-    final response =
-        await db //
-            .from('notes')
-            .update(entity.toJson())
-            .match({'id': entity.id ?? '', 'user_id': userId});
-    return response;
+    await db
+        .from('notes')
+        .update(entity.toJson())
+        .match({'id': entity.id ?? '', 'user_id': userId})
+        .select('id')
+        .single();
   }
 
   Future<void> deleteNotes(String id) async {

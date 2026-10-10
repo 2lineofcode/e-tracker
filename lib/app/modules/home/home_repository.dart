@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/app_api.dart';
 import '../../core/const.dart';
+import '../../helpers/helper_expense_query.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_assets_entity.dart';
 import '../../models/supa_budgets_entity.dart';
@@ -20,31 +21,25 @@ class HomeRepository {
   // get all list: for calendar painting
   Future<List<SupaExpense>> getExpenseAll(DateTime start, DateTime end) async {
     if (currentUserId == null) return [];
-    return await db
+    return await loadAllExpenses(db
         .from('expense')
         .select('date, amount')
         .eq('user_id', currentUserId!)
         .gte('date', start.toStringEx(format: yMd))
         .lt('date', end.toStringEx(format: yMd))
-        .order('date')
-        .withConverter<List<SupaExpense>>(
-          (data) => data.map((e) => SupaExpense.fromJson(e)).toList(),
-        );
+        .order('date'));
   }
 
   // get list by @date
   Future<List<SupaExpense>> getExpense(String date) async {
     if (currentUserId == null) return [];
     final response =
-        await db //
+        await loadAllExpenses(db //
             .from('expense')
             .select()
             .eq('user_id', currentUserId!)
             .eq('date', date)
-            .order('amount')
-            .withConverter<List<SupaExpense>>((data) {
-              return (data).map((e) => SupaExpense.fromJson(e)).toList();
-            });
+            .order('amount'));
     return response;
   }
 
@@ -78,16 +73,13 @@ class HomeRepository {
       targetMonth.month,
       startDay,
     ).start;
-    return await db
+    return await loadAllExpenses(db
         .from('expense')
         .select('date, amount, category_name')
         .eq('user_id', currentUserId!)
         .gte('date', start.toStringEx(format: yMd))
         .lt('date', end.toStringEx(format: yMd))
-        .order('date')
-        .withConverter<List<SupaExpense>>(
-          (data) => data.map((e) => SupaExpense.fromJson(e)).toList(),
-        );
+        .order('date'));
   }
 
   // find list by @note or @category.name
@@ -118,28 +110,22 @@ class HomeRepository {
 
     if (startDate == null || endDate == null) {
       response =
-          await db //
+          await loadAllExpenses(db //
               .from('expense')
               .select()
               .eq('user_id', currentUserId!)
               .or(filterString)
-              .order('date')
-              .withConverter<List<SupaExpense>>((data) {
-                return (data).map((e) => SupaExpense.fromJson(e)).toList();
-              });
+              .order('date'));
     } else {
       response =
-          await db //
+          await loadAllExpenses(db //
               .from('expense')
               .select()
               .eq('user_id', currentUserId!)
               .or(filterString)
               .gte('date', startDate)
               .lte('date', endDate)
-              .order('date')
-              .withConverter<List<SupaExpense>>((data) {
-                return (data).map((e) => SupaExpense.fromJson(e)).toList();
-              });
+              .order('date'));
     }
     return response;
   }
@@ -159,29 +145,23 @@ class HomeRepository {
             .map((category) => 'category_name.ilike.%${category.code}%')
             .toList();
 
-    return await db
+    return await loadAllExpenses(db
         .from('expense')
         .select()
         .eq('user_id', currentUserId!)
         .or(filters.join(','))
-        .order('date')
-        .withConverter<List<SupaExpense>>((data) {
-          return (data).map((e) => SupaExpense.fromJson(e)).toList();
-        });
+        .order('date'));
   }
 
   Future<List<SupaExpense>> findExpenseText(String text) async {
     if (currentUserId == null || text.isEmpty) return [];
 
-    return await db
+    return await loadAllExpenses(db
         .from('expense')
         .select()
         .eq('user_id', currentUserId!)
         .or('note.ilike.%$text%,detail.ilike.%$text%')
-        .order('date')
-        .withConverter<List<SupaExpense>>((data) {
-          return (data).map((e) => SupaExpense.fromJson(e)).toList();
-        });
+        .order('date'));
   }
 
   Future<List<SupaExpense>> findExpenseByMinimumAmount(
@@ -200,11 +180,8 @@ class HomeRepository {
     if (startDate != null) query = query.gte('date', startDate);
     if (endDate != null) query = query.lte('date', endDate);
 
-    return await query
-        .order('date')
-        .withConverter<List<SupaExpense>>((data) {
-          return (data).map((e) => SupaExpense.fromJson(e)).toList();
-        });
+    return await loadAllExpenses(query
+        .order('date'));
   }
 
   // find list by date
@@ -215,32 +192,26 @@ class HomeRepository {
       final dateA = DateTime.now().subtract(Duration(days: date.toInt()! - 1)).toStringEx(format: yMd);
       final dateB = DateTime.now().toStringEx(format: yMd);
       final response =
-          await db //
+          await loadAllExpenses(db //
               .from('expense')
               .select()
               .eq('user_id', currentUserId!)
               .gte('date', dateA)
               .lte('date', dateB)
-              .order('date')
-              .withConverter<List<SupaExpense>>((data) {
-                return (data).map((e) => SupaExpense.fromJson(e)).toList();
-              });
+              .order('date'));
       return response;
     }
     if (date.length > 11) {
       final dateA = date.substring(0, 10);
       final dateB = date.substring(11);
       final response =
-          await db //
+          await loadAllExpenses(db //
               .from('expense')
               .select()
               .eq('user_id', currentUserId!)
               .gte('date', dateA)
               .lte('date', dateB)
-              .order('date')
-              .withConverter<List<SupaExpense>>((data) {
-                return (data).map((e) => SupaExpense.fromJson(e)).toList();
-              });
+              .order('date'));
       return response;
     }
 
@@ -250,18 +221,13 @@ class HomeRepository {
   // get sum by date range
   Future<int> getExpenseTotal(DateTime start, DateTime end) async {
     if (currentUserId == null) return 0;
-    final response =
-        await db //
-            .from('expense')
-            .select('amount')
-            .eq('user_id', currentUserId!)
-            .gte('date', start.toStringEx(format: yMd))
-            .lt('date', end.toStringEx(format: yMd));
-    num x = 0;
-    for (var element in response) {
-      x += element['amount'] ?? 0;
-    }
-    return x.toInt();
+    final response = await loadAllExpenses(db
+        .from('expense')
+        .select('amount')
+        .eq('user_id', currentUserId!)
+        .gte('date', start.toStringEx(format: yMd))
+        .lt('date', end.toStringEx(format: yMd)));
+    return response.fold<num>(0, (sum, expense) => sum + (expense.amount ?? 0)).toInt();
   }
 
   Future<void> addExpense(SupaExpense entity) async {
@@ -279,12 +245,13 @@ class HomeRepository {
   }
 
   Future<void> editExpense(SupaExpense entity) async {
-    final response =
-        await db //
-            .from('expense')
-            .update(entity.toJson())
-            .match({'id': entity.id ?? ''});
-    return response;
+    if (currentUserId == null) throw StateError('User not authenticated');
+    await db
+        .from('expense')
+        .update(entity.toJson())
+        .match({'id': entity.id ?? '', 'user_id': currentUserId!})
+        .select('id')
+        .single();
   }
 
   Future<void> deleteExpense(String id) async {
@@ -306,15 +273,12 @@ class HomeRepository {
     if (currentUserId == null) return [];
 
     final response =
-        await db //
+        await loadAllExpenses(db //
             .from('expense')
             .select()
             .eq('user_id', currentUserId!)
             .eq('date', date)
-            .eq('amount', amount)
-            .withConverter<List<SupaExpense>>((data) {
-              return (data).map((e) => SupaExpense.fromJson(e)).toList();
-            });
+            .eq('amount', amount));
 
     String normalize(String value) => value.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
     final normalizedNote = normalize(note);
@@ -324,6 +288,33 @@ class HomeRepository {
       final candidate = normalize(expense.note ?? '');
       return candidate == normalizedNote || candidate.contains(normalizedNote) || normalizedNote.contains(candidate);
     }).toList();
+  }
+
+  Future<int> countPotentialDuplicates(List<SupaExpense> expenses) async {
+    if (currentUserId == null || expenses.isEmpty) return 0;
+    final dates = expenses.map((expense) => expense.date!).toList()..sort();
+    final candidates = await loadAllExpenses(db
+        .from('expense')
+        .select('date, amount, note')
+        .eq('user_id', currentUserId!)
+        .gte('date', dates.first)
+        .lte('date', dates.last));
+    return potentialDuplicateCount(expenses, candidates);
+  }
+
+  static int potentialDuplicateCount(List<SupaExpense> expenses, List<SupaExpense> candidates) {
+    String normalize(String value) => value.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
+    final notesByTransaction = <(String?, num?), List<String>>{};
+    for (final candidate in candidates) {
+      notesByTransaction.putIfAbsent((candidate.date, candidate.amount), () => [])
+          .add(normalize(candidate.note ?? ''));
+    }
+    return expenses.where((expense) {
+      final note = normalize(expense.note ?? '');
+      return (notesByTransaction[(expense.date, expense.amount)] ?? []).any(
+        (candidate) => candidate == note || candidate.contains(note) || note.contains(candidate),
+      );
+    }).length;
   }
 
   Future<List<SupaUserProfile>> getUserProfile() async {
@@ -363,16 +354,13 @@ class HomeRepository {
     if (currentUserId == null) return {};
 
     final response =
-        await db //
+        await loadAllExpenses(db //
             .from('expense')
             .select('category_name, amount, date')
             .eq('user_id', currentUserId!)
             .gte('date', start.toStringEx(format: yMd))
             .lt('date', end.toStringEx(format: yMd))
-            .order('date')
-            .withConverter<List<SupaExpense>>(
-              (data) => (data).map((e) => SupaExpense.fromJson(e)).toList(),
-            );
+            .order('date'));
 
     final totals = <String, num>{};
     for (final expense in response) {

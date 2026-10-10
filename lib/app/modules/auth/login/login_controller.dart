@@ -5,13 +5,11 @@ import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/app_api.dart';
 import '../../../helpers/helpers.dart';
 import '../../../routes/app_pages.dart';
-import 'login_repository.dart';
 
 class LoginController extends GetxController {
-  final repo = Get.find<LoginRepository>();
-
   final tfEmail = TextEditingController();
   final tfPassword = TextEditingController();
 
@@ -35,8 +33,8 @@ class LoginController extends GetxController {
       paddingSymmetric: Get.context!.isMobile ? 90 : 250,
       child: CupertinoActivityIndicator(),
     );
-    await repo
-        .login(tfEmail.text, tfPassword.text)
+    await db.auth
+        .signInWithPassword(email: tfEmail.text, password: tfPassword.text)
         .then((response) {
           ExLoading.dismiss();
           Get.offAllNamed(Routes.HOME);

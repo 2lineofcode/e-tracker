@@ -1046,11 +1046,6 @@ For analysis, give one conclusion, the strongest supporting numbers, and one rea
     ).hasMatch(normalized);
   }
 
-  @visibleForTesting
-  static bool looksLikeExpenseDraftList(String message) {
-    return _looksLikeExpenseDraftList(message);
-  }
-
   static bool _looksLikeExpenseDraftList(String message) {
     final normalized = message.toLowerCase();
     if (!RegExp(r'\b(expense|expenses|pengeluaran|transaksi)\b')
@@ -1839,15 +1834,7 @@ $rows$suffix
       (sum, expense) => sum + (expense.amount ?? 0),
     );
     final homeRepo = Get.find<HomeRepository>();
-    var duplicateCount = 0;
-    for (final expense in expenses) {
-      final duplicates = await homeRepo.findPotentialDuplicate(
-        date: expense.date!,
-        note: expense.note!,
-        amount: expense.amount!,
-      );
-      if (duplicates.isNotEmpty) duplicateCount++;
-    }
+    final duplicateCount = await homeRepo.countPotentialDuplicates(expenses);
     final confirmed = await _confirmAction('Tambah pengeluaran?', {
       'Pengeluaran': expenses
           .map(

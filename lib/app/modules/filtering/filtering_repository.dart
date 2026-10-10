@@ -1,4 +1,5 @@
 import '../../core/app_api.dart';
+import '../../helpers/helper_expense_query.dart';
 import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
 
@@ -11,16 +12,13 @@ class FilteringRepository {
   }) async {
     if (currentUserId == null) return [];
 
-    final response = await db
+    final response = await loadAllExpenses(db
         .from('expense')
         .select()
         .eq('user_id', currentUserId!)
         .filter('date', 'gte', startDate)
         .filter('date', 'lte', endDate)
-        .order(orderBy ?? 'amount', ascending: false)
-        .withConverter<List<SupaExpense>>((data) {
-          return (data).map((e) => SupaExpense.fromJson(e)).toList();
-        });
+        .order(orderBy ?? 'amount', ascending: false));
 
     if (categoryCode == '*' || categoryCode == 'All') {
       return response;

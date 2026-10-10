@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:csv/csv.dart' as csv;
 import 'package:ex_kit/ex.dart';
@@ -19,100 +19,36 @@ import '../models/supa_category_entity.dart';
 import '../models/supa_expense_entity.dart';
 import '../modules/home/home_controller.dart';
 import '../modules/settings/settings_controller.dart';
+import 'expense_backup_csv.dart';
+import 'helper_expense_query.dart';
 import 'helpers.dart';
 
 mixin HelperImportExport {
-  /// export to csv
-  static Future<void> exportToCSV({String? customPath, Function(File)? customCallback}) async {
+  static Future<Uint8List> expenseBackupBytes() async {
+    if (currentUserId == null) throw StateError('Kamu belum login');
+    return Uint8List.fromList(utf8.encode(ExpenseBackupCsv.encode(await _safeSelectRows('expense'))));
+  }
+
+  static Future<void> restoreExpenseBackup(Uint8List bytes) async {
+    final userId = currentUserId;
+    if (userId == null) throw StateError('Kamu belum login');
+    final rows = ExpenseBackupCsv.decode(utf8.decode(bytes), userId);
+    await db.rpc('restore_own_expenses', params: {'expense_rows': rows});
+    await __refresh__();
+  }
+
+  static Future<void> exportToCSV() async {
     try {
-      String? path;
-
-      /// get path
-      if (customPath == null) {
-        final abPath = await FilePicker.getDirectoryPath(dialogTitle: 'Pilih folder penyimpanan');
-        path = abPath?.replaceAll('/Volumes/Macintosh HD', '');
-        if (path == null) return;
-      } else {
-        path = customPath;
-      }
-
-      /// get data
-      if (currentUserId == null) {
-        ExSnackbar.danger('Kamu belum login');
-        return;
-      }
-      final rows = await _safeSelectRows('expense');
-      final ex = rows.map((e) => SupaExpense.fromJson(e)).toList()
-        ..sort((a, b) => (b.date ?? '').compareTo(a.date ?? ''));
-
-      final jsonFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.json';
-      final csvFilePath = '$path/etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
-
-      /// Save Json Data in Json File
-      File(jsonFilePath).writeAsStringSync(jsonEncode(ex));
-
-      // read Json Data From Files
-      var jsonContent = File(jsonFilePath).readAsStringSync();
-      final jsonDataFromJsonFile = jsonDecode(jsonContent);
-
-      /// Create CSV
-      List<List<dynamic>> csvData = [];
-
-      /// Header CSV
-      csvData.add([
-        'date',
-        'category_name',
-        'note',
-        'detail',
-        'amount',
-        'created_at',
-      ]);
-
-      // Items CSV
-      for (var data in jsonDataFromJsonFile) {
-        csvData.add([
-          data['date'].toString(),
-          data['category_name'].toString().replaceAll('#${db.auth.currentUser!.email}', ''),
-          data['note'].toString(),
-          data['detail'].toString(),
-          data['amount'].toString(),
-          data['created_at'].toString(),
-        ]);
-      }
-
-      /// delete json file
-      File(jsonFilePath).deleteSync();
-
-      /// export to csv
-      if (customCallback == null) {
-        File(csvFilePath).writeAsStringSync(csv.csv.encode(csvData));
-        ExSnackbar.success(csvFilePath);
-      } else {
-        File(csvFilePath).writeAsStringSync(csv.csv.encode(csvData));
-        customCallback.call(File(csvFilePath));
-      }
+      final name = 'etracker_${DateTime.now().toStringEx(format: 'ddMMMy')}.csv';
+      await _saveExport(name, await expenseBackupBytes());
     } catch (e) {
       ExSnackbar.danger('$e');
     }
   }
 
-  static Future<void> exportFullBackupBundle({String? customPath, Function(File)? customCallback}) async {
+  static Future<void> exportFullBackupBundle() async {
     try {
-      String? path;
-
-      if (customPath == null) {
-        final abPath = await FilePicker.getDirectoryPath(dialogTitle: 'Pilih folder backup');
-        path = abPath?.replaceAll('/Volumes/Macintosh HD', '');
-        if (path == null) return;
-      } else {
-        path = customPath;
-      }
-
-      if (currentUserId == null) {
-        ExSnackbar.danger('Kamu belum login');
-        return;
-      }
-
+      if (currentUserId == null) throw StateError('Kamu belum login');
       final data = <String, dynamic>{
         'meta': {
           'app': 'expense_tracker',
@@ -121,76 +57,49 @@ mixin HelperImportExport {
           'user_id': currentUserId,
         },
         'profiles': await _safeSelectRows('profiles', idColumn: 'id'),
-        'expense': await _safeSelectRows('expense'),
-        'budgets': await _safeSelectRows('budgets'),
-        'assets': await _safeSelectRows('assets'),
-        'asset_snapshots': await _safeSelectRows('asset_snapshots'),
-        'goals': await _safeSelectRows('goals'),
-        'notes': await _safeSelectRows('notes'),
-        'recurring_expenses': await _safeSelectRows('recurring_expenses'),
-        'agent_memory': await _safeSelectRows('agent_memory'),
+        for (final table in ['expense', 'budgets', 'assets', 'asset_snapshots', 'goals', 'notes', 'recurring_expenses', 'agent_memory'])
+          table: await _safeSelectRows(table),
       };
-
-      final filePath = '$path/etracker_full_${DateTime.now().toStringEx(format: 'ddMMMy_HHmm')}.json';
-      final file = File(filePath);
-      file.writeAsStringSync(JsonEncoder.withIndent('  ').convert(data));
-
-      if (customCallback == null) {
-        ExSnackbar.success(filePath);
-      } else {
-        customCallback.call(file);
-      }
+      final name = 'etracker_full_${DateTime.now().toStringEx(format: 'ddMMMy_HHmm')}.json';
+      final bytes = Uint8List.fromList(utf8.encode(JsonEncoder.withIndent('  ').convert(data)));
+      await _saveExport(name, bytes);
     } catch (e) {
       ExSnackbar.danger('$e');
     }
   }
 
+  static Future<void> _saveExport(String name, Uint8List bytes) async {
+    final path = await FilePicker.saveFile(fileName: name, bytes: bytes);
+    if (path != null) ExSnackbar.success(path.toString());
+  }
+
   static Future<List<dynamic>> _safeSelectRows(String table, {String idColumn = 'user_id'}) async {
-    try {
-      if (currentUserId == null) return [];
-      const pageSize = 1000;
-      final rows = <dynamic>[];
-      while (true) {
-        final page = await db
-            .from(table)
-            .select()
-            .eq(idColumn, currentUserId!)
-            .order('id')
-            .range(rows.length, rows.length + pageSize - 1);
-        rows.addAll(page);
-        if (page.length < pageSize) return rows;
-      }
-    } on PostgrestException catch (e) {
-      if (e.code == 'PGRST205') {
-        logW('$table table not found, skipping export');
-        return [];
-      }
-      rethrow;
+    final userId = currentUserId;
+    if (userId == null) throw StateError('Kamu belum login');
+    const pageSize = 1000;
+    final rows = <dynamic>[];
+    while (true) {
+      final page = await db
+          .from(table)
+          .select()
+          .eq(idColumn, userId)
+          .order('id')
+          .range(rows.length, rows.length + pageSize - 1);
+      rows.addAll(page);
+      if (page.length < pageSize) return rows;
     }
   }
 
   /// import from csv
-  static Future<void> importFromCSV({String? customPath, Function()? customCallback}) async {
+  static Future<void> importFromCSV() async {
     try {
       if (currentUserId == null) {
         await HelperToast.warn('Kamu belum login');
         return;
       }
-      String? path;
-
-      /// get path
-      if (customPath == null) {
-        final result = await FilePicker.pickFiles(allowedExtensions: ['csv'], type: FileType.custom);
-        if (result == null) return;
-        path = result.files.first.path ?? '';
-      } else {
-        path = customPath;
-      }
-
-      /// ----------------------------------------------------------------------------------
-      /// # CVS TO JSON ####################################################################
-      /// ----------------------------------------------------------------------------------
-      final csvString = await File(path).readAsString();
+      final file = await FilePicker.pickFile(allowedExtensions: ['csv'], type: FileType.custom);
+      if (file == null) return;
+      final csvString = utf8.decode(await file.readAsBytes());
       List<List<dynamic>> csvTable = csv.csv.decode(csvString);
       if (csvTable.length < 2) {
         await HelperToast.warn('CSV kosong');
@@ -198,16 +107,7 @@ mixin HelperImportExport {
       }
       List<String> headers = csvTable[0].map((header) => header.toString()).toList();
 
-      final mapping = customPath == null
-          ? await _pickImportMapping(headers)
-          : <String, String>{
-              'date': 'date',
-              'note': 'note',
-              'amount': 'amount',
-              'category': 'category_name',
-              'detail': 'detail',
-              'created_at': 'created_at',
-            };
+      final mapping = await _pickImportMapping(headers);
       if (mapping == null) return;
 
       final jsonList = <Map<String, dynamic>>[];
@@ -254,32 +154,23 @@ mixin HelperImportExport {
         );
       }
 
-      var duplicateRows = 0;
-      if (customPath == null && supaExpense.isNotEmpty) {
+      var duplicateIds = <String>{};
+      if (supaExpense.isNotEmpty) {
         supaExpense.sort((a, b) => a.date!.compareTo(b.date!));
-        final existing = await db
-            .from('expense')
-            .select('date,note,amount')
+        final existing = await loadAllExpenses(db.from('expense').select('id,date,note,amount')
             .eq('user_id', currentUserId!)
             .gte('date', supaExpense.first.date!)
             .lte('date', supaExpense.last.date!)
-            .withConverter<List<SupaExpense>>(
-              (data) => data.map((e) => SupaExpense.fromJson(e)).toList(),
-            );
-        final keys = existing.map(_expenseImportKey).toSet();
-        final before = supaExpense.length;
-        supaExpense.removeWhere((item) => !keys.add(_expenseImportKey(item)));
-        duplicateRows = before - supaExpense.length;
+            .order('date'));
+        duplicateIds = possibleImportDuplicates(existing, supaExpense);
       }
 
-      if (customPath == null) {
-        final confirmed = await _confirmImport(
+      final confirmed = await _confirmImport(
           supaExpense,
           invalidRows: invalidRows,
-          duplicateRows: duplicateRows,
-        );
-        if (!confirmed) return;
-      }
+          duplicateIds: duplicateIds,
+      );
+      if (!confirmed) return;
       if (supaExpense.isEmpty) {
         await HelperToast.warn('Nggak ada transaksi baru untuk diimpor');
         return;
@@ -313,15 +204,19 @@ mixin HelperImportExport {
       await __refresh__();
       ExLoading.dismiss();
 
-      if (customCallback == null) {
-        await HelperToast.success('Impor selesai');
-      } else {
-        customCallback.call();
-      }
+      await HelperToast.success('Impor selesai');
     } catch (e) {
       ExLoading.dismiss();
       ExAlert.error(title: 'Impor gagal', message: '$e');
     }
+  }
+
+  static Set<String> possibleImportDuplicates(Iterable<SupaExpense> existing, Iterable<SupaExpense> incoming) {
+    final keys = existing.map(_expenseImportKey).toSet();
+    return {
+      for (final item in incoming)
+        if (!keys.add(_expenseImportKey(item))) item.id!,
+    };
   }
 
   static String _expenseImportKey(SupaExpense expense) {
@@ -418,21 +313,25 @@ mixin HelperImportExport {
   static Future<bool> _confirmImport(
     List<SupaExpense> expenses, {
     required int invalidRows,
-    required int duplicateRows,
+    required Set<String> duplicateIds,
   }) async {
+    var skipDuplicates = false;
     return await showDialog<bool>(
           context: Get.context!,
-          builder: (context) => AlertDialog(
+          builder: (context) => StatefulBuilder(
+            builder: (context, setState) => AlertDialog(
             title: const Text('Preview impor'),
             content: SizedBox(
               width: 440,
               child: VStack([
                 '${expenses.length} transaksi siap diimpor'.text.bold.make(),
-                if (duplicateRows > 0)
-                  '$duplicateRows duplikat dilewati'.text
-                      .size(11)
-                      .color(AppColor.neutral)
-                      .make(),
+                if (duplicateIds.isNotEmpty)
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text('Lewati ${duplicateIds.length} kemungkinan duplikat'),
+                    value: skipDuplicates,
+                    onChanged: (value) => setState(() => skipDuplicates = value ?? false),
+                  ),
                 if (invalidRows > 0)
                   '$invalidRows baris tidak valid dilewati'.text
                       .size(11)
@@ -464,10 +363,14 @@ mixin HelperImportExport {
               FilledButton(
                 onPressed: expenses.isEmpty
                     ? null
-                    : () => Navigator.pop(context, true),
+                    : () {
+                        if (skipDuplicates) expenses.removeWhere((item) => duplicateIds.contains(item.id));
+                        Navigator.pop(context, true);
+                      },
                 child: const Text('Impor'),
               ),
             ],
+          ),
           ),
         ) ??
         false;
@@ -513,25 +416,13 @@ mixin HelperImportExport {
   static Future<void> deleteAllData({bool withRefresh = true}) async {
     ExLoading.show(paddingSymmetric: Get.context!.isMobile ? 90 : 250, child: CupertinoActivityIndicator());
     try {
-      if (currentUserId == null) return;
-      final expenseImagePaths = (await _safeSelectRows('expense'))
-          .map((row) => row['image_path']?.toString())
-          .whereType<String>()
-          .where((path) => path.isNotEmpty)
-          .toList();
-      await _removeStorageFiles('expense-images', expenseImagePaths);
-      await db.from('expense').delete().match({'user_id': currentUserId!});
-      for (final table in [
-        'recurring_expenses',
-        'budgets',
-        'asset_snapshots',
-        'assets',
-        'goals',
-        'notes',
-        'agent_memory',
-        'error_log',
-      ]) {
-        await db.from(table).delete().eq('user_id', currentUserId!);
+      if (currentUserId == null) throw StateError('Kamu belum login');
+      await db.rpc('delete_own_data');
+      try {
+        final files = await _listAllStorageFiles('expense-images', path: currentUserId!);
+        await _removeStorageFiles('expense-images', files.map((file) => '$currentUserId/${file.name}').toList());
+      } catch (e) {
+        await HelperToast.warn('Data terhapus. Pembersihan gambar gagal; ulangi hapus data untuk mencoba lagi.');
       }
       if (withRefresh) await __refresh__();
 

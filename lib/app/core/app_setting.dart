@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:groq/groq.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../env.g.dart';
@@ -17,11 +16,6 @@ import 'const.dart';
 
 /// handy call sharedpref
 final pref = GetStorage(kStorageKey);
-
-final groq = Groq(
-  apiKey: Env.groqApiKey,
-  configuration: Configuration(model: 'openai/gpt-oss-20b', temperature: 0.2),
-);
 
 class AppSettingService extends GetxService {
   @override
@@ -41,44 +35,34 @@ class AppSettingService extends GetxService {
       return;
     }
 
-    final needInit = [
-      kFlagEco,
-      kFlagAverage,
-      kFlagSpender,
-      kCurrencySymbol,
-      kIsDarkMode,
-      kThemeColor,
-    ].any((key) => !pref.hasData(key));
-
-    if (needInit) {
-      final response = await db
-          .from('profiles')
-          .select()
-          .eq('id', userId)
-          .withConverter<List<SupaUserProfile>>(
-            (data) => (data).map((e) => SupaUserProfile.fromJson(e)).toList(),
-          );
-
-      if (response.isEmpty) {
-        logE('No profile found for $userId');
-        return;
-      }
-
-      final profile = response.first;
-
-      await pref.write(kCurrencySymbol, 'Rp. ');
-      await pref.write(kIsDarkMode, true);
-      await pref.write(kThemeColor, AppColor.defaultThemeColor);
-      await pref.write(kFlagEco, profile.ecoDay ?? 50000);
-      await pref.write(kFlagAverage, profile.averageDay ?? 100000);
-      await pref.write(kFlagSpender, profile.spenderDay ?? 100000);
+    final response = await db
+        .from('profiles')
+        .select()
+        .eq('id', userId)
+        .withConverter<List<SupaUserProfile>>(
+          (data) => (data).map((e) => SupaUserProfile.fromJson(e)).toList(),
+        );
+    if (response.isEmpty) {
+      logE('No profile found for $userId');
+      return;
     }
+
+    await applyProfilePreferences(response.first);
+    if (!pref.hasData(kCurrencySymbol)) await pref.write(kCurrencySymbol, 'Rp. ');
+    if (!pref.hasData(kIsDarkMode)) await pref.write(kIsDarkMode, true);
+    if (!pref.hasData(kThemeColor)) await pref.write(kThemeColor, AppColor.defaultThemeColor);
 
     if (!pref.hasData(kCalendarStartDay)) {
       await pref.write(kCalendarStartDay, 1);
     }
 
     logI('-- CONFIG LOADED --');
+  }
+
+  Future<void> applyProfilePreferences(SupaUserProfile profile) async {
+    await pref.write(kFlagEco, profile.ecoDay ?? 50000);
+    await pref.write(kFlagAverage, profile.averageDay ?? 100000);
+    await pref.write(kFlagSpender, profile.spenderDay ?? 100000);
   }
 
   /// ------------------------------------------------------------------------
