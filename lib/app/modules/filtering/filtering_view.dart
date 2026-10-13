@@ -130,7 +130,7 @@ class FilteringView extends GetView<FilteringController> {
       [
         GlassContainer(
           width: double.infinity,
-          blur: 50,
+          blur: isMobileWeb ? 0 : 50,
           border: Border.all(
             color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20),
           ),

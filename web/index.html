@@ -29,17 +29,6 @@
   <title>e-Tracker</title>
   <link rel="manifest" href="manifest.json">
 
-  <script>
-    // The value below is injected by flutter build, do not touch.
-    const serviceWorkerVersion = null;
-  </script>
-  <!-- This script adds the flutter initialization JS code -->
-  <script src="flutter.js" defer></script>
-
-  <!-- Preload critical resources -->
-  <link rel="preload" href="main.dart.js" as="script">
-
-
   <style>
     html, body {
       overscroll-behavior: none;
@@ -117,29 +106,10 @@
   <div class="center loading-container" id="loading">
     <img src="icons/Icon-192.png" height="64" width="64" />
     <!-- <div class="spinner"></div> -->
-    <div class="loading-text">e-Tracker (1.0.0+163) 10 Okt 2026</div>
+    <div class="loading-text">e-Tracker (1.0.0+183) 13 Okt 2026</div>
   </div>
 
-  <script>
-    window.addEventListener('load', function (ev) {
-      // Download main.dart.js
-      _flutter.loader.loadEntrypoint({
-        serviceWorker: {
-          serviceWorkerVersion: serviceWorkerVersion,
-        },
-        onEntrypointLoaded: function (engineInitializer) {
-          engineInitializer.initializeEngine().then(function (appRunner) {
-            appRunner.runApp();
-            // Hide loading indicator
-            setTimeout(() => {
-              const loading = document.getElementById('loading');
-              if (loading) loading.style.display = 'none';
-            }, 10);
-          });
-        }
-      });
-    });
-  </script>
+  <script src="flutter_bootstrap.js" async></script>
 </body>
 
 </html>

@@ -8,6 +8,7 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../core/app_setting.dart';
 import '../../core/const.dart';
+import '../../helpers/expense_image_url_cache.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_assets_entity.dart';
 import '../../models/supa_budgets_entity.dart';
@@ -62,6 +63,7 @@ class HomeController extends GetxController with StateMixin {
   final recentExpenses = <SupaExpense>[].obs;
   final tfSearchExpense = TextEditingController().obs;
   final searchFocusNode = FocusNode();
+  final mobileImageUrls = ExpenseImageUrlCache();
 
   final budgetSuggestions = <String, num>{}.obs;
 
@@ -729,6 +731,7 @@ class HomeController extends GetxController with StateMixin {
 
   @override
   void onClose() {
+    mobileImageUrls.clear();
     unawaited(HomeRT.dispose());
     tfSearchExpense.value.dispose();
     searchFocusNode.dispose();

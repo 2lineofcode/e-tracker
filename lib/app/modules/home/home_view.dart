@@ -19,6 +19,7 @@ import '../../core/const.dart';
 import '../../helpers/helpers.dart';
 import '../../models/supa_expense_entity.dart';
 import '../../routes/app_pages.dart';
+import '../widgets/widget_mobile_expense_image.dart';
 import '../widgets/widgets.dart';
 import 'home_controller.dart';
 import 'section_dialog_asset.dart';
@@ -1250,6 +1251,15 @@ class HomeView extends GetView<HomeController> {
 
   Widget expenseImageThumbnail(SupaExpense item) {
     if (item.imagePath.isEmptyOrNull) return 0.heightBox;
+    if (isMobileWeb) return MobileExpenseImage(
+      key: ValueKey(item.imagePath),
+      cache: controller.mobileImageUrls,
+      path: item.imagePath!,
+      width: 48,
+      height: 48,
+      radius: 10,
+      fit: BoxFit.cover,
+    ).pOnly(right: 12);
 
     return FutureBuilder<String>(
       future: db.storage

@@ -341,7 +341,7 @@ Future<void> openDetail(SupaExpense item) async {
     OverPanel(
       alignment: Alignment.centerRight,
       width: 300,
-      backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
+      backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: isMobileWeb ? null : 1),
       animation: OverSlideAnimation(
         begin: Offset(1, 0),
         end: Offset(0, 0),

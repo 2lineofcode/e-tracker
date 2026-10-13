@@ -24,6 +24,7 @@ import '../../models/supa_category_entity.dart';
 import '../../models/supa_expense_entity.dart';
 import '../widgets/widget_expense_image_preview.dart';
 import '../widgets/widget_image_no_cache_view.dart';
+import '../widgets/widget_mobile_expense_image.dart';
 import 'home_controller.dart';
 import 'home_repository.dart';
 
@@ -122,6 +123,13 @@ mixin DialogExpense {
                         width: double.infinity,
                         height: 120,
                         fit: BoxFit.contain,
+                      )
+                    : isMobileWeb
+                    ? MobileExpenseImage(
+                        cache: Get.find<HomeController>().mobileImageUrls,
+                        path: imageUrl.value,
+                        width: double.infinity,
+                        height: 120,
                       )
                     : FutureBuilder<String>(
                         future: db.storage

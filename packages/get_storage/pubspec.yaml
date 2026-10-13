@@ -1,0 +1,14 @@
+name: get_storage
+description: GetStorage 2.1.1 with a Wasm-compatible web storage driver.
+version: 2.1.1
+publish_to: none
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  get: '>=4.0.0 <6.0.0'
+  path_provider: ^2.0.1
+  web: ^1.1.1

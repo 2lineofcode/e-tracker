@@ -10,6 +10,7 @@ analyzer:
     - android/**
     - web/**
     - macos/**
+    - packages/get_storage/**
 
   errors:
     todo: ignore

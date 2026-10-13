@@ -8,6 +8,7 @@ import 'package:overlayment/overlayment.dart';
 
 import '../core/app_color.dart';
 import '../models/supa_category_entity.dart';
+import 'helper_misc.dart';
 
 mixin HelperOverlay {
   static void openCalculator({
@@ -74,7 +75,7 @@ mixin HelperOverlay {
         alignment: Alignment.center,
         height: Get.height * 0.7,
         width: Get.context!.isMobile ? Get.width - 48 : 320,
-        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: isMobileWeb ? null : 1),
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(24), color: AppColor.appbarPrimary),
         animation: OverFadeAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
         child: StatefulBuilder(
@@ -178,7 +179,7 @@ mixin HelperOverlay {
         height: Get.height * 0.6,
         width: 270,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColor.appbarPrimary),
-        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: isMobileWeb ? null : 1),
         animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
         actions: OverlayActions(onReady: () async => searchFocusNode.requestFocus()),
         child: StatefulBuilder(

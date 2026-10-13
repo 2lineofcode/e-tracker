@@ -31,9 +31,9 @@ if [ "$(uname)" == "Darwin" ]; then
     # build for macos
     flutter build macos --release --no-tree-shake-icons --build-name="$base_version" --build-number="$git_rev" --dart-define="BUILD_DATE=$publish_date"
 
-    # build web (optimized for Safari/iOS)
-    echo "🌐 Building Flutter Web (CanvasKit renderer)..."
-    FLUTTER_WEB_RENDERER=canvaskit flutter build web --release --no-tree-shake-icons --base-href "/" --build-name="$base_version" --build-number="$git_rev" --dart-define="BUILD_DATE=$publish_date"
+    # Build Wasm with a JavaScript fallback for unsupported browsers.
+    echo "🌐 Building Flutter Web (Wasm + JavaScript fallback)..."
+    flutter build web --release --wasm --no-pub --base-href "/" --build-name="$base_version" --build-number="$git_rev" --dart-define="BUILD_DATE=$publish_date"
 
     echo "🚀 Deploying to Firebase..."
     firebase deploy --only hosting --project e-tr4ck3r

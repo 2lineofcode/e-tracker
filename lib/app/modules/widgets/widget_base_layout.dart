@@ -56,7 +56,7 @@ class MyLayout extends StatelessWidget {
       backgroundColor: AppColor.scaffoldPrimary,
 
       /// drawer -> Mobile
-      drawer: context.isMobile ? Drawer(child: sideMenu()) : null,
+      drawer: context.isMobile ? Drawer(child: sideMenu(context)) : null,
 
       /// appbar -> Mobile
       appBar: context.isMobile ? myAppBarMobile() : null,
@@ -67,7 +67,7 @@ class MyLayout extends StatelessWidget {
           children: [
             /// row 1 -> Desktop
             if (!context.isMobile)
-              sideMenu().wh(sideMenuWidth ?? 255, double.infinity),
+              sideMenu(context).wh(sideMenuWidth ?? 255, double.infinity),
 
             /// row 2
             VStack(
@@ -89,12 +89,12 @@ class MyLayout extends StatelessWidget {
     );
   }
 
-  Widget sideMenu() {
+  Widget sideMenu(BuildContext context) {
     return GlassContainer(
       color: AppColor.sideMenuPrimary,
       borderRadius: BorderRadius.all(Radius.circular(0)),
       border: Border.all(color: Colors.transparent),
-      blur: 50,
+      blur: kIsWeb && context.isMobile ? 0 : 50,
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,

@@ -44,7 +44,7 @@ class ViewOverview extends GetView<SummaryController> {
   Widget headerAllYear() {
     return GlassContainer(
       width: double.infinity,
-      blur: 50,
+      blur: isMobileWeb ? 0 : 50,
       border: Border.all(color: AppColor.border),
       borderRadius: BorderRadius.all(Radius.circular(4)),
       gradient: LinearGradient(
@@ -93,7 +93,7 @@ class ViewOverview extends GetView<SummaryController> {
     if (controller.countBudget.value.isZero) {
       return GlassContainer(
         width: double.infinity,
-        blur: 50,
+        blur: isMobileWeb ? 0 : 50,
         border: Border.all(
           color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20),
         ),
@@ -117,7 +117,7 @@ class ViewOverview extends GetView<SummaryController> {
     }
     return GlassContainer(
       width: double.infinity,
-      blur: 50,
+      blur: isMobileWeb ? 0 : 50,
       border: Border.all(
         color: Get.theme.textTheme.bodySmall!.color!.withAlpha(20),
       ),

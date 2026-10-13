@@ -635,7 +635,7 @@ class SettingsController extends GetxController with StateMixin {
       OverPanel(
         alignment: Alignment.center,
         width: 300,
-        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: isMobileWeb ? null : 1),
         animation: OverScaleAnimation(
           durationMilliseconds: 100,
           reverseDurationMilliseconds: 100,
@@ -843,7 +843,7 @@ class SettingsController extends GetxController with StateMixin {
           borderRadius: BorderRadius.circular(12),
           color: AppColor.appbarPrimary,
         ),
-        backgroundSettings: BackgroundSettings(color: Colors.black54, blur: 1),
+        backgroundSettings: BackgroundSettings(color: Colors.black54, blur: isMobileWeb ? null : 1),
         animation: OverScaleAnimation(
           durationMilliseconds: 100,
           reverseDurationMilliseconds: 100,
@@ -900,7 +900,7 @@ class SettingsController extends GetxController with StateMixin {
       OverPanel(
         alignment: Alignment.center,
         width: 300,
-        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: isMobileWeb ? null : 1),
         animation: OverScaleAnimation(
           durationMilliseconds: 100,
           reverseDurationMilliseconds: 100,

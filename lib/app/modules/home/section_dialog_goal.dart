@@ -34,7 +34,7 @@ mixin DialogGoal {
       OverPanel(
         alignment: Alignment.centerRight,
         width: Get.context!.isMobile ? Get.width * 0.92 : 340,
-        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: isMobileWeb ? null : 1),
         animation: OverSlideAnimation(begin: Offset(1, 0), end: Offset(0, 0), durationMilliseconds: 100, reverseDurationMilliseconds: 100),
 
         child: VStack([
@@ -273,7 +273,7 @@ mixin DialogGoal {
         width: 270,
         alignment: Alignment.center,
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColor.appbarPrimary),
-        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: 1),
+        backgroundSettings: BackgroundSettings(color: AppColor.card.withAlpha(150), blur: isMobileWeb ? null : 1),
         animation: OverScaleAnimation(durationMilliseconds: 100, reverseDurationMilliseconds: 100),
         actions: OverlayActions(
           onReady: () async => _fnTitle.requestFocus(),
